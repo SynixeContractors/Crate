@@ -8,6 +8,7 @@ on:
       - Cargo.toml
       - synixe-bot/**
       - synixe-events/**
+      - synixe-meta/**
 
 permissions:
   packages: write
