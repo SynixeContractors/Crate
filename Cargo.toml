@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "synixe-bot",
+    "synixe-events",
+    "synixe-meta",
+    "synixe-proc",
+    "synixe-schedule",
+]
+
+[workspace.dependencies]
+serenity = { git = "https://github.com/serenity-rs/serenity", rev = "67143ef33966aef5a949c2411d10a7d90d437382", default-features = false }
+serde = { version = "1.0.145", features = ["derive"] }

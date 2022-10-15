@@ -1,0 +1,50 @@
+name: bot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/bot.yaml
+      - Cargo.toml
+      - synixe-bot/**
+      - synixe-events/**
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: Swatinem/rust-cache@v1
+
+      - run: cargo build --release
+        working-directory: ./synixe-bot
+
+      - run: cp target/release/synixe-bot ./synixe-bot/synixe-bot
+
+      - name: Build Image
+        working-directory: ./synixe-bot
+        run: docker build . -t synixe-bot
+
+      - name: Tag Image
+        run: docker tag synixe-bot ghcr.io/synixecontractors/synixe-bot:latest
+
+      - name: Push Image
+        run: docker push ghcr.io/synixecontractors/synixe-bot:latest
