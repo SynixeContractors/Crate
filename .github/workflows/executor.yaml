@@ -1,0 +1,52 @@
+name: executor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/executor.yaml
+      - Cargo.toml
+      - bootstrap/**
+      - synixe-executor/**
+      - synixe-events/**
+      - synixe-meta/**
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: Swatinem/rust-cache@v1
+
+      - run: cargo build --release
+        working-directory: ./synixe-executor
+
+      - run: cp target/release/synixe-executor ./synixe-executor/synixe-executor
+
+      - name: Build Image
+        working-directory: ./synixe-executor
+        run: docker build . -t synixe-executor
+
+      - name: Tag Image
+        run: docker tag synixe-executor ghcr.io/synixecontractors/synixe-executor:latest
+
+      - name: Push Image
+        run: docker push ghcr.io/synixecontractors/synixe-executor:latest

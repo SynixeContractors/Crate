@@ -1,0 +1,24 @@
+[package]
+name = "synixe-executor"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bootstrap = { path = "../bootstrap", features = ["nats"] }
+synixe-events = { path = "../synixe-events" }
+synixe-meta = { path = "../synixe-meta" }
+
+anyhow = "1.0.65"
+async-trait = { workspace = true }
+log = { workspace = true }
+nats = { workspace = true }
+opentelemetry = { workspace = true }
+tokio = { version = "1.21.2", features = ["full"] }
+reqwest = { version = "0.11.12" }
+
+# recruiting
+roux = { git = "https://github.com/halcyonnouveau/roux", rev = "82811bd63d6db2ce437db1335bce0ebbeb33f25c"}
+rust-embed="6.4.1"
+scraper = "0.13.0"

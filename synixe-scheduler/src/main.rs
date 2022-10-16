@@ -2,17 +2,11 @@
 #![warn(clippy::nursery, clippy::all)]
 
 use opentelemetry::sdk::propagation::TraceContextPropagator;
-use rust_embed::RustEmbed;
+use synixe_events::{recruiting, request};
 use tokio_simple_scheduler::{Job, Scheduler};
 
 #[macro_use]
 extern crate log;
-
-#[derive(RustEmbed)]
-#[folder = "assets"]
-pub struct Assets;
-
-mod jobs;
 
 #[tokio::main]
 async fn main() {
@@ -31,7 +25,14 @@ async fn main() {
             "0 */10 * * * *",
             || {
                 Box::pin(async {
-                    jobs::recruiting::check_steam_forums().await;
+                    if let Err(e) = request!(
+                        bootstrap::NC::get().await,
+                        recruiting::executions::Request::CheckSteam {}
+                    )
+                    .await
+                    {
+                        error!("error checking on steam: {:?}", e);
+                    }
                 })
             },
         )
@@ -43,7 +44,14 @@ async fn main() {
             "0 */10 * * * *",
             || {
                 Box::pin(async {
-                    jobs::recruiting::check_reddit_findaunit().await;
+                    if let Err(e) = request!(
+                        bootstrap::NC::get().await,
+                        recruiting::executions::Request::CheckReddit {}
+                    )
+                    .await
+                    {
+                        error!("error checking on reddit: {:?}", e);
+                    }
                 })
             },
         )
@@ -55,7 +63,14 @@ async fn main() {
             "0 0 23 * * Thu,Fri,Sat",
             || {
                 Box::pin(async {
-                    jobs::recruiting::post_reddit_findaunit().await;
+                    if let Err(e) = request!(
+                        bootstrap::NC::get().await,
+                        recruiting::executions::Request::PostReddit {}
+                    )
+                    .await
+                    {
+                        error!("error posting to reddit: {:?}", e);
+                    }
                 })
             },
         )

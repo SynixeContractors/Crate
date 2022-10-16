@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "synixe.fullname" . }}-executor
+  labels:
+    {{- include "synixe.labels" . | nindent 4 }}
+    app: executor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "synixe.selectorLabels" . | nindent 6 }}
+      app: executor
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "synixe.selectorLabels" . | nindent 8 }}
+        app: executor
+    spec:
+      imagePullSecrets:
+        {{- if .Values.regcred }}
+        - name: regcred
+        {{- end }}
+        {{- with .Values.imagePullSecrets }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      serviceAccountName: {{ include "synixe.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: synixe-executor
+          env:
+            - name: REDDIT_CLIENT_ID
+              value: {{ .Values.config.reddit_client_id | quote }}
+            - name: REDDIT_CLIENT_SECRET
+              value: {{ .Values.config.reddit_client_id | quote }}
+            - name: REDDIT_USERNAME
+              value: {{ .Values.config.reddit_username | quote }}
+            - name: REDDIT_PASSWORD
+              value: {{ .Values.config.reddit_password | quote }}
+            - name: NATS_URL
+              value: {{ .Values.config.nats_url | quote }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "ghcr.io/synixecontractors/synixe-executor:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            requests:
+              memory: {{ dig "resources" "requests" "executor" "memory" "5Mi" (.Values | merge (dict)) | quote }}
+              cpu: {{ dig "resources" "requests" "executor" "cpu" "100m" (.Values | merge (dict)) | quote }}
+            limits:
+              memory: {{ dig "resources" "limits" "executor" "memory" "20Mi" (.Values | merge (dict)) | quote }}
+              cpu: {{ dig "resources" "limits" "executor" "cpu" "500m" (.Values | merge (dict)) | quote }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

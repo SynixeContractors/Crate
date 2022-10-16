@@ -1,4 +1,27 @@
 #[macro_export]
+/// Handle the event.
+macro_rules! handler {
+    ($msg:expr, $nats:expr, $($events:ty),*) => {{
+        use crate::handler::Handler;
+        use synixe_events::Evokable;
+        use opentelemetry::trace::{Tracer, TraceContextExt};
+        let subject = $msg.subject.clone();
+        let sub = subject.as_str();
+        $(
+            if sub == <$events>::path() {
+                let ((ev, _), pcx) = synixe_events::parse_data!($msg, $events);
+                let span = opentelemetry::global::tracer("coordinator").start_with_context(format!("{}:{}", sub.to_string(), ev.name()), &pcx);
+                if let Err(e) = ev.handle($msg, $nats, pcx.with_span(span)).await {
+                    error!("Error in handler {}: {}", sub, e);
+                }
+                continue
+            }
+        )*
+        warn!("Unknown subject: {}", subject);
+    }}
+}
+
+#[macro_export]
 /// An event that expects a response.
 macro_rules! request {
     ($nats:expr, $body:expr) => {{

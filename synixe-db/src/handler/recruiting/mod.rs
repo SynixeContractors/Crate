@@ -9,9 +9,9 @@ impl Handler for Request {
         &self,
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
-        db: bootstrap::DBPool,
         cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
+        let db = bootstrap::DB::get().await;
         match &self {
             Self::Seen { url } => {
                 execute_and_respond!(

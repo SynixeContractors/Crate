@@ -1,7 +1,7 @@
 use scraper::{Html, Selector};
 use synixe_events::request;
 
-use crate::jobs::recruiting::{
+use super::{
     candidate::{Candidate, Source},
     has_seen, seen, IGNORE, PING,
 };

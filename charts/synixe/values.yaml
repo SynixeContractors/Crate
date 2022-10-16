@@ -51,7 +51,7 @@ config:
   # global
   nats_url: ~
 
-  # scheduler
+  # executor-recruiting
   reddit_client_id: ~
   reddit_client_secret: ~
   reddit_username: ~

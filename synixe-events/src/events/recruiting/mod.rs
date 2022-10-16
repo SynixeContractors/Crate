@@ -17,3 +17,19 @@ pub mod db {
         } => (Result<Option<bool>, String>)
     });
 }
+
+/// Interact with the executor
+pub mod executions {
+    use synixe_proc::events_requests;
+
+    events_requests!(executor.recruiting {
+        /// Check for new post on Steam
+        CheckSteam {} => (Result<(), String>)
+        /// Check for new post on Reddit
+        CheckReddit {} => (Result<(), String>)
+        /// Post on Reddit
+        PostReddit {} => (Result<(), String>)
+        /// Reply on Reddit
+        ReplyReddit {} => (Result<(), String>)
+    });
+}
