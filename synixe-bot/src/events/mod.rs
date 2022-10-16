@@ -10,7 +10,8 @@ pub async fn start(http: Bot) {
 }
 
 async fn write(http: Bot) {
-    let sub = bootstrap::NC::get().await
+    let sub = bootstrap::NC::get()
+        .await
         .queue_subscribe(discord::write::Request::path(), "synixe-bot")
         .await
         .unwrap();
@@ -20,7 +21,8 @@ async fn write(http: Bot) {
 }
 
 async fn info(http: Bot) {
-    let sub = bootstrap::NC::get().await
+    let sub = bootstrap::NC::get()
+        .await
         .queue_subscribe(discord::info::Request::path(), "synixe-bot")
         .await
         .unwrap();
