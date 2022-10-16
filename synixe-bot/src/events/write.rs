@@ -12,6 +12,7 @@ pub async fn handle(msg: Message, client: Bot) {
     println!("write event: {:?}", ev.name());
     match ev {
         write::Request::ChannelMessage { channel, message } => {
+            println!("Sending message to channel {}", channel);
             if let Err(e) = channel
                 .send_message(&client.http, |m| match message {
                     write::DiscordMessage::Text(text) => m.content(text),
