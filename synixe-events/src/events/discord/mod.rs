@@ -6,7 +6,6 @@ pub mod write {
     use serenity::{
         builder::CreateEmbed,
         model::prelude::{ChannelId, Message, UserId},
-        utils::Colour,
     };
     use synixe_proc::events_requests;
 
@@ -29,7 +28,7 @@ pub mod write {
         /// URL of the embed
         pub url: Option<String>,
         /// Colour of the embed
-        pub colour: Option<Colour>,
+        pub colour: Option<i32>,
     }
 
     impl From<DiscordEmbed> for CreateEmbed {
