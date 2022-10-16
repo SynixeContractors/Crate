@@ -67,7 +67,7 @@ pub async fn check_steam_forums() {
                 .any(|x| content.contains(x) || title.contains(x));
             candidates.push(
                 Candidate {
-                    source: Source::Reddit,
+                    source: Source::Steam,
                     title,
                     link: url,
                     content,
