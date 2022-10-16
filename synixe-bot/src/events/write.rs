@@ -20,11 +20,14 @@ pub async fn handle(msg: Message, client: Bot) {
                 })
                 .await
             {
+                println!("Failed to send message: {}", e);
                 if let Err(e) =
                     respond!(msg, &write::Response::ChannelMessage(Err(e.to_string()))).await
                 {
                     println!("Failed to respond to NATS: {}", e);
                 }
+            } else if let Err(e) = respond!(msg, &write::Response::ChannelMessage(Ok(()))).await {
+                println!("Failed to respond to NATS: {}", e);
             }
         }
         write::Request::UserMessage { user, message } => {
