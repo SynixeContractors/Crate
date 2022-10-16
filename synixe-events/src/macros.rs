@@ -6,7 +6,6 @@ macro_rules! request {
         let body = $body;
         let path = body.self_path();
         let mut trace_body = $crate::Wrapper::new(body);
-        println!("requesting on {}", path);
         $crate::opentelemetry::global::get_text_map_propagator(|injector| {
             injector.inject_context(&$crate::opentelemetry::Context::current(), &mut trace_body);
         });

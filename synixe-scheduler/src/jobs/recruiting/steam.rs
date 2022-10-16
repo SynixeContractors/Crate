@@ -3,17 +3,16 @@ use synixe_events::request;
 
 use crate::jobs::recruiting::{
     candidate::{Candidate, Source},
-    IGNORE, PING,
+    has_seen, seen, IGNORE, PING,
 };
 
 const STEAM_FORUM: &str = "https://steamcommunity.com/app/107410/discussions/21/";
 
 pub async fn check_steam_forums() {
-    println!("Checking steam forums for new posts");
+    debug!("Checking steam forums for new posts");
 
     let candidates = {
         let mut candidates = Vec::new();
-        let mut store = super::Store::new("steam_forums.json").unwrap();
 
         let selector_post: Selector = scraper::Selector::parse("a.forum_topic_overlay").unwrap();
         let selector_title: Selector = scraper::Selector::parse("div.topic").unwrap();
@@ -32,11 +31,11 @@ pub async fn check_steam_forums() {
             posts.push(post.value().attr("href").unwrap().to_string());
         }
         for url in posts {
-            if store.contains(&url) {
+            if has_seen(url.clone()).await {
                 continue;
             }
             let post = reqwest::get(&url).await.unwrap().text().await.unwrap();
-            store.add(url.clone());
+            seen(url.clone()).await;
             let document = Html::parse_document(&post);
             let content = document
                 .select(&selector_content)
@@ -76,14 +75,11 @@ pub async fn check_steam_forums() {
                 .into(),
             );
         }
-        if let Err(e) = store.save() {
-            println!("Error saving store: {}", e);
-        }
         candidates
     };
     for candidate in candidates {
         if let Err(e) = request!(
-            crate::nc::NC::get().await,
+            bootstrap::NC::get().await,
             synixe_events::discord::write::Request::ChannelMessage {
                 channel: synixe_meta::discord::channel::RECRUITING,
                 message: synixe_events::discord::write::DiscordMessage::Embed(candidate)
@@ -91,7 +87,7 @@ pub async fn check_steam_forums() {
         )
         .await
         {
-            println!("Error sending candidate: {}", e);
+            error!("Error sending candidate: {}", e);
         }
     }
 }

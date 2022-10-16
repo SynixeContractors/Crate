@@ -4,17 +4,21 @@
 use opentelemetry::sdk::propagation::TraceContextPropagator;
 use tokio_simple_scheduler::{Job, Scheduler};
 
+#[macro_use]
+extern crate log;
+
 mod jobs;
-mod nc;
 
 #[tokio::main]
 async fn main() {
     opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
 
+    bootstrap::logger::init();
+
     let mut sched = Scheduler::default();
 
     // Init NATS connection
-    nc::NC::get().await;
+    bootstrap::NC::get().await;
 
     sched.add(
         Job::new(
@@ -46,5 +50,5 @@ async fn main() {
 
     sched.start().await;
 
-    println!("Done!");
+    info!("Done!");
 }

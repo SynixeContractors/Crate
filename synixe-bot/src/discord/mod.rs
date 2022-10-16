@@ -17,6 +17,6 @@ pub async fn build() -> Client {
 
 pub async fn start(mut client: Client) {
     if let Err(why) = client.start().await {
-        println!("Client error: {:?}", why);
+        error!("start error: {:?}", why);
     }
 }

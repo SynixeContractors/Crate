@@ -1,0 +1,35 @@
+{
+  "db": "PostgreSQL",
+  "9c219d0c3288e5e4a17e241f14d6f92a7914aac62f754423e2bb69da59861df0": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO recruitment_seen (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()"
+  },
+  "d6723f891478fdee19415ea75d9e17745213002653d0dc00b4bea49b62f8fad5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT EXISTS(SELECT 1 FROM recruitment_seen WHERE link = $1) as value"
+  }
+}

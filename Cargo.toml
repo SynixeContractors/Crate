@@ -1,6 +1,8 @@
 [workspace]
 members = [
+    "bootstrap",
     "synixe-bot",
+    "synixe-db",
     "synixe-events",
     "synixe-meta",
     "synixe-proc",
@@ -8,7 +10,10 @@ members = [
 ]
 
 [workspace.dependencies]
+async-trait = "0.1.57"
+log = "0.4.17"
 nats = { version = "0.23.0" }
 opentelemetry = { version = "0.18.0", default-features = false, features = ["trace", "rt-tokio"] }
 serde = { version = "1.0.145", features = ["derive"] }
 serenity = { git = "https://github.com/serenity-rs/serenity", rev = "67143ef33966aef5a949c2411d10a7d90d437382", default-features = false }
+sqlx = { version = "0.6.2", features = ["offline"] }

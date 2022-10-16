@@ -7,7 +7,7 @@ pub struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
-        println!("{} is connected!", ready.user.name);
+        info!("{} is connected!", ready.user.name);
 
         if let Err(e) =
             GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {
@@ -15,7 +15,7 @@ impl EventHandler for Handler {
             })
             .await
         {
-            println!("Cannot register slash commands: {}", e);
+            error!("Cannot register slash commands: {}", e);
         }
     }
 

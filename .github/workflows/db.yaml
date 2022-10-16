@@ -1,0 +1,51 @@
+name: db
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/db.yaml
+      - Cargo.toml
+      - synixe-db/**
+      - synixe-events/**
+      - synixe-meta/**
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: Swatinem/rust-cache@v1
+
+      - run: cargo build --release
+        working-directory: ./synixe-db
+
+      - run: cp target/release/synixe-db ./synixe-db/synixe-db
+
+      - name: Build Image
+        working-directory: ./synixe-db
+        run: docker build . -t synixe-db
+
+      - name: Tag Image
+        run: docker tag synixe-db ghcr.io/synixecontractors/synixe-db:latest
+
+      - name: Push Image
+        run: docker push ghcr.io/synixecontractors/synixe-db:latest

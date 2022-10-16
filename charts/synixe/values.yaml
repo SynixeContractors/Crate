@@ -53,3 +53,6 @@ config:
 
   # bot
   discord_token: ~
+
+  # db
+  database_url: ~

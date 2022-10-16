@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "synixe.fullname" . }}-db
+  labels:
+    {{- include "synixe.labels" . | nindent 4 }}
+    app: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "synixe.selectorLabels" . | nindent 6 }}
+      app: db
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "synixe.selectorLabels" . | nindent 8 }}
+        app: db
+    spec:
+      imagePullSecrets:
+        {{- if .Values.regcred }}
+        - name: regcred
+        {{- end }}
+        {{- with .Values.imagePullSecrets }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      serviceAccountName: {{ include "synixe.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: synixe-db
+          env:
+            - name: DATABASE_URL
+              value: {{ .Values.config.database_url | quote }}
+            - name: NATS_URL
+              value: {{ .Values.config.nats_url | quote }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "ghcr.io/synixecontractors/synixe-db:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            requests:
+              memory: {{ dig "resources" "requests" "db" "memory" "5Mi" (.Values | merge (dict)) | quote }}
+              cpu: {{ dig "resources" "requests" "db" "cpu" "100m" (.Values | merge (dict)) | quote }}
+            limits:
+              memory: {{ dig "resources" "limits" "db" "memory" "20Mi" (.Values | merge (dict)) | quote }}
+              cpu: {{ dig "resources" "limits" "db" "cpu" "500m" (.Values | merge (dict)) | quote }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

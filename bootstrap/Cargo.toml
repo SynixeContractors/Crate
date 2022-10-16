@@ -1,0 +1,14 @@
+[package]
+name = "bootstrap"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+log = { workspace = true }
+simplelog = "0.12.0"
+
+sqlx = { workspace = true, optional = true, features = ["postgres", "offline"] }
+nats = { workspace = true, optional = true }
+
+[features]
+default = []

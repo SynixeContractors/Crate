@@ -35,7 +35,7 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
         })
         .await
     {
-        println!("Cannot respond to slash command: {}", why);
+        error!("Cannot respond to slash command: {}", why);
     }
 }
 
