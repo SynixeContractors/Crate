@@ -5,7 +5,7 @@ pub mod write {
     use serde::{Deserialize, Serialize};
     use serenity::{
         builder::CreateEmbed,
-        model::prelude::{ChannelId, Message, UserId},
+        model::prelude::{ChannelId, UserId},
     };
     use synixe_proc::events_requests;
 
@@ -57,14 +57,14 @@ pub mod write {
             channel: ChannelId,
             /// The message to send
             message: DiscordMessage,
-        } => (Result<Message, String>)
+        } => (Result<(), String>)
         /// Direct message a user
         UserMessage {
             /// The user to send the message to
             user: UserId,
             /// The message to send
             message: DiscordMessage,
-        } => (Result<Message, String>)
+        } => (Result<(), String>)
     });
 }
 
