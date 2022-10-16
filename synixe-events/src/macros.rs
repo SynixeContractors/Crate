@@ -28,6 +28,7 @@ macro_rules! request {
         use $crate::Evokable;
         let body = $body;
         let path = body.self_path();
+        debug!("requesting on {:?}", path);
         let mut trace_body = $crate::Wrapper::new(body);
         $crate::opentelemetry::global::get_text_map_propagator(|injector| {
             injector.inject_context(&$crate::opentelemetry::Context::current(), &mut trace_body);
@@ -47,6 +48,7 @@ macro_rules! publish {
         use $crate::Publishable;
         let body = $body;
         let path = body.self_path();
+        debug!("publishing on {:?}", path);
         let mut trace_body = $crate::Wrapper::new(body);
         $crate::opentelemetry::global::get_text_map_propagator(|injector| {
             injector.inject_context(&$crate::opentelemetry::Context::current(), &mut trace_body);
