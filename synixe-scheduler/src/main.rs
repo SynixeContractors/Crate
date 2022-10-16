@@ -2,10 +2,15 @@
 #![warn(clippy::nursery, clippy::all)]
 
 use opentelemetry::sdk::propagation::TraceContextPropagator;
+use rust_embed::RustEmbed;
 use tokio_simple_scheduler::{Job, Scheduler};
 
 #[macro_use]
 extern crate log;
+
+#[derive(RustEmbed)]
+#[folder = "assets"]
+pub struct Assets;
 
 mod jobs;
 
@@ -44,9 +49,18 @@ async fn main() {
         )
         .unwrap(),
     );
-
-    jobs::recruiting::check_steam_forums().await;
-    jobs::recruiting::check_reddit_findaunit().await;
+    sched.add(
+        Job::new(
+            "Recruiting - reddit findaunit post",
+            "0 0 23 * * Thu,Fri,Sat",
+            || {
+                Box::pin(async {
+                    jobs::recruiting::post_reddit_findaunit().await;
+                })
+            },
+        )
+        .unwrap(),
+    );
 
     sched.start().await;
 

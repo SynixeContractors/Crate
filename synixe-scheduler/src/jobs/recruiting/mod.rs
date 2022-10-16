@@ -5,7 +5,7 @@ mod candidate;
 mod reddit;
 mod steam;
 
-pub use reddit::check_reddit_findaunit;
+pub use reddit::{check_reddit_findaunit, post_reddit_findaunit};
 pub use steam::check_steam_forums;
 use synixe_events::{
     parse_data,

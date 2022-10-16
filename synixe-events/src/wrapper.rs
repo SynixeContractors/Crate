@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use opentelemetry::propagation::{Extractor, Injector};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 /// Wrapper around an event
 pub struct Wrapper<T> {
     #[serde(rename = "i")]

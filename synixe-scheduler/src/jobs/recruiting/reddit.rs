@@ -1,3 +1,6 @@
+use std::time::Duration;
+
+use roux::{Reddit, User};
 use scraper::{Html, Selector};
 use synixe_events::request;
 
@@ -93,6 +96,55 @@ pub async fn check_reddit_findaunit() {
         .await
         {
             error!("Error sending candidate: {}", e);
+        }
+    }
+}
+
+pub async fn post_reddit_findaunit() {
+    let client = Reddit::new(
+        "Ctirad Brodsky (by /u/synixe)",
+        &std::env::var("REDDIT_CLIENT_ID").expect("REDDIT_CLIENT_SECRET not set"),
+        &std::env::var("REDDIT_CLIENT_SECRET").expect("REDDIT_CLIENT_SECRET not set"),
+    )
+    .username(&std::env::var("REDDIT_USERNAME").expect("REDDIT_USERNAME not set"))
+    .password(&std::env::var("REDDIT_PASSWORD").expect("REDDIT_PASSWORD not set"))
+    .login()
+    .await;
+    if let Ok(client) = client {
+        match client.submit_text(
+            "[A3][Recruiting][NA/SA/OCE/SEA][Semi-milsim][18+]- Synixe Contractors - PMC - Persistent Gear - Manage your own kit",
+            std::str::from_utf8(crate::Assets::get("reddit-findaunit.md").unwrap().data.as_ref()).unwrap(),
+            "findaunit"
+        ).await {
+            Ok(_) => {
+                tokio::time::sleep(Duration::from_secs(30)).await;
+                let submitted = User::new(&std::env::var("REDDIT_USERNAME").expect("REDDIT_USERNAME not set")).submitted(None).await;
+                let link = if let Ok(submissions) = submitted {
+                    let post = submissions.data.children.first().unwrap();
+                    format!("https://reddit.com/r/{}/comments/{}", post.data.subreddit, post.data.id)
+                } else {
+                    error!("Error getting reddit submissions: {:?}", submitted);
+                    String::new()
+                };
+                if let Err(e) = request!(
+                    bootstrap::NC::get().await,
+                    synixe_events::discord::write::Request::ChannelMessage {
+                        channel: synixe_meta::discord::channel::RECRUITING,
+                        message: synixe_events::discord::write::DiscordMessage::Embed(Candidate {
+                            source: Source::Reddit,
+                            title: "Reddit Post Submitted".to_string(),
+                            link,
+                            content: String::new(),
+                            ping: false,
+                        }.into())
+                    }
+                )
+                .await
+                {
+                    error!("Error sending reddit post candidate: {}", e);
+                }
+            },
+            Err(e) => error!("Failed to post to reddit findaunit: {}", e),
         }
     }
 }
