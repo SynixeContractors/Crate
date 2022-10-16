@@ -1,10 +1,10 @@
-FROM alpine:latest
+FROM debian:buster-slim
 
 COPY ./synixe-bot /app/bot
 WORKDIR /app
 
 EXPOSE 6000
 
-RUN apk add libressl-dev ca-certificates
+RUN apt-get update && apt-get install libssl-dev ca-certificates -y && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/app/bot"]
