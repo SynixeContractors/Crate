@@ -19,7 +19,7 @@ async fn main() {
     sched.add(
         Job::new(
             "Recruiting - check steam forums for new posts",
-            "* */10 * * * *",
+            "0 */10 * * * *",
             || {
                 Box::pin(async {
                     jobs::recruiting::check_steam_forums().await;
@@ -31,7 +31,7 @@ async fn main() {
     sched.add(
         Job::new(
             "Recruiting - check reddit findaunit for new posts",
-            "* */10 * * * *",
+            "0 */10 * * * *",
             || {
                 Box::pin(async {
                     jobs::recruiting::check_reddit_findaunit().await;
@@ -40,6 +40,9 @@ async fn main() {
         )
         .unwrap(),
     );
+
+    jobs::recruiting::check_steam_forums().await;
+    jobs::recruiting::check_reddit_findaunit().await;
 
     sched.start().await;
 
