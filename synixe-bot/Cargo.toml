@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bootstrap = { path = "../bootstrap" }
+bootstrap = { path = "../bootstrap", features = ["nats"] }
 synixe-events = { path = "../synixe-events" }
 synixe-meta = { path = "../synixe-meta" }
 
