@@ -1,4 +1,5 @@
 use serenity::{async_trait, model::prelude::*, prelude::*};
+use synixe_events::{discord::publish::Publish, publish};
 
 use super::slash;
 
@@ -97,9 +98,12 @@ impl EventHandler for Handler {
     }
 
     async fn reaction_add(&self, _ctx: Context, reaction: Reaction) {
-        // publish!(self.nats.read().await, Publish::ReactionAdd { reaction })
-        //     .await
-        //     .unwrap();
+        publish!(
+            bootstrap::NC::get().await,
+            Publish::ReactionAdd { reaction }
+        )
+        .await
+        .unwrap();
     }
 
     async fn reaction_remove(&self, _ctx: Context, reaction: Reaction) {

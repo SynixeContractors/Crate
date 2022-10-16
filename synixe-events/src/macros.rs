@@ -44,6 +44,7 @@ macro_rules! request {
 /// An event that does not expect a response.
 macro_rules! publish {
     ($nats:expr, $body:expr) => {{
+        use $crate::Publishable;
         let body = $body;
         let path = body.self_path();
         let mut trace_body = $crate::Wrapper::new(body);

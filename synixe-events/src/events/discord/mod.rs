@@ -93,3 +93,16 @@ pub mod info {
         } => (Result<Username, String>)
     });
 }
+
+/// Publish event from discord
+pub mod publish {
+    use serenity::model::prelude::Reaction;
+    use synixe_proc::events_publish;
+    events_publish!(discord.publish {
+        /// A reaction was added to a message
+        ReactionAdd {
+            /// Reaction added the message
+            reaction: Reaction
+        }
+    });
+}

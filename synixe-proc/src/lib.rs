@@ -3,9 +3,15 @@
 
 use proc_macro::TokenStream;
 
-mod events;
+mod publish;
+mod requests;
 
 #[proc_macro]
 pub fn events_requests(item: TokenStream) -> TokenStream {
-    events::requests(item)
+    requests::requests(item)
+}
+
+#[proc_macro]
+pub fn events_publish(item: TokenStream) -> TokenStream {
+    publish::publish(item)
 }

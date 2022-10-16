@@ -27,10 +27,14 @@ pub trait Evokable {
     fn name(&self) -> &'static str;
 }
 
-// pub trait Publishable {
-//     fn path() -> &'static str;
-//     fn self_path(&self) -> &'static str {
-//         Self::path()
-//     }
-//     fn name(&self) -> &'static str;
-// }
+/// The Event can be published.
+pub trait Publishable {
+    /// NATS path to invoke the event on.
+    fn path() -> &'static str;
+    /// NATS path to invoke the event on.
+    fn self_path(&self) -> &'static str {
+        Self::path()
+    }
+    /// NATS name of the event.
+    fn name(&self) -> &'static str;
+}
