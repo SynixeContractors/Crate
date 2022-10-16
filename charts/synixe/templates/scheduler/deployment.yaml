@@ -6,7 +6,7 @@ metadata:
     {{- include "synixe.labels" . | nindent 4 }}
     app: scheduler
 spec:
-  replicas: 0 # TODO enable
+  replicas: 1
   selector:
     matchLabels:
       {{- include "synixe.selectorLabels" . | nindent 6 }}
