@@ -18,7 +18,7 @@ impl From<Candidate> for DiscordEmbed {
         Self {
             title: Some(val.title),
             description: Some(if val.ping { "@here " } else { "" }.to_string() + &val.content),
-            url: Some(format!("https://reddit.com{}", val.link)),
+            url: Some(val.link),
             colour: Some(match val.source {
                 Source::Steam => 0x0066_C0F4,
                 Source::Reddit => 0x00FF_5700,
