@@ -9,6 +9,7 @@ use crate::Bot;
 pub async fn handle(msg: Message, client: Bot) {
     let ((ev, _), pcx) = synixe_events::parse_data!(msg, info::Request);
     let _span = opentelemetry::global::tracer("bot").start_with_context(ev.name(), &pcx);
+    println!("info event: {:?}", ev.name());
     match ev {
         info::Request::Username { user } => {
             match synixe_meta::discord::GUILD.member(&client, user).await {
