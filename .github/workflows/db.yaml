@@ -6,6 +6,7 @@ on:
     paths:
       - .github/workflows/db.yaml
       - Cargo.toml
+      - bootstrap/**
       - synixe-db/**
       - synixe-events/**
       - synixe-meta/**

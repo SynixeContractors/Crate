@@ -6,6 +6,7 @@ on:
     paths:
       - .github/workflows/scheduler.yaml
       - Cargo.toml
+      - bootstrap/**
       - synixe-scheduler/**
       - synixe-events/**
       - synixe-meta/**

@@ -23,7 +23,7 @@ macro_rules! publish {
     ($nats:expr, $body:expr) => {{
         let body = $body;
         let path = body.self_path();
-        let mut trace_body = $crate::Wrapper::new(None, body);
+        let mut trace_body = $crate::Wrapper::new(body);
         $crate::opentelemetry::global::get_text_map_propagator(|injector| {
             injector.inject_context(&$crate::opentelemetry::Context::current(), &mut trace_body);
         });
@@ -38,7 +38,11 @@ macro_rules! respond {
         use $crate::opentelemetry::trace::Tracer;
         let _span = $crate::opentelemetry::global::tracer("respond")
             .start_with_context("respond", &$crate::opentelemetry::Context::current());
-        $msg.respond($crate::serde_json::to_vec(&$resp).unwrap())
+        let mut trace_body = $crate::Wrapper::new($resp);
+        $crate::opentelemetry::global::get_text_map_propagator(|injector| {
+            injector.inject_context(&$crate::opentelemetry::Context::current(), &mut trace_body);
+        });
+        $msg.respond($crate::serde_json::to_vec(&trace_body).unwrap())
     }};
 }
 

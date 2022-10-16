@@ -6,6 +6,7 @@ on:
     paths:
       - .github/workflows/bot.yaml
       - Cargo.toml
+      - bootstrap/**
       - synixe-bot/**
       - synixe-events/**
       - synixe-meta/**
