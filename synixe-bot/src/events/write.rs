@@ -20,7 +20,7 @@ pub async fn handle(msg: Message, client: Bot) {
             {
                 error!("Failed to send message: {}", e);
                 if let Err(e) =
-                    respond!(msg, &write::Response::ChannelMessage(Err(e.to_string()))).await
+                    respond!(msg, write::Response::ChannelMessage(Err(e.to_string()))).await
                 {
                     error!("Failed to respond to NATS: {}", e);
                 }
@@ -40,7 +40,7 @@ pub async fn handle(msg: Message, client: Bot) {
                         .await
                     {
                         if let Err(e) =
-                            respond!(msg, &write::Response::UserMessage(Err(e.to_string()))).await
+                            respond!(msg, write::Response::UserMessage(Err(e.to_string()))).await
                         {
                             error!("Failed to respond to NATS: {}", e);
                         }
@@ -48,7 +48,7 @@ pub async fn handle(msg: Message, client: Bot) {
                 }
                 Err(e) => {
                     if let Err(e) =
-                        respond!(msg, &write::Response::UserMessage(Err(e.to_string()))).await
+                        respond!(msg, write::Response::UserMessage(Err(e.to_string()))).await
                     {
                         error!("Failed to respond to NATS: {}", e);
                     }

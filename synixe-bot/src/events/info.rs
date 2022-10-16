@@ -15,7 +15,7 @@ pub async fn handle(msg: Message, client: Bot) {
                 Ok(member) => {
                     if let Err(e) = respond!(
                         msg,
-                        &info::Response::Username(Ok(info::Username {
+                        info::Response::Username(Ok(info::Username {
                             response: if let Some(nick) = member.nick.as_ref() {
                                 nick.to_string()
                             } else {
@@ -32,7 +32,7 @@ pub async fn handle(msg: Message, client: Bot) {
                 }
                 Err(e) => {
                     if let Err(e) =
-                        respond!(msg, &info::Response::Username(Err(e.to_string()))).await
+                        respond!(msg, info::Response::Username(Err(e.to_string()))).await
                     {
                         error!("Failed to respond to NATS: {}", e);
                     }

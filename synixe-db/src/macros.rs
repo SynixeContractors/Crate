@@ -59,12 +59,12 @@ macro_rules! fetch_one_and_respond {
         span.end();
         match res {
             Ok(data) => {
-                synixe_events::respond!($msg, &$respond(Ok(data.value))).await?;
+                synixe_events::respond!($msg, $respond(Ok(data.value))).await?;
                 Ok(())
             }
             Err(e) => {
                 error!("{:?}", e);
-                synixe_events::respond!($msg, &$respond(Err(e.to_string()))).await?;
+                synixe_events::respond!($msg, $respond(Err(e.to_string()))).await?;
                 Err(e.into())
             }
         }
@@ -108,12 +108,12 @@ macro_rules! execute_and_respond {
         span.end();
         match res {
             Ok(_) => {
-                synixe_events::respond!($msg, &$respond(Ok(()))).await?;
+                synixe_events::respond!($msg, $respond(Ok(()))).await?;
                 Ok(())
             }
             Err(e) => {
                 error!("{:?}", e);
-                synixe_events::respond!($msg, &$respond(Err(e.to_string()))).await?;
+                synixe_events::respond!($msg, $respond(Err(e.to_string()))).await?;
                 Err(e.into())
             }
         }
