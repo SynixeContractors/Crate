@@ -1,3 +1,3 @@
 //! Event Definitions
 
-mod discord;
+pub mod discord;

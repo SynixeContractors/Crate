@@ -5,7 +5,15 @@
 //! Internal library for event driven communication between services.
 
 mod events;
-// mod macros;
+mod macros;
+mod wrapper;
+
+pub use events::*;
+pub use wrapper::Wrapper;
+
+// Rexport
+pub use opentelemetry;
+pub use serde_json;
 
 /// The Event can be invoked to get a response.
 pub trait Evokable {

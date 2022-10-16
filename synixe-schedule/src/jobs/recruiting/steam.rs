@@ -1,0 +1,97 @@
+use scraper::{Html, Selector};
+use synixe_events::request;
+
+use crate::jobs::recruiting::{
+    candidate::{Candidate, Source},
+    IGNORE, PING,
+};
+
+const STEAM_FORUM: &str = "https://steamcommunity.com/app/107410/discussions/21/";
+
+pub async fn check_steam_forums() {
+    println!("Checking steam forums for new posts");
+
+    let candidates = {
+        let mut candidates = Vec::new();
+        let mut store = super::Store::new("steam_forums.json").unwrap();
+
+        let selector_post: Selector = scraper::Selector::parse("a.forum_topic_overlay").unwrap();
+        let selector_title: Selector = scraper::Selector::parse("div.topic").unwrap();
+        let selector_content: Selector = scraper::Selector::parse(".forum_op .content").unwrap();
+
+        let page = reqwest::get(STEAM_FORUM)
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap();
+
+        let mut posts = Vec::new();
+
+        for post in Html::parse_document(&page).select(&selector_post) {
+            posts.push(post.value().attr("href").unwrap().to_string());
+        }
+        for url in posts {
+            if store.contains(&url) {
+                continue;
+            }
+            let post = reqwest::get(&url).await.unwrap().text().await.unwrap();
+            store.add(url.clone());
+            let document = Html::parse_document(&post);
+            let content = document
+                .select(&selector_content)
+                .next()
+                .unwrap()
+                .text()
+                .collect::<Vec<_>>()
+                .join(" ")
+                .trim()
+                .to_lowercase();
+            let title = document
+                .select(&selector_title)
+                .next()
+                .unwrap()
+                .text()
+                .collect::<Vec<_>>()
+                .join(" ")
+                .trim()
+                .to_lowercase();
+            if IGNORE
+                .iter()
+                .any(|x| content.contains(x) || title.contains(x))
+            {
+                continue;
+            }
+            let ping = PING
+                .iter()
+                .any(|x| content.contains(x) || title.contains(x));
+            candidates.push(
+                Candidate {
+                    source: Source::Reddit,
+                    title,
+                    link: url,
+                    content,
+                    ping,
+                }
+                .into(),
+            );
+        }
+        if let Err(e) = store.save() {
+            println!("Error saving store: {}", e);
+        }
+        candidates
+    };
+    for candidate in candidates {
+        if let Err(e) = request!(
+            crate::nc::NC::get().await,
+            synixe_events::discord::write::Request::ChannelMessage {
+                channel: synixe_meta::discord::channel::RECRUITING,
+                message: synixe_events::discord::write::DiscordMessage::Embed(candidate)
+            }
+        )
+        .await
+        {
+            println!("Error sending candidate: {}", e);
+        }
+    }
+}

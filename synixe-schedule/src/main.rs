@@ -1,16 +1,20 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery, clippy::all)]
 
+use opentelemetry::sdk::propagation::TraceContextPropagator;
 use tokio_simple_scheduler::{Job, Scheduler};
 
 mod jobs;
+mod nc;
 
 #[tokio::main]
 async fn main() {
+    opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
+
     let mut sched = Scheduler::default();
 
     // Init NATS connection
-    // NC::get().await;
+    nc::NC::get().await;
 
     sched.add(
         Job::new(
