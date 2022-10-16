@@ -30,6 +30,9 @@ pub mod executions {
         /// Post on Reddit
         PostReddit {} => (Result<(), String>)
         /// Reply on Reddit
-        ReplyReddit {} => (Result<(), String>)
+        ReplyReddit {
+            /// Link to post
+            url: String
+        } => (Result<(), String>)
     });
 }

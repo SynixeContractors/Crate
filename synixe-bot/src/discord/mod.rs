@@ -1,6 +1,7 @@
 use serenity::prelude::*;
 
 mod handler;
+mod menu;
 mod slash;
 
 pub async fn build() -> Client {

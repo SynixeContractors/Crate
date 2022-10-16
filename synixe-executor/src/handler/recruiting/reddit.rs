@@ -1,8 +1,9 @@
 use std::time::Duration;
 
+use nats::asynk::Message;
 use roux::{Reddit, User};
 use scraper::{Html, Selector};
-use synixe_events::request;
+use synixe_events::{recruiting::executions::Response, request, respond};
 
 use super::{
     candidate::{Candidate, Source},
@@ -145,6 +146,41 @@ pub async fn post_reddit_findaunit() {
                 }
             },
             Err(e) => error!("Failed to post to reddit findaunit: {}", e),
+        }
+    }
+}
+
+pub async fn reply(msg: Message, url: &String) {
+    let client = Reddit::new(
+        "Ctirad Brodsky (by /u/synixe)",
+        &std::env::var("REDDIT_CLIENT_ID").expect("REDDIT_CLIENT_SECRET not set"),
+        &std::env::var("REDDIT_CLIENT_SECRET").expect("REDDIT_CLIENT_SECRET not set"),
+    )
+    .username(&std::env::var("REDDIT_USERNAME").expect("REDDIT_USERNAME not set"))
+    .password(&std::env::var("REDDIT_PASSWORD").expect("REDDIT_PASSWORD not set"))
+    .login()
+    .await;
+    if let Ok(client) = client {
+        let comment_id = url
+            .trim_start_matches("https://reddit.com/r/FindAUnit/comments/")
+            .split_once("/")
+            .unwrap()
+            .0;
+        match client
+            .comment(
+                "Right now just say Hello, I dont know how to test it",
+                comment_id,
+            )
+            .await
+        {
+            Ok(response) => {
+                debug!("response: {:?}", response);
+                respond!(msg, Response::ReplyReddit(Ok(()))).await;
+            }
+            Err(e) => {
+                error!("Failed to post to reddit findaunit: {}", e);
+                respond!(msg, Response::ReplyReddit(Err(e.to_string()))).await;
+            }
         }
     }
 }

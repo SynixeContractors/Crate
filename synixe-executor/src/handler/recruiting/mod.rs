@@ -18,7 +18,7 @@ const PING: [&str; 2] = ["pmc", "persistent"];
 impl Handler for Request {
     async fn handle(
         &self,
-        _msg: nats::asynk::Message,
+        msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
         _cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
@@ -35,7 +35,10 @@ impl Handler for Request {
                 reddit::post_reddit_findaunit().await;
                 Ok(())
             }
-            Request::ReplyReddit {} => todo!(),
+            Request::ReplyReddit { url } => {
+                reddit::reply(msg, url).await;
+                Ok(())
+            }
         }
     }
 }

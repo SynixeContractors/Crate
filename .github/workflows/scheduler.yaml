@@ -10,6 +10,7 @@ on:
       - synixe-scheduler/**
       - synixe-events/**
       - synixe-meta/**
+      - synixe-proc/**
 
 permissions:
   packages: write
