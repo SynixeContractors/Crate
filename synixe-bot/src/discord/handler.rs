@@ -47,6 +47,15 @@ impl EventHandler for Handler {
         }
     }
 
+    async fn guild_member_update(&self, _ctx: Context, old: Option<Member>, new: Member) {
+        // publish!(
+        //     self.nats.read().await,
+        //     Publish::GuildMemberUpdate { old, new }
+        // )
+        // .await
+        // .unwrap();
+    }
+
     async fn guild_member_removal(
         &self,
         ctx: Context,
@@ -85,5 +94,17 @@ impl EventHandler for Handler {
                 .await
                 .unwrap();
         }
+    }
+
+    async fn reaction_add(&self, _ctx: Context, reaction: Reaction) {
+        // publish!(self.nats.read().await, Publish::ReactionAdd { reaction })
+        //     .await
+        //     .unwrap();
+    }
+
+    async fn reaction_remove(&self, _ctx: Context, reaction: Reaction) {
+        // publish!(self.nats.read().await, Publish::ReactionRemove { reaction })
+        //     .await
+        //     .unwrap();
     }
 }
