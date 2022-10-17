@@ -10,6 +10,7 @@ macro_rules! handler {
         $(
             if sub == <$events>::path() {
                 let ((ev, _), pcx) = synixe_events::parse_data!($msg, $events);
+                debug!("Handling event: {}", ev.name());
                 let span = opentelemetry::global::tracer("coordinator").start_with_context(format!("{}:{}", sub.to_string(), ev.name()), &pcx);
                 if let Err(e) = ev.handle($msg, $nats, pcx.with_span(span)).await {
                     error!("Error in handler {}: {}", sub, e);

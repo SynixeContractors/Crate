@@ -5,6 +5,8 @@ use roux::{Reddit, User};
 use scraper::{Html, Selector};
 use synixe_events::{recruiting::executions::Response, request, respond};
 
+use crate::Assets;
+
 use super::{
     candidate::{Candidate, Source},
     has_seen, seen, IGNORE, PING,
@@ -163,19 +165,25 @@ pub async fn reply(msg: Message, url: &String) {
     if let Ok(client) = client {
         let comment_id = url
             .trim_start_matches("https://reddit.com/r/FindAUnit/comments/")
-            .split_once("/")
+            .split_once('/')
             .unwrap()
             .0;
+        debug!("Comment ID: {}", comment_id);
         match client
             .comment(
-                "Right now just say Hello, I dont know how to test it",
-                comment_id,
+                std::str::from_utf8(crate::Assets::get("reddit-reply.md").unwrap().data.as_ref()).unwrap(),
+                &format!("t3_{}", comment_id),
             )
             .await
         {
             Ok(response) => {
-                debug!("response: {:?}", response);
-                respond!(msg, Response::ReplyReddit(Ok(()))).await;
+                debug!("response: ({:?}) {:?}", response.status(), response);
+                if response.status().is_success() {
+                    respond!(msg, Response::ReplyReddit(Ok(()))).await;
+                } else {
+                    error!("Failed to post to reddit findaunit: ({}) {:?}", response.status(), response);
+                    respond!(msg, Response::ReplyReddit(Err(format!("{:?}", response)))).await;
+                }
             }
             Err(e) => {
                 error!("Failed to post to reddit findaunit: {}", e);
