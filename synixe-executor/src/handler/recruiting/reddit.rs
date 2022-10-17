@@ -171,7 +171,8 @@ pub async fn reply(msg: Message, url: &String) {
         debug!("Comment ID: {}", comment_id);
         match client
             .comment(
-                std::str::from_utf8(crate::Assets::get("reddit-reply.md").unwrap().data.as_ref()).unwrap(),
+                std::str::from_utf8(crate::Assets::get("reddit-reply.md").unwrap().data.as_ref())
+                    .unwrap(),
                 &format!("t3_{}", comment_id),
             )
             .await
@@ -181,7 +182,11 @@ pub async fn reply(msg: Message, url: &String) {
                 if response.status().is_success() {
                     respond!(msg, Response::ReplyReddit(Ok(()))).await;
                 } else {
-                    error!("Failed to post to reddit findaunit: ({}) {:?}", response.status(), response);
+                    error!(
+                        "Failed to post to reddit findaunit: ({}) {:?}",
+                        response.status(),
+                        response
+                    );
                     respond!(msg, Response::ReplyReddit(Err(format!("{:?}", response)))).await;
                 }
             }
