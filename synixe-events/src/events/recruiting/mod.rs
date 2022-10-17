@@ -15,6 +15,16 @@ pub mod db {
             /// The post url
             url: String
         } => (Result<Option<bool>, String>)
+        /// Mark a post as replied to
+        Replied {
+            /// The post url
+            url: String
+        } => (Result<(), String>)
+        /// Check if a post has been replied to
+        HasReplied {
+            /// The post url
+            url: String
+        } => (Result<Option<bool>, String>)
     });
 }
 

@@ -1,9 +1,6 @@
 use async_trait::async_trait;
-use synixe_events::{
-    parse_data,
-    recruiting::{db, executions::Request},
-    request,
-};
+use synixe_events::recruiting::{db, executions::Request};
+use synixe_proc::events_request;
 
 use super::Handler;
 
@@ -23,19 +20,19 @@ impl Handler for Request {
         _cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         match &self {
-            Request::CheckSteam {} => {
+            Self::CheckSteam {} => {
                 steam::check_steam_forums().await;
                 Ok(())
             }
-            Request::CheckReddit {} => {
+            Self::CheckReddit {} => {
                 reddit::check_reddit_findaunit().await;
                 Ok(())
             }
-            Request::PostReddit {} => {
+            Self::PostReddit {} => {
                 reddit::post_reddit_findaunit().await;
                 Ok(())
             }
-            Request::ReplyReddit { url } => {
+            Self::ReplyReddit { url } => {
                 reddit::reply(msg, url).await;
                 Ok(())
             }
@@ -45,9 +42,13 @@ impl Handler for Request {
 
 #[allow(clippy::collapsible_match)]
 pub async fn has_seen(url: String) -> bool {
-    let req = request!(bootstrap::NC::get().await, db::Request::HasSeen { url }).await;
-    if let Ok(msg) = req {
-        let ((ev, _), _) = parse_data!(msg, db::Response);
+    let req = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::recruiting::db,
+        HasSeen { url }
+    )
+    .await;
+    if let Ok(((ev, _), _)) = req {
         if let db::Response::HasSeen(seen) = ev {
             if let Ok(seen) = seen {
                 return seen == Some(true);
@@ -58,7 +59,13 @@ pub async fn has_seen(url: String) -> bool {
 }
 
 pub async fn seen(url: String) {
-    if let Err(e) = request!(bootstrap::NC::get().await, db::Request::Seen { url }).await {
+    if let Err(e) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::recruiting::db,
+        Seen { url }
+    )
+    .await
+    {
         error!("failed marking url as seen: {}", e);
     }
 }

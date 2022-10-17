@@ -1,5 +1,5 @@
 use scraper::{Html, Selector};
-use synixe_events::request;
+use synixe_proc::events_request;
 
 use super::{
     candidate::{Candidate, Source},
@@ -78,9 +78,10 @@ pub async fn check_steam_forums() {
         candidates
     };
     for candidate in candidates {
-        if let Err(e) = request!(
+        if let Err(e) = events_request!(
             bootstrap::NC::get().await,
-            synixe_events::discord::write::Request::ChannelMessage {
+            synixe_events::discord::write,
+            ChannelMessage {
                 channel: synixe_meta::discord::channel::RECRUITING,
                 message: synixe_events::discord::write::DiscordMessage::Embed(candidate)
             }

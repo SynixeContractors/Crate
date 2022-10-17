@@ -104,5 +104,10 @@ pub mod publish {
             /// Reaction added the message
             reaction: Reaction
         }
+        /// A reaction was removed from a message
+        ReactionRemove {
+            /// Reaction removed from the message
+            reaction: Reaction
+        }
     });
 }

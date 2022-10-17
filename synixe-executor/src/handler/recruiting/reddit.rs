@@ -3,9 +3,8 @@ use std::time::Duration;
 use nats::asynk::Message;
 use roux::{Reddit, User};
 use scraper::{Html, Selector};
-use synixe_events::{recruiting::executions::Response, request, respond};
-
-use crate::Assets;
+use synixe_events::{recruiting::executions::Response, respond};
+use synixe_proc::events_request;
 
 use super::{
     candidate::{Candidate, Source},
@@ -89,9 +88,10 @@ pub async fn check_reddit_findaunit() {
         candidates
     };
     for candidate in candidates {
-        if let Err(e) = request!(
+        if let Err(e) = events_request!(
             bootstrap::NC::get().await,
-            synixe_events::discord::write::Request::ChannelMessage {
+            synixe_events::discord::write,
+            ChannelMessage {
                 channel: synixe_meta::discord::channel::RECRUITING,
                 message: synixe_events::discord::write::DiscordMessage::Embed(candidate)
             }
@@ -129,9 +129,11 @@ pub async fn post_reddit_findaunit() {
                     error!("Error getting reddit submissions: {:?}", submitted);
                     String::new()
                 };
-                if let Err(e) = request!(
+                if let Err(e) = events_request!(
                     bootstrap::NC::get().await,
-                    synixe_events::discord::write::Request::ChannelMessage {
+                    synixe_events::discord::write,
+                    ChannelMessage
+                    {
                         channel: synixe_meta::discord::channel::RECRUITING,
                         message: synixe_events::discord::write::DiscordMessage::Embed(Candidate {
                             source: Source::Reddit,
@@ -152,7 +154,7 @@ pub async fn post_reddit_findaunit() {
     }
 }
 
-pub async fn reply(msg: Message, url: &String) {
+pub async fn reply(msg: Message, url: &str) {
     let client = Reddit::new(
         "Ctirad Brodsky (by /u/synixe)",
         &std::env::var("REDDIT_CLIENT_ID").expect("REDDIT_CLIENT_SECRET not set"),
@@ -180,19 +182,27 @@ pub async fn reply(msg: Message, url: &String) {
             Ok(response) => {
                 debug!("response: ({:?}) {:?}", response.status(), response);
                 if response.status().is_success() {
-                    respond!(msg, Response::ReplyReddit(Ok(()))).await;
+                    if let Err(e) = respond!(msg, Response::ReplyReddit(Ok(()))).await {
+                        error!("Error sending response: {}", e);
+                    }
                 } else {
                     error!(
                         "Failed to post to reddit findaunit: ({}) {:?}",
                         response.status(),
                         response
                     );
-                    respond!(msg, Response::ReplyReddit(Err(format!("{:?}", response)))).await;
+                    if let Err(e) =
+                        respond!(msg, Response::ReplyReddit(Err(format!("{:?}", response)))).await
+                    {
+                        error!("Error sending response: {}", e);
+                    }
                 }
             }
             Err(e) => {
                 error!("Failed to post to reddit findaunit: {}", e);
-                respond!(msg, Response::ReplyReddit(Err(e.to_string()))).await;
+                if let Err(e) = respond!(msg, Response::ReplyReddit(Err(e.to_string()))).await {
+                    error!("Error sending response: {}", e);
+                }
             }
         }
     }

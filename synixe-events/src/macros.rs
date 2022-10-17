@@ -2,7 +2,7 @@
 /// Handle the event.
 macro_rules! handler {
     ($msg:expr, $nats:expr, $($events:ty),*) => {{
-        use crate::handler::Handler;
+        use handler::Handler;
         use synixe_events::Evokable;
         use opentelemetry::trace::{Tracer, TraceContextExt};
         let subject = $msg.subject.clone();
@@ -20,26 +20,6 @@ macro_rules! handler {
         )*
         warn!("Unknown subject: {}", subject);
     }}
-}
-
-#[macro_export]
-/// An event that expects a response.
-macro_rules! request {
-    ($nats:expr, $body:expr) => {{
-        use $crate::Evokable;
-        let body = $body;
-        let path = body.self_path();
-        debug!("requesting on {:?}", path);
-        let mut trace_body = $crate::Wrapper::new(body);
-        $crate::opentelemetry::global::get_text_map_propagator(|injector| {
-            injector.inject_context(&$crate::opentelemetry::Context::current(), &mut trace_body);
-        });
-        $nats.request_timeout(
-            path,
-            $crate::serde_json::to_vec(&trace_body).unwrap(),
-            std::time::Duration::from_secs(2),
-        )
-    }};
 }
 
 #[macro_export]

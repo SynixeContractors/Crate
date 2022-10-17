@@ -2,7 +2,7 @@
 #![warn(clippy::nursery, clippy::all)]
 
 use opentelemetry::sdk::propagation::TraceContextPropagator;
-use synixe_events::{recruiting, request};
+use synixe_proc::events_request;
 use tokio_simple_scheduler::{Job, Scheduler};
 
 #[macro_use]
@@ -25,9 +25,10 @@ async fn main() {
             "0 */10 * * * *",
             || {
                 Box::pin(async {
-                    if let Err(e) = request!(
+                    if let Err(e) = events_request!(
                         bootstrap::NC::get().await,
-                        recruiting::executions::Request::CheckSteam {}
+                        synixe_events::recruiting::executions,
+                        CheckSteam {}
                     )
                     .await
                     {
@@ -44,9 +45,10 @@ async fn main() {
             "0 */10 * * * *",
             || {
                 Box::pin(async {
-                    if let Err(e) = request!(
+                    if let Err(e) = events_request!(
                         bootstrap::NC::get().await,
-                        recruiting::executions::Request::CheckReddit {}
+                        synixe_events::recruiting::executions,
+                        CheckReddit {}
                     )
                     .await
                     {
@@ -63,9 +65,10 @@ async fn main() {
             "0 0 23 * * Thu,Fri,Sat",
             || {
                 Box::pin(async {
-                    if let Err(e) = request!(
+                    if let Err(e) = events_request!(
                         bootstrap::NC::get().await,
-                        recruiting::executions::Request::PostReddit {}
+                        synixe_events::recruiting::executions,
+                        PostReddit {}
                     )
                     .await
                     {

@@ -7,6 +7,7 @@ edition = "2021"
 bootstrap = { path = "../bootstrap", features = ["nats"] }
 synixe-events = { path = "../synixe-events" }
 synixe-meta = { path = "../synixe-meta" }
+synixe-proc = { path = "../synixe-proc" }
 
 log = { workspace = true }
 nats = { workspace = true }

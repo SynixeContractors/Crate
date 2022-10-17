@@ -33,6 +33,26 @@ impl Handler for Request {
                     url,
                 )
             }
+            Self::Replied { url } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::Replied,
+                    "INSERT INTO recruitment_replied (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()",
+                    url,
+                )
+            }
+            Self::HasReplied { url } => {
+                fetch_one_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::HasReplied,
+                    "SELECT EXISTS(SELECT 1 FROM recruitment_replied WHERE link = $1) as value",
+                    url,
+                )
+            }
         }
     }
 }

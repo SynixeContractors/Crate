@@ -9,6 +9,7 @@ edition = "2021"
 bootstrap = { path = "../bootstrap", features = ["nats"] }
 synixe-events = { path = "../synixe-events" }
 synixe-meta = { path = "../synixe-meta" }
+synixe-proc = { path = "../synixe-proc" }
 
 anyhow = "1.0.65"
 async-trait = { workspace = true }
