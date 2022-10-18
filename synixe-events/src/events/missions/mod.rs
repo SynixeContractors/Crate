@@ -13,17 +13,26 @@ pub mod db {
             /// The mission to schedule.
             mission: String,
             /// The day to schedule the mission.
-            date: NaiveDateTime
+            date: NaiveDateTime,
         } => (Result<(), String>)
         /// Checks if a day is already scheduled.
         struct IsScheduled {
             /// The day to check.
-            date: NaiveDateTime
+            date: NaiveDateTime,
         } => (Result<Option<bool>, String>)
         /// Remove a scheduled mission.
         struct Unschedule {
             /// The mission to remove.
-            scheduled_mission: Uuid
+            scheduled_mission: Uuid,
+        } => (Result<(), String>)
+        /// Set the message for a scheduled mission.
+        struct SetScheduledMesssage {
+            /// The scheduled mission to update.
+            scheduled_mission: Uuid,
+            /// The message in #schedule
+            schedule_message_id: String,
+            /// The message in #planning
+            planning_message_id: String,
         } => (Result<(), String>)
         /// Gets all upcoming missions.
         struct UpcomingSchedule {} => (Result<Vec<ScheduledMission>, String>)
@@ -36,19 +45,5 @@ pub mod db {
             /// The mission to fetch.
             mission: String,
         } => (Result<Option<Mission>, String>)
-    });
-}
-
-/// Interact with the executor.
-pub mod executions {
-    use synixe_proc::events_requests;
-    use uuid::Uuid;
-
-    events_requests!(executor.missions {
-        /// Post an upcoming mission
-        struct Post {
-            /// The scheduled mission to post.
-            scheduled_mission: Uuid,
-        } => (Result<(), String>)
     });
 }

@@ -10,12 +10,13 @@ use serenity::{
         },
         prelude::{
             application_command::CommandDataOption, command::CommandOptionType,
-            component::ButtonStyle, RoleId,
+            component::ButtonStyle, ReactionType, RoleId,
         },
     },
     prelude::*,
 };
 use synixe_events::missions::db::Response;
+use synixe_meta::discord::channel::{PLANNING, SCHEDULE};
 use synixe_proc::events_request;
 use uuid::Uuid;
 
@@ -68,6 +69,12 @@ pub fn schedule(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 .description("Remove an upcoming mission")
                 .kind(CommandOptionType::SubCommand)
         })
+        .create_option(|option| {
+            option
+                .name("post")
+                .description("Post the upcoming mission")
+                .kind(CommandOptionType::SubCommand)
+        })
 }
 
 pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction) {
@@ -77,6 +84,7 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
             "new" => new(ctx, command, &subcommand.options).await,
             "upcoming" => upcoming(ctx, command, &subcommand.options).await,
             "remove" => remove(ctx, command, &subcommand.options).await,
+            "post" => post(ctx, command, &subcommand.options).await,
             _ => unreachable!(),
         }
     }
@@ -503,6 +511,205 @@ pub async fn remove(
             command
                 .edit_original_interaction_response(&ctx, |r| {
                     r.content("Timed out").components(|c| c)
+                })
+                .await
+                .unwrap();
+        }
+    } else {
+        command
+            .edit_original_interaction_response(&ctx, |r| {
+                r.content("Failed to fetch missions").components(|c| c)
+            })
+            .await
+            .unwrap();
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+async fn post(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    _options: &[CommandDataOption],
+) {
+    if !super::requires_role(
+        RoleId(1_020_252_253_287_886_858),
+        &command.member.as_ref().unwrap().roles,
+        ctx,
+        command,
+    )
+    .await
+    {
+        return;
+    }
+    debug!("fetching missions");
+    command
+        .create_interaction_response(&ctx, |r| {
+            r.kind(InteractionResponseType::DeferredChannelMessageWithSource)
+                .interaction_response_data(|m| m.content("Fetching missions...").ephemeral(true))
+        })
+        .await
+        .unwrap();
+    if let Ok(((Response::UpcomingSchedule(Ok(missions)), _), _)) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        UpcomingSchedule {}
+    )
+    .await
+    {
+        let next_unposted = missions.iter().find(|m| m.schedule_message_id.is_none());
+        if let Some(mission) = next_unposted {
+            debug!("sending confirmation");
+            let m = command
+                .create_followup_message(&ctx, |r| {
+                    r.content(format!(
+                        "Are you sure you want to post `{}`?",
+                        mission.mission
+                    ))
+                    .components(|c| {
+                        c.create_action_row(|r| {
+                            r.create_button(|b| {
+                                b.style(ButtonStyle::Danger).label("Yes").custom_id("yes")
+                            })
+                            .create_button(|b| {
+                                b.style(ButtonStyle::Primary).label("No").custom_id("no")
+                            })
+                        })
+                    })
+                })
+                .await
+                .unwrap();
+            if let Some(interaction) = m
+                .await_component_interaction(&ctx)
+                .timeout(Duration::from_secs(60 * 3))
+                .collect_limit(1)
+                .await
+            {
+                if interaction.data.custom_id == "yes" {
+                    debug!("posting mission");
+                    interaction
+                        .create_interaction_response(&ctx, |r| {
+                            r.kind(InteractionResponseType::DeferredUpdateMessage)
+                        })
+                        .await
+                        .unwrap();
+
+                    if let Ok(((Response::FetchMission(Ok(Some(mission_data))), _), _)) =
+                        events_request!(
+                            bootstrap::NC::get().await,
+                            synixe_events::missions::db,
+                            FetchMission {
+                                mission: mission.mission.clone()
+                            }
+                        )
+                        .await
+                    {
+                        let sched = SCHEDULE
+                            .send_message(&ctx, |s| {
+                                s.content(format!(
+                                    "**{}**\n<t:{}:F> - <t:{}:R>\n\n{}",
+                                    mission_data.name,
+                                    mission.start_at.timestamp(),
+                                    mission.start_at.timestamp(),
+                                    mission_data.summary
+                                ))
+                            })
+                            .await
+                            .unwrap();
+                        for reaction in ["🟩", "🟨", "🟥"] {
+                            tokio::time::sleep(Duration::from_millis(100)).await;
+                            if let Err(e) = sched
+                                .react(&ctx, ReactionType::Unicode(reaction.to_string()))
+                                .await
+                            {
+                                error!("Failed to react: {}", e);
+                            }
+                        }
+                        SCHEDULE
+                            .create_public_thread(&ctx, sched.id, |t| t.name(&mission_data.name))
+                            .await
+                            .unwrap();
+                        let plan = PLANNING
+                            .send_message(&ctx, |p| {
+                                p.content(format!(
+                                    "**{}**\n<t:{}:F> - <t:{}:R>",
+                                    mission_data.name,
+                                    mission.start_at.timestamp(),
+                                    mission.start_at.timestamp()
+                                ))
+                            })
+                            .await
+                            .unwrap();
+                        let plan_thread = PLANNING
+                            .create_public_thread(&ctx, plan.id, |t| t.name(mission_data.name))
+                            .await
+                            .unwrap();
+                        plan_thread
+                            .send_message(&ctx, |pt| {
+                                pt.content(
+                                    mission_data
+                                        .summary
+                                        .replace("            <br/>", "\n")
+                                        .replace("<font color='#D81717'>", "")
+                                        .replace("<font color='#1D69F6'>", "")
+                                        .replace("<font color='#993399'>", "")
+                                        .replace("</font>", ""),
+                                )
+                            })
+                            .await
+                            .unwrap();
+
+                        if let Ok(((Response::SetScheduledMesssage(Ok(())), _), _)) =
+                            events_request!(
+                                bootstrap::NC::get().await,
+                                synixe_events::missions::db,
+                                SetScheduledMesssage {
+                                    scheduled_mission: mission.id,
+                                    schedule_message_id: sched.id.0.to_string(),
+                                    planning_message_id: plan.id.0.to_string()
+                                }
+                            )
+                            .await
+                        {
+                            interaction
+                                .edit_followup_message(&ctx, m.id, |r| {
+                                    r.content(format!("Posted `{}`", mission.mission))
+                                        .components(|c| c)
+                                })
+                                .await
+                                .unwrap();
+                        } else {
+                            interaction
+                                .edit_followup_message(&ctx, m.id, |r| {
+                                    r.content(format!(
+                                        "Failed to set message id for `{}`",
+                                        mission.mission
+                                    ))
+                                    .components(|c| c)
+                                })
+                                .await
+                                .unwrap();
+                        }
+                    }
+                } else {
+                    interaction
+                        .edit_followup_message(&ctx, m, |r| {
+                            r.content("Cancelled mission posting").components(|c| c)
+                        })
+                        .await
+                        .unwrap();
+                }
+            } else {
+                command
+                    .edit_original_interaction_response(&ctx, |r| {
+                        r.content("Timed out").components(|c| c)
+                    })
+                    .await
+                    .unwrap();
+            }
+        } else {
+            command
+                .edit_original_interaction_response(&ctx, |r| {
+                    r.content("No unposted missions").components(|c| c)
                 })
                 .await
                 .unwrap();

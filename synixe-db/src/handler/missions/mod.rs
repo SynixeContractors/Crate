@@ -47,6 +47,22 @@ impl Handler for Request {
                     scheduled_mission,
                 )
             }
+            Self::SetScheduledMesssage {
+                scheduled_mission,
+                schedule_message_id,
+                planning_message_id,
+            } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::SetScheduledMesssage,
+                    "UPDATE missions_schedule SET schedule_message_id = $1, planning_message_id = $2 WHERE id = $3",
+                    schedule_message_id,
+                    planning_message_id,
+                    scheduled_mission,
+                )
+            }
             Self::UpcomingSchedule {} => {
                 fetch_as_and_respond!(
                     msg,

@@ -158,19 +158,25 @@
           "type_info": "Varchar"
         },
         {
-          "name": "message_id",
+          "name": "schedule_message_id",
           "ordinal": 2,
           "type_info": "Varchar"
         },
         {
-          "name": "start_at",
+          "name": "planning_message_id",
           "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "start_at",
+          "ordinal": 4,
           "type_info": "Timestamp"
         }
       ],
       "nullable": [
         false,
         false,
+        true,
         true,
         false
       ],
@@ -223,6 +229,20 @@
       }
     },
     "query": "INSERT INTO recruitment_seen (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()"
+  },
+  "a4488775336eee14ee47d2bf59d5bd53d5ba884ad3b98252197baae28b9a63ac": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "UPDATE missions_schedule SET schedule_message_id = $1, planning_message_id = $2 WHERE id = $3"
   },
   "ab2fb0b8db9a7f9b166f5f99a86adaec76eef5aaa9df06e3002f565f0272d69c": {
     "describe": {

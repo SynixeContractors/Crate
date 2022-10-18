@@ -19,7 +19,8 @@ CREATE INDEX IF NOT EXISTS missions_type_idx ON missions (type);
 CREATE TABLE IF NOT EXISTS missions_schedule (
     id UUID NOT NULL DEFAULT uuid_generate_v4(),
     mission VARCHAR(128) NOT NULL,
-    message_id VARCHAR(64) DEFAULT NULL,
+    schedule_message_id VARCHAR(64) DEFAULT NULL,
+    planning_message_id VARCHAR(64) DEFAULT NULL,
     start_at TIMESTAMP NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT missions_schedule_mission_fk FOREIGN KEY (mission) REFERENCES missions (id) ON DELETE CASCADE
