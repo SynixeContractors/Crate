@@ -22,7 +22,7 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::PostUpcomingMissions {} => {
-                respond!(msg, Response::PostUpcomingMissions(Ok(())));
+                respond!(msg, Response::PostUpcomingMissions(Ok(()))).await?;
                 match events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,

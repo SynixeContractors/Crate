@@ -49,7 +49,7 @@ async fn main() {
     job!(
         sched,
         "Missions - Update mission list",
-        "0 */30 * * * *",
+        "0 */20 * * * *",
         synixe_events::missions::db,
         UpdateMissionList
     );

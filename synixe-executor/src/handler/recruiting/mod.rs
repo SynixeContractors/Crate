@@ -27,22 +27,22 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::CheckSteam {} => {
-                respond!(msg, Response::CheckSteam(Ok(())));
+                respond!(msg, Response::CheckSteam(Ok(()))).await?;
                 steam::check_steam_forums().await;
                 Ok(())
             }
             Self::CheckReddit {} => {
-                respond!(msg, Response::CheckReddit(Ok(())));
+                respond!(msg, Response::CheckReddit(Ok(()))).await?;
                 reddit::check_reddit_findaunit().await;
                 Ok(())
             }
             Self::PostReddit {} => {
-                respond!(msg, Response::PostReddit(Ok(())));
+                respond!(msg, Response::PostReddit(Ok(()))).await?;
                 reddit::post_reddit_findaunit().await;
                 Ok(())
             }
             Self::ReplyReddit { url } => {
-                respond!(msg, Response::ReplyReddit(Ok(())));
+                respond!(msg, Response::ReplyReddit(Ok(()))).await?;
                 reddit::reply(msg, url).await;
                 Ok(())
             }
