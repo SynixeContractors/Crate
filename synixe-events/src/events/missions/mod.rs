@@ -4,7 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 /// A mission object
 pub struct Mission {
     /// Mission id
@@ -19,11 +19,12 @@ pub struct Mission {
     pub typ: MissionType,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type), sqlx(rename_all = "lowercase"))]
 /// Mission type
 pub enum MissionType {
     /// Standard Friday & Saturday mission
+    #[default]
     Contract,
     /// Non-standard mission
     SubContract,
