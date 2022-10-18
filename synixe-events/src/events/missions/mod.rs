@@ -36,6 +36,18 @@ pub enum MissionType {
     Other,
 }
 
+impl From<u32> for MissionType {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => Self::Contract,
+            1 => Self::SubContract,
+            2 => Self::Training,
+            3 => Self::Special,
+            _ => Self::Other,
+        }
+    }
+}
+
 /// Interact with the database.
 pub mod db {
     use chrono::NaiveDateTime;
