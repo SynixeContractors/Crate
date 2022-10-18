@@ -1,5 +1,5 @@
 apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+kind: IngressRouteTCP
 metadata:
   labels:
     {{- include "synixe.labels" . | nindent 4 }}
@@ -9,7 +9,7 @@ spec:
   - nats
   routes:
   - kind: Rule
-    match: Host(`*`)
+    match: HostSNI(`*`)
     services:
     - name: synixe-nats
       port: client

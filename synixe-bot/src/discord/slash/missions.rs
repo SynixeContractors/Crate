@@ -677,6 +677,7 @@ async fn post(
                                         .replace("<font color='#D81717'>", "")
                                         .replace("<font color='#1D69F6'>", "")
                                         .replace("<font color='#993399'>", "")
+                                        .replace("<font color='#663300'>", "")
                                         .replace("</font color>", "") // felix you scoundrel
                                         .replace("</font>", ""),
                                 )
