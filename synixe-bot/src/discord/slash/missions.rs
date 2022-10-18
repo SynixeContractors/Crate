@@ -633,10 +633,12 @@ async fn post(
                                 error!("Failed to react: {}", e);
                             }
                         }
+                        tokio::time::sleep(Duration::from_millis(100)).await;
                         let sched_thread = SCHEDULE
                             .create_public_thread(&ctx, sched.id, |t| t.name(&mission_data.name))
                             .await
                             .unwrap();
+                        tokio::time::sleep(Duration::from_millis(100)).await;
                         sched_thread
                             .send_message(&ctx, |pt| {
                                 pt.content(
