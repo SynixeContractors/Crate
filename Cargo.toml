@@ -5,6 +5,7 @@ members = [
     "synixe-db",
     "synixe-events",
     "synixe-meta",
+    "synixe-model",
     "synixe-proc",
     "synixe-scheduler",
     "synixe-executor"
