@@ -192,16 +192,14 @@ async fn new(
                     .components(|c| {
                         c.create_action_row(|r| {
                             r.create_button(|b| {
-                                b.label("Confirm")
+                                b.label("Yes")
                                     .custom_id("confirm")
-                                    .emoji('✅')
-                                    .style(ButtonStyle::Primary)
+                                    .style(ButtonStyle::Danger)
                             })
                             .create_button(|b| {
-                                b.label("Cancel")
+                                b.label("No")
                                     .custom_id("cancel")
-                                    .emoji('❌')
-                                    .style(ButtonStyle::Danger)
+                                    .style(ButtonStyle::Primary)
                             })
                         })
                     })
@@ -421,6 +419,20 @@ pub async fn remove(
             debug!("sending confirmation");
             if let Some(mission_id) = interaction.data.values.get(0) {
                 let mission_id: Uuid = mission_id.parse().unwrap();
+                let scheduled = missions.iter().find(|m| m.id == mission_id).unwrap();
+                command
+                    .edit_followup_message(&ctx, m.id, |r| {
+                        r.content(format!(
+                            "{} - {}",
+                            scheduled.mission,
+                            New_York
+                                .from_utc_datetime(&scheduled.start_at)
+                                .format("%m-%d %H:00 %Z")
+                        ))
+                        .components(|c| c)
+                    })
+                    .await
+                    .unwrap();
                 interaction
                     .create_interaction_response(&ctx, |r| {
                         r.kind(InteractionResponseType::DeferredUpdateMessage)
@@ -429,18 +441,24 @@ pub async fn remove(
                     .unwrap();
                 let m = interaction
                     .create_followup_message(&ctx, |r| {
-                        r.content(format!("Are you sure you want to remove `{}`?", mission_id))
-                            .ephemeral(true)
-                            .components(|c| {
-                                c.create_action_row(|r| {
-                                    r.create_button(|b| {
-                                        b.style(ButtonStyle::Danger).label("Yes").custom_id("yes")
-                                    })
-                                    .create_button(|b| {
-                                        b.style(ButtonStyle::Primary).label("No").custom_id("no")
-                                    })
+                        r.content(format!(
+                            "Are you sure you want to remove `{} - {}`?",
+                            scheduled.mission,
+                            New_York
+                                .from_utc_datetime(&scheduled.start_at)
+                                .format("%m-%d %H:00 %Z")
+                        ))
+                        .ephemeral(true)
+                        .components(|c| {
+                            c.create_action_row(|r| {
+                                r.create_button(|b| {
+                                    b.style(ButtonStyle::Danger).label("Yes").custom_id("yes")
+                                })
+                                .create_button(|b| {
+                                    b.style(ButtonStyle::Primary).label("No").custom_id("no")
                                 })
                             })
+                        })
                     })
                     .await
                     .unwrap();
@@ -467,7 +485,6 @@ pub async fn remove(
                         )
                         .await
                         {
-                            let scheduled = missions.iter().find(|m| m.id == mission_id).unwrap();
                             if let Some(mid) = &scheduled.schedule_message_id {
                                 if let Err(e) = SCHEDULE
                                     .delete_message(&ctx, MessageId(mid.parse().unwrap()))
