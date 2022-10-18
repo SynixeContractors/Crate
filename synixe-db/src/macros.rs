@@ -76,6 +76,31 @@ macro_rules! fetch_as_and_respond {
     }}
 }
 
+macro_rules! fetch_one_as_and_respond {
+    ($msg:expr, $db:expr, $cx:expr, $as:path, $respond:path, $query:expr, $($args:expr,)*) => {{
+        use opentelemetry::trace::Span;
+        let (query, mut span) = trace_query_as!(
+            $cx,
+            $as,
+            $query,
+            $($args,)*
+        );
+        let res = query.fetch_one(&$db).await;
+        span.end();
+        match res {
+            Ok(data) => {
+                synixe_events::respond!($msg, $respond(Ok(Some(data)))).await?;
+                Ok(())
+            }
+            Err(e) => {
+                error!("{:?}", e);
+                synixe_events::respond!($msg, $respond(Err(e.to_string()))).await?;
+                Err(e.into())
+            }
+        }
+    }}
+}
+
 macro_rules! execute_and_respond {
     ($msg:expr, $db:expr, $cx:expr, $respond:path, $query:expr, $($args:expr,)*) => {{
         use opentelemetry::trace::Span;

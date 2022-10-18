@@ -87,6 +87,63 @@
     },
     "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions ORDER BY name ASC"
   },
+  "5c15a2c4fcf938e63fd5f83d38c83e7a72e4d6e4d73cc27251a05e648a1f9f6a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 4,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE id = $1"
+  },
   "735987fd9222b56a447b3b28606f371cdd9df538409bfc0a8efa4daadcc5b29b": {
     "describe": {
       "columns": [

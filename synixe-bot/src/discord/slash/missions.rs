@@ -272,7 +272,67 @@ async fn new(
 async fn upcoming(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    options: &[CommandDataOption],
+    _options: &[CommandDataOption],
 ) {
-    debug!("upcoming");
+    match events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        UpcomingSchedule {}
+    )
+    .await
+    {
+        Ok(((Response::UpcomingSchedule(Ok(upcoming)), _), _)) => {
+            let mut content = String::new();
+            for mission in upcoming {
+                if let Ok(((Response::FetchMission(Ok(Some(data))), _), _)) = events_request!(
+                    bootstrap::NC::get().await,
+                    synixe_events::missions::db,
+                    FetchMission {
+                        mission: mission.mission
+                    }
+                )
+                .await
+                {
+                    content.push_str(&format!(
+                        "• <t:{}:F> - {}\n{}\n\n",
+                        mission.start_at.timestamp(),
+                        data.name,
+                        data.description,
+                    ));
+                }
+            }
+            command
+                .create_interaction_response(&ctx, |r| {
+                    r.kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|m| m.content(content))
+                })
+                .await
+                .unwrap();
+        }
+        Ok(_) => {
+            command
+                .create_interaction_response(&ctx, |r| {
+                    r.kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|m| {
+                            m.content("Failed to fetch upcoming missions")
+                                .ephemeral(true)
+                        })
+                })
+                .await
+                .unwrap();
+        }
+        Err(e) => {
+            error!("failed to fetch upcoming missions: {}", e);
+            command
+                .create_interaction_response(&ctx, |r| {
+                    r.kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|m| {
+                            m.content(format!("Failed to fetch upcoming missions: {}", e))
+                                .ephemeral(true)
+                        })
+                })
+                .await
+                .unwrap();
+        }
+    }
 }

@@ -5,6 +5,7 @@ use synixe_model::missions::{Mission, MissionType};
 
 use super::Handler;
 
+#[allow(clippy::too_many_lines)]
 #[async_trait]
 impl Handler for Request {
     async fn handle(
@@ -109,6 +110,17 @@ impl Handler for Request {
                     synixe_model::missions::Mission,
                     Response::FetchMissionList,
                     "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions ORDER BY name ASC",
+                )
+            }
+            Self::FetchMission { mission } => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::Mission,
+                    Response::FetchMission,
+                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE id = $1",
+                    mission,
                 )
             }
         }

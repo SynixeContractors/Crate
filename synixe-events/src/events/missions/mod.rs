@@ -31,5 +31,10 @@ pub mod db {
         UpdateMissionList {} => (Result<(), String>)
         /// Fetch the list of missions
         FetchMissionList {} => (Result<Vec<Mission>, String>)
+        /// Fetch a single mission
+        FetchMission {
+            /// The mission to fetch.
+            mission: String,
+        } => (Result<Option<Mission>, String>)
     });
 }
