@@ -26,6 +26,11 @@ async fn main() {
     let sub = nats.subscribe("synixe.executor.>").await.unwrap();
     while let Some(msg) = sub.next().await {
         let nats = nats.clone();
-        handler!(msg, nats, synixe_events::recruiting::executions::Request);
+        handler!(
+            msg,
+            nats,
+            synixe_events::recruiting::executions::Request,
+            synixe_events::missions::executions::Request
+        );
     }
 }

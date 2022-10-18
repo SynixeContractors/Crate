@@ -50,7 +50,7 @@ pub mod db {
 pub mod executions {
     use synixe_proc::events_requests;
 
-    events_requests!(executions.missions {
+    events_requests!(executor.missions {
         /// Post about upcoming missions
         struct PostUpcomingMissions {} => (Result<(), String>)
     });
