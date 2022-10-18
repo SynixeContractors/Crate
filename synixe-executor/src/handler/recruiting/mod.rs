@@ -1,5 +1,11 @@
 use async_trait::async_trait;
-use synixe_events::recruiting::{db, executions::Request};
+use synixe_events::{
+    recruiting::{
+        db,
+        executions::{Request, Response},
+    },
+    respond,
+};
 use synixe_proc::events_request;
 
 use super::Handler;
@@ -21,18 +27,22 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::CheckSteam {} => {
+                respond!(msg, Response::CheckSteam(Ok(())));
                 steam::check_steam_forums().await;
                 Ok(())
             }
             Self::CheckReddit {} => {
+                respond!(msg, Response::CheckReddit(Ok(())));
                 reddit::check_reddit_findaunit().await;
                 Ok(())
             }
             Self::PostReddit {} => {
+                respond!(msg, Response::PostReddit(Ok(())));
                 reddit::post_reddit_findaunit().await;
                 Ok(())
             }
             Self::ReplyReddit { url } => {
+                respond!(msg, Response::ReplyReddit(Ok(())));
                 reddit::reply(msg, url).await;
                 Ok(())
             }

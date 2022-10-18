@@ -22,6 +22,7 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::PostUpcomingMissions {} => {
+                respond!(msg, Response::PostUpcomingMissions(Ok(())));
                 match events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
@@ -86,9 +87,7 @@ impl Handler for Request {
                                 }
                             }
                         }
-                        respond!(msg, Response::PostUpcomingMissions(Ok(())))
-                            .await
-                            .map_err(std::convert::Into::into)
+                        Ok(())
                     }
                     Ok(_) => {
                         error!("unexpected response from db");
