@@ -19,6 +19,7 @@ async fn main() {
     // Init NATS connection
     bootstrap::NC::get().await;
 
+    // Recruiting
     sched.add(
         Job::new(
             "Recruiting - check steam forums for new posts",
@@ -79,6 +80,31 @@ async fn main() {
         )
         .unwrap(),
     );
+
+    // Missions
+    sched.add(
+        Job::new("Missions - Update mission list", "0 */30 * * * *", || {
+            Box::pin(async {
+                if let Err(e) = events_request!(
+                    bootstrap::NC::get().await,
+                    synixe_events::missions::db,
+                    UpdateMissionList {}
+                )
+                .await
+                {
+                    error!("error updating mission list: {:?}", e);
+                }
+            })
+        })
+        .unwrap(),
+    );
+
+    events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        UpdateMissionList {}
+    )
+    .await;
 
     sched.start().await;
 

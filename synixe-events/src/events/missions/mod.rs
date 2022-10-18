@@ -13,5 +13,7 @@ pub mod db {
             /// The day to schedule the mission.
             date: NaiveDateTime
         } => (Result<(), String>)
+        /// Update missions from the GitHub list
+        UpdateMissionList {} => (Result<(), String>)
     });
 }
