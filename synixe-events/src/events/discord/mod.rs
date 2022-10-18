@@ -74,7 +74,7 @@ pub mod write {
             /// The channel to send the message to
             channel: ChannelId,
             /// The message to send
-            message: DiscordContent,
+            message: DiscordMessage,
             /// Create a thread on the message
             thread: Option<DiscordThread>,
         } => (Result<(), String>)
@@ -83,7 +83,7 @@ pub mod write {
             /// The user to send the message to
             user: UserId,
             /// The message to send
-            message: DiscordContent,
+            message: DiscordMessage,
         } => (Result<(), String>)
     });
 }

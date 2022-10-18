@@ -3,7 +3,11 @@ use std::time::Duration;
 use nats::asynk::Message;
 use roux::{Reddit, User};
 use scraper::{Html, Selector};
-use synixe_events::{recruiting::executions::Response, respond};
+use synixe_events::{
+    discord::write::{DiscordContent, DiscordMessage},
+    recruiting::executions::Response,
+    respond,
+};
 use synixe_proc::events_request;
 
 use super::{
@@ -93,7 +97,10 @@ pub async fn check_reddit_findaunit() {
             synixe_events::discord::write,
             ChannelMessage {
                 channel: synixe_meta::discord::channel::RECRUITING,
-                message: synixe_events::discord::write::DiscordContent::Embed(candidate),
+                message: DiscordMessage {
+                    content: DiscordContent::Embed(candidate),
+                    reactions: Vec::new(),
+                },
                 thread: None,
             }
         )
@@ -136,13 +143,16 @@ pub async fn post_reddit_findaunit() {
                     ChannelMessage
                     {
                         channel: synixe_meta::discord::channel::RECRUITING,
-                        message: synixe_events::discord::write::DiscordContent::Embed(Candidate {
-                            source: Source::Reddit,
-                            title: "Reddit Post Submitted".to_string(),
-                            link,
-                            content: String::new(),
-                            ping: false,
-                        }.into()),
+                        message: DiscordMessage {
+                            content: DiscordContent::Embed(Candidate {
+                                source: Source::Reddit,
+                                title: "Reddit Post Submitted".to_string(),
+                                link,
+                                content: String::new(),
+                                ping: false,
+                            }.into()),
+                            reactions: Vec::new(),
+                        },
                         thread: None,
                     }
                 )

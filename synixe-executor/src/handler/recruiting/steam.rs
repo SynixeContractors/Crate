@@ -1,4 +1,5 @@
 use scraper::{Html, Selector};
+use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_proc::events_request;
 
 use super::{
@@ -83,7 +84,10 @@ pub async fn check_steam_forums() {
             synixe_events::discord::write,
             ChannelMessage {
                 channel: synixe_meta::discord::channel::RECRUITING,
-                message: synixe_events::discord::write::DiscordContent::Embed(candidate),
+                message: DiscordMessage {
+                    content: DiscordContent::Embed(candidate),
+                    reactions: Vec::new(),
+                },
                 thread: None,
             }
         )

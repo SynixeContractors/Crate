@@ -16,7 +16,7 @@ pub async fn handle(msg: Message, client: Bot) {
             thread: _,
         } => {
             if let Err(e) = channel
-                .send_message(&client.http, |m| match message {
+                .send_message(&client.http, |m| match message.content {
                     write::DiscordContent::Text(text) => m.content(text),
                     write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
                 })
@@ -37,7 +37,7 @@ pub async fn handle(msg: Message, client: Bot) {
             match dm {
                 Ok(dm) => {
                     if let Err(e) = dm
-                        .send_message(&client.http, |m| match message {
+                        .send_message(&client.http, |m| match message.content {
                             write::DiscordContent::Text(text) => m.content(text),
                             write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
                         })

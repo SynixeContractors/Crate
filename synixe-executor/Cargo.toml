@@ -13,6 +13,7 @@ synixe-proc = { path = "../synixe-proc" }
 
 anyhow = "1.0.65"
 async-trait = { workspace = true }
+chrono = { workspace = true }
 log = { workspace = true }
 nats = { workspace = true }
 opentelemetry = { workspace = true }

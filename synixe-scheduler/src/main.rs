@@ -8,6 +8,9 @@ use tokio_simple_scheduler::{Job, Scheduler};
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+mod macros;
+
 #[tokio::main]
 async fn main() {
     opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
@@ -20,83 +23,42 @@ async fn main() {
     bootstrap::NC::get().await;
 
     // Recruiting
-    sched.add(
-        Job::new(
-            "Recruiting - check steam forums for new posts",
-            "0 */10 * * * *",
-            || {
-                Box::pin(async {
-                    if let Err(e) = events_request!(
-                        bootstrap::NC::get().await,
-                        synixe_events::recruiting::executions,
-                        CheckSteam {}
-                    )
-                    .await
-                    {
-                        error!("error checking on steam: {:?}", e);
-                    }
-                })
-            },
-        )
-        .unwrap(),
+    job!(
+        sched,
+        "Recruiting - check steam for new posts",
+        "0 */10 * * * *",
+        synixe_events::recruiting::executions,
+        CheckSteam
     );
-    sched.add(
-        Job::new(
-            "Recruiting - check reddit findaunit for new posts",
-            "0 */10 * * * *",
-            || {
-                Box::pin(async {
-                    if let Err(e) = events_request!(
-                        bootstrap::NC::get().await,
-                        synixe_events::recruiting::executions,
-                        CheckReddit {}
-                    )
-                    .await
-                    {
-                        error!("error checking on reddit: {:?}", e);
-                    }
-                })
-            },
-        )
-        .unwrap(),
+    job!(
+        sched,
+        "Recruiting - check reddit findaunit for new posts",
+        "0 */10 * * * *",
+        synixe_events::recruiting::executions,
+        CheckReddit
     );
-    sched.add(
-        Job::new(
-            "Recruiting - reddit findaunit post",
-            "0 0 23 * * Thu,Fri,Sat",
-            || {
-                Box::pin(async {
-                    if let Err(e) = events_request!(
-                        bootstrap::NC::get().await,
-                        synixe_events::recruiting::executions,
-                        PostReddit {}
-                    )
-                    .await
-                    {
-                        error!("error posting to reddit: {:?}", e);
-                    }
-                })
-            },
-        )
-        .unwrap(),
+    job!(
+        sched,
+        "Recruiting - reddit findaunit post",
+        "0 0 23 * * Thu,Fri,Sat",
+        synixe_events::recruiting::executions,
+        PostReddit
     );
 
     // Missions
-    sched.add(
-        Job::new("Missions - Update mission list", "0 */30 * * * *", || {
-            Box::pin(async {
-                if let Err(e) = events_request!(
-                    bootstrap::NC::get().await,
-                    synixe_events::missions::db,
-                    UpdateMissionList {}
-                )
-                .await
-                {
-                    error!("error updating mission list: {:?}", e);
-                }
-            })
-        })
-        .unwrap(),
+    job!(
+        sched,
+        "Missions - Update mission list",
+        "0 */30 * * * *",
+        synixe_events::missions::db,
+        UpdateMissionList
+    );
+    job!(
+        sched,
+        "Missions - Post about upcoming missons",
+        "0 */5 * * * *",
+        synixe_events::missions::executions,
+        PostUpcomingMissions
     );
 
     sched.start().await;

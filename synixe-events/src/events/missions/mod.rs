@@ -45,3 +45,13 @@ pub mod db {
         } => (Result<Option<Mission>, String>)
     });
 }
+
+/// Interact with executor
+pub mod executions {
+    use synixe_proc::events_requests;
+
+    events_requests!(executions.missions {
+        /// Post about upcoming missions
+        struct PostUpcomingMissions {} => (Result<(), String>)
+    });
+}
