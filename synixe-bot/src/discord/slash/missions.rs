@@ -495,16 +495,28 @@ pub async fn remove(
                             }
                             interaction
                                 .edit_followup_message(&ctx, m.id, |r| {
-                                    r.content(format!("Removed `{}`", mission_id))
-                                        .components(|c| c)
+                                    r.content(format!(
+                                        "Removed `{} - {}`",
+                                        scheduled.mission,
+                                        New_York
+                                            .from_utc_datetime(&scheduled.start_at)
+                                            .format("%m-%d %H:00 %Z")
+                                    ))
+                                    .components(|c| c)
                                 })
                                 .await
                                 .unwrap();
                         } else {
                             interaction
                                 .edit_followup_message(&ctx, m.id, |r| {
-                                    r.content(format!("Failed to remove `{}`", mission_id))
-                                        .components(|c| c)
+                                    r.content(format!(
+                                        "Failed to remove `{} - {}`",
+                                        scheduled.mission,
+                                        New_York
+                                            .from_utc_datetime(&scheduled.start_at)
+                                            .format("%m-%d %H:00 %Z")
+                                    ))
+                                    .components(|c| c)
                                 })
                                 .await
                                 .unwrap();
