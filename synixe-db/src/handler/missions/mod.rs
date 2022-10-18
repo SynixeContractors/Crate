@@ -43,7 +43,7 @@ impl Handler for Request {
                             for mission in missions {
                                 let (query, _span) = trace_query!(
                                     cx,
-                                    r#"INSERT INTO missions_list (id, name, summary, description, type)
+                                    r#"INSERT INTO missions (id, name, summary, description, type)
                                         VALUES ($1, $2, $3, $4, $5)
                                         ON CONFLICT (id) DO UPDATE SET
                                             name = $2,
@@ -97,7 +97,7 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::Mission,
                     Response::FetchMissionList,
-                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions_list",
+                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions",
                 )
             }
         }

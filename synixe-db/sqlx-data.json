@@ -32,7 +32,7 @@
     },
     "query": "INSERT INTO recruitment_replied (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()"
   },
-  "51ed5dcffec9f40419c1951bc94ff70c03e005e7311cf1a41d21b25aeed2c00c": {
+  "600ebfca92be18a9e596311a78a9671f7b411986d1186310a2f8cd24b62b7727": {
     "describe": {
       "columns": [
         {
@@ -85,36 +85,7 @@
         "Left": []
       }
     },
-    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions_list"
-  },
-  "5b44e569a3c4a82c5c7435d8a33bc7579db04a70297744bb0a8dc79337059a45": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Varchar",
-          "Varchar",
-          "Text",
-          {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        ]
-      }
-    },
-    "query": "INSERT INTO missions_list (id, name, summary, description, type)\n                                        VALUES ($1, $2, $3, $4, $5)\n                                        ON CONFLICT (id) DO UPDATE SET\n                                            name = $2,\n                                            summary = $3,\n                                            description = $4,\n                                            type = $5"
+    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions"
   },
   "9aa63099fbc7a77334cb7bbb8c7dc477de4ef4e88b30e18696d3d466da3da426": {
     "describe": {
@@ -147,6 +118,35 @@
       }
     },
     "query": "INSERT INTO recruitment_seen (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()"
+  },
+  "ab2fb0b8db9a7f9b166f5f99a86adaec76eef5aaa9df06e3002f565f0272d69c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Text",
+          {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        ]
+      }
+    },
+    "query": "INSERT INTO missions (id, name, summary, description, type)\n                                        VALUES ($1, $2, $3, $4, $5)\n                                        ON CONFLICT (id) DO UPDATE SET\n                                            name = $2,\n                                            summary = $3,\n                                            description = $4,\n                                            type = $5"
   },
   "d39c87d4b121254bccc30a8e23e8107de00776282249cb87931143c47e4e9567": {
     "describe": {

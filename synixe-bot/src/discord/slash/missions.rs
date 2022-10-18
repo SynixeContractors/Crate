@@ -1,7 +1,5 @@
 use std::time::Duration;
 
-use chrono::{Datelike, NaiveDateTime, TimeZone};
-use chrono_tz::America::New_York;
 use serenity::{
     builder::CreateApplicationCommand,
     model::{
@@ -26,11 +24,20 @@ pub fn schedule(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 .kind(CommandOptionType::String)
                 .required(true)
         })
+        .create_option(|option| {
+            option
+                .name("hour")
+                .description("The starting hour to schedule the mission")
+                .kind(CommandOptionType::Integer)
+                .max_int_value(23)
+                .min_int_value(0)
+                .required(false)
+        })
 }
 
 #[allow(clippy::too_many_lines)]
 pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction) {
-    let date = get_date(command);
+    let date = super::get_datetime(command);
     if !super::requires_role(
         RoleId(1_020_252_253_287_886_858),
         &command.member.as_ref().unwrap().roles,
@@ -55,9 +62,12 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
                 response
                     .kind(InteractionResponseType::ChannelMessageWithSource)
                     .interaction_response_data(|message| {
-                        message.content(
-                            "A mission is already scheduled for that day, or the check failed.",
-                        )
+                        message
+                            .content(format!(
+                                "A mission is already scheduled at <t:{}:F>, or the check failed.",
+                                date
+                            ))
+                            .ephemeral(true)
                     })
             })
             .await
@@ -215,37 +225,4 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
             .await
             .unwrap();
     }
-}
-
-fn get_date(command: &ApplicationCommandInteraction) -> NaiveDateTime {
-    let day = command
-        .data
-        .options
-        .iter()
-        .find(|option| option.name == "day")
-        .unwrap()
-        .value
-        .as_ref()
-        .unwrap()
-        .as_str()
-        .unwrap()
-        .to_string();
-    let (month, day) = day.split_once('-').unwrap();
-    debug!("month: {}, day: {}", month, day);
-    let date = {
-        let year = chrono::Utc::now().with_timezone(&New_York).date().year();
-        let possible = New_York
-            .ymd(year, month.parse().unwrap(), day.parse().unwrap())
-            .and_hms(22, 0, 0);
-        if chrono::Utc::now()
-            .signed_duration_since(possible)
-            .num_seconds()
-            > 0
-        {
-            possible.with_year(year + 1).unwrap()
-        } else {
-            possible
-        }
-    };
-    date.naive_utc()
 }
