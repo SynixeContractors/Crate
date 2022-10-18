@@ -14,6 +14,11 @@ pub mod db {
             /// The day to schedule the mission.
             date: NaiveDateTime
         } => (Result<(), String>)
+        /// Checks if a day is already scheduled.
+        IsScheduled {
+            /// The day to check.
+            date: NaiveDateTime
+        } => (Result<Option<bool>, String>)
         /// Update missions from the GitHub list
         UpdateMissionList {} => (Result<(), String>)
         /// Fetch the list of missions

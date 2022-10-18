@@ -26,6 +26,16 @@ impl Handler for Request {
                     date,
                 )
             }
+            Self::IsScheduled { date } => {
+                fetch_one_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::IsScheduled,
+                    "SELECT EXISTS(SELECT 1 FROM missions_schedule WHERE start_at = $1) as value",
+                    date,
+                )
+            }
             Self::UpdateMissionList {} => {
                 if let Ok(response) = reqwest::get(MISSION_LIST).await {
                     match response.json::<Vec<Mission>>().await {

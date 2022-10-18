@@ -1,5 +1,25 @@
 {
   "db": "PostgreSQL",
+  "17b1e72c83f0147746e426ae7ef7b9f76c4e7b62509ea45869575d9ee3612d92": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Timestamp"
+        ]
+      }
+    },
+    "query": "SELECT EXISTS(SELECT 1 FROM missions_schedule WHERE start_at = $1) as value"
+  },
   "3dd0f0184c31862ba49ab18707fafc14069b521e4e06d9c637e39f82fc5865dd": {
     "describe": {
       "columns": [],
