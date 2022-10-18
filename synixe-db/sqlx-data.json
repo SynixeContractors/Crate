@@ -180,6 +180,18 @@
     },
     "query": "SELECT * FROM missions_schedule WHERE start_at > NOW() ORDER BY start_at ASC"
   },
+  "76bd2f79cbddd70d7f6ba099f538122f733492f7ffd98eae404a11ebf776d8bd": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM missions_schedule WHERE id = $1"
+  },
   "9aa63099fbc7a77334cb7bbb8c7dc477de4ef4e88b30e18696d3d466da3da426": {
     "describe": {
       "columns": [

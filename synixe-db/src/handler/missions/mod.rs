@@ -37,6 +37,16 @@ impl Handler for Request {
                     date,
                 )
             }
+            Self::Unschedule { scheduled_mission } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::Unschedule,
+                    "DELETE FROM missions_schedule WHERE id = $1",
+                    scheduled_mission,
+                )
+            }
             Self::UpcomingSchedule {} => {
                 fetch_as_and_respond!(
                     msg,
@@ -47,7 +57,7 @@ impl Handler for Request {
                     "SELECT * FROM missions_schedule WHERE start_at > NOW() ORDER BY start_at ASC",
                 )
             }
-            Self::Post { mission } => todo!(),
+            Self::Post { scheduled_mission } => todo!(),
             Self::UpdateMissionList {} => {
                 if let Ok(response) = reqwest::get(MISSION_LIST).await {
                     match response.json::<Vec<Mission>>().await {

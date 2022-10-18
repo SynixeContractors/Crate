@@ -20,12 +20,17 @@ pub mod db {
             /// The day to check.
             date: NaiveDateTime
         } => (Result<Option<bool>, String>)
+        /// Remove a scheduled mission.
+        Unschedule {
+            /// The mission to remove.
+            scheduled_mission: Uuid
+        } => (Result<(), String>)
         /// Gets all upcoming missions.
         UpcomingSchedule {} => (Result<Vec<ScheduledMission>, String>)
         /// Post an upcoming mission
         Post {
             /// The scheduled mission to post.
-            mission: Uuid,
+            scheduled_mission: Uuid,
         } => (Result<(), String>)
         /// Update missions from the GitHub list
         UpdateMissionList {} => (Result<(), String>)

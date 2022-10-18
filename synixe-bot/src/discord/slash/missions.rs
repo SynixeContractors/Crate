@@ -15,6 +15,7 @@ use serenity::{
 };
 use synixe_events::missions::db::Response;
 use synixe_proc::events_request;
+use uuid::Uuid;
 
 pub fn schedule(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -59,6 +60,12 @@ pub fn schedule(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 .description("View the upcoming missions")
                 .kind(CommandOptionType::SubCommand)
         })
+        .create_option(|option| {
+            option
+                .name("remove")
+                .description("Remove an upcoming mission")
+                .kind(CommandOptionType::SubCommand)
+        })
 }
 
 pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction) {
@@ -67,6 +74,7 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
         match subcommand.name.as_str() {
             "new" => new(ctx, command, &subcommand.options).await,
             "upcoming" => upcoming(ctx, command, &subcommand.options).await,
+            "remove" => remove(ctx, command, &subcommand.options).await,
             _ => unreachable!(),
         }
     }
@@ -268,7 +276,6 @@ async fn new(
     }
 }
 
-#[allow(clippy::unused_async)]
 async fn upcoming(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
@@ -282,7 +289,7 @@ async fn upcoming(
     .await
     {
         Ok(((Response::UpcomingSchedule(Ok(upcoming)), _), _)) => {
-            let mut content = String::new();
+            let mut content = String::from("**Upcoming Missions**\n\n");
             for mission in upcoming {
                 if let Ok(((Response::FetchMission(Ok(Some(data))), _), _)) = events_request!(
                     bootstrap::NC::get().await,
@@ -294,10 +301,10 @@ async fn upcoming(
                 .await
                 {
                     content.push_str(&format!(
-                        "• <t:{}:F> - {}\n{}\n\n",
-                        mission.start_at.timestamp(),
+                        "**{}**\n<t:{}:F>\n*{}*\n\n",
                         data.name,
-                        data.description,
+                        mission.start_at.timestamp(),
+                        data.summary,
                     ));
                 }
             }
@@ -334,5 +341,173 @@ async fn upcoming(
                 .await
                 .unwrap();
         }
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+pub async fn remove(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    _options: &[CommandDataOption],
+) {
+    if !super::requires_role(
+        RoleId(1_020_252_253_287_886_858),
+        &command.member.as_ref().unwrap().roles,
+        ctx,
+        command,
+    )
+    .await
+    {
+        return;
+    }
+    debug!("fetching missions");
+    command
+        .create_interaction_response(&ctx, |r| {
+            r.kind(InteractionResponseType::DeferredChannelMessageWithSource)
+                .interaction_response_data(|m| m.content("Fetching missions...").ephemeral(true))
+        })
+        .await
+        .unwrap();
+    if let Ok(((Response::UpcomingSchedule(Ok(missions)), _), _)) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        UpcomingSchedule {}
+    )
+    .await
+    {
+        let m = command
+            .create_followup_message(&ctx, |r| {
+                r.content("Select Mission").ephemeral(true).components(|c| {
+                    c.create_action_row(|r| {
+                        r.create_select_menu(|m| {
+                            m.custom_id("mission").options(|o| {
+                                for mission in missions {
+                                    o.create_option(|o| {
+                                        o.label(format!(
+                                            "{} - <t:{}:f>",
+                                            mission.mission,
+                                            mission.start_at.timestamp()
+                                        ))
+                                        .value(mission.id)
+                                    });
+                                }
+                                o
+                            })
+                        })
+                    })
+                })
+            })
+            .await
+            .unwrap();
+        if let Some(interaction) = m
+            .await_component_interaction(&ctx)
+            .timeout(Duration::from_secs(60 * 3))
+            .collect_limit(1)
+            .await
+        {
+            debug!("sending confirmation");
+            if let Some(mission_id) = interaction.data.values.get(0) {
+                let mission_id: Uuid = mission_id.parse().unwrap();
+                interaction
+                    .create_interaction_response(&ctx, |r| {
+                        r.kind(InteractionResponseType::DeferredUpdateMessage)
+                    })
+                    .await
+                    .unwrap();
+                let m = interaction
+                    .create_followup_message(&ctx, |r| {
+                        r.content(format!("Are you sure you want to remove `{}`?", mission_id))
+                            .ephemeral(true)
+                            .components(|c| {
+                                c.create_action_row(|r| {
+                                    r.create_button(|b| {
+                                        b.style(ButtonStyle::Danger).label("Yes").custom_id("yes")
+                                    })
+                                    .create_button(|b| {
+                                        b.style(ButtonStyle::Primary).label("No").custom_id("no")
+                                    })
+                                })
+                            })
+                    })
+                    .await
+                    .unwrap();
+                if let Some(interaction) = m
+                    .await_component_interaction(&ctx)
+                    .timeout(Duration::from_secs(60 * 3))
+                    .collect_limit(1)
+                    .await
+                {
+                    if interaction.data.custom_id == "yes" {
+                        debug!("removing mission");
+                        interaction
+                            .create_interaction_response(&ctx, |r| {
+                                r.kind(InteractionResponseType::DeferredUpdateMessage)
+                            })
+                            .await
+                            .unwrap();
+                        if let Ok(((Response::Unschedule(Ok(())), _), _)) = events_request!(
+                            bootstrap::NC::get().await,
+                            synixe_events::missions::db,
+                            Unschedule {
+                                scheduled_mission: mission_id
+                            }
+                        )
+                        .await
+                        {
+                            interaction
+                                .edit_followup_message(&ctx, m.id, |r| {
+                                    r.content(format!("Removed `{}`", mission_id))
+                                        .components(|c| c)
+                                })
+                                .await
+                                .unwrap();
+                        } else {
+                            interaction
+                                .edit_followup_message(&ctx, m.id, |r| {
+                                    r.content(format!("Failed to remove `{}`", mission_id))
+                                        .components(|c| c)
+                                })
+                                .await
+                                .unwrap();
+                        }
+                    } else {
+                        interaction
+                            .edit_followup_message(&ctx, m.id, |r| {
+                                r.content("Cancelled mission removal").components(|c| c)
+                            })
+                            .await
+                            .unwrap();
+                    }
+                } else {
+                    interaction
+                        .edit_followup_message(&ctx, m.id, |r| {
+                            r.content("Timed out").components(|c| c)
+                        })
+                        .await
+                        .unwrap();
+                }
+            } else {
+                interaction
+                    .edit_followup_message(&ctx, m.id, |r| {
+                        r.content("No mission selected").components(|c| c)
+                    })
+                    .await
+                    .unwrap();
+            }
+        } else {
+            command
+                .edit_original_interaction_response(&ctx, |r| {
+                    r.content("Timed out").components(|c| c)
+                })
+                .await
+                .unwrap();
+        }
+    } else {
+        command
+            .edit_original_interaction_response(&ctx, |r| {
+                r.content("Failed to fetch missions").components(|c| c)
+            })
+            .await
+            .unwrap();
     }
 }
