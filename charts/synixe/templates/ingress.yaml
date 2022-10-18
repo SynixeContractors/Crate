@@ -8,8 +8,7 @@ spec:
   entryPoints:
   - nats
   routes:
-  - kind: Rule
-    match: HostSNI(`*`)
+  - match: HostSNI(`*`)
     services:
     - name: synixe-nats
       port: client
