@@ -51,6 +51,17 @@ pub async fn run_reply(ctx: &Context, command: &ApplicationCommandInteraction) {
                     {
                         error!("Cannot respond to slash command: {}", why);
                     }
+                } else if let Err(why) = command
+                    .create_interaction_response(&ctx.http, |response| {
+                        response
+                            .kind(InteractionResponseType::ChannelMessageWithSource)
+                            .interaction_response_data(|message| {
+                                message.content("Only reddit posts can be replied to currently")
+                            })
+                    })
+                    .await
+                {
+                    error!("Cannot respond to slash command: {}", why);
                 }
             }
         }

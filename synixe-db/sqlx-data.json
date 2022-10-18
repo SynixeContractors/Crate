@@ -44,6 +44,19 @@
     },
     "query": "INSERT INTO recruitment_seen (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()"
   },
+  "d39c87d4b121254bccc30a8e23e8107de00776282249cb87931143c47e4e9567": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Timestamp"
+        ]
+      }
+    },
+    "query": "INSERT INTO missions_schedule (mission, start_at) VALUES ($1, $2)"
+  },
   "d6723f891478fdee19415ea75d9e17745213002653d0dc00b4bea49b62f8fad5": {
     "describe": {
       "columns": [

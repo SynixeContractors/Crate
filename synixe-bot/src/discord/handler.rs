@@ -14,6 +14,7 @@ impl EventHandler for Handler {
             GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {
                 commands
                     .create_application_command(|command| slash::meme::register(command))
+                    .create_application_command(|command| slash::missions::schedule(command))
                     .create_application_command(|command| menu::recruiting::reply(command))
             })
             .await
@@ -27,6 +28,7 @@ impl EventHandler for Handler {
             debug!("matching command: {:?}", command.data.name.as_str());
             match command.data.name.as_str() {
                 "meme" => slash::meme::run(&ctx, &command).await,
+                "schedule" => slash::missions::schedule_run(&ctx, &command).await,
                 "Recruiting - Reply" => menu::recruiting::run_reply(&ctx, &command).await,
                 _ => {}
             }
