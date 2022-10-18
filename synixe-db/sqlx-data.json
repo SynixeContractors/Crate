@@ -163,20 +163,14 @@
           "type_info": "Varchar"
         },
         {
-          "name": "planning_message_id",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
           "name": "start_at",
-          "ordinal": 4,
+          "ordinal": 3,
           "type_info": "Timestamp"
         }
       ],
       "nullable": [
         false,
         false,
-        true,
         true,
         false
       ],
@@ -197,6 +191,19 @@
       }
     },
     "query": "DELETE FROM missions_schedule WHERE id = $1"
+  },
+  "815617522fc3f0a9a5f494efd0416f0c840495523152f95ccad384167fbc22ec": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "UPDATE missions_schedule SET schedule_message_id = $1 WHERE id = $2"
   },
   "9aa63099fbc7a77334cb7bbb8c7dc477de4ef4e88b30e18696d3d466da3da426": {
     "describe": {
@@ -229,20 +236,6 @@
       }
     },
     "query": "INSERT INTO recruitment_seen (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()"
-  },
-  "a4488775336eee14ee47d2bf59d5bd53d5ba884ad3b98252197baae28b9a63ac": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Varchar",
-          "Uuid"
-        ]
-      }
-    },
-    "query": "UPDATE missions_schedule SET schedule_message_id = $1, planning_message_id = $2 WHERE id = $3"
   },
   "ab2fb0b8db9a7f9b166f5f99a86adaec76eef5aaa9df06e3002f565f0272d69c": {
     "describe": {

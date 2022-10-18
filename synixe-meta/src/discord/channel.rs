@@ -22,8 +22,6 @@ pub const MEMES: ChannelId = ChannelId(736_790_994_833_506_414);
 // Contracts
 /// See upcoming contracts and RSVP
 pub const SCHEDULE: ChannelId = ChannelId(700_888_805_137_318_039);
-/// Plan for contracts
-pub const PLANNING: ChannelId = ChannelId(883_455_598_203_650_088);
 /// Arma related media
 pub const MEDIA: ChannelId = ChannelId(706_359_539_527_843_970);
 /// Discuss and plan training

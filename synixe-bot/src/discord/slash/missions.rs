@@ -10,13 +10,13 @@ use serenity::{
         },
         prelude::{
             application_command::CommandDataOption, command::CommandOptionType,
-            component::ButtonStyle, ReactionType, RoleId,
+            component::ButtonStyle, MessageId, ReactionType, RoleId,
         },
     },
     prelude::*,
 };
 use synixe_events::missions::db::Response;
-use synixe_meta::discord::channel::{PLANNING, SCHEDULE};
+use synixe_meta::discord::channel::SCHEDULE;
 use synixe_proc::events_request;
 use uuid::Uuid;
 
@@ -392,7 +392,7 @@ pub async fn remove(
                     c.create_action_row(|r| {
                         r.create_select_menu(|m| {
                             m.custom_id("mission").options(|o| {
-                                for mission in missions {
+                                for mission in &missions {
                                     o.create_option(|o| {
                                         o.label(format!(
                                             "{} - {}",
@@ -467,6 +467,15 @@ pub async fn remove(
                         )
                         .await
                         {
+                            let scheduled = missions.iter().find(|m| m.id == mission_id).unwrap();
+                            if let Some(mid) = &scheduled.schedule_message_id {
+                                if let Err(e) = SCHEDULE
+                                    .delete_message(&ctx, MessageId(mid.parse().unwrap()))
+                                    .await
+                                {
+                                    error!("failed to delete schedule message: {}", e);
+                                }
+                            }
                             interaction
                                 .edit_followup_message(&ctx, m.id, |r| {
                                     r.content(format!("Removed `{}`", mission_id))
@@ -624,34 +633,20 @@ async fn post(
                                 error!("Failed to react: {}", e);
                             }
                         }
-                        SCHEDULE
+                        let sched_thread = SCHEDULE
                             .create_public_thread(&ctx, sched.id, |t| t.name(&mission_data.name))
                             .await
                             .unwrap();
-                        let plan = PLANNING
-                            .send_message(&ctx, |p| {
-                                p.content(format!(
-                                    "**{}**\n<t:{}:F> - <t:{}:R>",
-                                    mission_data.name,
-                                    mission.start_at.timestamp(),
-                                    mission.start_at.timestamp()
-                                ))
-                            })
-                            .await
-                            .unwrap();
-                        let plan_thread = PLANNING
-                            .create_public_thread(&ctx, plan.id, |t| t.name(mission_data.name))
-                            .await
-                            .unwrap();
-                        plan_thread
+                        sched_thread
                             .send_message(&ctx, |pt| {
                                 pt.content(
                                     mission_data
-                                        .summary
+                                        .description
                                         .replace("            <br/>", "\n")
                                         .replace("<font color='#D81717'>", "")
                                         .replace("<font color='#1D69F6'>", "")
                                         .replace("<font color='#993399'>", "")
+                                        .replace("</font color>", "") // felix you scoundrel
                                         .replace("</font>", ""),
                                 )
                             })
@@ -665,7 +660,6 @@ async fn post(
                                 SetScheduledMesssage {
                                     scheduled_mission: mission.id,
                                     schedule_message_id: sched.id.0.to_string(),
-                                    planning_message_id: plan.id.0.to_string()
                                 }
                             )
                             .await

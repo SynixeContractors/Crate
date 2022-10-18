@@ -31,8 +31,6 @@ pub mod db {
             scheduled_mission: Uuid,
             /// The message in #schedule
             schedule_message_id: String,
-            /// The message in #planning
-            planning_message_id: String,
         } => (Result<(), String>)
         /// Gets all upcoming missions.
         struct UpcomingSchedule {} => (Result<Vec<ScheduledMission>, String>)
