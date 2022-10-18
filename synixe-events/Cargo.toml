@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 synixe-proc = { path = "../synixe-proc" }
+synixe-model = { path = "../synixe-model" }
 
 anyhow = "1.0.65"
 async-trait = { workspace = true }

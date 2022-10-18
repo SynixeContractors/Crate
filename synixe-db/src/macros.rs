@@ -17,6 +17,7 @@ macro_rules! trace_query_as {
         use opentelemetry::trace::{Span, Tracer};
         let mut span = opentelemetry::global::tracer("coordinator").start_with_context($query, &$cx);
         span.set_attribute(opentelemetry::KeyValue::new("query", $query));
+        #[allow(unused_mut, unused_variables)]
         let mut i = 0;
         $(
             i += 1;
@@ -59,16 +60,16 @@ macro_rules! fetch_as_and_respond {
             $query,
             $($args,)*
         );
-        let res = query.fetch_all($db).await;
+        let res = query.fetch_all(&$db).await;
         span.end();
         match res {
             Ok(data) => {
-                synixe_events::respond!($msg, &$respond(Ok(data))).await?;
+                synixe_events::respond!($msg, $respond(Ok(data))).await?;
                 Ok(())
             }
             Err(e) => {
                 error!("{:?}", e);
-                synixe_events::respond!($msg, &$respond(Err(e.to_string()))).await?;
+                synixe_events::respond!($msg, $respond(Err(e.to_string()))).await?;
                 Err(e.into())
             }
         }

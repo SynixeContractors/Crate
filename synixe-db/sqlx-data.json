@@ -12,6 +12,61 @@
     },
     "query": "INSERT INTO recruitment_replied (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()"
   },
+  "51ed5dcffec9f40419c1951bc94ff70c03e005e7311cf1a41d21b25aeed2c00c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 4,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions_list"
+  },
   "5b44e569a3c4a82c5c7435d8a33bc7579db04a70297744bb0a8dc79337059a45": {
     "describe": {
       "columns": [],
@@ -22,7 +77,20 @@
           "Varchar",
           "Varchar",
           "Text",
-          "Int4"
+          {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
         ]
       }
     },

@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
 sqlx = { workspace = true, optional = true }
+
+[features]
+default = []

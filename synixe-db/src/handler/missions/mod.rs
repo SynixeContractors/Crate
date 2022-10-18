@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use synixe_events::missions::db::{Request, Response};
 use synixe_meta::missions::MISSION_LIST;
-use synixe_model::missions::Mission;
+use synixe_model::missions::{Mission, MissionType};
 
 use super::Handler;
 
@@ -44,7 +44,7 @@ impl Handler for Request {
                                     mission.name,
                                     mission.summary,
                                     mission.description,
-                                    mission.typ as i32,
+                                    mission.typ as MissionType,
                                 );
                                 if let Err(e) = query.execute(&*db).await {
                                     error!("{:?}", e);
@@ -79,6 +79,16 @@ impl Handler for Request {
                     .await
                     .map_err(std::convert::Into::into)
                 }
+            }
+            Self::FetchMissionList {} => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::Mission,
+                    Response::FetchMissionList,
+                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions_list",
+                )
             }
         }
     }

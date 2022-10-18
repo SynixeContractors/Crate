@@ -5,6 +5,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 /// A mission object
 pub struct Mission {
     /// Mission id
@@ -16,10 +17,16 @@ pub struct Mission {
     /// Mission description
     pub description: String,
     /// Mission type
+    #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
     pub typ: MissionType,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Default, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
+#[cfg_attr(
+    feature = "sqlx",
+    sqlx(type_name = "mission_type", rename_all = "lowercase")
+)]
 /// Mission type
 pub enum MissionType {
     /// Standard Friday & Saturday mission

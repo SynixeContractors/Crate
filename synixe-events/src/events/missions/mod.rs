@@ -3,6 +3,7 @@
 /// Interact with the database.
 pub mod db {
     use chrono::NaiveDateTime;
+    use synixe_model::missions::Mission;
     use synixe_proc::events_requests;
 
     events_requests!(db.missions {
@@ -15,5 +16,7 @@ pub mod db {
         } => (Result<(), String>)
         /// Update missions from the GitHub list
         UpdateMissionList {} => (Result<(), String>)
+        /// Fetch the list of missions
+        FetchMissionList {} => (Result<Vec<Mission>, String>)
     });
 }
