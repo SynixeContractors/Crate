@@ -57,7 +57,6 @@ impl Handler for Request {
                     "SELECT * FROM missions_schedule WHERE start_at > NOW() ORDER BY start_at ASC",
                 )
             }
-            Self::Post { scheduled_mission } => todo!(),
             Self::UpdateMissionList {} => {
                 if let Ok(response) = reqwest::get(MISSION_LIST).await {
                     match response.json::<Vec<Mission>>().await {

@@ -93,7 +93,8 @@ pub async fn check_reddit_findaunit() {
             synixe_events::discord::write,
             ChannelMessage {
                 channel: synixe_meta::discord::channel::RECRUITING,
-                message: synixe_events::discord::write::DiscordMessage::Embed(candidate)
+                message: synixe_events::discord::write::DiscordContent::Embed(candidate),
+                thread: None,
             }
         )
         .await
@@ -135,13 +136,14 @@ pub async fn post_reddit_findaunit() {
                     ChannelMessage
                     {
                         channel: synixe_meta::discord::channel::RECRUITING,
-                        message: synixe_events::discord::write::DiscordMessage::Embed(Candidate {
+                        message: synixe_events::discord::write::DiscordContent::Embed(Candidate {
                             source: Source::Reddit,
                             title: "Reddit Post Submitted".to_string(),
                             link,
                             content: String::new(),
                             ping: false,
-                        }.into())
+                        }.into()),
+                        thread: None,
                     }
                 )
                 .await

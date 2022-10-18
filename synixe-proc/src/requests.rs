@@ -4,7 +4,7 @@ use syn::{
     braced,
     parse::{Parse, ParseStream},
     token::FatArrow,
-    Attribute, Expr, Result, TypeParen,
+    Attribute, Expr, ItemStruct, Result, TypeParen,
 };
 
 pub fn requests(item: TokenStream) -> TokenStream {
@@ -21,16 +21,13 @@ pub fn requests(item: TokenStream) -> TokenStream {
 
     for def in arms {
         let attrs = def.attrs;
-        let pat = def.name;
-        let mut obj = TokenStream::from(quote::quote!(struct));
-        obj.extend(TokenStream::from(quote::quote!(#pat)));
-        let struct_obj = syn::parse_macro_input!(obj as syn::ItemStruct);
-        let name = struct_obj.ident;
+        let body = def.body.fields;
+        let name = def.body.ident;
         names.push(name.clone());
         let resp = def.resp;
         reqs.push(quote::quote!(
             #(#attrs)*
-            #pat
+            #name #body
         ));
         resps.push(quote::quote!(
             #(#attrs)*
@@ -88,7 +85,7 @@ impl Parse for Definitions {
 
 struct Definition {
     attrs: Vec<Attribute>,
-    name: Expr,
+    body: ItemStruct,
     _fat_arrow_token: FatArrow,
     resp: Box<TypeParen>,
 }
@@ -97,7 +94,7 @@ impl Parse for Definition {
     fn parse(input: ParseStream) -> Result<Self> {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
-            name: input.parse::<Expr>()?,
+            body: input.parse::<ItemStruct>()?,
             _fat_arrow_token: input.parse::<FatArrow>()?,
             resp: Box::new(input.parse::<TypeParen>()?),
         })

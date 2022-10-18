@@ -83,7 +83,8 @@ pub async fn check_steam_forums() {
             synixe_events::discord::write,
             ChannelMessage {
                 channel: synixe_meta::discord::channel::RECRUITING,
-                message: synixe_events::discord::write::DiscordMessage::Embed(candidate)
+                message: synixe_events::discord::write::DiscordContent::Embed(candidate),
+                thread: None,
             }
         )
         .await

@@ -6,22 +6,22 @@ pub mod db {
 
     events_requests!(db.recruiting {
         /// Mark a post as seen
-        Seen {
+        struct Seen {
             /// The post url
             url: String
         } => (Result<(), String>)
         /// Check if a post has been seen
-        HasSeen {
+        struct HasSeen {
             /// The post url
             url: String
         } => (Result<Option<bool>, String>)
         /// Mark a post as replied to
-        Replied {
+        struct Replied {
             /// The post url
             url: String
         } => (Result<(), String>)
         /// Check if a post has been replied to
-        HasReplied {
+        struct HasReplied {
             /// The post url
             url: String
         } => (Result<Option<bool>, String>)
@@ -34,13 +34,13 @@ pub mod executions {
 
     events_requests!(executor.recruiting {
         /// Check for new post on Steam
-        CheckSteam {} => (Result<(), String>)
+        struct CheckSteam {} => (Result<(), String>)
         /// Check for new post on Reddit
-        CheckReddit {} => (Result<(), String>)
+        struct CheckReddit {} => (Result<(), String>)
         /// Post on Reddit
-        PostReddit {} => (Result<(), String>)
+        struct PostReddit {} => (Result<(), String>)
         /// Reply on Reddit
-        ReplyReddit {
+        struct ReplyReddit {
             /// Link to post
             url: String
         } => (Result<(), String>)

@@ -3,7 +3,7 @@ use quote::ToTokens;
 use syn::{
     braced,
     parse::{Parse, ParseStream},
-    Attribute, Expr, Result,
+    Attribute, Expr, ItemStruct, Result,
 };
 
 pub fn publish(item: TokenStream) -> TokenStream {
@@ -19,15 +19,12 @@ pub fn publish(item: TokenStream) -> TokenStream {
 
     for def in arms {
         let attrs = def.attrs;
-        let pat = def.name;
-        let mut obj = TokenStream::from(quote::quote!(struct));
-        obj.extend(TokenStream::from(quote::quote!(#pat)));
-        let struct_obj = syn::parse_macro_input!(obj as syn::ItemStruct);
-        let name = struct_obj.ident;
+        let body = def.body.fields;
+        let name = def.body.ident;
         names.push(name.clone());
         publish.push(quote::quote!(
             #(#attrs)*
-            #pat
+            #name #body
         ));
     }
     let string_names = names
@@ -75,14 +72,14 @@ impl Parse for Definitions {
 
 struct Definition {
     attrs: Vec<Attribute>,
-    name: Expr,
+    body: ItemStruct,
 }
 
 impl Parse for Definition {
     fn parse(input: ParseStream) -> Result<Self> {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
-            name: input.parse::<Expr>()?,
+            body: input.parse::<ItemStruct>()?,
         })
     }
 }

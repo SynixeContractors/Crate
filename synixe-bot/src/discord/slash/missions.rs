@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use chrono::TimeZone;
+use chrono_tz::America::New_York;
 use serenity::{
     builder::CreateApplicationCommand,
     model::{
@@ -301,8 +303,9 @@ async fn upcoming(
                 .await
                 {
                     content.push_str(&format!(
-                        "**{}**\n<t:{}:F>\n*{}*\n\n",
+                        "**{}**\n<t:{}:F> - <t:{}:R>\n*{}*\n\n",
                         data.name,
+                        mission.start_at.timestamp(),
                         mission.start_at.timestamp(),
                         data.summary,
                     ));
@@ -384,9 +387,11 @@ pub async fn remove(
                                 for mission in missions {
                                     o.create_option(|o| {
                                         o.label(format!(
-                                            "{} - <t:{}:f>",
+                                            "{} - {}",
                                             mission.mission,
-                                            mission.start_at.timestamp()
+                                            New_York
+                                                .from_utc_datetime(&mission.start_at)
+                                                .format("%m-%d %H:00 %Z")
                                         ))
                                         .value(mission.id)
                                     });

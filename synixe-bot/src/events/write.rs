@@ -10,11 +10,15 @@ pub async fn handle(msg: Message, client: Bot) {
     let ((ev, _), pcx) = synixe_events::parse_data!(msg, write::Request);
     let _span = opentelemetry::global::tracer("bot").start_with_context(ev.name(), &pcx);
     match ev {
-        write::Request::ChannelMessage { channel, message } => {
+        write::Request::ChannelMessage {
+            channel,
+            message,
+            thread: _,
+        } => {
             if let Err(e) = channel
                 .send_message(&client.http, |m| match message {
-                    write::DiscordMessage::Text(text) => m.content(text),
-                    write::DiscordMessage::Embed(embed) => m.set_embed(embed.into()),
+                    write::DiscordContent::Text(text) => m.content(text),
+                    write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
                 })
                 .await
             {
@@ -34,8 +38,8 @@ pub async fn handle(msg: Message, client: Bot) {
                 Ok(dm) => {
                     if let Err(e) = dm
                         .send_message(&client.http, |m| match message {
-                            write::DiscordMessage::Text(text) => m.content(text),
-                            write::DiscordMessage::Embed(embed) => m.set_embed(embed.into()),
+                            write::DiscordContent::Text(text) => m.content(text),
+                            write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
                         })
                         .await
                     {

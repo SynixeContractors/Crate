@@ -99,13 +99,6 @@ async fn main() {
         .unwrap(),
     );
 
-    events_request!(
-        bootstrap::NC::get().await,
-        synixe_events::missions::db,
-        UpdateMissionList {}
-    )
-    .await;
-
     sched.start().await;
 
     info!("Done!");

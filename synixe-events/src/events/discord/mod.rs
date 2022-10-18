@@ -5,17 +5,35 @@ pub mod write {
     use serde::{Deserialize, Serialize};
     use serenity::{
         builder::CreateEmbed,
-        model::prelude::{ChannelId, UserId},
+        model::prelude::{ChannelId, ReactionType, UserId},
     };
     use synixe_proc::events_requests;
 
     #[derive(Debug, Serialize, Deserialize)]
+    /// A message to be created in Discord
+    pub struct DiscordMessage {
+        /// Content of the message
+        pub content: DiscordContent,
+        /// Reactions to add to the message
+        pub reactions: Vec<ReactionType>,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
     /// A message to post to Discord
-    pub enum DiscordMessage {
+    pub enum DiscordContent {
         /// A simple message
         Text(String),
         /// A message with an embed
         Embed(DiscordEmbed),
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    /// A thread to be created in Discord
+    pub struct DiscordThread {
+        /// Name of the thread
+        pub name: String,
+        /// Messages to post in the thread
+        pub messages: Vec<DiscordMessage>,
     }
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -52,18 +70,20 @@ pub mod write {
 
     events_requests!(discord.write {
         /// Send a message to a channel
-        ChannelMessage {
+        struct ChannelMessage {
             /// The channel to send the message to
             channel: ChannelId,
             /// The message to send
-            message: DiscordMessage,
+            message: DiscordContent,
+            /// Create a thread on the message
+            thread: Option<DiscordThread>,
         } => (Result<(), String>)
         /// Direct message a user
-        UserMessage {
+        struct UserMessage {
             /// The user to send the message to
             user: UserId,
             /// The message to send
-            message: DiscordMessage,
+            message: DiscordContent,
         } => (Result<(), String>)
     });
 }
@@ -87,7 +107,7 @@ pub mod info {
 
     events_requests!(discord.info {
         /// A message was sent
-        Username {
+        struct Username {
             /// The message that was sent
             user: UserId,
         } => (Result<Username, String>)
@@ -100,12 +120,12 @@ pub mod publish {
     use synixe_proc::events_publish;
     events_publish!(discord.publish {
         /// A reaction was added to a message
-        ReactionAdd {
+        struct ReactionAdd {
             /// Reaction added the message
             reaction: Reaction
         }
         /// A reaction was removed from a message
-        ReactionRemove {
+        struct ReactionRemove {
             /// Reaction removed from the message
             reaction: Reaction
         }

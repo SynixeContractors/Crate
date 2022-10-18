@@ -9,37 +9,46 @@ pub mod db {
 
     events_requests!(db.missions {
         /// Schedule a mission
-        Schedule {
+        struct Schedule {
             /// The mission to schedule.
             mission: String,
             /// The day to schedule the mission.
             date: NaiveDateTime
         } => (Result<(), String>)
         /// Checks if a day is already scheduled.
-        IsScheduled {
+        struct IsScheduled {
             /// The day to check.
             date: NaiveDateTime
         } => (Result<Option<bool>, String>)
         /// Remove a scheduled mission.
-        Unschedule {
+        struct Unschedule {
             /// The mission to remove.
             scheduled_mission: Uuid
         } => (Result<(), String>)
         /// Gets all upcoming missions.
-        UpcomingSchedule {} => (Result<Vec<ScheduledMission>, String>)
-        /// Post an upcoming mission
-        Post {
-            /// The scheduled mission to post.
-            scheduled_mission: Uuid,
-        } => (Result<(), String>)
+        struct UpcomingSchedule {} => (Result<Vec<ScheduledMission>, String>)
         /// Update missions from the GitHub list
-        UpdateMissionList {} => (Result<(), String>)
+        struct UpdateMissionList {} => (Result<(), String>)
         /// Fetch the list of missions
-        FetchMissionList {} => (Result<Vec<Mission>, String>)
+        struct FetchMissionList {} => (Result<Vec<Mission>, String>)
         /// Fetch a single mission
-        FetchMission {
+        struct FetchMission {
             /// The mission to fetch.
             mission: String,
         } => (Result<Option<Mission>, String>)
+    });
+}
+
+/// Interact with the executor.
+pub mod executions {
+    use synixe_proc::events_requests;
+    use uuid::Uuid;
+
+    events_requests!(executor.missions {
+        /// Post an upcoming mission
+        struct Post {
+            /// The scheduled mission to post.
+            scheduled_mission: Uuid,
+        } => (Result<(), String>)
     });
 }
