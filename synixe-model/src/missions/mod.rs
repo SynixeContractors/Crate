@@ -20,7 +20,6 @@ pub struct Mission {
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[cfg_attr(feature = "sqlx", derive(sqlx::Type), sqlx(rename_all = "lowercase"))]
 /// Mission type
 pub enum MissionType {
     /// Standard Friday & Saturday mission
@@ -36,14 +35,26 @@ pub enum MissionType {
     Other,
 }
 
-impl From<u32> for MissionType {
-    fn from(value: u32) -> Self {
+impl From<i32> for MissionType {
+    fn from(value: i32) -> Self {
         match value {
             0 => Self::Contract,
             1 => Self::SubContract,
             2 => Self::Training,
             3 => Self::Special,
             _ => Self::Other,
+        }
+    }
+}
+
+impl From<MissionType> for i32 {
+    fn from(value: MissionType) -> Self {
+        match value {
+            MissionType::Contract => 0,
+            MissionType::SubContract => 1,
+            MissionType::Training => 2,
+            MissionType::Special => 3,
+            MissionType::Other => 4,
         }
     }
 }

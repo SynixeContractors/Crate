@@ -1,11 +1,9 @@
-CREATE TYPE mission_type AS ENUM ('contract', 'subcontract', 'training', 'special', 'other');
-
 CREATE TABLE IF NOT EXISTS missions_list (
     id VARCHAR(256) NOT NULL,
     name VARCHAR(128) NOT NULL,
     summary VARCHAR(512) NOT NULL,
     description TEXT NOT NULL,
-    type mission_type NOT NULL,
+    type INTEGER NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id)
 );

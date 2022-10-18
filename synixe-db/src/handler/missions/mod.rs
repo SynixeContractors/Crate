@@ -44,7 +44,7 @@ impl Handler for Request {
                                     mission.name,
                                     mission.summary,
                                     mission.description,
-                                    mission.typ,
+                                    mission.typ as i32,
                                 );
                                 if let Err(e) = query.execute(&*db).await {
                                     error!("{:?}", e);

@@ -22,20 +22,7 @@
           "Varchar",
           "Varchar",
           "Text",
-          {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
+          "Int4"
         ]
       }
     },
