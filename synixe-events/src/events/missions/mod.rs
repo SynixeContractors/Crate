@@ -3,8 +3,9 @@
 /// Interact with the database.
 pub mod db {
     use chrono::NaiveDateTime;
-    use synixe_model::missions::Mission;
+    use synixe_model::missions::{Mission, ScheduledMission};
     use synixe_proc::events_requests;
+    use uuid::Uuid;
 
     events_requests!(db.missions {
         /// Schedule a mission
@@ -19,6 +20,13 @@ pub mod db {
             /// The day to check.
             date: NaiveDateTime
         } => (Result<Option<bool>, String>)
+        /// Gets all upcoming missions.
+        UpcomingSchedule {} => (Result<Vec<ScheduledMission>, String>)
+        /// Post an upcoming mission
+        Post {
+            /// The scheduled mission to post.
+            mission: Uuid,
+        } => (Result<(), String>)
         /// Update missions from the GitHub list
         UpdateMissionList {} => (Result<(), String>)
         /// Fetch the list of missions

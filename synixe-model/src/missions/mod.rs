@@ -65,3 +65,18 @@ impl From<MissionType> for i32 {
         }
     }
 }
+
+#[cfg(feature = "mission-schedule")]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
+/// A scheduled mission
+pub struct ScheduledMission {
+    /// Unique id
+    pub id: uuid::Uuid,
+    /// Mission id
+    pub mission: String,
+    /// Message in #schedule
+    pub message_id: Option<String>,
+    /// Start datetime
+    pub start_at: chrono::NaiveDateTime,
+}

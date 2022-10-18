@@ -4,8 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+chrono = { workspace = true, optional = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
 sqlx = { workspace = true, optional = true }
+uuid = { workspace = true, optional = true, features = ["serde"] }
 
 [features]
-default = []
+default = [
+    "missions",
+]
+missions = []
+mission-schedule = [ "missions", "chrono", "uuid" ]

@@ -36,6 +36,17 @@ impl Handler for Request {
                     date,
                 )
             }
+            Self::UpcomingSchedule {} => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::UpcomingSchedule,
+                    "SELECT * FROM missions_schedule WHERE start_at > NOW() ORDER BY start_at ASC",
+                )
+            }
+            Self::Post { mission } => todo!(),
             Self::UpdateMissionList {} => {
                 if let Ok(response) = reqwest::get(MISSION_LIST).await {
                     match response.json::<Vec<Mission>>().await {
@@ -97,7 +108,7 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::Mission,
                     Response::FetchMissionList,
-                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions",
+                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions ORDER BY name ASC",
                 )
             }
         }

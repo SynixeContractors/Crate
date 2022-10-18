@@ -2,7 +2,8 @@ use chrono::{Datelike, NaiveDateTime, TimeZone};
 use chrono_tz::America::New_York;
 use serenity::{
     model::prelude::{
-        application_command::ApplicationCommandInteraction, InteractionResponseType, RoleId,
+        application_command::{ApplicationCommandInteraction, CommandDataOption},
+        InteractionResponseType, RoleId,
     },
     prelude::Context,
 };
@@ -32,35 +33,58 @@ pub async fn requires_role(
     found
 }
 
-pub fn get_datetime(command: &ApplicationCommandInteraction) -> NaiveDateTime {
-    let day = command
-        .data
-        .options
+pub fn get_datetime(options: &[CommandDataOption]) -> NaiveDateTime {
+    let month = options
+        .iter()
+        .find(|option| option.name == "month")
+        .map_or_else(
+            || chrono::Utc::now().with_timezone(&New_York).date().month(),
+            |option| {
+                option
+                    .value
+                    .as_ref()
+                    .unwrap()
+                    .as_u64()
+                    .unwrap()
+                    .try_into()
+                    .unwrap()
+            },
+        );
+    let day = options
         .iter()
         .find(|option| option.name == "day")
-        .unwrap()
-        .value
-        .as_ref()
-        .unwrap()
-        .as_str()
-        .unwrap()
-        .to_string();
-    let hour = command
-        .data
-        .options
-        .iter()
-        .find(|option| option.name == "time")
         .map_or_else(
-            || "22".to_string(),
-            |option| option.value.as_ref().unwrap().as_str().unwrap().to_string(),
+            || chrono::Utc::now().with_timezone(&New_York).date().day(),
+            |option| {
+                option
+                    .value
+                    .as_ref()
+                    .unwrap()
+                    .as_u64()
+                    .unwrap()
+                    .try_into()
+                    .unwrap()
+            },
         );
-    let (month, day) = day.split_once('-').unwrap();
-    debug!("month: {}, day: {}", month, day);
+    let hour = options
+        .iter()
+        .find(|option| option.name == "hour")
+        .map_or_else(
+            || 22,
+            |option| {
+                option
+                    .value
+                    .as_ref()
+                    .unwrap()
+                    .as_u64()
+                    .unwrap()
+                    .try_into()
+                    .unwrap()
+            },
+        );
     let date = {
         let year = chrono::Utc::now().with_timezone(&New_York).date().year();
-        let possible = New_York
-            .ymd(year, month.parse().unwrap(), day.parse().unwrap())
-            .and_hms(hour.parse().unwrap(), 0, 0);
+        let possible = New_York.ymd(year, month, day).and_hms(hour, 0, 0);
         if chrono::Utc::now()
             .signed_duration_since(possible)
             .num_seconds()

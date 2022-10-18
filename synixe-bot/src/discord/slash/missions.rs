@@ -6,7 +6,10 @@ use serenity::{
         application::interaction::{
             application_command::ApplicationCommandInteraction, InteractionResponseType,
         },
-        prelude::{command::CommandOptionType, component::ButtonStyle, RoleId},
+        prelude::{
+            application_command::CommandDataOption, command::CommandOptionType,
+            component::ButtonStyle, RoleId,
+        },
     },
     prelude::*,
 };
@@ -16,28 +19,66 @@ use synixe_proc::events_request;
 pub fn schedule(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
         .name("schedule")
-        .description("Schedule a mission")
+        .description("Contract Schedule")
         .create_option(|option| {
             option
-                .name("day")
-                .description("The day to schedule the mission")
-                .kind(CommandOptionType::String)
-                .required(true)
+                .name("new")
+                .description("Add a mission to the schedule")
+                .kind(CommandOptionType::SubCommand)
+                .create_sub_option(|option| {
+                    option
+                        .name("month")
+                        .description("The month to schedule the mission")
+                        .kind(CommandOptionType::Integer)
+                        .max_int_value(12)
+                        .min_int_value(1)
+                        .required(true)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("day")
+                        .description("The day to schedule the mission")
+                        .kind(CommandOptionType::Integer)
+                        .max_int_value(31)
+                        .min_int_value(1)
+                        .required(true)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("hour")
+                        .description("The starting hour to schedule the mission")
+                        .kind(CommandOptionType::Integer)
+                        .max_int_value(23)
+                        .min_int_value(0)
+                        .required(false)
+                })
         })
         .create_option(|option| {
             option
-                .name("hour")
-                .description("The starting hour to schedule the mission")
-                .kind(CommandOptionType::Integer)
-                .max_int_value(23)
-                .min_int_value(0)
-                .required(false)
+                .name("upcoming")
+                .description("View the upcoming missions")
+                .kind(CommandOptionType::SubCommand)
         })
 }
 
-#[allow(clippy::too_many_lines)]
 pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction) {
-    let date = super::get_datetime(command);
+    let subcommand = command.data.options.first().unwrap();
+    if subcommand.kind == CommandOptionType::SubCommand {
+        match subcommand.name.as_str() {
+            "new" => new(ctx, command, &subcommand.options).await,
+            "upcoming" => upcoming(ctx, command, &subcommand.options).await,
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+async fn new(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    options: &[CommandDataOption],
+) {
+    let date = super::get_datetime(options);
     if !super::requires_role(
         RoleId(1_020_252_253_287_886_858),
         &command.member.as_ref().unwrap().roles,
@@ -65,7 +106,7 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
                         message
                             .content(format!(
                                 "A mission is already scheduled at <t:{}:F>, or the check failed.",
-                                date
+                                date.timestamp()
                             ))
                             .ephemeral(true)
                     })
@@ -225,4 +266,13 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
             .await
             .unwrap();
     }
+}
+
+#[allow(clippy::unused_async)]
+async fn upcoming(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    options: &[CommandDataOption],
+) {
+    debug!("upcoming");
 }
