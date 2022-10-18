@@ -56,7 +56,9 @@ pub async fn run_reply(ctx: &Context, command: &ApplicationCommandInteraction) {
                         response
                             .kind(InteractionResponseType::ChannelMessageWithSource)
                             .interaction_response_data(|message| {
-                                message.content("Only reddit posts can be replied to currently").ephemeral(true)
+                                message
+                                    .content("Only reddit posts can be replied to currently")
+                                    .ephemeral(true)
                             })
                     })
                     .await
@@ -70,7 +72,9 @@ pub async fn run_reply(ctx: &Context, command: &ApplicationCommandInteraction) {
             response
                 .kind(InteractionResponseType::ChannelMessageWithSource)
                 .interaction_response_data(|message| {
-                    message.content("This command can only be used on recruiting posts").ephemeral(true)
+                    message
+                        .content("This command can only be used on recruiting posts")
+                        .ephemeral(true)
                 })
         })
         .await
