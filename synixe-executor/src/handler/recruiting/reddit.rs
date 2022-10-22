@@ -112,6 +112,7 @@ pub async fn check_reddit_findaunit() {
 }
 
 pub async fn post_reddit_findaunit() {
+    debug!("in executor post reddit");
     let client = Reddit::new(
         "Ctirad Brodsky (by /u/synixe)",
         &std::env::var("REDDIT_CLIENT_ID").expect("REDDIT_CLIENT_SECRET not set"),
