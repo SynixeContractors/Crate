@@ -5,13 +5,14 @@ use synixe_events::{
         db,
         executions::{Request, Response},
     },
-    respond,
+    publish, respond,
 };
 use synixe_meta::discord::channel::ONTOPIC;
 use synixe_proc::events_request;
 
 use super::Handler;
 
+#[allow(clippy::too_many_lines)]
 #[async_trait]
 impl Handler for Request {
     async fn handle(
@@ -34,26 +35,31 @@ impl Handler for Request {
                         let now = chrono::Utc::now().naive_utc();
                         let mut posts = Vec::new();
                         for mission in missions {
-                            match mission.start_at.signed_duration_since(now).num_minutes() {
+                            let num_minutes =
+                                mission.start_at.signed_duration_since(now).num_minutes();
+                            match num_minutes {
                                 178..=182 => {
-                                    posts.push(("3 hours!", mission));
+                                    posts.push((Some("3 hours!"), mission, num_minutes));
+                                }
+                                78..=82 | 68..=72 => {
+                                    posts.push((None, mission, num_minutes));
                                 }
                                 58..=62 => {
-                                    posts.push(("1 hour!", mission));
+                                    posts.push((Some("1 hour!"), mission, num_minutes));
                                 }
                                 28..=32 => {
-                                    posts.push(("30 minutes!", mission));
+                                    posts.push((Some("30 minutes!"), mission, num_minutes));
                                 }
                                 8..=12 => {
-                                    posts.push(("10 minutes!", mission));
+                                    posts.push((Some("10 minutes!"), mission, num_minutes));
                                 }
                                 3..=7 => {
-                                    posts.push(("5 minutes!", mission));
+                                    posts.push((Some("5 minutes!"), mission, num_minutes));
                                 }
                                 _ => {}
                             }
                         }
-                        for (text, mission) in posts {
+                        for (text, mission, minutes) in posts {
                             if let Ok((
                                 (db::Response::FetchMission(Ok(Some(mission_data))), _),
                                 _,
@@ -66,24 +72,55 @@ impl Handler for Request {
                             )
                             .await
                             {
-                                if let Err(e) = events_request!(
+                                if let Some(text) = text {
+                                    if let Err(e) = events_request!(
+                                        bootstrap::NC::get().await,
+                                        synixe_events::discord::write,
+                                        ChannelMessage {
+                                            channel: ONTOPIC,
+                                            message: DiscordMessage {
+                                                content: DiscordContent::Text(format!(
+                                                    "**{}** starts in {}",
+                                                    mission_data.name, text
+                                                )),
+                                                reactions: Vec::new(),
+                                            },
+                                            thread: None,
+                                        }
+                                    )
+                                    .await
+                                    {
+                                        error!("error posting to reddit: {:?}", e);
+                                    }
+                                } else if let Err(e) = publish!(
                                     bootstrap::NC::get().await,
-                                    synixe_events::discord::write,
-                                    ChannelMessage {
-                                        channel: ONTOPIC,
-                                        message: DiscordMessage {
-                                            content: DiscordContent::Text(format!(
-                                                "**{}** starts in {}",
-                                                mission_data.name, text
-                                            )),
-                                            reactions: Vec::new(),
+                                    match minutes {
+                                        78..=82 => synixe_events::missions::publish::Publish::WarnChangeMission {
+                                            id: mission.mission,
+                                            mission_type: mission_data.typ
                                         },
-                                        thread: None,
+                                        68..=72 => synixe_events::missions::publish::Publish::ChangeMission {
+                                            id: mission.mission,
+                                            mission_type: mission_data.typ
+                                        },
+                                        _ => unreachable!(),
                                     }
                                 )
                                 .await
                                 {
-                                    error!("error posting to reddit: {:?}", e);
+                                    error!("Failed to publish discord message: {}", e);
+                                }
+                                if let Err(e) = publish!(
+                                    bootstrap::NC::get().await,
+                                    synixe_events::missions::publish::Publish::StartingSoon {
+                                        mission: mission_data,
+                                        start_time: mission.start_at,
+                                        minutes,
+                                    }
+                                )
+                                .await
+                                {
+                                    error!("Failed to publish discord message: {}", e);
                                 }
                             }
                         }

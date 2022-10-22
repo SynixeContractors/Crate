@@ -55,3 +55,36 @@ pub mod executions {
         struct PostUpcomingMissions {} => (Result<(), String>)
     });
 }
+
+/// Inform services about missions.
+pub mod publish {
+    use chrono::NaiveDateTime;
+    use synixe_model::missions::{Mission, MissionType};
+    use synixe_proc::events_publish;
+
+    events_publish!(publish.missions {
+        /// Publish a scheduled mission
+        struct StartingSoon {
+            /// The  mission starting soon
+            mission: Mission,
+            /// Start time
+            start_time: NaiveDateTime,
+            /// Minutes until the mission starts
+            minutes: i64,
+        }
+        /// It's time to load a mission on a server
+        struct ChangeMission {
+            /// The mission to load
+            id: String,
+            /// Type of mission
+            mission_type: MissionType,
+        }
+        /// Warn that the mission is about to change
+        struct WarnChangeMission {
+            /// The mission to load
+            id: String,
+            /// Type of mission
+            mission_type: MissionType,
+        }
+    });
+}

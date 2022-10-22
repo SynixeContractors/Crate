@@ -33,7 +33,7 @@ async fn main() {
     job!(
         sched,
         "Recruiting - check reddit findaunit for new posts",
-        "0 */10 * * * *",
+        "0 */20 * * * *",
         synixe_events::recruiting::executions,
         CheckReddit
     );
