@@ -1,3 +1,6 @@
+#![deny(clippy::pedantic)]
+#![warn(clippy::nursery, clippy::all)]
+
 #[cfg(feature = "sqlx")]
 mod db;
 #[cfg(feature = "sqlx")]

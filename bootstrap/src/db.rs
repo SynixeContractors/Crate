@@ -6,6 +6,11 @@ pub type DBPool = std::sync::Arc<sqlx::Pool<sqlx::Postgres>>;
 pub struct DB();
 
 impl DB {
+    /// Gets a reference to the database pool.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the database pool can not be initialized.
     pub async fn get() -> DBPool {
         static mut SINGLETON: MaybeUninit<DBPool> = MaybeUninit::uninit();
         static mut INIT: bool = false;

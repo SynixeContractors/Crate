@@ -1,6 +1,11 @@
 use log::LevelFilter;
 use simplelog::{ColorChoice, ConfigBuilder, TermLogger, TerminalMode};
 
+/// Initializes the logger.
+///
+/// # Panics
+///
+/// Panics if the logger can not be initialized.
 pub fn init() {
     let args: Vec<_> = std::env::args().collect();
     TermLogger::init(
