@@ -1,0 +1,7 @@
+[package]
+name = "synixe-arma-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+arma-rs = "1.8.0"
