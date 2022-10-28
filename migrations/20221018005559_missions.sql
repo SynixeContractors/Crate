@@ -27,9 +27,9 @@ CREATE TABLE IF NOT EXISTS missions_schedule (
 
 CREATE TABLE IF NOT EXISTS missions_schedule_players (
     schedule_id UUID NOT NULL,
-    player VARCHAR(128) NOT NULL,
+    user_id VARCHAR(128) NOT NULL,
     joined boolean NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (schedule_id, player),
+    PRIMARY KEY (schedule_id, user_id),
     CONSTRAINT missions_schedule_players_schedule_id_fk FOREIGN KEY (schedule_id) REFERENCES missions_schedule (id) ON DELETE CASCADE
 );

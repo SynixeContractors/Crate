@@ -8,10 +8,15 @@ chrono = { workspace = true, optional = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
 sqlx = { workspace = true, optional = true }
 uuid = { workspace = true, optional = true, features = ["serde"] }
+serenity = { workspace = true, features = ["utils", "builder"], optional = true }
 
 [features]
 default = [
+    "certifications",
     "missions",
+    "roles",
 ]
-missions = []
+certifications = [ "uuid", "roles" ]
 mission-schedule = [ "missions", "chrono", "uuid" ]
+missions = []
+roles = [ "serenity" ]

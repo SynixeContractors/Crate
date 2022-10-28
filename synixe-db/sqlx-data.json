@@ -1,5 +1,25 @@
 {
   "db": "PostgreSQL",
+  "1064a304ef408c4e242dc6c47c5ffcdf9ab3ec43d250657a63a8fa7de78966f8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "valid_for",
+          "ordinal": 0,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            valid_for\n                        FROM\n                            certifications\n                        WHERE\n                            id = $1"
+  },
   "17b1e72c83f0147746e426ae7ef7b9f76c4e7b62509ea45869575d9ee3612d92": {
     "describe": {
       "columns": [
@@ -279,6 +299,65 @@
     },
     "query": "INSERT INTO missions_schedule (mission, start_at) VALUES ($1, $2)"
   },
+  "d4a9a7aa80c5994ac24a8c3ef7c3fb3928289030d383655cd0953e6609557980": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "instructor_id",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "trainee_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "certification_id",
+          "ordinal": 3,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "notes",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "valid_until",
+          "ordinal": 5,
+          "type_info": "Timestamp"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 6,
+          "type_info": "Timestamp"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Uuid",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                            INSERT INTO\n                                certifications_trials\n                                (instructor_id, trainee_id, certification_id, notes)\n                            VALUES\n                                ($1, $2, $3, $4)\n                            RETURNING\n                                id,\n                                instructor_id,\n                                trainee_id,\n                                certification_id,\n                                notes,\n                                valid_until,\n                                created_at"
+  },
   "d6723f891478fdee19415ea75d9e17745213002653d0dc00b4bea49b62f8fad5": {
     "describe": {
       "columns": [
@@ -298,5 +377,140 @@
       }
     },
     "query": "SELECT EXISTS(SELECT 1 FROM recruitment_seen WHERE link = $1) as value"
+  },
+  "d7da35497fc892331e0d5a9f72445ee46bda5280d5331a6cceb8eac8110f0feb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "instructor_certified!",
+          "ordinal": 0,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            EXISTS(\n                                SELECT\n                                    1\n                                FROM\n                                    certifications_instructors\n                                WHERE\n                                    user_id = $1\n                                    AND certification_id = $2\n                            ) AS \"instructor_certified!\""
+  },
+  "e82599618c938a6e500bbdb691ad8a4b0bee7659babcb9fc1c431a902d5fd37b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "link",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "roles_required: Json<synixe_model::Roles>",
+          "ordinal": 3,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "roles_granted: Json<synixe_model::Roles>",
+          "ordinal": 4,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "valid_for",
+          "ordinal": 5,
+          "type_info": "Int4"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 6,
+          "type_info": "Timestamp"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n                    SELECT\n                        id,\n                        name,\n                        link,\n                        roles_required as \"roles_required: Json<synixe_model::Roles>\",\n                        roles_granted as \"roles_granted: Json<synixe_model::Roles>\",\n                        valid_for,\n                        created_at\n                    FROM\n                        certifications"
+  },
+  "e92a975047f52341522d38e57948c286996c862f611eae1d42682b88362ef210": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "instructor_id",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "trainee_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "certification_id",
+          "ordinal": 3,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "notes",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "valid_until",
+          "ordinal": 5,
+          "type_info": "Timestamp"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 6,
+          "type_info": "Timestamp"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Uuid",
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                            INSERT INTO\n                                certifications_trials\n                                (instructor_id, trainee_id, certification_id, notes, valid_until)\n                            VALUES\n                                ($1, $2, $3, $4, NOW() + ($5 || ' days')::INTERVAL)\n                            RETURNING\n                                id,\n                                instructor_id,\n                                trainee_id,\n                                certification_id,\n                                notes,\n                                valid_until,\n                                created_at"
   }
 }

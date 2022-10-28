@@ -123,7 +123,7 @@ pub async fn post_reddit_findaunit() {
     .login()
     .await;
     if let Ok(client) = client {
-        match client.submit_text(
+        match client.submit_richtext(
             "[A3][Recruiting][NA/SA/OCE/SEA][Semi-milsim][18+]- Synixe Contractors - PMC - Persistent Gear - Manage your own kit",
             std::str::from_utf8(crate::Assets::get("reddit-findaunit.md").unwrap().data.as_ref()).unwrap(),
             "findaunit"
