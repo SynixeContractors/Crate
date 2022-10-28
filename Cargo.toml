@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "bootstrap",
-    "synixe-arma/server",
+    #"synixe-arma/server",
     "synixe-bot",
     "synixe-db",
     "synixe-events",
