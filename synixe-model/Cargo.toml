@@ -12,11 +12,10 @@ serenity = { workspace = true, features = ["utils", "builder"], optional = true 
 
 [features]
 default = [
-    "certifications",
     "missions",
     "roles",
 ]
-certifications = [ "uuid", "roles" ]
+certifications = [ "uuid", "roles", "sqlx" ]
 mission-schedule = [ "missions", "chrono", "uuid" ]
 missions = []
 roles = [ "serenity" ]
