@@ -4,35 +4,43 @@ CREATE TABLE gear_items (
     roles TEXT,
     category VARCHAR(16),
     global BOOLEAN NOT NULL DEFAULT false,
-    PRIMARY KEY class
+    PRIMARY KEY (class)
 );
 
-CREATE INDEX items_roles_idx ON gear_items roles;
-CREATE INDEX items_category_idx ON gear_items category;
-CREATE INDEX items_global_idx ON gear_items global;
+CREATE INDEX items_roles_idx ON gear_items (roles);
+CREATE INDEX items_category_idx ON gear_items (category);
+CREATE INDEX items_global_idx ON gear_items (global);
 
 -- cost
 CREATE TABLE gear_cost (
     class VARCHAR(255) NOT NULL,
     cost SERIAL NOT NULL,
+    priority INTEGER NOT NULL DEFAULT 0,
     start_date TIMESTAMP,
     end_date TIMESTAMP,
-    PRIMARY KEY class
+    PRIMARY KEY (class, cost),
+    CONSTRAINT fk_items_cost FOREIGN KEY (class) REFERENCES gear_items(class)
 );
 
-ADD CONSTRAINT fk_items_cost FOREIGN KEY (class) REFERENCES gear_items(class); 
+CREATE INDEX cost_class_idx ON gear_cost (class);
+CREATE INDEX cost_cost_idx ON gear_cost (cost);
+CREATE INDEX cost_start_date_idx ON gear_cost (start_date);
+CREATE INDEX cost_end_date_idx ON gear_cost (end_date);
 
-CREATE INDEX cost_class_idx ON gear_cost class;
-CREATE INDEX cost_cost_idx ON gear_cost cost;
-CREATE INDEX cost_start_date_idx ON gear_cost start_date;
-CREATE INDEX cost_end_date_idx ON gear_cost end_date;
+CREATE OR REPLACE FUNCTION determine_current_cost(VARCHAR(255)) RETURNS INTEGER AS $$
+    DECLARE result INTEGER;
+    BEGIN
+       SELECT cost INTO result FROM gear_cost WHERE class = $1 AND CURRENT_TIMESTAMP > start_date AND CURRENT_TIMESTAMP < end_date ORDER BY priority DESC;
+       RETURN result;
+    END
+$$ LANGUAGE plpgsql;
 
 -- Loadouts
 CREATE TABLE gear_loadouts (
     member VARCHAR(128),
     loadout TEXT NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY member
+    PRIMARY KEY (member)
 );
 
 CREATE OR REPLACE FUNCTION gear_loadouts_update_created_on_update() RETURNS TRIGGER AS $$
@@ -54,7 +62,7 @@ CREATE TABLE gear_loadouts_log (
     PRIMARY KEY (member, created)
 );
 
-CREATE INDEX old_loadouts_member_idx ON gear_loadouts_log member;
+CREATE INDEX old_loadouts_member_idx ON gear_loadouts_log (member);
 
 -- Move a row to gear_loadouts_log when updated in loadouts
 CREATE OR REPLACE FUNCTION gear_move_to_old_loadouts()
@@ -77,7 +85,7 @@ EXECUTE PROCEDURE gear_move_to_old_loadouts();
 CREATE TABLE gear_bank_balance_cache (
     member VARCHAR(128) NOT NULL,
     balance BIGINT NOT NULL,
-    PRIMARY KEY member
+    PRIMARY KEY (member)
 );
 
 CREATE TABLE gear_bank_purchases (
@@ -90,9 +98,9 @@ CREATE TABLE gear_bank_purchases (
     PRIMARY KEY (member, class, created)
 );
 
-CREATE INDEX purchases_member_idx ON gear_bank_purchases member;
-CREATE INDEX purchases_class_idx ON gear_bank_purchases class;
-CREATE INDEX purchases_global_idx ON gear_bank_purchases global;
+CREATE INDEX purchases_member_idx ON gear_bank_purchases (member);
+CREATE INDEX purchases_class_idx ON gear_bank_purchases (class);
+CREATE INDEX purchases_global_idx ON gear_bank_purchases (global);
 
 CREATE TABLE gear_bank_deposits (
     member VARCHAR(128) NOT NULL,
@@ -103,9 +111,9 @@ CREATE TABLE gear_bank_deposits (
     PRIMARY KEY (member, id, created)
 );
 
-CREATE INDEX deposits_member_idx ON gear_bank_deposits member;
-CREATE INDEX deposits_reason_idx ON gear_bank_deposits reason;
-CREATE INDEX deposits_id_idx ON gear_bank_deposits id;
+CREATE INDEX deposits_member_idx ON gear_bank_deposits (member);
+CREATE INDEX deposits_reason_idx ON gear_bank_deposits (reason);
+CREATE INDEX deposits_id_idx ON gear_bank_deposits (id);
 
 CREATE TABLE gear_bank_transfers (
     source VARCHAR(128) NOT NULL,
@@ -116,9 +124,9 @@ CREATE TABLE gear_bank_transfers (
     PRIMARY KEY (source, target, created)
 );
 
-CREATE INDEX transfers_source_idx ON gear_bank_transfers source;
-CREATE INDEX transfers_target_idx ON gear_bank_transfers target;
-CREATE INDEX transfers_reason_idx ON gear_bank_transfers reason;
+CREATE INDEX transfers_source_idx ON gear_bank_transfers (source);
+CREATE INDEX transfers_target_idx ON gear_bank_transfers (target);
+CREATE INDEX transfers_reason_idx ON gear_bank_transfers (reason);
 
 -- Retrieve the balance of a member
 -- Take into account the deposits, purchases, and transfers
@@ -140,7 +148,7 @@ BEGIN
     ) AS gear_bank_purchases, (
         SELECT COALESCE(SUM(amount), 0) AS sum
         FROM gear_bank_transfers
-        WHERE AND source = $1
+        WHERE source = $1
     ) AS transfers_out, (
         SELECT COALESCE(SUM(amount), 0) AS sum
         FROM gear_bank_transfers
