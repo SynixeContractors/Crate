@@ -19,7 +19,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::Seen,
-                    "INSERT INTO recruitment_seen (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()",
+                    "INSERT INTO recruitment_seen (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created = NOW()",
                     url,
                 )
             }
@@ -39,7 +39,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::Replied,
-                    "INSERT INTO recruitment_replied (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created_at = NOW()",
+                    "INSERT INTO recruitment_replied (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created = NOW()",
                     url,
                 )
             }

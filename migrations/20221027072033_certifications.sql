@@ -8,27 +8,27 @@ CREATE TABLE IF NOT EXISTS certifications (
     roles_required JSONB NOT NULL,
     roles_granted JSONB NOT NULL,
     valid_for INTEGER NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS certifications_trials (
     id UUID PRIMARY KEY,
-    certification_id UUID NOT NULL,
-    trainee_id VARCHAR(128) NOT NULL,
-    instructor_id VARCHAR(128) NOT NULL,
+    certification UUID NOT NULL,
+    trainee VARCHAR(128) NOT NULL,
+    instructor VARCHAR(128) NOT NULL,
     notes TEXT NOT NULL,
     valid_until TIMESTAMP,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT certifications_trials_certification_id_fk FOREIGN KEY (certification_id) REFERENCES certifications (id) ON DELETE CASCADE
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT certifications_trials_certification FOREIGN KEY (certification) REFERENCES certifications (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS certifications_instructors (
-    certification_id UUID NOT NULL,
-    user_id VARCHAR(128) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (certification_id, user_id),
-    CONSTRAINT certifications_instructors_certification_id_fk FOREIGN KEY (certification_id) REFERENCES certifications (id) ON DELETE CASCADE
+    certification UUID NOT NULL,
+    member VARCHAR(128) NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (certification, member),
+    CONSTRAINT certifications_instructors_certification FOREIGN KEY (certification) REFERENCES certifications (id) ON DELETE CASCADE
 );

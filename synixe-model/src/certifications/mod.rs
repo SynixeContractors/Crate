@@ -24,7 +24,7 @@ pub struct Certification {
     /// Valid period in days
     pub valid_for: i32,
     /// Certification created at
-    pub created_at: chrono::NaiveDateTime,
+    pub created: chrono::NaiveDateTime,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -34,15 +34,15 @@ pub struct CertificationTrial {
     /// Certification trial id
     pub id: Uuid,
     /// Certification id
-    pub certification_id: Uuid,
+    pub certification: Uuid,
     /// Trainee id
-    pub trainee_id: String,
+    pub trainee: String,
     /// Instructor id
-    pub instructor_id: String,
+    pub instructor: String,
     /// Notes
     pub notes: String,
     /// Valid until
     pub valid_until: Option<chrono::NaiveDateTime>,
     /// Created at
-    pub created_at: chrono::NaiveDateTime,
+    pub created: chrono::NaiveDateTime,
 }

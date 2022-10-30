@@ -36,7 +36,7 @@ impl Handler for Request {
                         let mut posts = Vec::new();
                         for mission in missions {
                             let num_minutes =
-                                mission.start_at.signed_duration_since(now).num_minutes();
+                                mission.start.signed_duration_since(now).num_minutes();
                             match num_minutes {
                                 178..=182 => {
                                     posts.push((Some("3 hours!"), mission, num_minutes));
@@ -114,7 +114,7 @@ impl Handler for Request {
                                     bootstrap::NC::get().await,
                                     synixe_events::missions::publish::Publish::StartingSoon {
                                         mission: mission_data,
-                                        start_time: mission.start_at,
+                                        start_time: mission.start,
                                         minutes,
                                     }
                                 )

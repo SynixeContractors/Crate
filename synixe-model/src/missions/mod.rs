@@ -78,5 +78,5 @@ pub struct ScheduledMission {
     /// Message in #schedule
     pub schedule_message_id: Option<String>,
     /// Start datetime
-    pub start_at: chrono::NaiveDateTime,
+    pub start: chrono::NaiveDateTime,
 }

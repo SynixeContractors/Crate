@@ -34,7 +34,7 @@ impl Handler for Request {
                         roles_required as "roles_required: Json<synixe_model::Roles>",
                         roles_granted as "roles_granted: Json<synixe_model::Roles>",
                         valid_for,
-                        created_at
+                        created
                     FROM
                         certifications"#,
             ),
@@ -55,8 +55,8 @@ impl Handler for Request {
                                 FROM
                                     certifications_instructors
                                 WHERE
-                                    user_id = $1
-                                    AND certification_id = $2
+                                    member = $1
+                                    AND certification = $2
                             ) AS "instructor_certified!""#,
                     instructor.0 as i64,
                     certification.as_bytes() as _,
@@ -102,17 +102,17 @@ impl Handler for Request {
                         r#"
                             INSERT INTO
                                 certifications_trials
-                                (instructor_id, trainee_id, certification_id, notes, valid_until)
+                                (instructor, trainee, certification, notes, valid_until)
                             VALUES
                                 ($1, $2, $3, $4, NOW() + ($5 || ' days')::INTERVAL)
                             RETURNING
                                 id,
-                                instructor_id,
-                                trainee_id,
-                                certification_id,
+                                instructor,
+                                trainee,
+                                certification,
                                 notes,
                                 valid_until,
-                                created_at"#,
+                                created"#,
                         instructor.0 as i64,
                         trainee.0 as i64,
                         certification,
@@ -129,17 +129,17 @@ impl Handler for Request {
                         r#"
                             INSERT INTO
                                 certifications_trials
-                                (instructor_id, trainee_id, certification_id, notes)
+                                (instructor, trainee, certification, notes)
                             VALUES
                                 ($1, $2, $3, $4)
                             RETURNING
                                 id,
-                                instructor_id,
-                                trainee_id,
-                                certification_id,
+                                instructor,
+                                trainee,
+                                certification,
                                 notes,
                                 valid_until,
-                                created_at"#,
+                                created"#,
                         instructor.0 as i64,
                         trainee.0 as i64,
                         certification,

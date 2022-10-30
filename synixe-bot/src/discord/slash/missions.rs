@@ -311,8 +311,8 @@ async fn upcoming(
                     content.push_str(&format!(
                         "**{}**\n<t:{}:F> - <t:{}:R>\n*{}*\n\n",
                         data.name,
-                        mission.start_at.timestamp(),
-                        mission.start_at.timestamp(),
+                        mission.start.timestamp(),
+                        mission.start.timestamp(),
                         data.summary,
                     ));
                 }
@@ -396,7 +396,7 @@ pub async fn remove(
                                             "{} - {}",
                                             mission.mission,
                                             New_York
-                                                .from_utc_datetime(&mission.start_at)
+                                                .from_utc_datetime(&mission.start)
                                                 .format("%m-%d %H:00 %Z")
                                         ))
                                         .value(mission.id)
@@ -426,7 +426,7 @@ pub async fn remove(
                             "{} - {}",
                             scheduled.mission,
                             New_York
-                                .from_utc_datetime(&scheduled.start_at)
+                                .from_utc_datetime(&scheduled.start)
                                 .format("%m-%d %H:00 %Z")
                         ))
                         .components(|c| c)
@@ -445,7 +445,7 @@ pub async fn remove(
                             "Are you sure you want to remove `{} - {}`?",
                             scheduled.mission,
                             New_York
-                                .from_utc_datetime(&scheduled.start_at)
+                                .from_utc_datetime(&scheduled.start)
                                 .format("%m-%d %H:00 %Z")
                         ))
                         .ephemeral(true)
@@ -499,7 +499,7 @@ pub async fn remove(
                                         "Removed `{} - {}`",
                                         scheduled.mission,
                                         New_York
-                                            .from_utc_datetime(&scheduled.start_at)
+                                            .from_utc_datetime(&scheduled.start)
                                             .format("%m-%d %H:00 %Z")
                                     ))
                                     .components(|c| c)
@@ -513,7 +513,7 @@ pub async fn remove(
                                         "Failed to remove `{} - {}`",
                                         scheduled.mission,
                                         New_York
-                                            .from_utc_datetime(&scheduled.start_at)
+                                            .from_utc_datetime(&scheduled.start)
                                             .format("%m-%d %H:00 %Z")
                                     ))
                                     .components(|c| c)
@@ -646,8 +646,8 @@ async fn post(
                                 s.content(format!(
                                     "**{}**\n<t:{}:F> - <t:{}:R>\n\n{}",
                                     mission_data.name,
-                                    mission.start_at.timestamp(),
-                                    mission.start_at.timestamp(),
+                                    mission.start.timestamp(),
+                                    mission.start.timestamp(),
                                     mission_data.summary
                                 ))
                             })

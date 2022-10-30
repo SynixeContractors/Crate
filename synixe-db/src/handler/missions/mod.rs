@@ -22,7 +22,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::Schedule,
-                    "INSERT INTO missions_schedule (mission, start_at) VALUES ($1, $2)",
+                    "INSERT INTO missions_schedule (mission, start) VALUES ($1, $2)",
                     mission,
                     date,
                 )
@@ -33,7 +33,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::IsScheduled,
-                    "SELECT EXISTS(SELECT 1 FROM missions_schedule WHERE start_at = $1) as value",
+                    "SELECT EXISTS(SELECT 1 FROM missions_schedule WHERE start = $1) as value",
                     date,
                 )
             }
@@ -68,7 +68,7 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::ScheduledMission,
                     Response::UpcomingSchedule,
-                    "SELECT * FROM missions_schedule WHERE start_at > NOW() ORDER BY start_at ASC",
+                    "SELECT * FROM missions_schedule WHERE start > NOW() ORDER BY start ASC",
                 )
             }
             Self::UpdateMissionList {} => {

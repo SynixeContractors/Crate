@@ -20,16 +20,16 @@ CREATE TABLE IF NOT EXISTS missions_schedule (
     id UUID NOT NULL DEFAULT uuid_generate_v4(),
     mission VARCHAR(128) NOT NULL,
     schedule_message_id VARCHAR(64) DEFAULT NULL,
-    start_at TIMESTAMP NOT NULL,
+    start TIMESTAMP NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT missions_schedule_mission_fk FOREIGN KEY (mission) REFERENCES missions (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS missions_schedule_players (
     schedule_id UUID NOT NULL,
-    user_id VARCHAR(128) NOT NULL,
+    member VARCHAR(128) NOT NULL,
     joined boolean NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (schedule_id, user_id),
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (schedule_id, member),
     CONSTRAINT missions_schedule_players_schedule_id_fk FOREIGN KEY (schedule_id) REFERENCES missions_schedule (id) ON DELETE CASCADE
 );
