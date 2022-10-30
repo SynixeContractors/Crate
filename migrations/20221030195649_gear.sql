@@ -1,5 +1,4 @@
 -- Add migration script here
-class, price, start_date, end_date, priority
 CREATE TABLE persistent_gear_items (
     class VARCHAR(255) NOT NULL,
     roles TEXT,
