@@ -41,7 +41,7 @@ jobs:
       - run: cargo build --release
         working-directory: ./bin/db
 
-      - run: cp target/release/synixe-db ./db/db
+      - run: cp target/release/synixe-db ./bin/db/synixe-db
 
       - name: Build Image
         working-directory: ./bin/db

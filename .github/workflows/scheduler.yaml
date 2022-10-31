@@ -40,7 +40,7 @@ jobs:
       - run: cargo build --release
         working-directory: ./bin/scheduler
 
-      - run: cp target/release/synixe-scheduler ./scheduler/scheduler
+      - run: cp target/release/synixe-scheduler ./bin/scheduler/synixe-scheduler
 
       - name: Build Image
         working-directory: ./bin/scheduler

@@ -40,7 +40,7 @@ jobs:
       - run: cargo build --release
         working-directory: ./bin/bot
 
-      - run: cp target/release/synixe-bot ./bot/bot
+      - run: cp target/release/synixe-bot ./bin/bot/synixe-bot
 
       - name: Build Image
         working-directory: ./bin/bot

@@ -40,7 +40,7 @@ jobs:
       - run: cargo build --release
         working-directory: ./bin/executor
 
-      - run: cp target/release/synixe-executor ./executor/executor
+      - run: cp target/release/synixe-executor ./bin/executor/synixe-executor
 
       - name: Build Image
         working-directory: ./bin/executor
