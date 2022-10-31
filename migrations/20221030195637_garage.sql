@@ -10,10 +10,12 @@ CREATE TABLE IF NOT EXISTS garage_shop (
 CREATE INDEX IF NOT EXISTS garage_shop_base_idx ON garage_shop (base);
 
 CREATE TABLE IF NOT EXISTS garage_purchases (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    plate VARCHAR(10) PRIMARY KEY,
+    id UUID,
     member VARCHAR(128) NOT NULL,
     cost INTEGER NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT NOW()
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT garage_purchases_id FOREIGN KEY (id) REFERENCES garage_shop (id) ON DELETE CASCADE
 );
 
 CREATE OR REPLACE FUNCTION garage_purchases_insert() RETURNS TRIGGER AS $$
@@ -21,7 +23,7 @@ DECLARE purchasedBase UUID;
 BEGIN
     SELECT base INTO purchasedBase FROM garage_shop WHERE id = NEW.id;
     IF purchasedBase IS NULL THEN
-        INSERT INTO garage_vehicles (plate, id, stored, state) VALUES ('', NEW.id, TRUE, '{}');
+        INSERT INTO garage_vehicles (plate, id, stored, state) VALUES (NEW.plate, NEW.id, TRUE, '{}');
     ELSE
         INSERT INTO garage_addons (id, count) VALUES (NEW.id, 1) ON CONFLICT (id) DO UPDATE SET count = garage_addons.count + 1;
     END IF;

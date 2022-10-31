@@ -30,8 +30,8 @@ CREATE INDEX cost_end_date_idx ON gear_cost (end_date);
 CREATE OR REPLACE FUNCTION determine_current_cost(VARCHAR(255)) RETURNS INTEGER AS $$
     DECLARE result INTEGER;
     BEGIN
-       SELECT cost INTO result FROM gear_cost WHERE class = $1 AND CURRENT_TIMESTAMP > start_date AND CURRENT_TIMESTAMP < end_date ORDER BY priority DESC;
-       RETURN result;
+        SELECT cost INTO result FROM gear_cost WHERE class = $1 AND CURRENT_TIMESTAMP > start_date AND CURRENT_TIMESTAMP < end_date ORDER BY priority DESC;
+        RETURN result;
     END
 $$ LANGUAGE plpgsql;
 

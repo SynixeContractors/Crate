@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS certifications (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     link VARCHAR(255) NOT NULL,
-    roles_required VARCHAR(255) ARRAY NOT NULL,
-    roles_granted VARCHAR(255) ARRAY NOT NULL,
+    roles_required VARCHAR(128) ARRAY NOT NULL,
+    roles_granted VARCHAR(128) ARRAY NOT NULL,
     valid_for INTEGER NOT NULL,
     created TIMESTAMP NOT NULL DEFAULT NOW(),
     updated TIMESTAMP NOT NULL DEFAULT NOW()
