@@ -1,7 +1,6 @@
 #![allow(clippy::cast_possible_wrap)]
 
 use async_trait::async_trait;
-use sqlx::types::Json;
 use synixe_events::{
     certifications::db::{Request, Response},
     respond,
@@ -31,8 +30,8 @@ impl Handler for Request {
                         id,
                         name,
                         link,
-                        roles_required as "roles_required: Json<synixe_model::Roles>",
-                        roles_granted as "roles_granted: Json<synixe_model::Roles>",
+                        roles_required,
+                        roles_granted,
                         valid_for,
                         created
                     FROM

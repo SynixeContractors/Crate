@@ -5,8 +5,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::Roles;
-
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 /// A certification object
@@ -18,9 +16,9 @@ pub struct Certification {
     /// Certification link
     pub link: String,
     /// Roles required to certify
-    pub roles_required: sqlx::types::Json<Roles>,
+    pub roles_required: Vec<String>,
     /// Roles granted on certification
-    pub roles_granted: sqlx::types::Json<Roles>,
+    pub roles_granted: Vec<String>,
     /// Valid period in days
     pub valid_for: i32,
     /// Certification created at

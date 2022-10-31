@@ -15,7 +15,7 @@ default = [
     "missions",
     "roles",
 ]
-certifications = [ "uuid", "roles", "sqlx", "chrono" ]
+certifications = [ "uuid", "roles", "chrono" ]
 mission-schedule = [ "missions", "chrono", "uuid" ]
 missions = []
 roles = [ "serenity" ]

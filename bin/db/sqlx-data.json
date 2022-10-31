@@ -80,6 +80,60 @@
     },
     "query": "\n                            INSERT INTO\n                                certifications_trials\n                                (instructor, trainee, certification, notes, valid_until)\n                            VALUES\n                                ($1, $2, $3, $4, NOW() + ($5 || ' days')::INTERVAL)\n                            RETURNING\n                                id,\n                                instructor,\n                                trainee,\n                                certification,\n                                notes,\n                                valid_until,\n                                created"
   },
+  "1c72fe0e63e6295fb3db26e3bf62beb222883661cf82a22cea5265f47ba4238d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "link",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "roles_required",
+          "ordinal": 3,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "roles_granted",
+          "ordinal": 4,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "valid_for",
+          "ordinal": 5,
+          "type_info": "Int4"
+        },
+        {
+          "name": "created",
+          "ordinal": 6,
+          "type_info": "Timestamp"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n                    SELECT\n                        id,\n                        name,\n                        link,\n                        roles_required,\n                        roles_granted,\n                        valid_for,\n                        created\n                    FROM\n                        certifications"
+  },
   "29bd5dde564a4342adffd8728f6097f41db1c1cd23a89c0bc5284d3d09be79ba": {
     "describe": {
       "columns": [
@@ -297,60 +351,6 @@
       }
     },
     "query": "INSERT INTO missions (id, name, summary, description, type)\n                                        VALUES ($1, $2, $3, $4, $5)\n                                        ON CONFLICT (id) DO UPDATE SET\n                                            name = $2,\n                                            summary = $3,\n                                            description = $4,\n                                            type = $5"
-  },
-  "b0d325c7c6c6eaad2106f73f9c6a80710e54b7f0feb175ca7d0bbda7a29a2d26": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "link",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "roles_required: Json<synixe_model::Roles>",
-          "ordinal": 3,
-          "type_info": "Jsonb"
-        },
-        {
-          "name": "roles_granted: Json<synixe_model::Roles>",
-          "ordinal": 4,
-          "type_info": "Jsonb"
-        },
-        {
-          "name": "valid_for",
-          "ordinal": 5,
-          "type_info": "Int4"
-        },
-        {
-          "name": "created",
-          "ordinal": 6,
-          "type_info": "Timestamp"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "\n                    SELECT\n                        id,\n                        name,\n                        link,\n                        roles_required as \"roles_required: Json<synixe_model::Roles>\",\n                        roles_granted as \"roles_granted: Json<synixe_model::Roles>\",\n                        valid_for,\n                        created\n                    FROM\n                        certifications"
   },
   "c82f5addf2bf6c9f92cf4f2f447ec35cc1e7ff579a672bc7dd0b167b7e2d55ea": {
     "describe": {
