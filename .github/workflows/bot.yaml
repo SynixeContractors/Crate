@@ -43,7 +43,7 @@ jobs:
       - run: cp target/release/bot ./bot/bot
 
       - name: Build Image
-        working-directory: ./bot
+        working-directory: ./bin/bot
         run: docker build . -t bot
 
       - name: Tag Image

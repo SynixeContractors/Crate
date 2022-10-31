@@ -43,7 +43,7 @@ jobs:
       - run: cp target/release/scheduler ./scheduler/scheduler
 
       - name: Build Image
-        working-directory: ./scheduler
+        working-directory: ./bin/scheduler
         run: docker build . -t scheduler
 
       - name: Tag Image

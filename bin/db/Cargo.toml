@@ -9,7 +9,7 @@ synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-model = { path = "../../lib/model", features = ["sqlx"] }
 
-anyhow = "1.0.65"
+anyhow = "1.0.66"
 async-trait = { workspace = true }
 log = { workspace = true }
 nats = { workspace = true }
