@@ -1,15 +1,15 @@
 [workspace]
 members = [
-    "bootstrap",
-    #"synixe-arma/server",
-    "synixe-bot",
-    "synixe-db",
-    "synixe-events",
-    "synixe-meta",
-    "synixe-model",
-    "synixe-proc",
-    "synixe-scheduler",
-    "synixe-executor"
+    "lib/bootstrap",
+    "lib/events",
+    "lib/meta",
+    "lib/model",
+    "lib/proc",
+
+    "bin/bot",
+    "bin/db",
+    "bin/executor",
+    "bin/scheduler",
 ]
 
 [workspace.dependencies]

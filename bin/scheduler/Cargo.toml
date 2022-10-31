@@ -4,14 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bootstrap = { path = "../bootstrap", features = ["nats"] }
-synixe-events = { path = "../synixe-events" }
-synixe-meta = { path = "../synixe-meta" }
-synixe-proc = { path = "../synixe-proc" }
+bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-meta = { path = "../../lib/meta" }
+synixe-proc = { path = "../../lib/proc" }
 
 log = { workspace = true }
 nats = { workspace = true }
 opentelemetry = { workspace = true }
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-simple-scheduler = "0.1.1"
-

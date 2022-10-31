@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bootstrap = { path = "../bootstrap", features = ["nats", "sqlx"] }
-synixe-events = { path = "../synixe-events" }
-synixe-meta = { path = "../synixe-meta" }
-synixe-model = { path = "../synixe-model", features = ["sqlx"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["nats", "sqlx"] }
+synixe-events = { path = "../../lib/events" }
+synixe-meta = { path = "../../lib/meta" }
+synixe-model = { path = "../../lib/model", features = ["sqlx"] }
 
 anyhow = "1.0.65"
 async-trait = { workspace = true }

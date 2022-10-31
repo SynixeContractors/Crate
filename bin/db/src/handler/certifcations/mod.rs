@@ -147,7 +147,7 @@ impl Handler for Request {
                     )
                 }
             }
-            Self::Active { user } => todo!(),
+            Self::Active { user: _ } => todo!(),
         }
     }
 }

@@ -6,11 +6,11 @@ on:
     paths:
       - .github/workflows/scheduler.yaml
       - Cargo.toml
-      - bootstrap/**
-      - synixe-scheduler/**
-      - synixe-events/**
-      - synixe-meta/**
-      - synixe-proc/**
+      - bin/scheduler/**
+      - lib/bootstrap/**
+      - lib/events/**
+      - lib/meta/**
+      - lib/proc/**
 
 permissions:
   packages: write
@@ -38,16 +38,16 @@ jobs:
       - uses: Swatinem/rust-cache@v1
 
       - run: cargo build --release
-        working-directory: ./synixe-scheduler
+        working-directory: ./bin/scheduler
 
-      - run: cp target/release/synixe-scheduler ./synixe-scheduler/synixe-scheduler
+      - run: cp target/release/scheduler ./scheduler/scheduler
 
       - name: Build Image
-        working-directory: ./synixe-scheduler
-        run: docker build . -t synixe-scheduler
+        working-directory: ./scheduler
+        run: docker build . -t scheduler
 
       - name: Tag Image
-        run: docker tag synixe-scheduler ghcr.io/synixecontractors/synixe-scheduler:latest
+        run: docker tag scheduler ghcr.io/synixecontractors/apps-scheduler:latest
 
       - name: Push Image
-        run: docker push ghcr.io/synixecontractors/synixe-scheduler:latest
+        run: docker push ghcr.io/synixecontractors/apps-scheduler:latest

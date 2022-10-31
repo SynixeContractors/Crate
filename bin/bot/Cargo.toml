@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bootstrap = { path = "../bootstrap", features = ["nats"] }
-synixe-events = { path = "../synixe-events" }
-synixe-meta = { path = "../synixe-meta" }
-synixe-proc = { path = "../synixe-proc" }
+bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-meta = { path = "../../lib/meta" }
+synixe-proc = { path = "../../lib/proc" }
 
 chrono = { workspace = true, features = ["serde"] }
-chrono-tz = "0.6.3"
+chrono-tz = "0.7.0"
 log = { workspace = true }
 nats = { workspace = true }
 opentelemetry = { workspace = true }

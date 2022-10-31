@@ -6,11 +6,11 @@ on:
     paths:
       - .github/workflows/bot.yaml
       - Cargo.toml
-      - bootstrap/**
-      - synixe-bot/**
-      - synixe-events/**
-      - synixe-meta/**
-      - synixe-proc/**
+      - bin/bot/**
+      - lib/bootstrap/**
+      - lib/events/**
+      - lib/meta/**
+      - lib/proc/**
 
 permissions:
   packages: write
@@ -38,16 +38,16 @@ jobs:
       - uses: Swatinem/rust-cache@v1
 
       - run: cargo build --release
-        working-directory: ./synixe-bot
+        working-directory: ./bin/bot
 
-      - run: cp target/release/synixe-bot ./synixe-bot/synixe-bot
+      - run: cp target/release/bot ./bot/bot
 
       - name: Build Image
-        working-directory: ./synixe-bot
-        run: docker build . -t synixe-bot
+        working-directory: ./bot
+        run: docker build . -t bot
 
       - name: Tag Image
-        run: docker tag synixe-bot ghcr.io/synixecontractors/synixe-bot:latest
+        run: docker tag bot ghcr.io/synixecontractors/apps-bot:latest
 
       - name: Push Image
-        run: docker push ghcr.io/synixecontractors/synixe-bot:latest
+        run: docker push ghcr.io/synixecontractors/apps-bot:latest

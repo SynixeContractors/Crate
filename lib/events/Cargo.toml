@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-synixe-proc = { path = "../synixe-proc" }
-synixe-model = { path = "../synixe-model", features = ["mission-schedule", "certifications"] }
+synixe-proc = { path = "../proc" }
+synixe-model = { path = "../model", features = ["mission-schedule", "certifications"] }
 
 anyhow = "1.0.65"
 async-trait = { workspace = true }

@@ -6,11 +6,11 @@ on:
     paths:
       - .github/workflows/executor.yaml
       - Cargo.toml
-      - bootstrap/**
-      - synixe-executor/**
-      - synixe-events/**
-      - synixe-meta/**
-      - synixe-proc/**
+      - bin/executor/**
+      - lib/bootstrap/**
+      - lib/events/**
+      - lib/meta/**
+      - lib/proc/**
 
 permissions:
   packages: write
