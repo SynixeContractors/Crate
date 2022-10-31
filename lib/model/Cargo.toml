@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chrono = { workspace = true, optional = true, features = ["serde"] }
+time = { workspace = true, optional = true, features = ["serde-well-known"] }
 serde = { workspace = true, features = ["derive"] }
 sqlx = { workspace = true, optional = true }
 uuid = { workspace = true, optional = true, features = ["serde"] }
@@ -15,7 +15,7 @@ default = [
     "missions",
     "roles",
 ]
-certifications = [ "uuid", "roles", "chrono" ]
-mission-schedule = [ "missions", "chrono", "uuid" ]
+certifications = [ "uuid", "roles", "time" ]
+mission-schedule = [ "missions", "time", "uuid" ]
 missions = []
 roles = [ "serenity" ]

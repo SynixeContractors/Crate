@@ -51,12 +51,12 @@
         {
           "name": "valid_until",
           "ordinal": 5,
-          "type_info": "Timestamp"
+          "type_info": "Timestamptz"
         },
         {
           "name": "created",
           "ordinal": 6,
-          "type_info": "Timestamp"
+          "type_info": "Timestamptz"
         }
       ],
       "nullable": [
@@ -116,7 +116,7 @@
         {
           "name": "created",
           "ordinal": 6,
-          "type_info": "Timestamp"
+          "type_info": "Timestamptz"
         }
       ],
       "nullable": [
@@ -148,7 +148,7 @@
       ],
       "parameters": {
         "Left": [
-          "Timestamp"
+          "Timestamptz"
         ]
       }
     },
@@ -383,12 +383,12 @@
         {
           "name": "valid_until",
           "ordinal": 5,
-          "type_info": "Timestamp"
+          "type_info": "Timestamptz"
         },
         {
           "name": "created",
           "ordinal": 6,
-          "type_info": "Timestamp"
+          "type_info": "Timestamptz"
         }
       ],
       "nullable": [
@@ -418,7 +418,7 @@
       "parameters": {
         "Left": [
           "Varchar",
-          "Timestamp"
+          "Timestamptz"
         ]
       }
     },
@@ -498,7 +498,7 @@
         {
           "name": "start",
           "ordinal": 3,
-          "type_info": "Timestamp"
+          "type_info": "Timestamptz"
         }
       ],
       "nullable": [

@@ -16,8 +16,8 @@ CREATE TABLE gear_cost (
     class VARCHAR(255) NOT NULL,
     cost SERIAL NOT NULL,
     priority INTEGER NOT NULL DEFAULT 0,
-    start_date TIMESTAMP,
-    end_date TIMESTAMP,
+    start_date TIMESTAMPTZ,
+    end_date TIMESTAMPTZ,
     PRIMARY KEY (class, cost),
     CONSTRAINT fk_items_cost FOREIGN KEY (class) REFERENCES gear_items(class)
 );
@@ -30,7 +30,7 @@ CREATE INDEX cost_end_date_idx ON gear_cost (end_date);
 CREATE OR REPLACE FUNCTION determine_current_cost(VARCHAR(255)) RETURNS INTEGER AS $$
     DECLARE result INTEGER;
     BEGIN
-        SELECT cost INTO result FROM gear_cost WHERE class = $1 AND CURRENT_TIMESTAMP > start_date AND CURRENT_TIMESTAMP < end_date ORDER BY priority DESC;
+        SELECT cost INTO result FROM gear_cost WHERE class = $1 AND NOW() > start_date AND NOW() < end_date ORDER BY priority DESC;
         RETURN result;
     END
 $$ LANGUAGE plpgsql;
@@ -39,13 +39,13 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE gear_loadouts (
     member VARCHAR(128),
     loadout TEXT NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (member)
 );
 
 CREATE OR REPLACE FUNCTION gear_loadouts_update_created_on_update() RETURNS TRIGGER AS $$
 BEGIN
-    NEW.created = CURRENT_TIMESTAMP;
+    NEW.created = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -58,7 +58,7 @@ EXECUTE PROCEDURE gear_loadouts_update_created_on_update();
 CREATE TABLE gear_loadouts_log (
     member VARCHAR(128) NOT NULL,
     loadout TEXT NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (member, created)
 );
 
@@ -94,7 +94,7 @@ CREATE TABLE gear_bank_purchases (
     quantity INTEGER NOT NULL,
     cost INTEGER NOT NULL,
     global BOOLEAN NOT NULL DEFAULT false,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (member, class, created)
 );
 
@@ -107,7 +107,7 @@ CREATE TABLE gear_bank_deposits (
     amount INTEGER NOT NULL,
     reason VARCHAR(50) NOT NULL,
     id UUID NOT NULL DEFAULT uuid_generate_v4(),
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (member, id, created)
 );
 
@@ -120,7 +120,7 @@ CREATE TABLE gear_bank_transfers (
     target VARCHAR(128) NOT NULL,
     amount INTEGER NOT NULL,
     reason VARCHAR(255) NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (source, target, created)
 );
 
@@ -285,7 +285,7 @@ CREATE TABLE gear_locker_log (
     member VARCHAR(128) NOT NULL,
     class VARCHAR(16) NOT NULL,
     quantity INTEGER NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (member, class, created)
 );
 

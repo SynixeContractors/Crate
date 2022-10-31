@@ -1,5 +1,3 @@
-use chrono::{Datelike, NaiveDateTime, TimeZone};
-use chrono_tz::America::New_York;
 use serenity::{
     model::prelude::{
         application_command::{ApplicationCommandInteraction, CommandDataOption},
@@ -7,6 +5,8 @@ use serenity::{
     },
     prelude::Context,
 };
+use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
+use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt, PrimitiveDateTimeExt};
 
 pub mod meme;
 pub mod missions;
@@ -33,28 +33,34 @@ pub async fn requires_role(
     found
 }
 
-pub fn get_datetime(options: &[CommandDataOption]) -> NaiveDateTime {
+pub fn get_datetime(options: &[CommandDataOption]) -> OffsetDateTime {
     let month = options
         .iter()
         .find(|option| option.name == "month")
         .map_or_else(
-            || chrono::Utc::now().with_timezone(&New_York).date().month(),
+            || {
+                OffsetDateTime::now_utc()
+                    .to_timezone(NEW_YORK)
+                    .date()
+                    .month()
+            },
             |option| {
-                option
+                let month: u8 = option
                     .value
                     .as_ref()
                     .unwrap()
                     .as_u64()
                     .unwrap()
                     .try_into()
-                    .unwrap()
+                    .unwrap();
+                month.try_into().unwrap()
             },
         );
     let day = options
         .iter()
         .find(|option| option.name == "day")
         .map_or_else(
-            || chrono::Utc::now().with_timezone(&New_York).date().day(),
+            || OffsetDateTime::now_utc().to_timezone(NEW_YORK).date().day(),
             |option| {
                 option
                     .value
@@ -82,18 +88,21 @@ pub fn get_datetime(options: &[CommandDataOption]) -> NaiveDateTime {
                     .unwrap()
             },
         );
-    let date = {
-        let year = chrono::Utc::now().with_timezone(&New_York).date().year();
-        let possible = New_York.ymd(year, month, day).and_hms(hour, 0, 0);
-        if chrono::Utc::now()
-            .signed_duration_since(possible)
-            .num_seconds()
-            > 0
-        {
-            possible.with_year(year + 1).unwrap()
+    {
+        let year = OffsetDateTime::now_utc()
+            .to_timezone(NEW_YORK)
+            .date()
+            .year();
+        let possible = PrimitiveDateTime::new(
+            Date::from_calendar_date(year, month, day).unwrap(),
+            Time::from_hms(hour, 0, 0).unwrap(),
+        )
+        .assume_timezone(NEW_YORK)
+        .unwrap();
+        if OffsetDateTime::now_utc().to_timezone(NEW_YORK) > possible {
+            possible.replace_year(year + 1).unwrap()
         } else {
             possible
         }
-    };
-    date.naive_utc()
+    }
 }

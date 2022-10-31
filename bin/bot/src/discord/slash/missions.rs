@@ -1,7 +1,5 @@
 use std::time::Duration;
 
-use chrono::TimeZone;
-use chrono_tz::America::New_York;
 use serenity::{
     builder::CreateApplicationCommand,
     model::{
@@ -18,6 +16,8 @@ use serenity::{
 use synixe_events::missions::db::Response;
 use synixe_meta::discord::channel::SCHEDULE;
 use synixe_proc::events_request;
+use time::format_description;
+use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
 use uuid::Uuid;
 
 pub fn schedule(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
@@ -124,7 +124,7 @@ async fn new(
                         message
                             .content(format!(
                                 "A mission is already scheduled at <t:{}:F>, or the check failed.",
-                                date.timestamp()
+                                date.unix_timestamp()
                             ))
                             .ephemeral(true)
                     })
@@ -150,22 +150,25 @@ async fn new(
     {
         let m = command
             .create_followup_message(&ctx, |r| {
-                r.content(format!("Select mission for <t:{}:F>", date.timestamp()))
-                    .ephemeral(true)
-                    .components(|c| {
-                        c.create_action_row(|r| {
-                            r.create_select_menu(|m| {
-                                m.custom_id("mission").options(|o| {
-                                    for mission in missions {
-                                        o.create_option(|o| {
-                                            o.label(mission.name).value(mission.id.to_string())
-                                        });
-                                    }
-                                    o
-                                })
+                r.content(format!(
+                    "Select mission for <t:{}:F>",
+                    date.unix_timestamp()
+                ))
+                .ephemeral(true)
+                .components(|c| {
+                    c.create_action_row(|r| {
+                        r.create_select_menu(|m| {
+                            m.custom_id("mission").options(|o| {
+                                for mission in missions {
+                                    o.create_option(|o| {
+                                        o.label(mission.name).value(mission.id.to_string())
+                                    });
+                                }
+                                o
                             })
                         })
                     })
+                })
             })
             .await
             .unwrap();
@@ -186,7 +189,7 @@ async fn new(
                     r.content(format!(
                         "Schedule `{}` for <t:{}:F>?",
                         mission_id,
-                        date.timestamp()
+                        date.unix_timestamp()
                     ))
                     .ephemeral(true)
                     .components(|c| {
@@ -239,7 +242,7 @@ async fn new(
                                 r.content(format!(
                                     "Scheduled `{}` for <t:{}:F>",
                                     mission_id,
-                                    date.timestamp()
+                                    date.unix_timestamp()
                                 ))
                                 .components(|c| c)
                             })
@@ -311,8 +314,8 @@ async fn upcoming(
                     content.push_str(&format!(
                         "**{}**\n<t:{}:F> - <t:{}:R>\n*{}*\n\n",
                         data.name,
-                        mission.start.timestamp(),
-                        mission.start.timestamp(),
+                        mission.start.unix_timestamp(),
+                        mission.start.unix_timestamp(),
                         data.summary,
                     ));
                 }
@@ -369,6 +372,10 @@ pub async fn remove(
     {
         return;
     }
+    let time_format = format_description::parse(
+        "[year]-[month]-[day] [hour]:[minute] [offset_hour sign:mandatory]:[offset_minute]",
+    )
+    .unwrap();
     debug!("fetching missions");
     command
         .create_interaction_response(&ctx, |r| {
@@ -395,9 +402,11 @@ pub async fn remove(
                                         o.label(format!(
                                             "{} - {}",
                                             mission.mission,
-                                            New_York
-                                                .from_utc_datetime(&mission.start)
-                                                .format("%m-%d %H:00 %Z")
+                                            &mission
+                                                .start
+                                                .to_timezone(NEW_YORK)
+                                                .format(&time_format)
+                                                .unwrap()
                                         ))
                                         .value(mission.id)
                                     });
@@ -425,9 +434,11 @@ pub async fn remove(
                         r.content(format!(
                             "{} - {}",
                             scheduled.mission,
-                            New_York
-                                .from_utc_datetime(&scheduled.start)
-                                .format("%m-%d %H:00 %Z")
+                            &scheduled
+                                .start
+                                .to_timezone(NEW_YORK)
+                                .format(&time_format)
+                                .unwrap()
                         ))
                         .components(|c| c)
                     })
@@ -444,9 +455,11 @@ pub async fn remove(
                         r.content(format!(
                             "Are you sure you want to remove `{} - {}`?",
                             scheduled.mission,
-                            New_York
-                                .from_utc_datetime(&scheduled.start)
-                                .format("%m-%d %H:00 %Z")
+                            &scheduled
+                                .start
+                                .to_timezone(NEW_YORK)
+                                .format(&time_format)
+                                .unwrap()
                         ))
                         .ephemeral(true)
                         .components(|c| {
@@ -498,9 +511,11 @@ pub async fn remove(
                                     r.content(format!(
                                         "Removed `{} - {}`",
                                         scheduled.mission,
-                                        New_York
-                                            .from_utc_datetime(&scheduled.start)
-                                            .format("%m-%d %H:00 %Z")
+                                        &scheduled
+                                            .start
+                                            .to_timezone(NEW_YORK)
+                                            .format(&time_format)
+                                            .unwrap()
                                     ))
                                     .components(|c| c)
                                 })
@@ -512,9 +527,11 @@ pub async fn remove(
                                     r.content(format!(
                                         "Failed to remove `{} - {}`",
                                         scheduled.mission,
-                                        New_York
-                                            .from_utc_datetime(&scheduled.start)
-                                            .format("%m-%d %H:00 %Z")
+                                        &scheduled
+                                            .start
+                                            .to_timezone(NEW_YORK)
+                                            .format(&time_format)
+                                            .unwrap()
                                     ))
                                     .components(|c| c)
                                 })
@@ -646,8 +663,8 @@ async fn post(
                                 s.content(format!(
                                     "**{}**\n<t:{}:F> - <t:{}:R>\n\n{}",
                                     mission_data.name,
-                                    mission.start.timestamp(),
-                                    mission.start.timestamp(),
+                                    mission.start.unix_timestamp(),
+                                    mission.start.unix_timestamp(),
                                     mission_data.summary
                                 ))
                             })

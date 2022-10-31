@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS certifications (
     roles_required VARCHAR(128) ARRAY NOT NULL,
     roles_granted VARCHAR(128) ARRAY NOT NULL,
     valid_for INTEGER NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated TIMESTAMP NOT NULL DEFAULT NOW()
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS certifications_trials (
@@ -18,17 +18,17 @@ CREATE TABLE IF NOT EXISTS certifications_trials (
     trainee VARCHAR(128) NOT NULL,
     instructor VARCHAR(128) NOT NULL,
     notes TEXT NOT NULL,
-    valid_until TIMESTAMP,
-    created TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    valid_until TIMESTAMPTZ,
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT certifications_trials_certification FOREIGN KEY (certification) REFERENCES certifications (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS certifications_instructors (
     certification UUID NOT NULL,
     member VARCHAR(128) NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (certification, member),
     CONSTRAINT certifications_instructors_certification FOREIGN KEY (certification) REFERENCES certifications (id) ON DELETE CASCADE
 );

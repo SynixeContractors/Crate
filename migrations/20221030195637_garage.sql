@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS garage_purchases (
     id UUID,
     member VARCHAR(128) NOT NULL,
     cost INTEGER NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT garage_purchases_id FOREIGN KEY (id) REFERENCES garage_shop (id) ON DELETE CASCADE
 );
 
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS garage_vehicles (
     addon UUID,
     stored BOOLEAN NOT NULL,
     state JSONB,
-    updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT garage_vehicles_id FOREIGN KEY (id) REFERENCES garage_shop (id) ON DELETE CASCADE,
     CONSTRAINT garage_vehicles_state CHECK (jsonb_typeof(state) = 'object')
 );
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS garage_log (
     member VARCHAR(128) NOT NULL,
     action VARCHAR(16) NOT NULL,
     data JSONB,
-    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT garage_log_plate FOREIGN KEY (plate) REFERENCES garage_vehicles (plate) ON DELETE CASCADE,
     CONSTRAINT garage_log_action CHECK (action IN ('store', 'retrieve', 'attach', 'detach', 'state')),
     CONSTRAINT garage_log_data CHECK (
@@ -88,16 +88,16 @@ DECLARE lastData JSONB;
 BEGIN
     SELECT action, data INTO lastAction, lastData FROM garage_log WHERE plate = $1 ORDER BY created DESC LIMIT 1;
     IF lastAction = 'store' THEN
-        UPDATE garage_vehicles SET stored = TRUE, state = lastData WHERE plate = $1;
+        UPDATE garage_vehicles SET updated = NOW(), stored = TRUE, state = lastData WHERE plate = $1;
     ELSIF lastAction = 'retrieve' THEN
-        UPDATE garage_vehicles SET stored = FALSE WHERE plate = $1;
+        UPDATE garage_vehicles SET updated = NOW(), stored = FALSE WHERE plate = $1;
     ELSIF lastAction = 'state' THEN
-        UPDATE garage_vehicles SET state = lastData WHERE plate = $1;
+        UPDATE garage_vehicles SET updated = NOW(), state = lastData WHERE plate = $1;
     ELSEIF lastAction = 'attach' THEN
-        UPDATE garage_vehicles SET addon = (lastData->>'addon')::uuid WHERE plate = $1;
+        UPDATE garage_vehicles SET updated = NOW(), addon = (lastData->>'addon')::uuid WHERE plate = $1;
         UPDATE garage_addons SET count = count - 1 WHERE id = (lastData->>'addon')::uuid;
     ELSEIF lastAction = 'detach' THEN
-        UPDATE garage_vehicles SET addon = (lastData->>'addon')::uuid WHERE plate = $1;
+        UPDATE garage_vehicles SET updated = NOW(), addon = (lastData->>'addon')::uuid WHERE plate = $1;
         UPDATE garage_addons SET count = count + 1 WHERE id = (lastData->>'addon')::uuid;
     END IF;
 END;

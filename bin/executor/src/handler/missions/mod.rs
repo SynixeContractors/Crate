@@ -32,11 +32,10 @@ impl Handler for Request {
                 .await
                 {
                     Ok(((db::Response::UpcomingSchedule(Ok(missions)), _), _)) => {
-                        let now = chrono::Utc::now().naive_utc();
+                        let now = time::OffsetDateTime::now_utc();
                         let mut posts = Vec::new();
                         for mission in missions {
-                            let num_minutes =
-                                mission.start.signed_duration_since(now).num_minutes();
+                            let num_minutes = (mission.start - now).whole_minutes();
                             match num_minutes {
                                 178..=182 => {
                                     posts.push((Some("3 hours!"), mission, num_minutes));

@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 /// A certification object
 pub struct Certification {
@@ -22,10 +22,10 @@ pub struct Certification {
     /// Valid period in days
     pub valid_for: i32,
     /// Certification created at
-    pub created: chrono::NaiveDateTime,
+    pub created: time::OffsetDateTime,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 /// A certification trial object
 pub struct CertificationTrial {
@@ -40,7 +40,7 @@ pub struct CertificationTrial {
     /// Notes
     pub notes: String,
     /// Valid until
-    pub valid_until: Option<chrono::NaiveDateTime>,
+    pub valid_until: Option<time::OffsetDateTime>,
     /// Created at
-    pub created: chrono::NaiveDateTime,
+    pub created: time::OffsetDateTime,
 }

@@ -2,9 +2,9 @@
 
 /// Interact with the database.
 pub mod db {
-    use chrono::NaiveDateTime;
     use synixe_model::missions::{Mission, ScheduledMission};
     use synixe_proc::events_requests;
+    use time::OffsetDateTime;
     use uuid::Uuid;
 
     events_requests!(db.missions {
@@ -13,12 +13,12 @@ pub mod db {
             /// The mission to schedule.
             mission: String,
             /// The day to schedule the mission.
-            date: NaiveDateTime,
+            date: OffsetDateTime,
         } => (Result<(), String>)
         /// Checks if a day is already scheduled.
         struct IsScheduled {
             /// The day to check.
-            date: NaiveDateTime,
+            date: OffsetDateTime,
         } => (Result<Option<bool>, String>)
         /// Remove a scheduled mission.
         struct Unschedule {
@@ -58,9 +58,9 @@ pub mod executions {
 
 /// Inform services about missions.
 pub mod publish {
-    use chrono::NaiveDateTime;
     use synixe_model::missions::{Mission, MissionType};
     use synixe_proc::events_publish;
+    use time::OffsetDateTime;
 
     events_publish!(publish.missions {
         /// Publish a scheduled mission
@@ -68,7 +68,7 @@ pub mod publish {
             /// The  mission starting soon
             mission: Mission,
             /// Start time
-            start_time: NaiveDateTime,
+            start_time: OffsetDateTime,
             /// Minutes until the mission starts
             minutes: i64,
         }

@@ -9,7 +9,7 @@ synixe-model = { path = "../model", features = ["mission-schedule", "certificati
 
 anyhow = "1.0.65"
 async-trait = { workspace = true }
-chrono = { workspace = true, features = ["serde"] }
+time = { workspace = true, features = ["serde-well-known"] }
 nats = { workspace = true }
 opentelemetry = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
