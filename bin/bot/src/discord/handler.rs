@@ -1,5 +1,5 @@
 use opentelemetry::{
-    trace::{Span, TraceContextExt, Tracer},
+    trace::{FutureExt, Span, TraceContextExt, Tracer},
     KeyValue,
 };
 use serenity::{async_trait, model::prelude::*, prelude::*};
@@ -31,20 +31,24 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             debug!("matching command: {:?}", command.data.name.as_str());
             let tracer = bootstrap::tracer!("bot");
-            let mut span = tracer.start_with_context(
-                format!("command:{}", command.data.name.as_str()),
-                &opentelemetry::Context::current(),
-            );
+            let mut span = tracer.start(format!("command:{}", command.data.name.as_str()));
             span.set_attribute(KeyValue::new(
                 "command.data".to_string(),
                 serde_json::to_string(&command.data).unwrap(),
             ));
-            let cx = opentelemetry::Context::current().with_span(span);
-            cx.attach();
+            let cx = opentelemetry::Context::new().with_span(span);
             match command.data.name.as_str() {
-                "meme" => slash::meme::run(&ctx, &command).await,
-                "schedule" => slash::missions::schedule_run(&ctx, &command).await,
-                "Recruiting - Reply" => menu::recruiting::run_reply(&ctx, &command).await,
+                "meme" => slash::meme::run(&ctx, &command).with_context(cx).await,
+                "schedule" => {
+                    slash::missions::schedule_run(&ctx, &command)
+                        .with_context(cx)
+                        .await
+                }
+                "Recruiting - Reply" => {
+                    menu::recruiting::run_reply(&ctx, &command)
+                        .with_context(cx)
+                        .await
+                }
                 _ => {}
             }
         }
