@@ -41,6 +41,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: Swatinem/rust-cache@v1
+        with:
+          key: scheduler
 
       - run: cargo build --release
         working-directory: ./bin/scheduler
