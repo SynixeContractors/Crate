@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bootstrap = { path = "../../lib/bootstrap", features = ["nats", "sqlx"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["nats", "sqlx", "otlp"] }
 synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-model = { path = "../../lib/model", features = ["sqlx"] }
@@ -18,3 +18,6 @@ reqwest = { version = "0.11.12", features = ["json"] }
 sqlx = { workspace = true, features = ["postgres", "runtime-tokio-native-tls", "offline", "time", "uuid", "json"] }
 tokio = { version = "1.21.2", features = ["full"] }
 serenity = { workspace = true, features = [ "builder" ] }
+
+[build-dependencies]
+vergen = { workspace = true, features = ["git"]}

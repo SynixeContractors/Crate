@@ -1,7 +1,7 @@
 macro_rules! trace_query {
     ($cx:expr, $query:expr, $($args:expr,)*) => ({
         use opentelemetry::trace::{Span, Tracer};
-        let mut span = opentelemetry::global::tracer("coordinator").start_with_context($query, &$cx);
+        let mut span = opentelemetry::global::tracer("trace_query").start_with_context($query, &$cx);
         span.set_attribute(opentelemetry::KeyValue::new("query", $query));
         let mut i = 0;
         $(
@@ -15,7 +15,7 @@ macro_rules! trace_query {
 macro_rules! trace_query_as {
     ($cx:expr, $out_struct:path, $query:expr, $($args:expr,)*) => ( {
         use opentelemetry::trace::{Span, Tracer};
-        let mut span = opentelemetry::global::tracer("coordinator").start_with_context($query, &$cx);
+        let mut span = opentelemetry::global::tracer("trace_query_as").start_with_context($query, &$cx);
         span.set_attribute(opentelemetry::KeyValue::new("query", $query));
         #[allow(unused_mut, unused_variables)]
         let mut i = 0;

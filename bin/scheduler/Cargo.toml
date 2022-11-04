@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["nats", "otlp"] }
 synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-proc = { path = "../../lib/proc" }
@@ -14,3 +14,6 @@ nats = { workspace = true }
 opentelemetry = { workspace = true }
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-simple-scheduler = "0.1.1"
+
+[build-dependencies]
+vergen = { workspace = true, features = ["git"] }

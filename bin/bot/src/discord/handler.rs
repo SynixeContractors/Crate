@@ -1,3 +1,4 @@
+use opentelemetry::trace::Tracer;
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
 
@@ -26,6 +27,11 @@ impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
             debug!("matching command: {:?}", command.data.name.as_str());
+            let tracer = bootstrap::tracer!("bot");
+            let _span = tracer.start_with_context(
+                format!("command:{}", command.data.name.as_str()),
+                &opentelemetry::Context::current(),
+            );
             match command.data.name.as_str() {
                 "meme" => slash::meme::run(&ctx, &command).await,
                 "schedule" => slash::missions::schedule_run(&ctx, &command).await,

@@ -22,3 +22,4 @@ serde = { version = "1.0.147", features = ["derive"] }
 serenity = { git = "https://github.com/serenity-rs/serenity", rev = "67143ef33966aef5a949c2411d10a7d90d437382", default-features = false }
 sqlx = { version = "0.6.2", features = ["offline"] }
 uuid = "1.2.1"
+vergen = "7.4.2"

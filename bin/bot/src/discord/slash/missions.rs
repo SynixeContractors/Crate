@@ -173,7 +173,7 @@ async fn new(
             .await
             .unwrap();
         if let Some(interaction) = m
-            .await_component_interaction(&ctx)
+            .await_component_interaction(ctx)
             .timeout(Duration::from_secs(60 * 3))
             .collect_limit(1)
             .await
@@ -211,7 +211,7 @@ async fn new(
                 .unwrap();
             debug!("waiting for confirmation");
             let interaction = m
-                .await_component_interaction(&ctx)
+                .await_component_interaction(ctx)
                 .timeout(Duration::from_secs(60 * 3))
                 .collect_limit(1)
                 .await;
@@ -420,7 +420,7 @@ pub async fn remove(
             .await
             .unwrap();
         if let Some(interaction) = m
-            .await_component_interaction(&ctx)
+            .await_component_interaction(ctx)
             .timeout(Duration::from_secs(60 * 3))
             .collect_limit(1)
             .await
@@ -476,7 +476,7 @@ pub async fn remove(
                     .await
                     .unwrap();
                 if let Some(interaction) = m
-                    .await_component_interaction(&ctx)
+                    .await_component_interaction(ctx)
                     .timeout(Duration::from_secs(60 * 3))
                     .collect_limit(1)
                     .await
@@ -634,7 +634,7 @@ async fn post(
                 .await
                 .unwrap();
             if let Some(interaction) = m
-                .await_component_interaction(&ctx)
+                .await_component_interaction(ctx)
                 .timeout(Duration::from_secs(60 * 3))
                 .collect_limit(1)
                 .await

@@ -1,7 +1,6 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery, clippy::all)]
 
-use opentelemetry::sdk::propagation::TraceContextPropagator;
 use synixe_proc::events_request;
 use tokio_simple_scheduler::{Job, Scheduler};
 
@@ -13,9 +12,8 @@ mod macros;
 
 #[tokio::main]
 async fn main() {
-    opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
-
     bootstrap::logger::init();
+    bootstrap::tracer!("scheduler");
 
     let mut sched = Scheduler::default();
 

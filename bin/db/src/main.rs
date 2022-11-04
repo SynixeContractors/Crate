@@ -1,7 +1,6 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery, clippy::all)]
 
-use opentelemetry::sdk::propagation::TraceContextPropagator;
 use synixe_events::handler;
 
 #[macro_use]
@@ -14,9 +13,8 @@ mod handler;
 
 #[tokio::main]
 async fn main() {
-    opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
-
     bootstrap::logger::init();
+    bootstrap::tracer!("db");
 
     let nats = bootstrap::NC::get().await;
 
