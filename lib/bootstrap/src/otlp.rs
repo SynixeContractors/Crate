@@ -2,7 +2,6 @@ use std::{collections::HashMap, mem::MaybeUninit, sync::Arc, time::Duration};
 
 use opentelemetry::{
     sdk::{
-        propagation::TraceContextPropagator,
         trace::{self, RandomIdGenerator, Sampler, Tracer},
         Resource,
     },
@@ -15,6 +14,9 @@ pub struct Lightstep();
 #[macro_export]
 macro_rules! tracer {
     ($name:expr) => {{
+        opentelemetry::global::set_text_map_propagator(
+            opentelemetry::sdk::propagation::TraceContextPropagator::new(),
+        );
         $crate::Lightstep::get($name, &env!("VERGEN_GIT_SHA_SHORT"))
     }};
 }
@@ -33,7 +35,6 @@ impl Lightstep {
         unsafe {
             if !INIT {
                 SINGLETON.write(Arc::new({
-                    opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
                     opentelemetry_otlp::new_pipeline()
                         .tracing()
                         .with_exporter(
