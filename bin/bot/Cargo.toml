@@ -14,6 +14,7 @@ nats = { workspace = true }
 opentelemetry = { workspace = true }
 reqwest = { version = "0.11.12", features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
+serde_json = "1.0.87"
 serenity = { workspace = true, features = ["builder", "cache", "client", "collector", "gateway", "http", "model", "utils", "rustls_backend"]}
 time = { workspace = true }
 time-tz = "1.0.2"
