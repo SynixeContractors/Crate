@@ -3,10 +3,9 @@ macro_rules! job {
         $sched.add(
             Job::new($name, $cron, || {
                 Box::pin(async {
-                    use opentelemetry::trace::{Tracer,TraceContextExt};
+                    use opentelemetry::trace::{TraceContextExt, Tracer};
                     let tracer = bootstrap::tracer!("scheduler");
-                    let span =
-                        tracer.start_with_context($name, &opentelemetry::Context::current());
+                    let span = tracer.start_with_context($name, &opentelemetry::Context::current());
                     let cx = opentelemetry::Context::current().with_span(span);
                     cx.attach();
                     if let Err(e) =

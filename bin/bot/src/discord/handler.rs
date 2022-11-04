@@ -1,4 +1,7 @@
-use opentelemetry::{trace::{Tracer, TraceContextExt, Span}, KeyValue};
+use opentelemetry::{
+    trace::{Span, TraceContextExt, Tracer},
+    KeyValue,
+};
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
 
@@ -32,7 +35,10 @@ impl EventHandler for Handler {
                 format!("command:{}", command.data.name.as_str()),
                 &opentelemetry::Context::current(),
             );
-            span.set_attribute(KeyValue::new("command.data".to_string(), serde_json::to_string(&command.data).unwrap()));
+            span.set_attribute(KeyValue::new(
+                "command.data".to_string(),
+                serde_json::to_string(&command.data).unwrap(),
+            ));
             let cx = opentelemetry::Context::current().with_span(span);
             cx.attach();
             match command.data.name.as_str() {
