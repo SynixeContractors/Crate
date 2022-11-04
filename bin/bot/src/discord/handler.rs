@@ -42,12 +42,12 @@ impl EventHandler for Handler {
                 "schedule" => {
                     slash::missions::schedule_run(&ctx, &command)
                         .with_context(cx)
-                        .await
+                        .await;
                 }
                 "Recruiting - Reply" => {
                     menu::recruiting::run_reply(&ctx, &command)
                         .with_context(cx)
-                        .await
+                        .await;
                 }
                 _ => {}
             }

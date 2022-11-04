@@ -1,3 +1,7 @@
+use opentelemetry::{
+    trace::{FutureExt, Tracer},
+    Context,
+};
 use scraper::{Html, Selector};
 use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_proc::events_request;
@@ -9,7 +13,7 @@ use super::{
 
 const STEAM_FORUM: &str = "https://steamcommunity.com/app/107410/discussions/21/";
 
-pub async fn check_steam_forums() {
+pub async fn check_steam_forums(cx: Context) {
     debug!("Checking steam forums for new posts");
 
     let candidates = {
@@ -19,6 +23,8 @@ pub async fn check_steam_forums() {
         let selector_title: Selector = scraper::Selector::parse("div.topic").unwrap();
         let selector_content: Selector = scraper::Selector::parse(".forum_op .content").unwrap();
 
+        let tracer = bootstrap::tracer!("executor");
+        let _span = tracer.start_with_context("recruiting.steam.fetch_lookingforunit", &cx);
         let page = reqwest::get(STEAM_FORUM)
             .await
             .unwrap()
@@ -32,7 +38,7 @@ pub async fn check_steam_forums() {
             posts.push(post.value().attr("href").unwrap().to_string());
         }
         for url in posts {
-            if has_seen(url.clone()).await {
+            if has_seen(url.clone(), cx.clone()).await {
                 continue;
             }
             let post = reqwest::get(&url).await.unwrap().text().await.unwrap();
@@ -91,6 +97,7 @@ pub async fn check_steam_forums() {
                 thread: None,
             }
         )
+        .with_context(cx.clone())
         .await
         {
             error!("Error sending candidate: {}", e);

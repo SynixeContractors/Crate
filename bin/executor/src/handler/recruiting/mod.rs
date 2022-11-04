@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use opentelemetry::{trace::FutureExt, Context};
 use synixe_events::{
     recruiting::{
         db,
@@ -23,35 +24,35 @@ impl Handler for Request {
         &self,
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
-        _cx: opentelemetry::Context,
+        cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::CheckSteam {} => {
                 if let Err(e) = respond!(msg, Response::CheckSteam(Ok(()))).await {
                     error!("failed to respond for CheckSteam{:?}", e);
                 }
-                steam::check_steam_forums().await;
+                steam::check_steam_forums(cx).await;
                 Ok(())
             }
             Self::CheckReddit {} => {
                 if let Err(e) = respond!(msg, Response::CheckReddit(Ok(()))).await {
                     error!("failed to respond for CheckReddit{:?}", e);
                 }
-                reddit::check_reddit_findaunit().await;
+                reddit::check_reddit_findaunit(cx).await;
                 Ok(())
             }
             Self::PostReddit {} => {
                 if let Err(e) = respond!(msg, Response::PostReddit(Ok(()))).await {
                     error!("failed to respond for PostReddit{:?}", e);
                 }
-                reddit::post_reddit_findaunit().await;
+                reddit::post_reddit_findaunit(cx).await;
                 Ok(())
             }
             Self::ReplyReddit { url } => {
                 if let Err(e) = respond!(msg, Response::ReplyReddit(Ok(()))).await {
                     error!("failed to respond for ReplyReddit{:?}", e);
                 }
-                reddit::reply(msg, url).await;
+                reddit::reply(msg, url, cx).await;
                 Ok(())
             }
         }
@@ -59,12 +60,13 @@ impl Handler for Request {
 }
 
 #[allow(clippy::collapsible_match)]
-pub async fn has_seen(url: String) -> bool {
+pub async fn has_seen(url: String, cx: Context) -> bool {
     let req = events_request!(
         bootstrap::NC::get().await,
         synixe_events::recruiting::db,
         HasSeen { url }
     )
+    .with_context(cx)
     .await;
     if let Ok(((ev, _), _)) = req {
         if let db::Response::HasSeen(seen) = ev {

@@ -1,6 +1,10 @@
 use std::time::Duration;
 
 use nats::asynk::Message;
+use opentelemetry::{
+    trace::{FutureExt, Tracer},
+    Context,
+};
 use roux::{Reddit, User};
 use scraper::{Html, Selector};
 use synixe_events::{
@@ -18,7 +22,7 @@ use super::{
 const REDDIT_FINDAUNIT: &str =
     "https://www.reddit.com/r/FindAUnit/new/?f=flair_name%3A%22Request%22";
 
-pub async fn check_reddit_findaunit() {
+pub async fn check_reddit_findaunit(cx: Context) {
     debug!("Checking reddit findaunit for new posts");
 
     let candidates = {
@@ -30,6 +34,8 @@ pub async fn check_reddit_findaunit() {
         let selector_content: Selector =
             scraper::Selector::parse("div[data-click-id='text']").unwrap();
 
+        let tracer = bootstrap::tracer!("executor");
+        let _span = tracer.start_with_context("recruiting.reddit.fetch_findaunit", &cx);
         let page = reqwest::get(REDDIT_FINDAUNIT)
             .await
             .unwrap()
@@ -43,7 +49,7 @@ pub async fn check_reddit_findaunit() {
             posts.push(post.value().attr("href").unwrap().to_string());
         }
         for url in posts {
-            if has_seen(url.clone()).await {
+            if has_seen(url.clone(), cx.clone()).await {
                 continue;
             }
             let full_url = format!("https://reddit.com{}", url);
@@ -104,6 +110,7 @@ pub async fn check_reddit_findaunit() {
                 thread: None,
             }
         )
+        .with_context(cx.clone())
         .await
         {
             error!("Error sending candidate: {}", e);
@@ -111,7 +118,7 @@ pub async fn check_reddit_findaunit() {
     }
 }
 
-pub async fn post_reddit_findaunit() {
+pub async fn post_reddit_findaunit(cx: Context) {
     debug!("in executor post reddit");
     let client = Reddit::new(
         "Ctirad Brodsky (by /u/synixe)",
@@ -157,6 +164,7 @@ pub async fn post_reddit_findaunit() {
                         thread: None,
                     }
                 )
+                .with_context(cx)
                 .await
                 {
                     error!("Error sending reddit post candidate: {}", e);
@@ -167,7 +175,7 @@ pub async fn post_reddit_findaunit() {
     }
 }
 
-pub async fn reply(msg: Message, url: &str) {
+pub async fn reply(msg: Message, url: &str, cx: Context) {
     let client = Reddit::new(
         "Ctirad Brodsky (by /u/synixe)",
         &std::env::var("REDDIT_CLIENT_ID").expect("REDDIT_CLIENT_SECRET not set"),
@@ -195,7 +203,10 @@ pub async fn reply(msg: Message, url: &str) {
             Ok(response) => {
                 debug!("response: ({:?}) {:?}", response.status(), response);
                 if response.status().is_success() {
-                    if let Err(e) = respond!(msg, Response::ReplyReddit(Ok(()))).await {
+                    if let Err(e) = respond!(msg, Response::ReplyReddit(Ok(())))
+                        .with_context(cx.clone())
+                        .await
+                    {
                         error!("Error sending response: {}", e);
                     }
                 } else {
@@ -205,7 +216,9 @@ pub async fn reply(msg: Message, url: &str) {
                         response
                     );
                     if let Err(e) =
-                        respond!(msg, Response::ReplyReddit(Err(format!("{:?}", response)))).await
+                        respond!(msg, Response::ReplyReddit(Err(format!("{:?}", response))))
+                            .with_context(cx.clone())
+                            .await
                     {
                         error!("Error sending response: {}", e);
                     }
@@ -213,7 +226,10 @@ pub async fn reply(msg: Message, url: &str) {
             }
             Err(e) => {
                 error!("Failed to post to reddit findaunit: {}", e);
-                if let Err(e) = respond!(msg, Response::ReplyReddit(Err(e.to_string()))).await {
+                if let Err(e) = respond!(msg, Response::ReplyReddit(Err(e.to_string())))
+                    .with_context(cx.clone())
+                    .await
+                {
                     error!("Error sending response: {}", e);
                 }
             }
