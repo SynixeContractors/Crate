@@ -50,6 +50,7 @@ tlsIssuer: letsencrypt-prod
 config:
   # global
   nats_url: ~
+  lightstep_access_token: ~
 
   # executor-recruiting
   reddit_client_id: ~
