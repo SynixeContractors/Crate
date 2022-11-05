@@ -39,6 +39,10 @@ pub const MISSION_MAKER: RoleId = RoleId(973_300_919_015_997_491);
 pub const MISSION_REVIEWER: RoleId = RoleId(1_020_252_253_287_886_858);
 
 // Certifications - Generic
+/// Generic - Grenades
+pub const CERT_GRENADES: RoleId = RoleId(1_038_399_590_224_887_899);
+/// Generic - LAT
+pub const CERT_LAT: RoleId = RoleId(1_038_399_549_842_145_302);
 /// Generic - Grenadier
 pub const CERT_GRENADIER: RoleId = RoleId(780_138_101_834_121_236);
 /// Generic - Crew Served Weapons
@@ -62,6 +66,12 @@ pub const CERT_PILOT: RoleId = RoleId(928_981_006_063_644_683);
 pub const CERT_UAV: RoleId = RoleId(928_981_141_678_075_915);
 /// Specialist - Engineer
 pub const CERT_ENGINEER: RoleId = RoleId(814_987_669_921_726_514);
+/// Specialist - Engi: Vehicle Logistics
+pub const CERT_ENGI_VEHICLE_LOGISTICS: RoleId = RoleId(1_038_406_302_935_810_078);
+/// Specialist - Engi: Explosives Handling
+pub const CERT_ENGI_EXPLOSIVES: RoleId = RoleId(1_038_406_347_114_426_410);
+/// Specialist - Engi: EOD
+pub const CERT_ENGI_EOD: RoleId = RoleId(1_038_406_394_925_301_792);
 
 #[cfg(test)]
 mod tests {

@@ -8,6 +8,7 @@ use serenity::{
 use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt, PrimitiveDateTimeExt};
 
+pub mod certifications;
 pub mod meme;
 pub mod missions;
 

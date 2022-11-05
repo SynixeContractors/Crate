@@ -14,8 +14,10 @@ serenity = { workspace = true, features = ["utils", "builder"], optional = true 
 default = [
     "missions",
     "roles",
+    "gear",
 ]
 certifications = [ "uuid", "roles", "time" ]
 mission-schedule = [ "missions", "time", "uuid" ]
 missions = []
 roles = [ "serenity" ]
+gear = []

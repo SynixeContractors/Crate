@@ -3,10 +3,11 @@ use synixe_events::{discord, Evokable};
 use crate::Bot;
 
 mod info;
+mod listener;
 mod write;
 
 pub async fn start(http: Bot) {
-    tokio::join!(write(http.clone()), info(http),);
+    tokio::join!(write(http.clone()), info(http), listener::start());
 }
 
 async fn write(http: Bot) {

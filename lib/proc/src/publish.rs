@@ -38,6 +38,7 @@ pub fn publish(item: TokenStream) -> TokenStream {
         pub enum Publish {
             #(#publish),*
         }
+
         #[async_trait::async_trait]
         impl crate::Publishable for Publish {
             fn path() -> &'static str {

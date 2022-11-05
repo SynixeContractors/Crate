@@ -2,7 +2,6 @@
 #![warn(clippy::nursery, clippy::all)]
 
 use rust_embed::RustEmbed;
-use synixe_events::handler;
 
 #[macro_use]
 extern crate log;
@@ -17,18 +16,5 @@ mod handler;
 async fn main() {
     bootstrap::logger::init();
     bootstrap::tracer!("executor");
-
-    // Init NATS connection
-    let nats = bootstrap::NC::get().await;
-
-    let sub = nats.subscribe("synixe.executor.>").await.unwrap();
-    while let Some(msg) = sub.next().await {
-        let nats = nats.clone();
-        handler!(
-            msg,
-            nats,
-            synixe_events::recruiting::executions::Request,
-            synixe_events::missions::executions::Request
-        );
-    }
+    handler::start().await;
 }

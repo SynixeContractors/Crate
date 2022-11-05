@@ -69,7 +69,8 @@ impl Handler for Request {
                     synixe_model::missions::ScheduledMission,
                     Response::UpcomingSchedule,
                     "SELECT * FROM missions_schedule WHERE start > NOW() ORDER BY start ASC",
-                )
+                )?;
+                Ok(())
             }
             Self::UpdateMissionList {} => {
                 if let Ok(response) = reqwest::get(MISSION_LIST).await {
@@ -133,7 +134,8 @@ impl Handler for Request {
                     synixe_model::missions::Mission,
                     Response::FetchMissionList,
                     "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions ORDER BY name ASC",
-                )
+                )?;
+                Ok(())
             }
             Self::FetchMission { mission } => {
                 fetch_one_as_and_respond!(
@@ -144,7 +146,8 @@ impl Handler for Request {
                     Response::FetchMission,
                     "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE id = $1",
                     mission,
-                )
+                )?;
+                Ok(())
             }
         }
     }

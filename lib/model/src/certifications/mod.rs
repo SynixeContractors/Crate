@@ -20,7 +20,7 @@ pub struct Certification {
     /// Roles granted on certification
     pub roles_granted: Vec<String>,
     /// Valid period in days
-    pub valid_for: i32,
+    pub valid_for: Option<i32>,
     /// Certification created at
     pub created: time::OffsetDateTime,
 }
@@ -39,6 +39,10 @@ pub struct CertificationTrial {
     pub instructor: String,
     /// Notes
     pub notes: String,
+    /// Passed
+    pub passed: bool,
+    /// Valid for
+    pub valid_for: Option<i32>,
     /// Valid until
     pub valid_until: Option<time::OffsetDateTime>,
     /// Created at

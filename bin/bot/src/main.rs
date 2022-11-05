@@ -4,6 +4,7 @@
 #[macro_use]
 extern crate log;
 
+mod cache_http;
 mod discord;
 mod events;
 
@@ -15,6 +16,8 @@ async fn main() {
     bootstrap::tracer!("bot");
 
     let bot = discord::build().await;
+
+    cache_http::Bot::init(bot.cache_and_http.clone());
 
     let (_, _) = tokio::join!(
         events::start(bot.cache_and_http.clone()),

@@ -323,7 +323,7 @@ async fn upcoming(
             command
                 .create_interaction_response(&ctx, |r| {
                     r.kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|m| m.content(content))
+                        .interaction_response_data(|m| m.content(content).ephemeral(true))
                 })
                 .await
                 .unwrap();

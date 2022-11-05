@@ -9,3 +9,6 @@ pub mod missions;
 
 #[cfg(feature = "certifications")]
 pub mod certifications;
+
+#[cfg(feature = "gear")]
+pub mod gear;

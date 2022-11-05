@@ -9,6 +9,8 @@ synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-proc = { path = "../../lib/proc" }
 
+anyhow = "1.0.66"
+async-trait = { workspace = true }
 log = { workspace = true }
 nats = { workspace = true }
 opentelemetry = { workspace = true }

@@ -19,7 +19,10 @@ CREATE TABLE gear_cost (
     start_date TIMESTAMPTZ,
     end_date TIMESTAMPTZ,
     PRIMARY KEY (class, cost),
-    CONSTRAINT fk_items_cost FOREIGN KEY (class) REFERENCES gear_items(class)
+    CONSTRAINT fk_items_cost FOREIGN KEY (class) REFERENCES gear_items(class),
+    CONSTRAINT fk_items_cost_priority UNIQUE (class, priority),
+    CONSTRAINT fk_items_cost_start_end CHECK (start_date IS NULL OR end_date IS NOT NULL),
+    CONSTRAINT fk_items_cost_start_priority CHECK (start_date IS NULL OR priority > 0)
 );
 
 CREATE INDEX cost_class_idx ON gear_cost (class);
@@ -27,10 +30,31 @@ CREATE INDEX cost_cost_idx ON gear_cost (cost);
 CREATE INDEX cost_start_date_idx ON gear_cost (start_date);
 CREATE INDEX cost_end_date_idx ON gear_cost (end_date);
 
-CREATE OR REPLACE FUNCTION determine_current_cost(VARCHAR(255)) RETURNS INTEGER AS $$
+CREATE OR REPLACE FUNCTION gear_item_current_cost(VARCHAR(255)) RETURNS TABLE (cost INTEGER, end_date TIMESTAMPTZ) AS $$
+    BEGIN
+        RETURN QUERY 
+            SELECT gear_cost.cost, gear_cost.end_date 
+                FROM gear_cost 
+                WHERE 
+                    gear_cost.class = $1
+                    AND (
+                        (NOW() > start_date AND NOW() < gear_cost.end_date)
+                        OR (start_date is NULL AND gear_cost.end_date is NULL)
+                    )
+                ORDER BY priority DESC LIMIT 1;
+    END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION gear_item_base_cost(VARCHAR(255)) RETURNS INTEGER AS $$
     DECLARE result INTEGER;
     BEGIN
-        SELECT cost INTO result FROM gear_cost WHERE class = $1 AND NOW() > start_date AND NOW() < end_date ORDER BY priority DESC;
+        SELECT cost INTO result
+            FROM gear_cost
+            WHERE 
+                class = $1
+                AND start_date IS NULL
+                AND end_date IS NULL 
+            ORDER BY priority DESC LIMIT 1;
         RETURN result;
     END
 $$ LANGUAGE plpgsql;

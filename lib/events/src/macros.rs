@@ -2,7 +2,6 @@
 /// Handle the event.
 macro_rules! handler {
     ($msg:expr, $nats:expr, $($events:ty),*) => {{
-        use handler::Handler;
         use synixe_events::Evokable;
         use opentelemetry::trace::{Tracer, TraceContextExt};
         let subject = $msg.subject.clone();
@@ -13,6 +12,29 @@ macro_rules! handler {
                 debug!("Handling event: {}", ev.name());
                 let span = opentelemetry::global::tracer("handler").start_with_context(format!("{}:{}", sub.to_string(), ev.name()), &pcx);
                 if let Err(e) = ev.handle($msg, $nats, pcx.with_span(span)).await {
+                    error!("Error in handler {}: {}", sub, e);
+                }
+                continue
+            }
+        )*
+        warn!("Unknown subject: {}", subject);
+    }}
+}
+
+#[macro_export]
+/// Handle the event.
+macro_rules! listener {
+    ($msg:expr, $nats:expr, $($events:ty),*) => {{
+        use synixe_events::Publishable;
+        use opentelemetry::trace::{Tracer, TraceContextExt};
+        let subject = $msg.subject.clone();
+        let sub = subject.as_str();
+        $(
+            if sub == <$events>::path() {
+                let ((ev, _), pcx) = synixe_events::parse_data!($msg, $events);
+                debug!("Handling event: {}", ev.name());
+                let span = opentelemetry::global::tracer("handler").start_with_context(format!("{}:{}", sub.to_string(), ev.name()), &pcx);
+                if let Err(e) = ev.listen($msg, $nats, pcx.with_span(span)).await {
                     error!("Error in handler {}: {}", sub, e);
                 }
                 continue
