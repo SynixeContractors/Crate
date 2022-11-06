@@ -79,7 +79,6 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
     }
 }
 
-#[allow(clippy::too_many_lines)]
 async fn trial(
     ctx: &Context,
     command: &ApplicationCommandInteraction,

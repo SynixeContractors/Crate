@@ -17,6 +17,7 @@ impl EventHandler for Handler {
         if let Err(e) =
             GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {
                 commands
+                    .create_application_command(|command| slash::bank::register(command))
                     .create_application_command(|command| slash::certifications::register(command))
                     .create_application_command(|command| slash::meme::register(command))
                     .create_application_command(|command| slash::missions::schedule(command))
@@ -39,6 +40,9 @@ impl EventHandler for Handler {
             ));
             let cx = opentelemetry::Context::new().with_span(span);
             match command.data.name.as_str() {
+                "bank" => {
+                    slash::bank::run(&ctx, &command).with_context(cx).await;
+                }
                 "certifications" => {
                     slash::certifications::run(&ctx, &command)
                         .with_context(cx)

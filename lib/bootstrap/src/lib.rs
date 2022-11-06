@@ -16,4 +16,5 @@ mod otlp;
 #[cfg(feature = "otlp")]
 pub use otlp::Lightstep;
 
+pub mod format;
 pub mod logger;

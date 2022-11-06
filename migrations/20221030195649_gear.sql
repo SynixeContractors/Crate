@@ -198,7 +198,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION gear_verify_transfer(varchar(128), VARCHAR(128), integer) RETURNS boolean AS $$
 DECLARE balance integer;
 BEGIN
-    SELECT gear_get_member_balance($1, $2) INTO balance;
+    SELECT gear_get_member_balance($1) INTO balance;
     RETURN balance >= $3 AND $1 <> $2 AND $3 > 0;
 END
 $$ LANGUAGE plpgsql;
