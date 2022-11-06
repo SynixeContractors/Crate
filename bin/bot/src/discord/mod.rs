@@ -1,6 +1,7 @@
 use serenity::prelude::*;
 
 mod handler;
+pub mod interaction;
 mod menu;
 mod slash;
 
