@@ -53,14 +53,20 @@ impl Handler for Request {
                             .into_iter()
                             .map(|row| (row.class, row.quantity))
                             .collect();
-                        respond!(msg, Response::LockerGet(Ok(res)))
+                        if let Err(e) = respond!(msg, Response::LockerGet(Ok(res)))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to LockerGet: {}", e);
+                        }
                     }
                     Err(e) => {
-                        respond!(msg, Response::LockerGet(Err(e.to_string())))
+                        if let Err(e) = respond!(msg, Response::LockerGet(Err(e.to_string())))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to LockerGet: {}", e);
+                        }
                     }
                 }
                 Ok(())
@@ -79,20 +85,30 @@ impl Handler for Request {
                             let res = query.execute(&mut tx).await;
                             span.end();
                             if let Err(e) = res {
-                                respond!(msg, Response::LockerStore(Err(e.to_string())))
-                                    .with_context(cx)
-                                    .await;
+                                if let Err(e) =
+                                    respond!(msg, Response::LockerStore(Err(e.to_string())))
+                                        .with_context(cx)
+                                        .await
+                                {
+                                    error!("Failed to respond to LockerStore: {}", e);
+                                }
                                 return Ok(());
                             }
                         }
-                        respond!(msg, Response::LockerStore(Ok(())))
+                        if let Err(e) = respond!(msg, Response::LockerStore(Ok(())))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to LockerStore: {}", e);
+                        }
                     }
                     Err(e) => {
-                        respond!(msg, Response::LockerStore(Err(e.to_string())))
+                        if let Err(e) = respond!(msg, Response::LockerStore(Err(e.to_string())))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to LockerStore: {}", e);
+                        }
                     }
                 }
                 Ok(())
@@ -111,20 +127,30 @@ impl Handler for Request {
                             let res = query.execute(&mut tx).await;
                             span.end();
                             if let Err(e) = res {
-                                respond!(msg, Response::LockerTake(Err(e.to_string())))
-                                    .with_context(cx)
-                                    .await;
+                                if let Err(e) =
+                                    respond!(msg, Response::LockerTake(Err(e.to_string())))
+                                        .with_context(cx)
+                                        .await
+                                {
+                                    error!("Failed to respond to LockerTake: {}", e);
+                                }
                                 return Ok(());
                             }
                         }
-                        respond!(msg, Response::LockerTake(Ok(())))
+                        if let Err(e) = respond!(msg, Response::LockerTake(Ok(())))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to LockerTake: {}", e);
+                        }
                     }
                     Err(e) => {
-                        respond!(msg, Response::LockerTake(Err(e.to_string())))
+                        if let Err(e) = respond!(msg, Response::LockerTake(Err(e.to_string())))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to LockerTake: {}", e);
+                        }
                     }
                 }
                 Ok(())
@@ -188,20 +214,31 @@ impl Handler for Request {
                             let res = query.execute(&mut tx).await;
                             span.end();
                             if let Err(e) = res {
-                                respond!(msg, Response::BankPurchasesNew(Err(e.to_string())))
-                                    .with_context(cx)
-                                    .await;
+                                if let Err(e) =
+                                    respond!(msg, Response::BankPurchasesNew(Err(e.to_string())))
+                                        .with_context(cx)
+                                        .await
+                                {
+                                    error!("Failed to respond to BankPurchasesNew: {}", e);
+                                }
                                 return Ok(());
                             }
                         }
-                        respond!(msg, Response::BankPurchasesNew(Ok(())))
+                        if let Err(e) = respond!(msg, Response::BankPurchasesNew(Ok(())))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to BankPurchasesNew: {}", e);
+                        }
                     }
                     Err(e) => {
-                        respond!(msg, Response::BankPurchasesNew(Err(e.to_string())))
-                            .with_context(cx)
-                            .await;
+                        if let Err(e) =
+                            respond!(msg, Response::BankPurchasesNew(Err(e.to_string())))
+                                .with_context(cx)
+                                .await
+                        {
+                            error!("Failed to respond to BankPurchasesNew: {}", e);
+                        }
                     }
                 }
                 Ok(())
@@ -229,14 +266,20 @@ impl Handler for Request {
                                 )
                             })
                             .collect();
-                        respond!(msg, Response::ShopGetAll(Ok(res)))
+                        if let Err(e) = respond!(msg, Response::ShopGetAll(Ok(res)))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to ShopGetAll: {}", e);
+                        }
                     }
                     Err(e) => {
-                        respond!(msg, Response::ShopGetAll(Err(e.to_string())))
+                        if let Err(e) = respond!(msg, Response::ShopGetAll(Err(e.to_string())))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to ShopGetAll: {}", e);
+                        }
                     }
                 }
                 Ok(())
@@ -250,7 +293,7 @@ impl Handler for Request {
                 span.end();
                 match res {
                     Ok(row) => {
-                        respond!(
+                        if let Err(e) = respond!(
                             msg,
                             Response::ShopGetPrice(Ok(Price::new(
                                 row.base.unwrap_or(-1),
@@ -260,12 +303,18 @@ impl Handler for Request {
                             )))
                         )
                         .with_context(cx)
-                        .await;
+                        .await
+                        {
+                            error!("Failed to respond to ShopGetPrice: {}", e);
+                        }
                     }
                     Err(e) => {
-                        respond!(msg, Response::ShopGetPrice(Err(e.to_string())))
+                        if let Err(e) = respond!(msg, Response::ShopGetPrice(Err(e.to_string())))
                             .with_context(cx)
-                            .await;
+                            .await
+                        {
+                            error!("Failed to respond to ShopGetPrice: {}", e);
+                        }
                     }
                 }
                 Ok(())

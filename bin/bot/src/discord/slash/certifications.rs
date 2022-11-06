@@ -116,16 +116,13 @@ async fn trial(
         .unwrap()
         .as_bool()
         .unwrap();
-    let trainee = if let CommandDataOptionValue::User(user, _member) = options
+    let CommandDataOptionValue::User(trainee, _member) = options
         .iter()
         .find(|option| option.name == "trainee")
         .unwrap()
         .resolved
         .as_ref()
-        .unwrap()
-    {
-        user
-    } else {
+        .unwrap() else {
         panic!("Invalid trainee");
     };
     let notes = options
@@ -169,7 +166,6 @@ async fn trial(
     };
 }
 
-#[allow(clippy::too_many_lines)]
 async fn view(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
@@ -177,22 +173,19 @@ async fn view(
 ) {
     let mut interaction = Interaction::new(ctx, command);
     interaction.reply("Fetching certifications...").await;
-    let member = if let CommandDataOptionValue::User(user, _member) = options
+    let CommandDataOptionValue::User(user, _member) = options
         .iter()
         .find(|option| option.name == "member")
         .unwrap()
         .resolved
         .as_ref()
-        .unwrap()
-    {
-        user.id
-    } else {
+        .unwrap() else {
         panic!("Invalid member");
     };
     let Ok(((Response::Active(Ok(certs)), _), _)) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
-        Active { member }
+        Active { member: user.id }
     )
     .await
     else {
@@ -201,11 +194,11 @@ async fn view(
     };
     if certs.is_empty() {
         interaction
-            .reply(format!("<@{}> has no certifications", member))
+            .reply(format!("<@{}> has no certifications", user.id))
             .await;
         return;
     }
-    let mut content = format!("**<@{}> Certifications**\n\n", member);
+    let mut content = format!("**<@{}> Certifications**\n\n", user.id);
     for cert in certs {
         if let Ok(((Response::Name(Ok(name)), _), _)) = events_request!(
             bootstrap::NC::get().await,
@@ -235,7 +228,6 @@ async fn view(
     interaction.reply(content).await;
 }
 
-#[allow(clippy::too_many_lines)]
 async fn list(
     ctx: &Context,
     command: &ApplicationCommandInteraction,

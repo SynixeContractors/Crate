@@ -1,3 +1,3 @@
-name = "Ctirad Brodsky";
-dir = "@brodsky";
+name = "Crate Server";
+dir = "@crate_server";
 author = "Synixe Contractors";

@@ -129,49 +129,48 @@ pub async fn post_reddit_findaunit(cx: Context) {
     .password(&std::env::var("REDDIT_PASSWORD").expect("REDDIT_PASSWORD not set"))
     .login()
     .await;
-    if let Ok(client) = client {
-        match client.submit_richtext(
-            "[A3][Recruiting][NA/SA/OCE/SEA][Semi-milsim][18+]- Synixe Contractors - PMC - Persistent Gear - Manage your own kit",
-            std::str::from_utf8(crate::Assets::get("reddit-findaunit.md").unwrap().data.as_ref()).unwrap(),
-            "findaunit"
-        ).await {
-            Ok(_) => {
-                tokio::time::sleep(Duration::from_secs(30)).await;
-                let submitted = User::new(&std::env::var("REDDIT_USERNAME").expect("REDDIT_USERNAME not set")).submitted(None).await;
-                let link = if let Ok(submissions) = submitted {
-                    let post = submissions.data.children.first().unwrap();
-                    format!("https://reddit.com/r/{}/comments/{}", post.data.subreddit, post.data.id)
-                } else {
-                    error!("Error getting reddit submissions: {:?}", submitted);
-                    String::new()
-                };
-                if let Err(e) = events_request!(
-                    bootstrap::NC::get().await,
-                    synixe_events::discord::write,
-                    ChannelMessage
-                    {
-                        channel: synixe_meta::discord::channel::RECRUITING,
-                        message: DiscordMessage {
-                            content: DiscordContent::Embed(Candidate {
-                                source: Source::Reddit,
-                                title: "Reddit Post Submitted".to_string(),
-                                link,
-                                content: String::new(),
-                                ping: false,
-                            }.into()),
-                            reactions: Vec::new(),
-                        },
-                        thread: None,
-                    }
-                )
-                .with_context(cx)
-                .await
+    let Ok(client) = client else { return };
+    match client.submit_richtext(
+        "[A3][Recruiting][NA/SA/OCE/SEA][Semi-milsim][18+]- Synixe Contractors - PMC - Persistent Gear - Manage your own kit",
+        std::str::from_utf8(crate::Assets::get("reddit-findaunit.md").unwrap().data.as_ref()).unwrap(),
+        "findaunit"
+    ).await {
+        Ok(_) => {
+            tokio::time::sleep(Duration::from_secs(30)).await;
+            let submitted = User::new(&std::env::var("REDDIT_USERNAME").expect("REDDIT_USERNAME not set")).submitted(None).await;
+            let link = if let Ok(submissions) = submitted {
+                let post = submissions.data.children.first().unwrap();
+                format!("https://reddit.com/r/{}/comments/{}", post.data.subreddit, post.data.id)
+            } else {
+                error!("Error getting reddit submissions: {:?}", submitted);
+                String::new()
+            };
+            if let Err(e) = events_request!(
+                bootstrap::NC::get().await,
+                synixe_events::discord::write,
+                ChannelMessage
                 {
-                    error!("Error sending reddit post candidate: {}", e);
+                    channel: synixe_meta::discord::channel::RECRUITING,
+                    message: DiscordMessage {
+                        content: DiscordContent::Embed(Candidate {
+                            source: Source::Reddit,
+                            title: "Reddit Post Submitted".to_string(),
+                            link,
+                            content: String::new(),
+                            ping: false,
+                        }.into()),
+                        reactions: Vec::new(),
+                    },
+                    thread: None,
                 }
-            },
-            Err(e) => error!("Failed to post to reddit findaunit: {}", e),
-        }
+            )
+            .with_context(cx)
+            .await
+            {
+                error!("Error sending reddit post candidate: {}", e);
+            }
+        },
+        Err(e) => error!("Failed to post to reddit findaunit: {}", e),
     }
 }
 
@@ -185,53 +184,51 @@ pub async fn reply(msg: Message, url: &str, cx: Context) {
     .password(&std::env::var("REDDIT_PASSWORD").expect("REDDIT_PASSWORD not set"))
     .login()
     .await;
-    if let Ok(client) = client {
-        let comment_id = url
-            .trim_start_matches("https://reddit.com/r/FindAUnit/comments/")
-            .split_once('/')
-            .unwrap()
-            .0;
-        debug!("Comment ID: {}", comment_id);
-        match client
-            .comment(
-                std::str::from_utf8(crate::Assets::get("reddit-reply.md").unwrap().data.as_ref())
-                    .unwrap(),
-                &format!("t3_{}", comment_id),
-            )
-            .await
-        {
-            Ok(response) => {
-                debug!("response: ({:?}) {:?}", response.status(), response);
-                if response.status().is_success() {
-                    if let Err(e) = respond!(msg, Response::ReplyReddit(Ok(())))
-                        .with_context(cx.clone())
-                        .await
-                    {
-                        error!("Error sending response: {}", e);
-                    }
-                } else {
-                    error!(
-                        "Failed to post to reddit findaunit: ({}) {:?}",
-                        response.status(),
-                        response
-                    );
-                    if let Err(e) =
-                        respond!(msg, Response::ReplyReddit(Err(format!("{:?}", response))))
-                            .with_context(cx.clone())
-                            .await
-                    {
-                        error!("Error sending response: {}", e);
-                    }
-                }
-            }
-            Err(e) => {
-                error!("Failed to post to reddit findaunit: {}", e);
-                if let Err(e) = respond!(msg, Response::ReplyReddit(Err(e.to_string())))
+    let Ok(client) = client else { return };
+    let comment_id = url
+        .trim_start_matches("https://reddit.com/r/FindAUnit/comments/")
+        .split_once('/')
+        .unwrap()
+        .0;
+    debug!("Comment ID: {}", comment_id);
+    match client
+        .comment(
+            std::str::from_utf8(crate::Assets::get("reddit-reply.md").unwrap().data.as_ref())
+                .unwrap(),
+            &format!("t3_{}", comment_id),
+        )
+        .await
+    {
+        Ok(response) => {
+            debug!("response: ({:?}) {:?}", response.status(), response);
+            if response.status().is_success() {
+                if let Err(e) = respond!(msg, Response::ReplyReddit(Ok(())))
                     .with_context(cx.clone())
                     .await
                 {
                     error!("Error sending response: {}", e);
                 }
+            } else {
+                error!(
+                    "Failed to post to reddit findaunit: ({}) {:?}",
+                    response.status(),
+                    response
+                );
+                if let Err(e) = respond!(msg, Response::ReplyReddit(Err(format!("{:?}", response))))
+                    .with_context(cx.clone())
+                    .await
+                {
+                    error!("Error sending response: {}", e);
+                }
+            }
+        }
+        Err(e) => {
+            error!("Failed to post to reddit findaunit: {}", e);
+            if let Err(e) = respond!(msg, Response::ReplyReddit(Err(e.to_string())))
+                .with_context(cx.clone())
+                .await
+            {
+                error!("Error sending response: {}", e);
             }
         }
     }

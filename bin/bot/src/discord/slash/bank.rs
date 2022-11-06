@@ -79,23 +79,20 @@ async fn balance(
 ) {
     let mut interaction = Interaction::new(ctx, command);
     interaction.reply("Fetching balance...").await;
-    let member = if let CommandDataOptionValue::User(user, _member) = options
+    let CommandDataOptionValue::User(user, _member) = options
         .iter()
         .find(|option| option.name == "member")
         .unwrap()
         .resolved
         .as_ref()
-        .unwrap()
-    {
-        user
-    } else {
+        .unwrap() else {
         panic!("Invalid member");
     };
     let Ok(((Response::BankBalance(Ok(balance)), _), _)) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankBalance {
-            member: member.id,
+            member: user.id,
         }
     )
     .await else {
@@ -105,7 +102,7 @@ async fn balance(
     interaction
         .reply(format!(
             "<@{}> has ${}",
-            member.id,
+            user.id,
             bootstrap::format::money(balance)
         ))
         .await;
@@ -118,44 +115,35 @@ async fn transfer(
 ) {
     let mut interaction = Interaction::new(ctx, command);
     interaction.reply("Transferring money...").await;
-    let member = if let CommandDataOptionValue::User(user, _member) = options
+    let CommandDataOptionValue::User(user, _member) = options
         .iter()
         .find(|option| option.name == "member")
         .unwrap()
         .resolved
         .as_ref()
-        .unwrap()
-    {
-        user
-    } else {
+        .unwrap() else {
         panic!("Invalid member");
     };
-    if member.bot && member.id.0 != 1_028_418_063_168_708_638 {
+    if user.bot && user.id.0 != 1_028_418_063_168_708_638 {
         interaction.reply("You can't transfer money to a bot").await;
         return;
     }
-    let amount = if let CommandDataOptionValue::Integer(amount) = options
+    let CommandDataOptionValue::Integer(amount) = options
         .iter()
         .find(|option| option.name == "amount")
         .unwrap()
         .resolved
         .as_ref()
-        .unwrap()
-    {
-        *amount
-    } else {
+        .unwrap() else {
         panic!("Invalid amount");
     };
-    let reason = if let CommandDataOptionValue::String(reason) = options
+    let CommandDataOptionValue::String(reason) = options
         .iter()
         .find(|option| option.name == "reason")
         .unwrap()
         .resolved
         .as_ref()
-        .unwrap()
-    {
-        reason
-    } else {
+        .unwrap() else {
         panic!("Invalid reason");
     };
     let Ok(((Response::BankTransferNew(Ok(_)), _), _)) = events_request!(
@@ -163,9 +151,9 @@ async fn transfer(
         synixe_events::gear::db,
         BankTransferNew {
             source: command.member.as_ref().unwrap().user.id,
-            target: member.id,
+            target: user.id,
             #[allow(clippy::cast_possible_truncation)]
-            amount: amount as i32,
+            amount: *amount as i32,
             reason: reason.clone(),
         }
     )
@@ -176,8 +164,8 @@ async fn transfer(
     interaction
         .reply(format!(
             "Transferred ${} to <@{}>",
-            bootstrap::format::money(amount),
-            member.id
+            bootstrap::format::money(*amount),
+            user.id
         ))
         .await;
 }

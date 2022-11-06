@@ -3,5 +3,16 @@ name = "synixe-arma-server"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "crate_server"
+crate-type = ["cdylib"]
+
 [dependencies]
+bootstrap = { path = "../../lib/bootstrap" }
+synixe-events = { path = "../../lib/events" }
+
 arma-rs = "1.8.0"
+lazy_static = "1.4.0"
+log = "0.4.17"
+uuid = "1.2.1"
+tokio = { version = "1.21.2", features = ["full"] }

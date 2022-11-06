@@ -1,3 +1,3 @@
-#define MAJOR {{version.major}}
-#define MINOR {{version.minor}}
-#define PATCH {{version.patch}}
+#define MAJOR 0
+#define MINOR 1
+#define PATCH 0

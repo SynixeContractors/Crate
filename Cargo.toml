@@ -10,6 +10,8 @@ members = [
     "bin/db",
     "bin/executor",
     "bin/scheduler",
+
+    "arma/server",
 ]
 
 [workspace.dependencies]

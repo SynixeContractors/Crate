@@ -92,7 +92,6 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
     }
 }
 
-#[allow(clippy::too_many_lines)]
 async fn new(
     ctx: &Context,
     command: &ApplicationCommandInteraction,

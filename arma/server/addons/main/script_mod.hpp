@@ -1,5 +1,5 @@
-#define MAINPREFIX {{mainprefix}}
-#define PREFIX {{prefix}}
+#define MAINPREFIX synixe
+#define PREFIX crate_server
 
 #include "script_version.hpp"
 
