@@ -1,11 +1,23 @@
 //! Scheduling and running missions.
 
+#![allow(clippy::use_self)]
+
 /// Interact with the database.
 pub mod db {
+    use serde::{Deserialize, Serialize};
     use synixe_model::missions::{Mission, ScheduledMission};
     use synixe_proc::events_requests;
     use time::OffsetDateTime;
     use uuid::Uuid;
+
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    /// A filter for missions
+    pub enum ScheduledFilter {
+        /// Only missions that have been previously scheduled
+        OnlyScheduled,
+        /// Only missions that have not been previously scheduled
+        OnlyUnscheduled,
+    }
 
     events_requests!(db.missions {
         /// Schedule a mission
@@ -37,7 +49,12 @@ pub mod db {
         /// Update missions from the GitHub list
         struct UpdateMissionList {} => (Result<(), String>)
         /// Fetch the list of missions
-        struct FetchMissionList {} => (Result<Vec<Mission>, String>)
+        struct FetchMissionList {
+            /// Filter the list of missions by scheduled status
+            filter: Option<ScheduledFilter>,
+            /// Filter the list of missions by name
+            search: Option<String>,
+        } => (Result<Vec<Mission>, String>)
         /// Fetch a single mission
         struct FetchMission {
             /// The mission to fetch.

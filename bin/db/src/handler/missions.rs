@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use synixe_events::missions::db::{Request, Response};
+use synixe_events::missions::db::{Request, Response, ScheduledFilter};
 use synixe_meta::missions::MISSION_LIST;
 use synixe_model::missions::{Mission, MissionType};
 
@@ -125,15 +125,29 @@ impl Handler for Request {
                     }
                 }
             }
-            Self::FetchMissionList {} => {
-                fetch_as_and_respond!(
-                    msg,
-                    *db,
-                    cx,
-                    synixe_model::missions::Mission,
-                    Response::FetchMissionList,
-                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions ORDER BY name ASC",
-                )?;
+            Self::FetchMissionList { filter, search } => {
+                let search = search.as_deref().unwrap_or("");
+                if filter == &Some(ScheduledFilter::OnlyUnscheduled) {
+                    fetch_as_and_respond!(
+                        msg,
+                        *db,
+                        cx,
+                        synixe_model::missions::Mission,
+                        Response::FetchMissionList,
+                        "SELECT missions.id, name, summary, description, type as \"typ: MissionType\" FROM missions LEFT JOIN missions_schedule on missions.id = missions_schedule.mission WHERE missions_schedule.mission is NULL AND LOWER(missions.name) LIKE $1 ORDER BY name ASC",
+                        format!("%{}%", search),
+                    )?;
+                } else {
+                    fetch_as_and_respond!(
+                        msg,
+                        *db,
+                        cx,
+                        synixe_model::missions::Mission,
+                        Response::FetchMissionList,
+                        "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE LOWER(missions.name) LIKE $1 ORDER BY name ASC",
+                        format!("%{}%", search),
+                    )?;
+                }
                 Ok(())
             }
             Self::FetchMission { mission } => {

@@ -203,61 +203,6 @@
     },
     "query": "SELECT i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.class = $1"
   },
-  "51a321c1f6eb87e7b71222ed4365c0457c72d2228479b4f1a8384ced281b60bf": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 4,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions ORDER BY name ASC"
-  },
   "599656998a4b7d69c2f86e6415712a7c2cb5d133d56fc3335c8cb187c89e4b42": {
     "describe": {
       "columns": [],
@@ -467,6 +412,63 @@
     },
     "query": "INSERT INTO gear_locker_log (member, class, quantity) VALUES ($1, $2, $3)"
   },
+  "74b4ad57fbf2499c0504443e1104de2dfb57e63153dd8b4f739273fdc7196521": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 4,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE LOWER(missions.name) LIKE $1 ORDER BY name ASC"
+  },
   "76bd2f79cbddd70d7f6ba099f538122f733492f7ffd98eae404a11ebf776d8bd": {
     "describe": {
       "columns": [],
@@ -631,6 +633,63 @@
       }
     },
     "query": "SELECT EXISTS(SELECT 1 FROM recruitment_replied WHERE link = $1) as value"
+  },
+  "c60864b08b9c5a73c6c67386be6ef4abdb9a0af733b3737d9a244c25bcbbffe8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 4,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT missions.id, name, summary, description, type as \"typ: MissionType\" FROM missions LEFT JOIN missions_schedule on missions.id = missions_schedule.mission WHERE missions_schedule.mission is NULL AND LOWER(missions.name) LIKE $1 ORDER BY name ASC"
   },
   "cc56249e54fdbc70d7821b669133f9aa8bca7582c719e14a003c877b53b53efd": {
     "describe": {

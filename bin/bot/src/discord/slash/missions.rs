@@ -11,7 +11,7 @@ use serenity::{
     },
     prelude::*,
 };
-use synixe_events::missions::db::Response;
+use synixe_events::missions::db::{Response, ScheduledFilter};
 use synixe_meta::discord::channel::SCHEDULE;
 use synixe_proc::events_request;
 use time::format_description;
@@ -58,6 +58,20 @@ pub fn schedule(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .min_int_value(0)
                         .required(false)
                 })
+                .create_sub_option(|option| {
+                    option
+                        .name("unplayed")
+                        .description("Only show that haven't been previously scheduled")
+                        .kind(CommandOptionType::Boolean)
+                        .required(false)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("search")
+                        .description("Filter the list of missions by name")
+                        .kind(CommandOptionType::String)
+                        .required(false)
+                })
         })
         .create_option(|option| {
             option
@@ -92,6 +106,7 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
     }
 }
 
+#[allow(clippy::too_many_lines)]
 async fn new(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
@@ -131,10 +146,33 @@ async fn new(
     }
     debug!("fetching missions");
     interaction.reply("Fetching missions...").await;
+    let filter = options
+        .iter()
+        .find(|option| option.name == "unplayed")
+        .map_or_else(
+            || None,
+            |option| {
+                if option.value.as_ref().unwrap().as_bool().unwrap() {
+                    Some(ScheduledFilter::OnlyUnscheduled)
+                } else {
+                    None
+                }
+            },
+        );
+    let search = options
+        .iter()
+        .find(|option| option.name == "search")
+        .map_or_else(
+            || None,
+            |option| Some(option.value.as_ref().unwrap().as_str().unwrap().to_string()),
+        );
     let Ok(((Response::FetchMissionList(Ok(missions)), _), _)) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
-        FetchMissionList {}
+        FetchMissionList {
+            filter,
+            search,
+        }
     )
     .await else {
         interaction.reply("Failed to fetch missions.").await;
