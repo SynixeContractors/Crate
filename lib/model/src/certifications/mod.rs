@@ -3,6 +3,7 @@
 #![allow(clippy::use_self)] // serde false positive
 
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,7 +23,7 @@ pub struct Certification {
     /// Valid period in days
     pub valid_for: Option<i32>,
     /// Certification created at
-    pub created: time::OffsetDateTime,
+    pub created: OffsetDateTime,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,7 +45,7 @@ pub struct CertificationTrial {
     /// Valid for
     pub valid_for: Option<i32>,
     /// Valid until
-    pub valid_until: Option<time::OffsetDateTime>,
+    pub valid_until: Option<OffsetDateTime>,
     /// Created at
-    pub created: time::OffsetDateTime,
+    pub created: OffsetDateTime,
 }

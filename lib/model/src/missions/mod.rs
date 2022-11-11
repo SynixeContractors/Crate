@@ -3,6 +3,8 @@
 #![allow(clippy::use_self)] // serde false positive
 
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
+use uuid::Uuid;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
@@ -72,11 +74,11 @@ impl From<MissionType> for i32 {
 /// A scheduled mission
 pub struct ScheduledMission {
     /// Unique id
-    pub id: uuid::Uuid,
+    pub id: Uuid,
     /// Mission id
     pub mission: String,
     /// Message in #schedule
     pub schedule_message_id: Option<String>,
     /// Start datetime
-    pub start: time::OffsetDateTime,
+    pub start: OffsetDateTime,
 }

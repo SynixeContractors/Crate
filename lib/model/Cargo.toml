@@ -18,6 +18,6 @@ default = [
 ]
 certifications = [ "uuid", "roles", "time" ]
 mission-schedule = [ "missions", "time", "uuid" ]
-missions = []
+missions = ["uuid", "time"]
 roles = [ "serenity" ]
-gear = []
+gear = ["time"]
