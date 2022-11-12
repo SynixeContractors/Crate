@@ -1,38 +1,20 @@
-use serenity::{
-    model::prelude::{
-        application_command::{ApplicationCommandInteraction, CommandDataOption},
-        InteractionResponseType, RoleId,
-    },
-    prelude::Context,
-};
+use serenity::model::prelude::{application_command::CommandDataOption, RoleId};
 use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt, PrimitiveDateTimeExt};
+
+use super::interaction::Interaction;
 
 pub mod bank;
 pub mod certifications;
 pub mod meme;
 pub mod missions;
 
-pub async fn requires_role(
-    needle: RoleId,
-    haystack: &[RoleId],
-    ctx: &Context,
-    command: &ApplicationCommandInteraction,
-) -> bool {
-    let found = haystack.iter().any(|role| *role == needle);
-    if !found {
-        command
-            .create_interaction_response(&ctx, |r| {
-                r.kind(InteractionResponseType::ChannelMessageWithSource)
-                    .interaction_response_data(|m| {
-                        m.content("You do not have permission to use this command")
-                            .ephemeral(true)
-                    })
-            })
-            .await
-            .unwrap();
+pub async fn requires_role(needle: RoleId, haystack: &[RoleId], interaction: &mut Interaction<'_>) {
+    if !haystack.iter().any(|role| *role == needle) {
+        interaction
+            .reply("You do not have permission to use this command.")
+            .await;
     }
-    found
 }
 
 pub fn get_datetime(options: &[CommandDataOption]) -> OffsetDateTime {

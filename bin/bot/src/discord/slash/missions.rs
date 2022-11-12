@@ -6,13 +6,13 @@ use serenity::{
         application::interaction::application_command::ApplicationCommandInteraction,
         prelude::{
             application_command::CommandDataOption, command::CommandOptionType, MessageId,
-            ReactionType, RoleId,
+            ReactionType,
         },
     },
     prelude::*,
 };
 use synixe_events::missions::db::{Response, ScheduledFilter};
-use synixe_meta::discord::channel::SCHEDULE;
+use synixe_meta::discord::{channel::SCHEDULE, role::MISSION_REVIEWER};
 use synixe_proc::events_request;
 use time::format_description;
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
@@ -114,19 +114,12 @@ async fn new(
 ) {
     let mut interaction = Interaction::new(ctx, command);
     let date = super::get_datetime(options);
-    if !super::requires_role(
-        RoleId(1_020_252_253_287_886_858),
+    super::requires_role(
+        MISSION_REVIEWER,
         &command.member.as_ref().unwrap().roles,
-        ctx,
-        command,
+        &mut interaction,
     )
-    .await
-    {
-        interaction
-            .reply("You do not have permission to use this command.")
-            .await;
-        return;
-    }
+    .await;
     if let Ok(((Response::IsScheduled(Ok(Some(false) | None)), _), _)) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
@@ -280,19 +273,12 @@ pub async fn remove(
     _options: &[CommandDataOption],
 ) {
     let mut interaction = Interaction::new(ctx, command);
-    if !super::requires_role(
-        RoleId(1_020_252_253_287_886_858),
+    super::requires_role(
+        MISSION_REVIEWER,
         &command.member.as_ref().unwrap().roles,
-        ctx,
-        command,
+        &mut interaction,
     )
-    .await
-    {
-        interaction
-            .reply("You do not have permission to use this command")
-            .await;
-        return;
-    }
+    .await;
     let time_format = format_description::parse(TIME_FORMAT).unwrap();
     debug!("fetching missions");
     interaction.reply("Fetching missions...").await;
@@ -400,19 +386,12 @@ async fn post(
     _options: &[CommandDataOption],
 ) {
     let mut interaction = Interaction::new(ctx, command);
-    if !super::requires_role(
-        RoleId(1_020_252_253_287_886_858),
+    super::requires_role(
+        MISSION_REVIEWER,
         &command.member.as_ref().unwrap().roles,
-        ctx,
-        command,
+        &mut interaction,
     )
-    .await
-    {
-        interaction
-            .reply("You do not have permission to use this command")
-            .await;
-        return;
-    }
+    .await;
     debug!("fetching missions");
     interaction.reply("Fetching missions...").await;
     let Ok(((Response::UpcomingSchedule(Ok(missions)), _), _)) = events_request!(
