@@ -16,12 +16,12 @@ members = [
 
 [workspace.dependencies]
 async-trait = "0.1.58"
-time = "0.3.16"
+time = "0.3.17"
 log = "0.4.17"
-nats = { version = "0.23.0" }
+nats = { version = "0.23.1" }
 opentelemetry = { version = "0.18.0", default-features = false, features = ["trace", "rt-tokio"] }
 serde = { version = "1.0.147", features = ["derive"] }
-serenity = { git = "https://github.com/serenity-rs/serenity", rev = "67143ef33966aef5a949c2411d10a7d90d437382", default-features = false }
+serenity = { git = "https://github.com/serenity-rs/serenity", rev = "1c7a680739470b5df21b064c4747791b3ee90b32", default-features = false }
 sqlx = { version = "0.6.2", features = ["offline"] }
 uuid = "1.2.1"
 vergen = "7.4.2"
