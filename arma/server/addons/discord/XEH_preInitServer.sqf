@@ -5,10 +5,12 @@ ADDON = true;
 
 [QCVAR(fetch), {
     params [
-        ["_steam", "", [""]]
+        ["_steam", "", [""]],
+        ["_name", "", [""]]
     ];
     if (_steam == "") exitWith {};
-    EXTCALL("discord:fetch",[_steam]);
+    if (_name == "") exitWith {};
+    EXTCALL("discord:fetch",[ARR_2(_steam,_name)]);
 }] call CBA_fnc_addEventHandler;
 
 addMissionEventHandler ["ExtensionCallback", {

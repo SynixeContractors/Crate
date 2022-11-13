@@ -63,7 +63,7 @@ pub async fn handle(msg: Message, client: Bot) {
                         msg,
                         info::Response::UserByName(Ok(members
                             .iter()
-                            .find(|m| m.user.name == name)
+                            .find(|m| m.nick.as_ref() == Some(&name) || m.user.name == name)
                             .map(|m| m.user.id)))
                     )
                     .await
