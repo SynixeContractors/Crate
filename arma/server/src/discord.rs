@@ -78,21 +78,57 @@ mod tests {
         std::env::set_var("CRATE_SERVER_ID", "test_fetch_brett");
         let ext = super::super::init().testing();
         unsafe {
-            let (_, code) = ext.call("discord:fetch", Some(vec![String::from("76561198076832016")]));
+            let (_, code) = ext.call(
+                "discord:fetch",
+                Some(vec![String::from("76561198076832016")]),
+            );
             assert_eq!(code, 0);
         }
-        assert!(ext.callback_handler(|name, func, data| {
-            if name == "crate_log" {
-                println!("{}: {}", func, data.unwrap());
-                return arma_rs::Result::<(),()>::Continue
-            }
-            assert_eq!(name, "crate_server");
-            assert_eq!(func, "fetch");
-            let Value::Array(data) = data.unwrap() else {
-                panic!("expected array");
-            };
-            assert_eq!(data[0], Value::String(String::from("307524009854107648")));
-            arma_rs::Result::Ok(())
-        }, Duration::from_secs(10)).is_ok());
+        assert!(ext
+            .callback_handler(
+                |name, func, data| {
+                    if name == "crate_log" {
+                        println!("{}: {}", func, data.unwrap());
+                        return arma_rs::Result::<(), ()>::Continue;
+                    }
+                    assert_eq!(name, "crate_server");
+                    assert_eq!(func, "fetch");
+                    let Value::Array(data) = data.unwrap() else {
+                        panic!("expected array");
+                    };
+                    assert_eq!(data[0], Value::String(String::from("307524009854107648")));
+                    let Value::Array(roles) = data[1].clone() else {
+                        panic!("expected array");
+                    };
+                    assert!(roles.contains(&Value::String(String::from("700888852142751815"))));
+                    arma_rs::Result::Ok(())
+                },
+                Duration::from_secs(10)
+            )
+            .is_ok());
+    }
+
+    #[test]
+    fn fetch_missing() {
+        std::env::set_var("CRATE_SERVER_ID", "test_fetch_brett");
+        let ext = super::super::init().testing();
+        unsafe {
+            let (_, code) = ext.call("discord:fetch", Some(vec![String::from("0123")]));
+            assert_eq!(code, 0);
+        }
+        assert!(ext
+            .callback_handler(
+                |name, func, data| {
+                    if name == "crate_log" {
+                        println!("{}: {}", func, data.unwrap());
+                        return arma_rs::Result::<(), ()>::Continue;
+                    }
+                    assert_eq!(name, "crate_server");
+                    assert_eq!(func, "needs_link");
+                    arma_rs::Result::Ok(())
+                },
+                Duration::from_secs(10)
+            )
+            .is_ok());
     }
 }
