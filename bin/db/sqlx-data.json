@@ -634,6 +634,26 @@
     },
     "query": "SELECT EXISTS(SELECT 1 FROM recruitment_replied WHERE link = $1) as value"
   },
+  "c2b914d6b399bb777a122980d2e4f90387a80c551a30e5798ae8e3f2ab605e42": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            member as value\n                        FROM\n                            members_steam\n                        WHERE\n                            steam_id = $1"
+  },
   "c60864b08b9c5a73c6c67386be6ef4abdb9a0af733b3737d9a244c25bcbbffe8": {
     "describe": {
       "columns": [

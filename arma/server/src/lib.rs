@@ -1,5 +1,6 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery, clippy::all)]
+#![allow(clippy::needless_pass_by_value)]
 
 use arma_rs::{arma, Context, Extension};
 use synixe_events::{arma_server::publish::Publish, publish};
@@ -8,6 +9,7 @@ use tokio::sync::RwLock;
 #[macro_use]
 extern crate log;
 
+mod discord;
 mod logger;
 
 lazy_static::lazy_static! {
@@ -25,6 +27,7 @@ fn init() -> Extension {
     let ext = Extension::build()
         .command("id", command_id)
         .command("test_tokio", command_test_tokio)
+        .group("discord", discord::group())
         .finish();
     let ctx = ext.context();
     let ctx_tokio = ext.context();

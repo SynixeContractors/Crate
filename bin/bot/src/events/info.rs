@@ -39,5 +39,19 @@ pub async fn handle(msg: Message, client: Bot) {
                 }
             }
         }
+        info::Request::Roles { user } => {
+            match synixe_meta::discord::GUILD.member(&client, user).await {
+                Ok(member) => {
+                    if let Err(e) = respond!(msg, info::Response::Roles(Ok(member.roles))).await {
+                        error!("Failed to respond to NATS: {}", e);
+                    }
+                }
+                Err(e) => {
+                    if let Err(e) = respond!(msg, info::Response::Roles(Err(e.to_string()))).await {
+                        error!("Failed to respond to NATS: {}", e);
+                    }
+                }
+            }
+        }
     }
 }

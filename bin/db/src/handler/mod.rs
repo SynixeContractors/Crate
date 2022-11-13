@@ -1,4 +1,5 @@
 mod certifications;
+mod discord;
 mod gear;
 mod missions;
 mod recruiting;
@@ -19,6 +20,7 @@ pub async fn start() {
             msg,
             nats,
             synixe_events::certifications::db::Request,
+            synixe_events::discord::db::Request,
             synixe_events::gear::db::Request,
             synixe_events::missions::db::Request,
             synixe_events::recruiting::db::Request

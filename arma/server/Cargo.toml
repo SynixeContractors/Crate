@@ -10,12 +10,14 @@ crate-type = ["cdylib"]
 [dependencies]
 bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
 synixe-events = { path = "../../lib/events" }
+synixe-proc = { path = "../../lib/proc" }
 
 arma-rs = "1.8.1"
 lazy_static = "1.4.0"
 log = "0.4.17"
-uuid = "1.2.1"
+serenity = { workspace = true }
 tokio = { version = "1.21.2", features = ["full"] }
+uuid = "1.2.1"
 
 [dev-dependencies]
 nats = { workspace = true }

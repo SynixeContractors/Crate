@@ -91,7 +91,7 @@ pub mod write {
 /// Get information from Discord
 pub mod info {
     use serde::{Deserialize, Serialize};
-    use serenity::model::prelude::UserId;
+    use serenity::model::prelude::{RoleId, UserId};
     use synixe_proc::events_requests;
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -106,11 +106,29 @@ pub mod info {
     }
 
     events_requests!(discord.info {
-        /// A message was sent
+        /// Get a user's name information
         struct Username {
-            /// The message that was sent
+            /// The user to get the name information for
             user: UserId,
         } => (Result<Username, String>)
+        /// Get a user's roles
+        struct Roles {
+            /// The user to get the roles for
+            user: UserId,
+        } => (Result<Vec<RoleId>, String>)
+    });
+}
+
+/// Read from the database
+pub mod db {
+    use synixe_proc::events_requests;
+
+    events_requests!(discord.db {
+        /// Get a discord user's ID from their name
+        struct FromSteam {
+            /// The steam ID to get the discord ID for
+            steam_id: String,
+        } => (Result<String, String>)
     });
 }
 
