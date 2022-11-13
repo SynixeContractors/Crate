@@ -1,9 +1,9 @@
-use arma_rs::{Group, IntoArma};
+use arma_rs::Group;
 use serenity::model::prelude::UserId;
 use synixe_events::discord::{db, info};
 use synixe_proc::events_request;
 
-use crate::{CONTEXT, RUNTIME};
+use crate::{models::discord::FetchResponse, CONTEXT, RUNTIME, STEAM_CACHE};
 
 pub fn group() -> Group {
     Group::new().command("fetch", command_fetch)
@@ -23,7 +23,7 @@ fn command_fetch(steam: String) {
             return;
         };
         let Ok(discord_id) = resp else {
-            CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server", "needs_link", steam);
+            CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server", "needs_link", steam.clone());
             return;
         };
         let Ok(((info::Response::Roles(resp), _), _)) = events_request!(
@@ -40,31 +40,13 @@ fn command_fetch(steam: String) {
             error!("failed to fetch discord roles over nats");
             return;
         };
-        CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server", "fetch", FetchResponse {
+        STEAM_CACHE.write().await.insert(discord_id.clone(), steam.clone());
+        CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server:discord", "fetch", FetchResponse {
+            steam,
             discord_id,
             roles: roles.into_iter().map(|r| r.to_string()).collect(),
         });
     });
-}
-
-struct FetchResponse {
-    discord_id: String,
-    roles: Vec<String>,
-}
-
-impl IntoArma for FetchResponse {
-    fn to_arma(&self) -> arma_rs::Value {
-        arma_rs::Value::Array(vec![
-            arma_rs::Value::String(self.discord_id.clone()),
-            arma_rs::Value::Array(
-                self.roles
-                    .clone()
-                    .into_iter()
-                    .map(arma_rs::Value::String)
-                    .collect(),
-            ),
-        ])
-    }
 }
 
 #[cfg(test)]

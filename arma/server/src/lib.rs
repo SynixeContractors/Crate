@@ -2,6 +2,8 @@
 #![warn(clippy::nursery, clippy::all)]
 #![allow(clippy::needless_pass_by_value)]
 
+use std::collections::HashMap;
+
 use arma_rs::{arma, Context, Extension};
 use synixe_events::{arma_server::publish::Publish, publish};
 use tokio::sync::RwLock;
@@ -9,8 +11,11 @@ use tokio::sync::RwLock;
 #[macro_use]
 extern crate log;
 
+mod background;
 mod discord;
+mod listener;
 mod logger;
+mod models;
 
 lazy_static::lazy_static! {
     static ref SERVER_ID: String = std::env::var("CRATE_SERVER_ID").expect("CRATE_SERVER_ID not set");
@@ -18,7 +23,8 @@ lazy_static::lazy_static! {
         .enable_all()
         .build()
         .expect("failed to initialize tokio runtime");
-    static ref CONTEXT: RwLock<Option<Context>> = RwLock::new(None);
+    pub static ref CONTEXT: RwLock<Option<Context>> = RwLock::new(None);
+    pub static ref STEAM_CACHE: RwLock<HashMap<String, String>> = RwLock::new(HashMap::new());
 }
 
 #[arma]
@@ -29,7 +35,6 @@ fn init() -> Extension {
         .command("test_tokio", command_test_tokio)
         .group("discord", discord::group())
         .finish();
-    let ctx = ext.context();
     let ctx_tokio = ext.context();
     std::thread::spawn(move || {
         RUNTIME.block_on(async {
@@ -42,20 +47,7 @@ fn init() -> Extension {
             )
             .await
             .unwrap();
-            loop {
-                std::thread::sleep(std::time::Duration::from_secs(15));
-                ctx.callback_null("crate_server", "beat");
-                if let Err(e) = publish!(
-                    bootstrap::NC::get().await,
-                    Publish::Heartbeat {
-                        id: SERVER_ID.clone(),
-                    }
-                )
-                .await
-                {
-                    error!("failed to publish heartbeat: {}", e);
-                }
-            }
+            tokio::join!(background::background_loop(), background::events());
         });
     });
     logger::init(ext.context());

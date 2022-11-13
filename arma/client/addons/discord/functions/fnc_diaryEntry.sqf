@@ -1,9 +1,11 @@
+#include "script_component.hpp"
+
 if !(player diarySubjectExists QGVAR(diary)) then {
-    createDiarySubject [
+    player createDiarySubject [
         QGVAR(diary),
         "Synixe Contractors"
     ];
-    GVAR(diaryRecord) = createDiaryRecord [
+    GVAR(diaryRecord) = player createDiaryRecord [
         QGVAR(diary),
         [
             "My Account",
@@ -12,8 +14,8 @@ if !(player diarySubjectExists QGVAR(diary)) then {
     ];
 };
 
-private _id = player getVariable [QGVAR(id), "Unknown"];
-private _roles = player getVariable [QGVAR(roles), []];
+private _id = player getVariable [QCVAR(id), "Unknown"];
+private _roles = player getVariable [QCVAR(roles), []];
 
 private _roleText = if (_roles isEqualTo []) then {
     ""

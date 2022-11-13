@@ -1,5 +1,5 @@
 #define COMPONENT discord
-#include "\synixe\crate_server\addons\main\script_mod.hpp"
+#include "\synixe\crate_client\addons\main\script_mod.hpp"
 
 // #define DEBUG_MODE_FULL
 // #define DISABLE_COMPILE_CACHE
@@ -11,4 +11,4 @@
     #define DEBUG_SETTINGS DEBUG_SETTINGS_MAIN
 #endif
 
-#include "\synixe\crate_server\addons\main\script_macros.hpp"
+#include "\synixe\crate_client\addons\main\script_macros.hpp"

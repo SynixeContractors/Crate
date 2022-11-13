@@ -1,2 +1,5 @@
 [project]
 name = "crate-server"
+files = [
+    "crate_server_x64.dll"
+]

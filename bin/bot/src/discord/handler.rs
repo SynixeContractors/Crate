@@ -105,6 +105,27 @@ impl EventHandler for Handler {
         }
     }
 
+    async fn guild_member_update(
+        &self,
+        ctx: Context,
+        _old_if_available: Option<Member>,
+        new: Member,
+    ) {
+        if new.user.bot {
+            return;
+        }
+        if new.guild_id == synixe_meta::discord::GUILD {
+            publish!(
+                bootstrap::NC::get().await,
+                Publish::MemberUpdate {
+                    member: new.clone(),
+                }
+            )
+            .await
+            .unwrap();
+        }
+    }
+
     async fn guild_ban_addition(&self, ctx: Context, guild_id: GuildId, banned_user: User) {
         if banned_user.bot {
             return;

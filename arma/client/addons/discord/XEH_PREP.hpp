@@ -1,0 +1,2 @@
+PREP(diaryEntry);
+PREP(setTraits);

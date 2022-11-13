@@ -134,7 +134,7 @@ pub mod db {
 
 /// Publish event from discord
 pub mod publish {
-    use serenity::model::prelude::Reaction;
+    use serenity::model::prelude::{Member, Reaction};
     use synixe_proc::events_publish;
     events_publish!(publish.info {
         /// A reaction was added to a message
@@ -146,6 +146,11 @@ pub mod publish {
         struct ReactionRemove {
             /// Reaction removed from the message
             reaction: Reaction
+        }
+        /// A member was updated
+        struct MemberUpdate {
+            /// Member that was updated
+            member: Member,
         }
     });
 }
