@@ -123,7 +123,7 @@ pub mod info {
 pub mod db {
     use synixe_proc::events_requests;
 
-    events_requests!(discord.db {
+    events_requests!(db.discord {
         /// Get a discord user's ID from their name
         struct FromSteam {
             /// The steam ID to get the discord ID for
@@ -136,7 +136,7 @@ pub mod db {
 pub mod publish {
     use serenity::model::prelude::Reaction;
     use synixe_proc::events_publish;
-    events_publish!(discord.publish {
+    events_publish!(publish.info {
         /// A reaction was added to a message
         struct ReactionAdd {
             /// Reaction added the message
