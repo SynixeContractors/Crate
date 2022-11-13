@@ -116,11 +116,17 @@ pub mod info {
             /// The user to get the roles for
             user: UserId,
         } => (Result<Vec<RoleId>, String>)
+        /// Get the user by name
+        struct UserByName {
+            /// The name of the user to get
+            name: String,
+        } => (Result<Option<UserId>, String>)
     });
 }
 
 /// Read from the database
 pub mod db {
+    use serenity::model::prelude::UserId;
     use synixe_proc::events_requests;
 
     events_requests!(db.discord {
@@ -129,6 +135,13 @@ pub mod db {
             /// The steam ID to get the discord ID for
             steam_id: String,
         } => (Result<String, String>)
+        /// Save Steam ID to Database
+        struct SaveSteam {
+            /// The steam ID to save
+            steam_id: String,
+            /// The member to link with
+            member: UserId,
+        } => (Result<(), String>)
     });
 }
 

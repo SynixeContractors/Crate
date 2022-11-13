@@ -30,6 +30,24 @@ impl Handler for Request {
                     steam_id,
                 )
             }
+            Self::SaveSteam { steam_id, member } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::SaveSteam,
+                    r#"
+                        INSERT INTO
+                            members_steam (steam_id, member)
+                        VALUES
+                            ($1, $2)
+                        ON CONFLICT (member)
+                        DO UPDATE SET
+                            steam_id = $1"#,
+                    steam_id,
+                    member.to_string(),
+                )
+            }
         }
     }
 }

@@ -53,5 +53,32 @@ pub async fn handle(msg: Message, client: Bot) {
                 }
             }
         }
+        info::Request::UserByName { name } => {
+            match synixe_meta::discord::GUILD
+                .members(&client.http, None, None)
+                .await
+            {
+                Ok(members) => {
+                    if let Err(e) = respond!(
+                        msg,
+                        info::Response::UserByName(Ok(members
+                            .iter()
+                            .find(|m| m.user.name == name)
+                            .map(|m| m.user.id)))
+                    )
+                    .await
+                    {
+                        error!("Failed to respond to NATS: {}", e);
+                    }
+                }
+                Err(e) => {
+                    if let Err(e) =
+                        respond!(msg, info::Response::UserByName(Err(e.to_string()))).await
+                    {
+                        error!("Failed to respond to NATS: {}", e);
+                    }
+                }
+            }
+        }
     }
 }

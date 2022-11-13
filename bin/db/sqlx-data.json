@@ -724,6 +724,19 @@
     },
     "query": "INSERT INTO missions_schedule (mission, start) VALUES ($1, $2)"
   },
+  "cf9ca89817026fd519c7807e5e4306d107911259b8f19b22419d3d619433db71": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "\n                        INSERT INTO\n                            members_steam (steam_id, member)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT (member)\n                        DO UPDATE SET\n                            steam_id = $1"
+  },
   "d1c8e3ee1a6be107baaaf1b068d6946b7c62f3db5219ebf34c8fecf584d95f3b": {
     "describe": {
       "columns": [

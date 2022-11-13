@@ -4,7 +4,7 @@ use synixe_events::{arma_server::publish::Publish, publish};
 
 use crate::{listener::Listener, SERVER_ID};
 
-pub async fn background_loop() {
+pub async fn heart() {
     loop {
         tokio::time::sleep(Duration::from_secs(15)).await;
         // ctx.callback_null("crate_server", "beat");

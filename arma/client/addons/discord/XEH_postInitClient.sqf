@@ -1,3 +1,3 @@
 #include "script_component.hpp"
 
-[QCVAR(fetch), [getPlayerUID player]] call CBA_fnc_serverEvent;
+[QCVAR(fetch), [getPlayerUID player, profileName]] call CBA_fnc_serverEvent;

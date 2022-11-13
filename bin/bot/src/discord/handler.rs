@@ -107,7 +107,7 @@ impl EventHandler for Handler {
 
     async fn guild_member_update(
         &self,
-        ctx: Context,
+        _ctx: Context,
         _old_if_available: Option<Member>,
         new: Member,
     ) {

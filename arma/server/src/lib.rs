@@ -47,7 +47,7 @@ fn init() -> Extension {
             )
             .await
             .unwrap();
-            tokio::join!(background::background_loop(), background::events());
+            tokio::join!(background::heart(), background::events());
         });
     });
     logger::init(ext.context());
