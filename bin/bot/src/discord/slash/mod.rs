@@ -6,6 +6,7 @@ use super::interaction::Interaction;
 
 pub mod bank;
 pub mod certifications;
+pub mod garage;
 pub mod meme;
 pub mod missions;
 

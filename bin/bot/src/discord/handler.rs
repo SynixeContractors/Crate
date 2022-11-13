@@ -19,6 +19,7 @@ impl EventHandler for Handler {
                     .create_application_command(|command| slash::certifications::register(command))
                     .create_application_command(|command| slash::meme::register(command))
                     .create_application_command(|command| slash::missions::schedule(command))
+                    .create_application_command(|command| slash::garage::register(command))
                     .create_application_command(|command| menu::recruiting::reply(command))
             })
             .await
@@ -48,6 +49,29 @@ impl EventHandler for Handler {
                     }
                     _ => {}
                 }
+<<<<<<< HEAD
+=======
+                "certifications" => {
+                    slash::certifications::run(&ctx, &command)
+                        .with_context(cx)
+                        .await;
+                }
+                "meme" => slash::meme::run(&ctx, &command).with_context(cx).await,
+                "schedule" => {
+                    slash::missions::schedule_run(&ctx, &command)
+                        .with_context(cx)
+                        .await;
+                }
+                "garage" => {
+                    slash::garage::run(&ctx, &command).with_context(cx).await;
+                }
+                "Recruiting - Reply" => {
+                    menu::recruiting::run_reply(&ctx, &command)
+                        .with_context(cx)
+                        .await;
+                }
+                _ => {}
+>>>>>>> 0640617 (wip: garage)
             }
             Interaction::Autocomplete(autocomplete) => {
                 debug!(
