@@ -3,14 +3,16 @@ use serenity::model::prelude::UserId;
 use synixe_events::discord::{self, db, info};
 use synixe_proc::events_request;
 
-use crate::{models::discord::FetchResponse, CONTEXT, RUNTIME, STEAM_CACHE};
+use crate::{models::discord::MemberInfo, CONTEXT, RUNTIME, STEAM_CACHE};
 
 pub fn group() -> Group {
-    Group::new().command("fetch", command_fetch)
+    Group::new()
+        .command("member", command_member)
+        .command("guild", command_guild)
 }
 
 /// Fetches a user's discord id and roles
-fn command_fetch(steam: String, name: String) {
+fn command_member(steam: String, name: String) {
     RUNTIME.spawn(async move {
         let Ok(((db::Response::FromSteam(resp), _), _)) = events_request!(
             bootstrap::NC::get().await,
@@ -23,18 +25,17 @@ fn command_fetch(steam: String, name: String) {
             return;
         };
         let discord_id = if let Ok(discord_id) = resp { discord_id } else {
-            let Ok(((discord::info::Response::UserByName(Ok(Some(discord_id))), _), _)) = events_request!(
+            let Ok(((discord::info::Response::MemberByName(Ok(Some(discord_id))), _), _)) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::info,
-                UserByName {
+                MemberByName {
                     name: name.clone(),
                 }
             ).await else {
                 error!("failed to check for name match over nats");
-                CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server", "needs_link", steam.clone());
+                CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server", "needs_link", vec![steam.clone()]);
                 return;
             };
-            // If the user has a discord id, but it's not in the database, then we need to link it
             let Ok(((db::Response::SaveSteam(Ok(())), _), _)) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::db,
@@ -48,10 +49,10 @@ fn command_fetch(steam: String, name: String) {
             };
             discord_id.to_string()
         };
-        let Ok(((info::Response::Roles(resp), _), _)) = events_request!(
+        let Ok(((info::Response::MemberRoles(resp), _), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::discord::info,
-            Roles {
+            MemberRoles {
                 user: UserId(discord_id.parse().unwrap()),
             }
         ).await else {
@@ -63,12 +64,16 @@ fn command_fetch(steam: String, name: String) {
             return;
         };
         STEAM_CACHE.write().await.insert(discord_id.clone(), steam.clone());
-        CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server:discord", "fetch", FetchResponse {
+        CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server:discord", "member", MemberInfo {
             steam,
             discord_id,
             roles: roles.into_iter().map(|r| r.to_string()).collect(),
         });
     });
+}
+
+fn command_guild() {
+    RUNTIME.spawn(async move {});
 }
 
 #[cfg(test)]

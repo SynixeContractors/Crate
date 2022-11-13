@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use synixe_events::discord::publish::Publish;
 
-use crate::{models::discord::FetchResponse, CONTEXT, STEAM_CACHE};
+use crate::{models::discord::MemberInfo, CONTEXT, STEAM_CACHE};
 
 use super::Listener;
 
@@ -20,8 +20,8 @@ impl Listener for Publish {
                 if let Some(steam) = STEAM_CACHE.read().await.get(&member.user.id.to_string()) {
                     CONTEXT.read().await.as_ref().unwrap().callback_data(
                         "crate_server:discord",
-                        "fetch",
-                        FetchResponse {
+                        "member",
+                        MemberInfo {
                             steam: steam.to_string(),
                             discord_id: member.user.id.to_string(),
                             roles: member

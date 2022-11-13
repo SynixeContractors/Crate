@@ -3,14 +3,14 @@ ADDON = false;
 #include "XEH_PREP.hpp"
 ADDON = true;
 
-[QCVAR(fetch), {
+[QCVAR(member), {
     params [
         ["_steam", "", [""]],
         ["_name", "", [""]]
     ];
     if (_steam == "") exitWith {};
     if (_name == "") exitWith {};
-    EXTCALL("discord:fetch",[ARR_2(_steam,_name)]);
+    EXTCALL("discord:member",[ARR_2(_steam,_name)]);
 }] call CBA_fnc_addEventHandler;
 
 addMissionEventHandler ["ExtensionCallback", {
@@ -18,7 +18,7 @@ addMissionEventHandler ["ExtensionCallback", {
     if (_name != "crate_server:discord") exitWith {};
 
     switch (_func) do {
-        case "fetch": {
+        case "member": {
             (parseSimpleArray _data) params ["_steam", "_discord", "_roles"];
             private _player = [_steam] call EFUNC(common,playerFromSteam);
             if ((_player getVariable [QCVAR(id), ""]) != _discord) then {
@@ -29,6 +29,11 @@ addMissionEventHandler ["ExtensionCallback", {
                 _player setVariable [QCVAR(roles), _roles, true];
                 [QCVAR(updatedRoles), [_roles], [_player]] call CBA_fnc_targetEvent;
             };
+        };
+        case "needs_link": {
+            (parseSimpleArray _data) params ["_steam"];
+            private _player = [_steam] call EFUNC(common,playerFromSteam);
+            [QCVAR(needsLink), [], [_player]] call CBA_fnc_targetEvent;
         };
     };
 }];

@@ -111,13 +111,13 @@ pub mod info {
             /// The user to get the name information for
             user: UserId,
         } => (Result<Username, String>)
-        /// Get a user's roles
-        struct Roles {
+        /// Get a member's roles
+        struct MemberRoles {
             /// The user to get the roles for
             user: UserId,
         } => (Result<Vec<RoleId>, String>)
-        /// Get the user by name
-        struct UserByName {
+        /// Get a member by name
+        struct MemberByName {
             /// The name of the user to get
             name: String,
         } => (Result<Option<UserId>, String>)

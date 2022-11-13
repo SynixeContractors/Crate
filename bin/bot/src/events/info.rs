@@ -39,21 +39,25 @@ pub async fn handle(msg: Message, client: Bot) {
                 }
             }
         }
-        info::Request::Roles { user } => {
+        info::Request::MemberRoles { user } => {
             match synixe_meta::discord::GUILD.member(&client, user).await {
                 Ok(member) => {
-                    if let Err(e) = respond!(msg, info::Response::Roles(Ok(member.roles))).await {
+                    if let Err(e) =
+                        respond!(msg, info::Response::MemberRoles(Ok(member.roles))).await
+                    {
                         error!("Failed to respond to NATS: {}", e);
                     }
                 }
                 Err(e) => {
-                    if let Err(e) = respond!(msg, info::Response::Roles(Err(e.to_string()))).await {
+                    if let Err(e) =
+                        respond!(msg, info::Response::MemberRoles(Err(e.to_string()))).await
+                    {
                         error!("Failed to respond to NATS: {}", e);
                     }
                 }
             }
         }
-        info::Request::UserByName { name } => {
+        info::Request::MemberByName { name } => {
             match synixe_meta::discord::GUILD
                 .members(&client.http, None, None)
                 .await
@@ -61,7 +65,7 @@ pub async fn handle(msg: Message, client: Bot) {
                 Ok(members) => {
                     if let Err(e) = respond!(
                         msg,
-                        info::Response::UserByName(Ok(members
+                        info::Response::MemberByName(Ok(members
                             .iter()
                             .find(|m| m.nick.as_ref() == Some(&name) || m.user.name == name)
                             .map(|m| m.user.id)))
@@ -73,7 +77,7 @@ pub async fn handle(msg: Message, client: Bot) {
                 }
                 Err(e) => {
                     if let Err(e) =
-                        respond!(msg, info::Response::UserByName(Err(e.to_string()))).await
+                        respond!(msg, info::Response::MemberByName(Err(e.to_string()))).await
                     {
                         error!("Failed to respond to NATS: {}", e);
                     }

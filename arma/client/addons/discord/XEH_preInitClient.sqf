@@ -12,3 +12,6 @@ ADDON = true;
     call FUNC(setTraits);
 }] call CBA_fnc_addEventHandler;
 
+[QCVAR(needsLink), {
+    ["Your account was not able to be automatically linked. Ensure that your Discord nickname and Arma 3 name match. You can add `-name=""First Last""` to the Swifty parameters."] spawn BIS_fnc_guiMessage;
+}] call CBA_fnc_addEventHandler;
