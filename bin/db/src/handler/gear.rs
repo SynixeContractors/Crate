@@ -4,7 +4,7 @@ use synixe_events::{
     gear::db::{Request, Response},
     respond,
 };
-use synixe_model::gear::Price;
+use synixe_model::gear::{Deposit, Price};
 use uuid::Uuid;
 
 use super::Handler;
@@ -180,6 +180,43 @@ impl Handler for Request {
                     reason,
                     id.unwrap_or_else(Uuid::new_v4),
                 )
+            }
+            Self::BankDepositSearch { member, id, reason } => {
+                let (query, mut span) = trace_query_as!(
+                    cx,
+                    Deposit,
+                    "SELECT member, amount, reason, id, created FROM gear_bank_deposits WHERE member = $1",
+                    member.0.to_string(),
+                );
+                let res = query.fetch_all(&*db).await;
+                span.end();
+                match res {
+                    Ok(res) => {
+                        let res = res
+                            .into_iter()
+                            .filter(|row| id.map_or(true, |id| row.id() == id))
+                            .filter(|row| {
+                                reason.clone().map_or(true, |reason| row.reason() == reason)
+                            })
+                            .collect();
+                        if let Err(e) = respond!(msg, Response::BankDepositSearch(Ok(res)))
+                            .with_context(cx)
+                            .await
+                        {
+                            error!("Failed to respond to BankDepositSearch: {}", e);
+                        }
+                    }
+                    Err(e) => {
+                        if let Err(e) =
+                            respond!(msg, Response::BankDepositSearch(Err(e.to_string())))
+                                .with_context(cx)
+                                .await
+                        {
+                            error!("Failed to respond to BankDepositSearch: {}", e);
+                        }
+                    }
+                }
+                Ok(())
             }
             Self::BankTransferNew {
                 source,

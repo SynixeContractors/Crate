@@ -4,6 +4,8 @@ use opentelemetry::{
 };
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
+use synixe_proc::events_request;
+use uuid::Uuid;
 
 use super::{menu, slash};
 
@@ -123,6 +125,36 @@ impl EventHandler for Handler {
             )
             .await
             .unwrap();
+        }
+        if new.roles.contains(&synixe_meta::discord::role::RECRUIT) {
+            let Ok(((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _), _)) = events_request!(
+                bootstrap::NC::get().await,
+                synixe_events::gear::db,
+                BankDepositSearch {
+                    member: new.user.id,
+                    reason: Some("Starting Funds".to_string()),
+                    id: None,
+                }
+            ).await else {
+                error!("Cannot get starting funds for {}", new.user.id);
+                return;
+            };
+            if !deposits.is_empty() {
+                return;
+            }
+            let Ok(((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _), _)) = events_request!(
+                bootstrap::NC::get().await,
+                synixe_events::gear::db,
+                BankDepositNew {
+                    member: new.user.id,
+                    reason: "Starting Funds".to_string(),
+                    amount: 3500,
+                    id: Some(Uuid::nil()),
+                }
+            ).await else {
+                error!("Failed to create starting funds {}", new.user.id);
+                return;
+            };
         }
     }
 

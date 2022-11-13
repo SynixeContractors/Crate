@@ -5,7 +5,7 @@ pub mod db {
     use std::collections::HashMap;
 
     use serenity::model::prelude::UserId;
-    use synixe_model::gear::Price;
+    use synixe_model::gear::{Deposit, Price};
     use synixe_proc::events_requests;
     use uuid::Uuid;
 
@@ -59,6 +59,15 @@ pub mod db {
             /// Deposit id
             id: Option<Uuid>,
         } => (Result<(), String>)
+        /// Search for a deposit
+        struct BankDepositSearch {
+            /// The member's ID
+            member: UserId,
+            /// The deposit id
+            id: Option<Uuid>,
+            /// The reason for the deposit
+            reason: Option<String>,
+        } => (Result<Vec<Deposit>, String>)
         /// Transfer money from a member's bank to another member's bank
         struct BankTransferNew {
             /// Source member's ID
