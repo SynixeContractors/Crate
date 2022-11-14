@@ -3,6 +3,8 @@ ADDON = false;
 #include "XEH_PREP.hpp"
 ADDON = true;
 
+if !(isMultiplayer) exitWith {};
+
 [QGVAR(member), {
     params [
         ["_steam", "", [""]],

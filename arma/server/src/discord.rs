@@ -13,6 +13,9 @@ pub fn group() -> Group {
 
 /// Fetches a user's discord id and roles
 fn command_member(steam: String, name: String) {
+    if steam == "_SP_PLAYER_" {
+        return;
+    }
     RUNTIME.spawn(async move {
         let Ok(((db::Response::FromSteam(resp), _), _)) = events_request!(
             bootstrap::NC::get().await,
@@ -33,7 +36,7 @@ fn command_member(steam: String, name: String) {
                 }
             ).await else {
                 error!("failed to check for name match over nats");
-                CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server", "needs_link", vec![steam.clone()]);
+                CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "needs_link", vec![steam.clone()]);
                 return;
             };
             let Ok(((db::Response::SaveSteam(Ok(())), _), _)) = events_request!(

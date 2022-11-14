@@ -3,6 +3,8 @@ ADDON = false;
 #include "XEH_PREP.hpp"
 ADDON = true;
 
+if !(isMultiplayer) exitWith {};
+
 [QGVAR(loadout_get), {
     params [
         ["_discord", "", [""]],
@@ -34,7 +36,7 @@ addMissionEventHandler ["ExtensionCallback", {
         case "loadout:get": {
             (parseSimpleArray _data) params ["_steam", "_loadout"];
             private _player = [_steam] call EFUNC(common,playerFromSteam);
-            [QGVAR(loadout_set), [_loadout], [_player]] call CBA_fnc_targetEvent;
+            [QGVAR(loadout_set), [parseSimpleArray _loadout], [_player]] call CBA_fnc_targetEvent;
         };
     };
 }];

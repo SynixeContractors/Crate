@@ -3,6 +3,8 @@ ADDON = false;
 #include "XEH_PREP.hpp"
 ADDON = true;
 
+if !(isMultiplayer) exitWith {};
+
 [QGVAR(updatedId), {
     call FUNC(diaryEntry);
 }] call CBA_fnc_addEventHandler;
