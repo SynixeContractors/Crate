@@ -1,5 +1,6 @@
 //! Gear, Bank, Shop, Locker
 
+use arma_rs::IntoArma;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -52,6 +53,17 @@ impl Price {
     /// Is the item global?
     pub const fn global(&self) -> bool {
         self.global
+    }
+}
+
+#[cfg(feature = "arma-rs")]
+impl IntoArma for Price {
+    fn to_arma(&self) -> arma_rs::Value {
+        arma_rs::Value::Array(vec![
+            self.base.to_arma(),
+            self.current.to_arma(),
+            self.global.to_arma(),
+        ])
     }
 }
 

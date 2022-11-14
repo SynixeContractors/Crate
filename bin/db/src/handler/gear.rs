@@ -282,7 +282,7 @@ impl Handler for Request {
             }
             Self::ShopGetAll {} => {
                 let (query, mut span) = trace_query!(cx,
-                    "SELECT i.class, i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c",
+                    "SELECT i.class, i.roles, i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c",
                 );
                 let res = query.fetch_all(&*db).await;
                 span.end();
@@ -294,11 +294,14 @@ impl Handler for Request {
                             .map(|row| {
                                 (
                                     row.class,
-                                    Price::new(
-                                        row.base.unwrap(),
-                                        row.cost,
-                                        row.end_date,
-                                        row.global,
+                                    (
+                                        row.roles,
+                                        Price::new(
+                                            row.base.unwrap(),
+                                            row.cost,
+                                            row.end_date,
+                                            row.global,
+                                        ),
                                     ),
                                 )
                             })

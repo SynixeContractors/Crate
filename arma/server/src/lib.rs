@@ -16,7 +16,6 @@ mod discord;
 mod gear;
 mod listener;
 mod logger;
-mod models;
 
 lazy_static::lazy_static! {
     static ref SERVER_ID: String = std::env::var("CRATE_SERVER_ID").expect("CRATE_SERVER_ID not set");

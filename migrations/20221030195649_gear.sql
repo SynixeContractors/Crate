@@ -1,7 +1,7 @@
 -- Add migration script here
 CREATE TABLE gear_items (
     class VARCHAR(255) NOT NULL,
-    roles TEXT,
+    roles VARCHAR(128) ARRAY,
     category VARCHAR(16),
     global BOOLEAN NOT NULL DEFAULT false,
     PRIMARY KEY (class)

@@ -5,7 +5,7 @@ ADDON = true;
 
 if !(isMultiplayer) exitWith {};
 
-[QGVAR(loadout_get), {
+[QGVAR(get), {
     params [
         ["_discord", "", [""]],
         ["_steam", "", [""]]
@@ -15,7 +15,7 @@ if !(isMultiplayer) exitWith {};
     EXTCALL("gear:loadout:get",[ARR_2(_discord,_steam)]);
 }] call CBA_fnc_addEventHandler;
 
-[QGVAR(loadout_store), {
+[QGVAR(store), {
     params [
         ["_player", objNull, [objNull]],
         ["_loadout", [], [[]]]
@@ -25,18 +25,23 @@ if !(isMultiplayer) exitWith {};
     private _discord = _player getVariable [QEGVAR(discord,id), ""];
     if (_discord isEqualTo "") exitWith {};
     private _steam = getPlayerUID _player;
-    EXTCALL("gear:loadout:store",[ARR_2(_discord,str ([_loadout] call FUNC(loadout_clean)))]);
+    EXTCALL("gear:loadout:store",[ARR_3(_discord,_steam,str ([_loadout] call FUNC(clean)))]);
 }] call CBA_fnc_addEventHandler;
 
 addMissionEventHandler ["ExtensionCallback", {
     params ["_name", "_func", "_data"];
-    if (_name != "crate:gear") exitWith {};
+    if (_name != "crate:gear:loadout") exitWith {};
 
     switch (_func) do {
-        case "loadout:get": {
+        case "get": {
             (parseSimpleArray _data) params ["_steam", "_loadout"];
             private _player = [_steam] call EFUNC(common,playerFromSteam);
-            [QGVAR(loadout_set), [parseSimpleArray _loadout], [_player]] call CBA_fnc_targetEvent;
+            [QGVAR(set), [parseSimpleArray _loadout], [_player]] call CBA_fnc_targetEvent;
+        };
+        case "store": {
+            (parseSimpleArray _data) params ["_steam", "_result"];
+            private _player = [_steam] call EFUNC(common,playerFromSteam);
+            [QGVAR(stored), [_result], [_player]] call CBA_fnc_targetEvent;
         };
     };
 }];

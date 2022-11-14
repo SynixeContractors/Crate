@@ -3,7 +3,7 @@ use serenity::model::prelude::UserId;
 use synixe_events::discord::{self, db, info};
 use synixe_proc::events_request;
 
-use crate::{models::discord::MemberInfo, CONTEXT, RUNTIME, STEAM_CACHE};
+use crate::{CONTEXT, RUNTIME, STEAM_CACHE};
 
 pub fn group() -> Group {
     Group::new()
@@ -67,11 +67,17 @@ fn command_member(steam: String, name: String) {
             return;
         };
         STEAM_CACHE.write().await.insert(discord_id.clone(), steam.clone());
-        CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member", MemberInfo {
-            steam,
-            discord_id,
-            roles: roles.into_iter().map(|r| r.to_string()).collect(),
-        });
+        CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member", vec![
+            arma_rs::Value::String(steam),
+            arma_rs::Value::String(discord_id),
+            arma_rs::Value::Array(
+                roles
+                    .into_iter()
+                    .map(|r| r.to_string())
+                    .map(arma_rs::Value::String)
+                    .collect(),
+            ),
+        ]);
     });
 }
 

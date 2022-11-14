@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+arma-rs = { workspace = true, optional = true }
 time = { workspace = true, optional = true, features = ["serde-well-known"] }
 serde = { workspace = true, features = ["derive"] }
 sqlx = { workspace = true, optional = true }

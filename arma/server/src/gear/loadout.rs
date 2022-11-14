@@ -24,14 +24,14 @@ fn command_get(discord: String, steam: String) {
             return;
         };
         CONTEXT.read().await.as_ref().unwrap().callback_data(
-            "crate:gear",
-            "loadout:get",
+            "crate:gear:loadout",
+            "get",
             vec![steam, loadout],
         );
     });
 }
 
-fn command_store(discord: String, loadout: String) {
+fn command_store(discord: String, steam: String, loadout: String) {
     RUNTIME.spawn(async move {
         let Ok(((db::Response::LoadoutStore(Ok(())), _), _)) = events_request!(
             bootstrap::NC::get().await,
@@ -44,7 +44,17 @@ fn command_store(discord: String, loadout: String) {
         .await
         else {
             error!("failed to save loadout over nats");
+            CONTEXT.read().await.as_ref().unwrap().callback_data(
+                "crate:gear:loadout",
+                "store",
+                vec![steam, "err".to_string()],
+            );
             return;
         };
+        CONTEXT.read().await.as_ref().unwrap().callback_data(
+            "crate:gear:loadout",
+            "store",
+            vec![steam, "ok".to_string()],
+        );
     });
 }
