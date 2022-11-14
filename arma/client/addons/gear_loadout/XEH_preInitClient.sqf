@@ -24,6 +24,11 @@ GVAR(tracking) = false;
         };
         player addGoggles (_loadout select 7);
         player setVariable [QGVAR(loaded), true, true];
+    }] call CBA_fnc_execNextFrame;
+}] call CBA_fnc_addEventHandler;
+
+[QGVAR(track), {
+    [{
         GVAR(tracking) = true;
     }] call CBA_fnc_execNextFrame;
 }] call CBA_fnc_addEventHandler;

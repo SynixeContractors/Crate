@@ -120,12 +120,13 @@ async fn new(
         &mut interaction,
     )
     .await;
-    if let Ok(((Response::IsScheduled(Ok(Some(false) | None)), _), _)) = events_request!(
-        bootstrap::NC::get().await,
-        synixe_events::missions::db,
-        IsScheduled { date }
-    )
-    .await
+    if let Ok(((Response::IsScheduled(Ok(Some(Some(false) | None) | None)), _), _)) =
+        events_request!(
+            bootstrap::NC::get().await,
+            synixe_events::missions::db,
+            IsScheduled { date }
+        )
+        .await
     {
         debug!("No mission scheduled for {}", date);
     } else {

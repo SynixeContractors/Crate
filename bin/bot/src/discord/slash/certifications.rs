@@ -200,7 +200,7 @@ async fn view(
     }
     let mut content = format!("**<@{}> Certifications**\n\n", user.id);
     for cert in certs {
-        if let Ok(((Response::Name(Ok(name)), _), _)) = events_request!(
+        if let Ok(((Response::Name(Ok(Some(name))), _), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::certifications::db,
             Name {

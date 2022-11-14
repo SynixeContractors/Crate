@@ -23,11 +23,19 @@ fn command_get(discord: String, steam: String) {
             error!("failed to fetch loadout over nats");
             return;
         };
-        CONTEXT.read().await.as_ref().unwrap().callback_data(
-            "crate:gear:loadout",
-            "get",
-            vec![steam, loadout],
-        );
+        if let Some(loadout) = loadout {
+            CONTEXT.read().await.as_ref().unwrap().callback_data(
+                "crate:gear:loadout",
+                "get:set",
+                vec![steam, loadout],
+            );
+        } else {
+            CONTEXT.read().await.as_ref().unwrap().callback_data(
+                "crate:gear:loadout",
+                "get:empty",
+                vec![steam],
+            );
+        }
     });
 }
 

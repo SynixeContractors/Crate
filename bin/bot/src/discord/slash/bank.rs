@@ -88,7 +88,7 @@ async fn balance(
         .unwrap() else {
         panic!("Invalid member");
     };
-    let Ok(((Response::BankBalance(Ok(balance)), _), _)) = events_request!(
+    let Ok(((Response::BankBalance(Ok(Some(balance))), _), _)) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankBalance {

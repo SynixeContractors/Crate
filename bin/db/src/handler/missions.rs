@@ -33,7 +33,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::IsScheduled,
-                    "SELECT EXISTS(SELECT 1 FROM missions_schedule WHERE start = $1) as value",
+                    "SELECT EXISTS(SELECT 1 FROM missions_schedule WHERE start = $1) AS value",
                     date,
                 )
             }

@@ -31,7 +31,7 @@ pub mod db {
         struct IsScheduled {
             /// The day to check.
             date: OffsetDateTime,
-        } => (Result<Option<bool>, String>)
+        } => (Result<Option<Option<bool>>, String>)
         /// Remove a scheduled mission.
         struct Unschedule {
             /// The mission to remove.

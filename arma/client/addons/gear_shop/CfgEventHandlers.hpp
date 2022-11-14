@@ -16,7 +16,6 @@ class Extended_PostInit_EventHandlers {
         initServer = QUOTE(call COMPILE_FILE(XEH_postInitServer));
     };
 };
-
 class Extended_InventoryOpened_EventHandlers {
     class CAManBase {
         class GVAR(backpackLockInShop) {

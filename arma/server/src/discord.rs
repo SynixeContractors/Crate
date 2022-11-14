@@ -27,7 +27,7 @@ fn command_member(steam: String, name: String) {
             error!("failed to fetch discord id over nats");
             return;
         };
-        let discord_id = if let Ok(discord_id) = resp { discord_id } else {
+        let discord_id = if let Ok(Some(discord_id)) = resp { discord_id } else {
             let Ok(((discord::info::Response::MemberByName(Ok(Some(discord_id))), _), _)) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::info,

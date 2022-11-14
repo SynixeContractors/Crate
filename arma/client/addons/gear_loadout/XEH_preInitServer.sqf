@@ -33,10 +33,16 @@ addMissionEventHandler ["ExtensionCallback", {
     if (_name != "crate:gear:loadout") exitWith {};
 
     switch (_func) do {
-        case "get": {
+        case "get:set": {
             (parseSimpleArray _data) params ["_steam", "_loadout"];
             private _player = [_steam] call EFUNC(common,playerFromSteam);
             [QGVAR(set), [parseSimpleArray _loadout], [_player]] call CBA_fnc_targetEvent;
+            [QGVAR(track), [], [_player]] call CBA_fnc_targetEvent;
+        };
+        case "get:empty": {
+            (parseSimpleArray _data) params ["_steam"];
+            private _player = [_steam] call EFUNC(common,playerFromSteam);
+            [QGVAR(track), [], [_player]] call CBA_fnc_targetEvent;
         };
         case "store": {
             (parseSimpleArray _data) params ["_steam", "_result"];

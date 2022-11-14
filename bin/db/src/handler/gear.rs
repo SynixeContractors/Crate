@@ -25,7 +25,7 @@ impl Handler for Request {
                 *db,
                 cx,
                 Response::LoadoutGet,
-                "SELECT loadout as value FROM gear_loadouts WHERE member = $1",
+                "SELECT loadout AS value FROM gear_loadouts WHERE member = $1 LIMIT 1",
                 member.0.to_string(),
             ),
             Self::LoadoutStore { member, loadout } => {
@@ -160,7 +160,7 @@ impl Handler for Request {
                 *db,
                 cx,
                 Response::BankBalance,
-                "SELECT balance as value FROM gear_bank_balance_cache WHERE member = $1",
+                "SELECT balance AS value FROM gear_bank_balance_cache WHERE member = $1",
                 member.0.to_string(),
             ),
             Self::BankDepositNew {

@@ -22,7 +22,7 @@ impl Handler for Request {
                     Response::FromSteam,
                     r#"
                         SELECT
-                            member as value
+                            member AS value
                         FROM
                             members_steam
                         WHERE

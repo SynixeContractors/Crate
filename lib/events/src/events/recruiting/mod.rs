@@ -14,7 +14,7 @@ pub mod db {
         struct HasSeen {
             /// The post url
             url: String
-        } => (Result<Option<bool>, String>)
+        } => (Result<Option<Option<bool>>, String>)
         /// Mark a post as replied to
         struct Replied {
             /// The post url
@@ -24,7 +24,7 @@ pub mod db {
         struct HasReplied {
             /// The post url
             url: String
-        } => (Result<Option<bool>, String>)
+        } => (Result<Option<Option<bool>>, String>)
     });
 }
 

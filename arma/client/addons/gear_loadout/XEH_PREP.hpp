@@ -1,2 +1,2 @@
-PREP(loadout_clean);
-PREP(loadout_onChange);
+PREP(clean);
+PREP(handle_onChange);

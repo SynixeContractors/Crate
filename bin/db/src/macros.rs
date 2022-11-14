@@ -40,7 +40,11 @@ macro_rules! fetch_one_and_respond {
         span.end();
         match res {
             Ok(data) => {
-                synixe_events::respond!($msg, $respond(Ok(data.value))).await?;
+                synixe_events::respond!($msg, $respond(Ok(Some(data.value)))).await?;
+                Ok(())
+            }
+            Err(sqlx::Error::RowNotFound) => {
+                synixe_events::respond!($msg, $respond(Ok(None))).await?;
                 Ok(())
             }
             Err(e) => {

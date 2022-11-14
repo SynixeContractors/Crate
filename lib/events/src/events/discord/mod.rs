@@ -134,7 +134,7 @@ pub mod db {
         struct FromSteam {
             /// The steam ID to get the discord ID for
             steam_id: String,
-        } => (Result<String, String>)
+        } => (Result<Option<String>, String>)
         /// Save Steam ID to Database
         struct SaveSteam {
             /// The steam ID to save

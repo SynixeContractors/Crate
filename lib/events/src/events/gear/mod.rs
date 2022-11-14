@@ -14,7 +14,7 @@ pub mod db {
         struct LoadoutGet {
             /// The member's ID
             member: UserId,
-        } => (Result<String, String>)
+        } => (Result<Option<String>, String>)
         /// Check if a post has been seen
         struct LoadoutStore {
             /// The member's ID
@@ -47,7 +47,7 @@ pub mod db {
         struct BankBalance {
             /// The member's ID
             member: UserId,
-        } => (Result<i64, String>)
+        } => (Result<Option<i64>, String>)
         /// Deposit money into a member's bank
         struct BankDepositNew {
             /// The member's ID

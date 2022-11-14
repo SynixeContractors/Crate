@@ -19,7 +19,7 @@ pub mod db {
         struct Name {
             /// The certification to get the name of
             certification: Uuid
-        } => (Result<String, String>)
+        } => (Result<Option<String>, String>)
         /// Certify a member
         struct Certify {
             /// Instructor

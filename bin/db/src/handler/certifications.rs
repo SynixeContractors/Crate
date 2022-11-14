@@ -76,7 +76,7 @@ impl Handler for Request {
                 Response::Name,
                 r#"
                     SELECT
-                        name as value
+                        name AS value
                     FROM
                         certifications
                     WHERE

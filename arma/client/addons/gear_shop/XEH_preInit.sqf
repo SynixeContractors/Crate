@@ -1,4 +1,7 @@
 #include "script_component.hpp"
+ADDON = false;
+#include "XEH_PREP.hpp"
+ADDON = true;
 
 [
     QGVAR(enabled),
@@ -6,5 +9,5 @@
     ["Enabled", "Shops are enabled"],
     ["Synixe Crate - Persistent Gear", "Shops"],
     true,
-    true,
+    true
 ] call CBA_fnc_addSetting;

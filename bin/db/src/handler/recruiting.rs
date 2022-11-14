@@ -29,7 +29,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::HasSeen,
-                    "SELECT EXISTS(SELECT 1 FROM recruitment_seen WHERE link = $1) as value",
+                    "SELECT EXISTS(SELECT 1 FROM recruitment_seen WHERE link = $1) AS value",
                     url,
                 )
             }
@@ -49,7 +49,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::HasReplied,
-                    "SELECT EXISTS(SELECT 1 FROM recruitment_replied WHERE link = $1) as value",
+                    "SELECT EXISTS(SELECT 1 FROM recruitment_replied WHERE link = $1) AS value",
                     url,
                 )
             }

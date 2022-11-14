@@ -71,7 +71,7 @@ pub async fn has_seen(url: String, cx: Context) -> bool {
     if let Ok(((ev, _), _)) = req {
         if let db::Response::HasSeen(seen) = ev {
             if let Ok(seen) = seen {
-                return seen == Some(true);
+                return seen == Some(Some(true));
             }
         }
     }
