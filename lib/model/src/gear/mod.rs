@@ -1,6 +1,5 @@
 //! Gear, Bank, Shop, Locker
 
-use arma_rs::IntoArma;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -57,7 +56,7 @@ impl Price {
 }
 
 #[cfg(feature = "arma-rs")]
-impl IntoArma for Price {
+impl arma_rs::IntoArma for Price {
     fn to_arma(&self) -> arma_rs::Value {
         arma_rs::Value::Array(vec![
             self.base.to_arma(),

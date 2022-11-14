@@ -3,7 +3,7 @@
 params ["_name"];
 
 if !(GVAR(loading)) exitWith {
-	WARNING_1("attempting to register %1 while not loading", _name);
+    WARNING_1("attempting to register %1 while not loading", _name);
 };
 
 GVAR(loaders) set [_name, false];
