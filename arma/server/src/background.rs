@@ -7,7 +7,7 @@ use crate::{listener::Listener, SERVER_ID};
 pub async fn heart() {
     loop {
         tokio::time::sleep(Duration::from_secs(15)).await;
-        // ctx.callback_null("crate_server", "beat");
+        // ctx.callback_null("crate", "beat");
         if let Err(e) = publish!(
             bootstrap::NC::get().await,
             Publish::Heartbeat {

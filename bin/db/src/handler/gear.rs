@@ -28,12 +28,12 @@ impl Handler for Request {
                 "SELECT loadout as value FROM gear_loadouts WHERE member = $1",
                 member.0.to_string(),
             ),
-            Self::LoadoutSet { member, loadout } => {
+            Self::LoadoutStore { member, loadout } => {
                 execute_and_respond!(
                     msg,
                     *db,
                     cx,
-                    Response::LoadoutSet,
+                    Response::LoadoutStore,
                     "INSERT INTO gear_loadouts (member, loadout) VALUES ($1, $2) ON CONFLICT (member) DO UPDATE SET loadout = $2",
                     member.0.to_string(),
                     loadout,

@@ -10,9 +10,6 @@
     #define PREP(fncName) [QPATHTOF(functions\DOUBLES(fnc,fncName).sqf), QFUNC(fncName)] call CBA_fnc_compileFunction
 #endif
 
-#define CVAR(var) TRIPLES(crate,COMPONENT,var)
-#define QCVAR(var) QUOTE(CVAR(var))
-
 #define EXT "crate_server"
 
 #define EXTCALL(function,args) private _ext_res = EXT callExtension [function, args]; \

@@ -151,7 +151,7 @@ async fn trial(
     {
         Err(e) | Ok(((Response::Certify(Err(e)), _), _)) => {
             interaction
-                .reply(format!("Failed to submit trial: {}", e))
+                .reply(format!("Failed to submit trial: {e}"))
                 .await;
         }
         Ok(_) => {
@@ -258,18 +258,18 @@ async fn list(
                 let requires = cert
                     .roles_required
                     .iter()
-                    .map(|r| format!("<@&{}>", r))
+                    .map(|r| format!("<@&{r}>"))
                     .collect::<Vec<_>>()
                     .join(", ");
                 if requires.is_empty() {
                     "No requirements".to_string()
                 } else {
-                    format!("Requires: {}", requires)
+                    format!("Requires: {requires}")
                 }
             },
             cert.valid_for.map_or_else(
                 || "No expiration".to_string(),
-                |v| format!("Valid for {} days", v)
+                |v| format!("Valid for {v} days")
             )
         ));
     }

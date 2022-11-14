@@ -79,8 +79,8 @@ impl Handler for Request {
                                             channel: ONTOPIC,
                                             message: DiscordMessage {
                                                 content: DiscordContent::Text(format!(
-                                                    "**{}** starts in {}",
-                                                    mission_data.name, text
+                                                    "**{}** starts in {text}",
+                                                    mission_data.name
                                                 )),
                                                 reactions: Vec::new(),
                                             },

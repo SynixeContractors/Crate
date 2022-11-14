@@ -52,7 +52,7 @@ pub async fn check_reddit_findaunit(cx: Context) {
             if has_seen(url.clone(), cx.clone()).await {
                 continue;
             }
-            let full_url = format!("https://reddit.com{}", url);
+            let full_url = format!("https://reddit.com{url}");
             let post = reqwest::get(&full_url).await.unwrap().text().await.unwrap();
             seen(url).await;
             let document = Html::parse_document(&post);
@@ -195,7 +195,7 @@ pub async fn reply(msg: Message, url: &str, cx: Context) {
         .comment(
             std::str::from_utf8(crate::Assets::get("reddit-reply.md").unwrap().data.as_ref())
                 .unwrap(),
-            &format!("t3_{}", comment_id),
+            &format!("t3_{comment_id}"),
         )
         .await
     {
@@ -214,7 +214,7 @@ pub async fn reply(msg: Message, url: &str, cx: Context) {
                     response.status(),
                     response
                 );
-                if let Err(e) = respond!(msg, Response::ReplyReddit(Err(format!("{:?}", response))))
+                if let Err(e) = respond!(msg, Response::ReplyReddit(Err(format!("{response:?}"))))
                     .with_context(cx.clone())
                     .await
                 {

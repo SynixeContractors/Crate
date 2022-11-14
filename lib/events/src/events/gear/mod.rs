@@ -16,7 +16,7 @@ pub mod db {
             member: UserId,
         } => (Result<String, String>)
         /// Check if a post has been seen
-        struct LoadoutSet {
+        struct LoadoutStore {
             /// The member's ID
             member: UserId,
             /// The loadout to set

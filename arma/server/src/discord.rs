@@ -64,7 +64,7 @@ fn command_member(steam: String, name: String) {
             return;
         };
         STEAM_CACHE.write().await.insert(discord_id.clone(), steam.clone());
-        CONTEXT.read().await.as_ref().unwrap().callback_data("crate_server:discord", "member", MemberInfo {
+        CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member", MemberInfo {
             steam,
             discord_id,
             roles: roles.into_iter().map(|r| r.to_string()).collect(),
@@ -97,10 +97,10 @@ mod tests {
             .callback_handler(
                 |name, func, data| {
                     if name == "crate_log" {
-                        println!("{}: {}", func, data.unwrap());
+                        println!("{func}: {}", data.unwrap());
                         return arma_rs::Result::<(), ()>::Continue;
                     }
-                    assert_eq!(name, "crate_server");
+                    assert_eq!(name, "crate");
                     assert_eq!(func, "fetch");
                     let Value::Array(data) = data.unwrap() else {
                         panic!("expected array");
@@ -129,10 +129,10 @@ mod tests {
             .callback_handler(
                 |name, func, data| {
                     if name == "crate_log" {
-                        println!("{}: {}", func, data.unwrap());
+                        println!("{func}: {}", data.unwrap());
                         return arma_rs::Result::<(), ()>::Continue;
                     }
-                    assert_eq!(name, "crate_server");
+                    assert_eq!(name, "crate");
                     assert_eq!(func, "needs_link");
                     arma_rs::Result::Ok(())
                 },

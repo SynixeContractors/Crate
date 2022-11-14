@@ -135,7 +135,7 @@ impl Handler for Request {
                         synixe_model::missions::Mission,
                         Response::FetchMissionList,
                         "SELECT missions.id, name, summary, description, type as \"typ: MissionType\" FROM missions LEFT JOIN missions_schedule on missions.id = missions_schedule.mission WHERE missions_schedule.mission is NULL AND LOWER(missions.name) LIKE $1 ORDER BY name ASC",
-                        format!("%{}%", search),
+                        format!("%{search}%"),
                     )?;
                 } else {
                     fetch_as_and_respond!(
@@ -145,7 +145,7 @@ impl Handler for Request {
                         synixe_model::missions::Mission,
                         Response::FetchMissionList,
                         "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE LOWER(missions.name) LIKE $1 ORDER BY name ASC",
-                        format!("%{}%", search),
+                        format!("%{search}%"),
                     )?;
                 }
                 Ok(())

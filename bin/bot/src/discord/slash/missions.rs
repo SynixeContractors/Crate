@@ -199,7 +199,7 @@ async fn new(
             {
                 error!("failed to schedule mission: {}", e);
                 interaction
-                    .reply(format!("Failed to schedule mission: {}", e))
+                    .reply(format!("Failed to schedule mission: {e}"))
                     .await;
             } else {
                 interaction
@@ -260,7 +260,7 @@ async fn upcoming(
         Err(e) => {
             error!("failed to fetch upcoming missions: {}", e);
             interaction
-                .reply(format!("Failed to fetch upcoming missions: {}", e))
+                .reply(format!("Failed to fetch upcoming missions: {e}"))
                 .await;
         }
     }

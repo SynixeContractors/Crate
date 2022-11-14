@@ -13,6 +13,7 @@ extern crate log;
 
 mod background;
 mod discord;
+mod gear;
 mod listener;
 mod logger;
 mod models;
@@ -33,6 +34,7 @@ fn init() -> Extension {
     let ext = Extension::build()
         .command("id", command_id)
         .command("test_tokio", command_test_tokio)
+        .group("gear", gear::group())
         .group("discord", discord::group())
         .finish();
     let ctx_tokio = ext.context();
@@ -73,7 +75,7 @@ fn command_test_tokio() {
             .await
             .as_ref()
             .unwrap()
-            .callback_null("crate_server", "test_tokio");
+            .callback_null("crate", "test_tokio");
     });
 }
 
@@ -146,7 +148,7 @@ mod tests {
         let test_tokio = AtomicBool::new(false);
         let res: arma_rs::Result<(), String> = ext.callback_handler(
             |name, func, data| {
-                assert_eq!(name, "crate_server");
+                assert_eq!(name, "crate");
                 assert!(data.is_none());
                 if func == "beat" {
                     arma_rs::Result::Ok(())
@@ -154,7 +156,7 @@ mod tests {
                     test_tokio.store(true, std::sync::atomic::Ordering::SeqCst);
                     arma_rs::Result::Continue
                 } else {
-                    arma_rs::Result::Err(format!("unexpected callback: {}::{}", name, func))
+                    arma_rs::Result::Err(format!("unexpected callback: {name}::{func}"))
                 }
             },
             Duration::from_secs(16),

@@ -19,7 +19,7 @@ impl Listener for Publish {
             Self::MemberUpdate { member } => {
                 if let Some(steam) = STEAM_CACHE.read().await.get(&member.user.id.to_string()) {
                     CONTEXT.read().await.as_ref().unwrap().callback_data(
-                        "crate_server:discord",
+                        "crate:discord",
                         "member",
                         MemberInfo {
                             steam: steam.to_string(),
