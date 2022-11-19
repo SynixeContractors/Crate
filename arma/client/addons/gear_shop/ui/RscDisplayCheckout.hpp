@@ -28,7 +28,7 @@ class GVAR(RscCheckout) {
         };
         class RscText_1001: RscText {
             idc = 1001;
-            text = "Confirm Purchase"; //--- ToDo: Localize;
+            text = "Confirm Purchase";
             x = QUOTE(X_PART((OFFSET + 1.5)));
             y = QUOTE(Y_PART(1));
             w = QUOTE(W_PART(WIDTH));

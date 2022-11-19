@@ -233,7 +233,6 @@ impl Handler for Request {
                 Ok(())
             }
             Self::AllActive {} => {
-                // TODO limit to one per person per cert
                 fetch_as_and_respond!(
                     msg,
                     *db,
@@ -242,6 +241,7 @@ impl Handler for Request {
                     Response::AllActive,
                     r#"
                         SELECT
+                            DISTINCT ON (trainee, certification)
                             id,
                             instructor,
                             trainee,
@@ -256,12 +256,11 @@ impl Handler for Request {
                         WHERE
                             passed IS TRUE
                             AND (valid_until > NOW() OR valid_until IS NULL)
-                        GROUP BY id ORDER BY created DESC"#,
+                        ORDER BY trainee, certification, created DESC"#,
                 )?;
                 Ok(())
             }
             Self::AllExpiring { days } => {
-                // TODO limit to one per person per cert
                 fetch_as_and_respond!(
                     msg,
                     *db,
@@ -270,6 +269,7 @@ impl Handler for Request {
                     Response::AllExpiring,
                     r#"
                         SELECT
+                            DISTINCT ON (trainee, certification)
                             id,
                             instructor,
                             trainee,
@@ -285,7 +285,7 @@ impl Handler for Request {
                             passed IS TRUE
                             AND (valid_until > NOW())
                             AND valid_until < NOW() + $1 * INTERVAL '1 day'
-                        GROUP BY id ORDER BY created DESC"#,
+                        GROUP BY certification ORDER BY trainee, certification, created DESC"#,
                     f64::from(*days),
                 )?;
                 Ok(())
