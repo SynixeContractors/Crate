@@ -233,6 +233,7 @@ impl Handler for Request {
                 Ok(())
             }
             Self::AllActive {} => {
+                // TODO limit to one per person per cert
                 fetch_as_and_respond!(
                     msg,
                     *db,
@@ -260,6 +261,7 @@ impl Handler for Request {
                 Ok(())
             }
             Self::AllExpiring { days } => {
+                // TODO limit to one per person per cert
                 fetch_as_and_respond!(
                     msg,
                     *db,
