@@ -67,5 +67,12 @@ pub mod publish {
             /// The certification trial
             trial: CertificationTrial,
         }
+        /// A trial will expire soon
+        struct TrialExpiring {
+            /// The certification trial
+            trial: CertificationTrial,
+            /// Whole days until expiry
+            days: i8,
+        }
     });
 }

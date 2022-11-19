@@ -4,9 +4,10 @@ use synixe_events::{
         db,
         executions::{Request, Response},
     },
-    respond,
+    publish, respond,
 };
 use synixe_proc::events_request;
+use time::OffsetDateTime;
 
 use super::Handler;
 
@@ -29,8 +30,41 @@ impl Handler for Request {
                 ).await else {
                     return Ok(());
                 };
-                for trail in expiring {
-                    println!("Expiring: {:?}", trail);
+                for trial in expiring {
+                    if let Some(valid_until) = trial.valid_until {
+                        let diff = valid_until - OffsetDateTime::now_utc();
+                        println!("{}: {}", trial.trainee, diff.whole_days());
+                        if diff.whole_days() == 29 {
+                            publish!(
+                                bootstrap::NC::get().await,
+                                synixe_events::certifications::publish::Publish::TrialExpiring {
+                                    trial: trial.clone(),
+                                    days: 30,
+                                }
+                            )
+                            .await?;
+                        }
+                        if diff.whole_days() == 14 {
+                            publish!(
+                                bootstrap::NC::get().await,
+                                synixe_events::certifications::publish::Publish::TrialExpiring {
+                                    trial: trial.clone(),
+                                    days: 15,
+                                }
+                            )
+                            .await?;
+                        }
+                        if diff.whole_days() == -1 {
+                            publish!(
+                                bootstrap::NC::get().await,
+                                synixe_events::certifications::publish::Publish::TrialExpiring {
+                                    trial: trial.clone(),
+                                    days: 0,
+                                }
+                            )
+                            .await?;
+                        }
+                    }
                 }
                 Ok(())
             }

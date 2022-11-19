@@ -1,0 +1,7 @@
+# Change GitHub language categorization
+arma/**/*.cpp linguist-language=SQF
+arma/**/*.hpp linguist-language=SQF
+
+# Do not count hemtt includes in language usage stats
+arma/server/include/* linguist-vendored
+arma/client/include/* linguist-vendored
