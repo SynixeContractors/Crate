@@ -232,6 +232,35 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
+            Self::Expiring { days } => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::certifications::CertificationTrial,
+                    Response::Expiring,
+                    r#"
+                        SELECT
+                            id,
+                            instructor,
+                            trainee,
+                            certification,
+                            notes,
+                            passed,
+                            valid_for,
+                            valid_until,
+                            created
+                        FROM
+                            certifications_trials
+                        WHERE
+                            passed IS TRUE
+                            AND (valid_until > NOW())
+                            AND valid_until < NOW() + $1 * INTERVAL '1 day'
+                        GROUP BY id ORDER BY created DESC"#,
+                    f64::from(*days),
+                )?;
+                Ok(())
+            }
         }
     }
 }

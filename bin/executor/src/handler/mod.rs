@@ -1,3 +1,4 @@
+mod certifications;
 mod missions;
 mod recruiting;
 
@@ -17,7 +18,8 @@ pub async fn start() {
             msg,
             nats,
             synixe_events::recruiting::executions::Request,
-            synixe_events::missions::executions::Request
+            synixe_events::missions::executions::Request,
+            synixe_events::certifications::executions::Request
         );
     }
 }

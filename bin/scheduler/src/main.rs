@@ -59,6 +59,15 @@ async fn main() {
         PostUpcomingMissions
     );
 
+    // Certifications
+    job!(
+        sched,
+        "Certifications - Check expired certifications",
+        "0 0 12 * * *",
+        synixe_events::certifications::executions,
+        CheckExpiries
+    );
+
     sched.start().await;
 
     info!("Done!");

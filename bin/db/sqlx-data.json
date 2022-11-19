@@ -867,6 +867,74 @@
     },
     "query": "INSERT INTO recruitment_replied (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created = NOW()"
   },
+  "d84bcfdaac87813f498cf9695aa4103539a47774f52d5fb77adb08a8f5545889": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "instructor",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "trainee",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "certification",
+          "ordinal": 3,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "notes",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "passed",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "valid_for",
+          "ordinal": 6,
+          "type_info": "Int4"
+        },
+        {
+          "name": "valid_until",
+          "ordinal": 7,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "created",
+          "ordinal": 8,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Float8"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW())\n                            AND valid_until < NOW() + $1 * INTERVAL '1 day'\n                        GROUP BY id ORDER BY created DESC"
+  },
   "dc9c428bc346fe4d412c80c129f2612b539bccfa726c4162bf790ac3cf4a97a0": {
     "describe": {
       "columns": [

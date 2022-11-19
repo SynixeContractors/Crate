@@ -38,6 +38,21 @@ pub mod db {
             /// The member to check
             member: UserId,
         } => (Result<Vec<CertificationTrial>, String>)
+        /// Get all active certifications that are expiring soon
+        struct Expiring {
+            /// The number of days before expiry to check
+            days: i8,
+        } => (Result<Vec<CertificationTrial>, String>)
+    });
+}
+
+/// Execute events.
+pub mod executions {
+    use synixe_proc::events_requests;
+
+    events_requests!(executions.certifications {
+        /// Update the certification list
+        struct CheckExpiries {} => (Result<(), String>)
     });
 }
 
