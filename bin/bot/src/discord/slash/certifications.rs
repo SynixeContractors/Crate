@@ -11,6 +11,7 @@ use serenity::{
     prelude::Context,
 };
 use synixe_events::certifications::db::Response;
+use synixe_meta::discord::role::{JUNIOR, MEMBER};
 use synixe_proc::events_request;
 
 use crate::discord::interaction::Interaction;
@@ -255,13 +256,21 @@ async fn list(
         return;
     };
     if available {
+        let mut member_roles = command.member.as_ref().unwrap().roles.clone();
+        if member_roles.contains(&MEMBER) {
+            member_roles.push(JUNIOR);
+        }
         certs.retain(|cert| {
             (&cert.roles_required.iter().cloned().collect::<HashSet<_>>()
-                - &command
-                    .member
-                    .as_ref()
-                    .unwrap()
-                    .roles
+                - &member_roles
+                    .iter()
+                    .map(|r| r.0.to_string())
+                    .collect::<HashSet<_>>())
+                .is_empty()
+        });
+        certs.retain(|cert| {
+            !(&cert.roles_granted.iter().cloned().collect::<HashSet<_>>()
+                - &member_roles
                     .iter()
                     .map(|r| r.0.to_string())
                     .collect::<HashSet<_>>())
