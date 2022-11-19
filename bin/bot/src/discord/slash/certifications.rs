@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use serenity::{
     builder::CreateApplicationCommand,
     model::prelude::{
@@ -65,6 +67,12 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 .description("List all certifications")
                 .kind(CommandOptionType::SubCommand)
         })
+        .create_option(|option| {
+            option
+                .name("available")
+                .description("List all certifications available to you")
+                .kind(CommandOptionType::SubCommand)
+        })
 }
 
 pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
@@ -73,7 +81,8 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
         match subcommand.name.as_str() {
             "trial" => trial(ctx, command, &subcommand.options).await,
             "view" => view(ctx, command, &subcommand.options).await,
-            "list" => list(ctx, command, &subcommand.options).await,
+            "list" => list(ctx, command, &subcommand.options, false).await,
+            "available" => list(ctx, command, &subcommand.options, true).await,
             _ => unreachable!(),
         }
     }
@@ -232,10 +241,11 @@ async fn list(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     _options: &[CommandDataOption],
+    available: bool,
 ) {
     let mut interaction = Interaction::new(ctx, command);
     interaction.reply("Fetching certifications...").await;
-    let Ok(((Response::List(Ok(certs)), _), _)) = events_request!(
+    let Ok(((Response::List(Ok(mut certs)), _), _)) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         List {}
@@ -244,6 +254,20 @@ async fn list(
         interaction.reply("Failed to fetch certifications").await;
         return;
     };
+    if available {
+        certs.retain(|cert| {
+            (&cert.roles_required.iter().cloned().collect::<HashSet<_>>()
+                - &command
+                    .member
+                    .as_ref()
+                    .unwrap()
+                    .roles
+                    .iter()
+                    .map(|r| r.0.to_string())
+                    .collect::<HashSet<_>>())
+                .is_empty()
+        });
+    }
     if certs.is_empty() {
         interaction.reply("There are no certifications").await;
         return;
