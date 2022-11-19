@@ -61,7 +61,10 @@ pub async fn handle(msg: Message, client: Bot) {
             }
         }
         write::Request::EnsureRoles { member, roles } => {
-            respond!(msg, write::Response::EnsureRoles(Ok(()))).await.unwrap();
+            let Ok(_) = respond!(msg, write::Response::EnsureRoles(Ok(()))).await else {
+                error!("Failed to respond to NATS");
+                return;
+            };
             let Ok(mut member) = GUILD.member(&client, member).await else {
                 error!("Failed to get member");
                 if let Err(e) = respond!(msg, write::Response::EnsureRoles(Err(String::from(
