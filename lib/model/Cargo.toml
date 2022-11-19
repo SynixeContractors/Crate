@@ -16,9 +16,11 @@ default = [
     "missions",
     "roles",
     "gear",
+    "garage",
 ]
 certifications = [ "uuid", "roles", "time" ]
 mission-schedule = [ "missions", "time", "uuid" ]
 missions = ["uuid", "time"]
 roles = [ "serenity" ]
 gear = ["time"]
+garage = []

@@ -49,30 +49,7 @@ impl EventHandler for Handler {
                     }
                     _ => {}
                 }
-<<<<<<< HEAD
-=======
-                "certifications" => {
-                    slash::certifications::run(&ctx, &command)
-                        .with_context(cx)
-                        .await;
-                }
-                "meme" => slash::meme::run(&ctx, &command).with_context(cx).await,
-                "schedule" => {
-                    slash::missions::schedule_run(&ctx, &command)
-                        .with_context(cx)
-                        .await;
-                }
-                "garage" => {
-                    slash::garage::run(&ctx, &command).with_context(cx).await;
-                }
-                "Recruiting - Reply" => {
-                    menu::recruiting::run_reply(&ctx, &command)
-                        .with_context(cx)
-                        .await;
-                }
-                _ => {}
->>>>>>> 0640617 (wip: garage)
-            }
+            },
             Interaction::Autocomplete(autocomplete) => {
                 debug!(
                     "matching autocomplete: {:?}",

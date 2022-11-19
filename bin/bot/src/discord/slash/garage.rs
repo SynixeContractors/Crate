@@ -6,6 +6,12 @@ use serenity::{
     prelude::Context,
 };
 
+use serenity::model::application::interaction::application_command::CommandDataOption;
+use synixe_events::garage::db::Response;
+use synixe_proc::events_request;
+
+use crate::discord::{interaction::Interaction, self};
+
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
         .name("garage")
@@ -73,15 +79,31 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
 async fn view(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    _options: &[ApplicationCommandInteractionDataOption],
+    _options: &[CommandDataOption],
 ) {
-    let _ = command
-        .create_interaction_response(&ctx.http, |response| {
-            response
-                .kind(InteractionResponseType::ChannelMessageWithSource)
-                .interaction_response_data(|message| {
-                    message.content("This is the garage view command")
-                })
-        })
-        .await;
+    let mut interaction = Interaction::new(ctx, discord::interaction::Generic::Application(command));
+    interaction.reply("This is the garage view command").await;
+
+    let Ok((Response::FetchVehicleAssets(Ok(vehicles)), _)) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::garage::db,
+        FetchVehicleAssets{ stored: None}
+    ).await else {
+        interaction.reply("Error fetching vehicle assests").await;
+        return;
+    };
+
+    if vehicles.is_empty() {
+        interaction.reply("No vehicle assests found").await;
+        return;
+    }
+
+    let mut content = format!("**Vehicle Assests**\n\n");
+    for vehicle in vehicles {
+        content.push_str(&format!(
+            "**{} - stored: {}**\n",
+            vehicle.plate, vehicle.stored
+        ));
+    }
+    interaction.reply(content).await;
 }

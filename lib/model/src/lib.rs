@@ -12,3 +12,6 @@ pub mod certifications;
 
 #[cfg(feature = "gear")]
 pub mod gear;
+
+#[cfg(feature = "garage")]
+pub mod garage;

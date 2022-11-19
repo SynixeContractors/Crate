@@ -1,5 +1,6 @@
 mod certifications;
 mod discord;
+mod garage;
 mod gear;
 mod missions;
 mod recruiting;
