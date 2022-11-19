@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use serenity::model::prelude::{RoleId, UserId};
 use synixe_events::{
     certifications::{
         db,
@@ -92,11 +93,11 @@ impl Handler for Request {
                             bootstrap::NC::get().await,
                             synixe_events::discord::write,
                             EnsureRoles {
-                                member: trial.trainee.parse().unwrap(),
+                                member: UserId(trial.trainee.parse().unwrap()),
                                 roles: cert
                                     .roles_granted
                                     .iter()
-                                    .map(|r| r.parse().unwrap())
+                                    .map(|r| RoleId(r.parse().unwrap()))
                                     .collect(),
                             }
                         )

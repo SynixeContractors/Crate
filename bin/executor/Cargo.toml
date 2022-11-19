@@ -11,12 +11,13 @@ synixe-proc = { path = "../../lib/proc" }
 
 anyhow = "1.0.66"
 async-trait = { workspace = true }
-time = { workspace = true }
 log = { workspace = true }
 nats = { workspace = true }
 opentelemetry = { workspace = true }
-tokio = { version = "1.22.0", features = ["full"] }
 reqwest = { version = "0.11.13" }
+serenity = { workspace = true, features = [ "builder" ] }
+time = { workspace = true }
+tokio = { version = "1.22.0", features = ["full"] }
 
 # recruiting
 roux = "2.2.4"
