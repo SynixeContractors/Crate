@@ -71,7 +71,7 @@ async fn main() {
     events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::executions,
-        CheckExpiries {}
+        CheckRoles {}
     )
     .await
     .unwrap();

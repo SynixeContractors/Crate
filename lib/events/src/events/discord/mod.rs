@@ -5,7 +5,7 @@ pub mod write {
     use serde::{Deserialize, Serialize};
     use serenity::{
         builder::CreateEmbed,
-        model::prelude::{ChannelId, ReactionType, UserId},
+        model::prelude::{ChannelId, ReactionType, RoleId, UserId},
     };
     use synixe_proc::events_requests;
 
@@ -84,6 +84,13 @@ pub mod write {
             user: UserId,
             /// The message to send
             message: DiscordMessage,
+        } => (Result<(), String>)
+        /// Ensure a member has a role
+        struct EnsureRoles {
+            /// The member to check
+            member: UserId,
+            /// The roles to check
+            roles: Vec<RoleId>,
         } => (Result<(), String>)
     });
 }

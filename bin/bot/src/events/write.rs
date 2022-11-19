@@ -3,6 +3,7 @@
 use nats::asynk::Message;
 use opentelemetry::trace::Tracer;
 use synixe_events::{discord::write, respond, Evokable};
+use synixe_meta::discord::GUILD;
 
 use crate::Bot;
 
@@ -56,6 +57,34 @@ pub async fn handle(msg: Message, client: Bot) {
                     {
                         error!("Failed to respond to NATS: {}", e);
                     }
+                }
+            }
+        }
+        write::Request::EnsureRoles { member, roles } => {
+            let Ok(mut member) = GUILD.member(&client, member).await else {
+                error!("Failed to get member");
+                if let Err(e) = respond!(msg, write::Response::EnsureRoles(Err(String::from(
+                    "Failed to get member"
+                ))))
+                .await
+                {
+                    error!("Failed to respond to NATS: {}", e);
+                }
+                return;
+            };
+            let roles = roles
+                .iter()
+                .filter(|r| !member.roles.contains(r))
+                .collect::<Vec<_>>();
+            for role in roles {
+                if let Err(e) = member.add_role(&client.http, role).await {
+                    error!("Failed to add role: {}", e);
+                    if let Err(e) =
+                        respond!(msg, write::Response::EnsureRoles(Err(e.to_string()))).await
+                    {
+                        error!("Failed to respond to NATS: {}", e);
+                    }
+                    return;
                 }
             }
         }

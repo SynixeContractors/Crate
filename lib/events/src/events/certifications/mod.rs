@@ -38,8 +38,10 @@ pub mod db {
             /// The member to check
             member: UserId,
         } => (Result<Vec<CertificationTrial>, String>)
+        /// Get all active certifications
+        struct AllActive {} => (Result<Vec<CertificationTrial>, String>)
         /// Get all active certifications that are expiring soon
-        struct Expiring {
+        struct AllExpiring {
             /// The number of days before expiry to check
             days: i8,
         } => (Result<Vec<CertificationTrial>, String>)
@@ -53,6 +55,8 @@ pub mod executions {
     events_requests!(executor.certifications {
         /// Update the certification list
         struct CheckExpiries {} => (Result<(), String>)
+        /// Ensure everyone has the correct roles
+        struct CheckRoles {} => (Result<(), String>)
     });
 }
 

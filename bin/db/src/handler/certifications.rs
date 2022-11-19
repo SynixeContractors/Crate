@@ -232,13 +232,40 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::Expiring { days } => {
+            Self::AllActive {} => {
                 fetch_as_and_respond!(
                     msg,
                     *db,
                     cx,
                     synixe_model::certifications::CertificationTrial,
-                    Response::Expiring,
+                    Response::AllActive,
+                    r#"
+                        SELECT
+                            id,
+                            instructor,
+                            trainee,
+                            certification,
+                            notes,
+                            passed,
+                            valid_for,
+                            valid_until,
+                            created
+                        FROM
+                            certifications_trials
+                        WHERE
+                            passed IS TRUE
+                            AND (valid_until > NOW() OR valid_until IS NULL)
+                        GROUP BY id ORDER BY created DESC"#,
+                )?;
+                Ok(())
+            }
+            Self::AllExpiring { days } => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::certifications::CertificationTrial,
+                    Response::AllExpiring,
                     r#"
                         SELECT
                             id,

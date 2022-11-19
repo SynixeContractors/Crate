@@ -23,10 +23,10 @@ impl Handler for Request {
         match &self {
             Self::CheckExpiries {} => {
                 respond!(msg, Response::CheckExpiries(Ok(()))).await?;
-                let Ok(((db::Response::Expiring(Ok(expiring)), _), _)) = events_request!(
+                let Ok(((db::Response::AllExpiring(Ok(expiring)), _), _)) = events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::certifications::db,
-                    Expiring { days: 30 }
+                    AllExpiring { days: 30 }
                 ).await else {
                     return Ok(());
                 };
@@ -63,6 +63,45 @@ impl Handler for Request {
                             )
                             .await?;
                         }
+                    }
+                }
+                Ok(())
+            }
+            Self::CheckRoles {} => {
+                respond!(msg, Response::CheckRoles(Ok(()))).await?;
+                let Ok(((db::Response::AllActive(Ok(active)), _), _)) = events_request!(
+                    bootstrap::NC::get().await,
+                    synixe_events::certifications::db,
+                    AllActive {}
+                ).await else {
+                    return Ok(());
+                };
+                if let Ok(((db::Response::List(Ok(certs)), _), _)) = events_request!(
+                    bootstrap::NC::get().await,
+                    synixe_events::certifications::db,
+                    List {}
+                )
+                .await
+                {
+                    for trial in active {
+                        let cert = certs
+                            .iter()
+                            .find(|cert| cert.id == trial.certification)
+                            .unwrap();
+                        events_request!(
+                            bootstrap::NC::get().await,
+                            synixe_events::discord::write,
+                            EnsureRoles {
+                                member: trial.trainee.parse().unwrap(),
+                                roles: cert
+                                    .roles_granted
+                                    .iter()
+                                    .map(|r| r.parse().unwrap())
+                                    .collect(),
+                            }
+                        )
+                        .await
+                        .unwrap();
                     }
                 }
                 Ok(())
