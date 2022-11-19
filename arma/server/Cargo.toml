@@ -21,8 +21,8 @@ log = "0.4.17"
 nats = { workspace = true }
 opentelemetry = { workspace = true }
 serenity = { workspace = true }
-tokio = { version = "1.21.2", features = ["full"] }
-uuid = "1.2.1"
+tokio = { version = "1.22.0", features = ["full"] }
+uuid = "1.2.2"
 
 [dev-dependencies]
 nats = { workspace = true }

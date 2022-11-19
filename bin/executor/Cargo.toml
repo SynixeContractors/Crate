@@ -15,12 +15,12 @@ time = { workspace = true }
 log = { workspace = true }
 nats = { workspace = true }
 opentelemetry = { workspace = true }
-tokio = { version = "1.21.2", features = ["full"] }
-reqwest = { version = "0.11.12" }
+tokio = { version = "1.22.0", features = ["full"] }
+reqwest = { version = "0.11.13" }
 
 # recruiting
-roux = { git = "https://github.com/synixecontractors/roux" }
-rust-embed="6.4.2"
+roux = "2.2.4"
+rust-embed = "6.4.2"
 scraper = "0.13.0"
 
 [build-dependencies]
