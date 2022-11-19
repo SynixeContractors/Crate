@@ -20,7 +20,7 @@ impl Handler for Request {
         _cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         match &self {
-            Self::CheckExpiries {  } => {
+            Self::CheckExpiries {} => {
                 respond!(msg, Response::CheckExpiries(Ok(()))).await?;
                 let Ok(((db::Response::Expiring(Ok(expiring)), _), _)) = events_request!(
                     bootstrap::NC::get().await,
@@ -33,7 +33,7 @@ impl Handler for Request {
                     println!("Expiring: {:?}", trail);
                 }
                 Ok(())
-            },
+            }
         }
     }
 }

@@ -50,7 +50,7 @@ pub mod db {
 pub mod executions {
     use synixe_proc::events_requests;
 
-    events_requests!(executions.certifications {
+    events_requests!(executor.certifications {
         /// Update the certification list
         struct CheckExpiries {} => (Result<(), String>)
     });
