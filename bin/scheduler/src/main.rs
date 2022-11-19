@@ -68,6 +68,14 @@ async fn main() {
         CheckExpiries
     );
 
+    events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::certifications::executions,
+        CheckExpiries {}
+    )
+    .await
+    .unwrap();
+
     sched.start().await;
 
     info!("Done!");
