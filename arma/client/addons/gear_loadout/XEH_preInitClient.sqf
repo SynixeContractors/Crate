@@ -1,7 +1,4 @@
 #include "script_component.hpp"
-ADDON = false;
-#include "XEH_PREP.hpp"
-ADDON = true;
 
 if !(isMultiplayer) exitWith {};
 
@@ -23,7 +20,7 @@ GVAR(tracking) = false;
             _loadout = _loadout select 0;
         };
         player addGoggles (_loadout select 7);
-        player setVariable [QGVAR(loaded), true, true];
+        GVAR(tracking) = true;
     }] call CBA_fnc_execNextFrame;
 }] call CBA_fnc_addEventHandler;
 

@@ -17,7 +17,7 @@ opentelemetry = { workspace = true }
 reqwest = { version = "0.11.13" }
 serenity = { workspace = true, features = [ "builder" ] }
 time = { workspace = true }
-tokio = { version = "1.22.0", features = ["full"] }
+tokio = { version = "1.23.0", features = ["full"] }
 
 # recruiting
 roux = "2.2.4"

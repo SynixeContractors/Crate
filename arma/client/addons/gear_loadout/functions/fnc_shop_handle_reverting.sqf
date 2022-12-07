@@ -8,5 +8,5 @@ if (EGVAR(gear_main,read_only)) exitWith {};
 [QGVAR(store), [player, GVAR(preLoadout)]] call CBA_fnc_serverEvent;
 
 [{
-	GVAR(tracking) = true;
+    GVAR(tracking) = true;
 }] call CBA_fnc_execNextFrame;

@@ -16,11 +16,11 @@ nats = { workspace = true }
 opentelemetry = { workspace = true }
 reqwest = { version = "0.11.13", features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
-serde_json = "1.0.88"
+serde_json = "1.0.89"
 serenity = { workspace = true, features = ["builder", "cache", "client", "collector", "gateway", "http", "model", "utils", "rustls_backend"]}
 time = { workspace = true }
 time-tz = "1.0.2"
-tokio = { version = "1.22.0", features = ["full"] }
+tokio = { version = "1.23.0", features = ["full"] }
 uuid = { workspace = true }
 
 [build-dependencies]

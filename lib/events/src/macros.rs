@@ -17,7 +17,6 @@ macro_rules! handler {
                 continue
             }
         )*
-        warn!("Unknown subject: {}", subject);
     }}
 }
 
@@ -40,7 +39,6 @@ macro_rules! listener {
                 continue
             }
         )*
-        warn!("Unknown subject: {}", subject);
     }}
 }
 

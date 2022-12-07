@@ -14,7 +14,7 @@ addMissionEventHandler ["ExtensionCallback", {
         case "items:clear": {
             GVAR(items_importing) = createHashMap;
         };
-        case "items:entry": {
+        case "items:add": {
             (parseSimpleArray _data) params ["_class", "_entry"];
             GVAR(items_importing) set [_class, _entry];
         };

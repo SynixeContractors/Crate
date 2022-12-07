@@ -13,6 +13,6 @@ time = { workspace = true, features = ["serde-well-known"] }
 nats = { workspace = true }
 opentelemetry = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-serde_json = "1.0.88"
+serde_json = "1.0.89"
 serenity = { workspace = true, features = ["utils", "builder"] }
 uuid = { workspace = true, features = ["serde"] }

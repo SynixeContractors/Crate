@@ -5,7 +5,7 @@ if !(GVAR(enabled)) exitWith {};
 private _action = [QGVAR(box), "Shop", "", {
     [_target] call FUNC(box_open);
 }, {
-    EGVAR(shop,items) isNotEqualTo []
+    EGVAR(gear_main,enabled) && {GVAR(items) isNotEqualTo []}
 }] call ace_interact_menu_fnc_createAction;
 
 {

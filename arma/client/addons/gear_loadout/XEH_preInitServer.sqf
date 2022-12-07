@@ -1,7 +1,4 @@
 #include "script_component.hpp"
-ADDON = false;
-#include "XEH_PREP.hpp"
-ADDON = true;
 
 if !(isMultiplayer) exitWith {};
 
@@ -37,7 +34,6 @@ addMissionEventHandler ["ExtensionCallback", {
             (parseSimpleArray _data) params ["_steam", "_loadout"];
             private _player = [_steam] call EFUNC(common,playerFromSteam);
             [QGVAR(set), [parseSimpleArray _loadout], [_player]] call CBA_fnc_targetEvent;
-            [QGVAR(track), [], [_player]] call CBA_fnc_targetEvent;
         };
         case "get:empty": {
             (parseSimpleArray _data) params ["_steam"];

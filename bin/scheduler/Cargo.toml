@@ -12,7 +12,7 @@ synixe-proc = { path = "../../lib/proc" }
 log = { workspace = true }
 nats = { workspace = true }
 opentelemetry = { workspace = true }
-tokio = { version = "1.22.0", features = ["full"] }
+tokio = { version = "1.23.0", features = ["full"] }
 tokio-simple-scheduler = "0.1.2"
 
 [build-dependencies]
