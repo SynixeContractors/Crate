@@ -151,11 +151,11 @@
     },
     "query": "\n                        SELECT\n                            member AS value\n                        FROM\n                            members_steam\n                        WHERE\n                            steam_id = $1"
   },
-  "4e87d5b041b63156ae3ed9e08e483d97d8a42beb5488b5585e7fc52e4ec52786": {
+  "3224c776b28f53c193dc08ca6e6bd4eadec838aa5ea4247e770656d94841398e": {
     "describe": {
       "columns": [
         {
-          "name": "value",
+          "name": "balance",
           "ordinal": 0,
           "type_info": "Int8"
         }
@@ -169,7 +169,7 @@
         ]
       }
     },
-    "query": "SELECT balance AS value FROM gear_bank_balance_cache WHERE member = $1"
+    "query": "SELECT balance FROM gear_bank_balance_cache WHERE member = $1"
   },
   "4efaab44dd6e786c4182108767fa7d5d41160284492c6e6acb365b6eb7a6a3d9": {
     "describe": {
@@ -208,6 +208,26 @@
       }
     },
     "query": "SELECT i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.class = $1"
+  },
+  "56abd10226b406a046e2ec1b8f65eca6ca18feabe2541d09ac3eaf2e3523b67d": {
+    "describe": {
+      "columns": [
+        {
+          "name": "loadout",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT loadout FROM gear_loadouts WHERE member = $1 LIMIT 1"
   },
   "599656998a4b7d69c2f86e6415712a7c2cb5d133d56fc3335c8cb187c89e4b42": {
     "describe": {
@@ -663,26 +683,6 @@
       }
     },
     "query": "SELECT EXISTS(SELECT 1 FROM recruitment_seen WHERE link = $1) AS value"
-  },
-  "a4f7e59c390ab71840f72f5f4ce54d8448b8d7a0c2973737b24aa99bc7f1779b": {
-    "describe": {
-      "columns": [
-        {
-          "name": "value",
-          "ordinal": 0,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT loadout AS value FROM gear_loadouts WHERE member = $1 LIMIT 1"
   },
   "a80cd694ff0906d3d1e9f3ba97a307232d766bfbea9158f13727b68666226564": {
     "describe": {

@@ -86,8 +86,7 @@ impl Handler for Request {
                 match response.json::<Vec<Mission>>().await {
                     Ok(missions) => {
                         for mission in missions {
-                            let (query, _span) = trace_query!(
-                                cx,
+                            let query = sqlx::query!(
                                 r#"INSERT INTO missions (id, name, summary, description, type)
                                     VALUES ($1, $2, $3, $4, $5)
                                     ON CONFLICT (id) DO UPDATE SET

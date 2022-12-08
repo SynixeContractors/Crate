@@ -141,7 +141,7 @@ impl Handler for Request {
                     fetch_one_as_and_respond!(
                         msg,
                         *db,
-                        cx,
+                        cx.clone(),
                         synixe_model::certifications::CertificationTrial,
                         Response::Certify,
                         r#"
@@ -170,7 +170,7 @@ impl Handler for Request {
                     fetch_one_as_and_respond!(
                         msg,
                         *db,
-                        cx,
+                        cx.clone(),
                         synixe_model::certifications::CertificationTrial,
                         Response::Certify,
                         r#"

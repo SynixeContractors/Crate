@@ -27,7 +27,8 @@ private _roleText = if (_roles isEqualTo []) then {
 } forEach _roles;
 
 player setDiaryRecordText [[QGVAR(diary), GVAR(diaryRecord)], ["My Account", format [
-    "ID: %1<br/><br/>%2",
+    "Discord: %1<br/>Steam: %2<br/><br/>%3",
     _id,
+    getPlayerUID player,
     _roleText
 ]]];

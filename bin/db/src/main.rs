@@ -7,6 +7,7 @@ extern crate log;
 #[macro_use]
 mod macros;
 
+mod actor;
 mod handler;
 
 #[tokio::main]

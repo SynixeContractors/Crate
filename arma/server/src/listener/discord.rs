@@ -14,13 +14,12 @@ impl Listener for Publish {
         _cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         match &self {
-            Self::ReactionAdd { reaction: _ } => todo!(),
-            Self::ReactionRemove { reaction: _ } => todo!(),
+            Self::ReactionRemove { reaction: _ } | Self::ReactionAdd { reaction: _ } => Ok(()),
             Self::MemberUpdate { member } => {
                 if let Some(steam) = STEAM_CACHE.read().await.get(&member.user.id.to_string()) {
                     CONTEXT.read().await.as_ref().unwrap().callback_data(
                         "crate:discord",
-                        "member",
+                        "member:get:ok",
                         vec![
                             arma_rs::Value::String(steam.to_string()),
                             arma_rs::Value::String(member.user.id.to_string()),
