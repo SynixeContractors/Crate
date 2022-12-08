@@ -8,14 +8,16 @@ where
     E: Executor<'a, Database = Postgres>,
 {
     let query = sqlx::query!(
-        "SELECT balance FROM gear_bank_balance_cache WHERE member = $1",
+        "SELECT balance FROM gear_bank_balance_cache WHERE member = $1 LIMIT 1",
         member.0.to_string(),
     );
-    query
+    let res = query
         .fetch_optional(executor)
         .await?
         .map(|row| Ok(row.balance))
-        .transpose()
+        .transpose();
+    println!("balance: {:?}", res);
+    res
 }
 
 pub async fn deposit(

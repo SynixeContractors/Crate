@@ -4,11 +4,18 @@ PREP(ext_shop);
 PREP(loadout_clean);
 PREP(loadout_items);
 PREP(loadout_onChange);
+PREP(loadout_removeOwned);
 
+PREP(shop_arsenal_closed);
+PREP(shop_arsenal_opened);
 PREP(shop_enter);
 PREP(shop_init);
 PREP(shop_item_listing);
+PREP(shop_item_owned);
 PREP(shop_item_price);
 PREP(shop_item_roles);
 PREP(shop_items_allowed);
+PREP(shop_items_cost);
+PREP(shop_items_purchasable);
 PREP(shop_open);
+PREP(shop_pfh_balance);

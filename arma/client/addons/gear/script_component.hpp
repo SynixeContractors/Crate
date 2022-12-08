@@ -1,5 +1,6 @@
 #define COMPONENT gear
 #include "\synixe\crate_client\addons\main\script_mod.hpp"
+#include "\z\ace\addons\arsenal\defines.hpp"
 
 // #define DEBUG_MODE_FULL
 // #define DISABLE_COMPILE_CACHE

@@ -1,7 +1,7 @@
 #include "script_component.hpp"
 
 params [
-    ["_items", createHashMap, [createHashMap]]
+    ["_items", [], [[]]]
 ];
 
 private _ret = [];

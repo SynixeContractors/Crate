@@ -29,4 +29,14 @@ switch (_func) do {
         private _player = [_steam] call EFUNC(common,playerFromSteam);
         [QGVAR(shop_enter_err), [], [_player]] call CBA_fnc_targetEvent;
     };
+    case "leave:ok": {
+        (parseSimpleArray _data) params ["_steam"];
+        private _player = [_steam] call EFUNC(common,playerFromSteam);
+        [QGVAR(shop_leave_ok), [], [_player]] call CBA_fnc_targetEvent;
+    };
+    case "leave:err": {
+        (parseSimpleArray _data) params ["_steam"];
+        private _player = [_steam] call EFUNC(common,playerFromSteam);
+        [QGVAR(shop_leave_err), [], [_player]] call CBA_fnc_targetEvent;
+    };
 };

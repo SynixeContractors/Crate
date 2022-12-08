@@ -151,26 +151,6 @@
     },
     "query": "\n                        SELECT\n                            member AS value\n                        FROM\n                            members_steam\n                        WHERE\n                            steam_id = $1"
   },
-  "3224c776b28f53c193dc08ca6e6bd4eadec838aa5ea4247e770656d94841398e": {
-    "describe": {
-      "columns": [
-        {
-          "name": "balance",
-          "ordinal": 0,
-          "type_info": "Int4"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT balance FROM gear_bank_balance_cache WHERE member = $1"
-  },
   "4efaab44dd6e786c4182108767fa7d5d41160284492c6e6acb365b6eb7a6a3d9": {
     "describe": {
       "columns": [
@@ -789,6 +769,26 @@
       }
     },
     "query": "\n                    SELECT\n                        name AS value\n                    FROM\n                        certifications\n                    WHERE\n                        id = $1"
+  },
+  "be9d7102a0c2621d3d42b660434065c449ff3ff571dab74372d2937fea8835a9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "balance",
+          "ordinal": 0,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT balance FROM gear_bank_balance_cache WHERE member = $1 LIMIT 1"
   },
   "c60864b08b9c5a73c6c67386be6ef4abdb9a0af733b3737d9a244c25bcbbffe8": {
     "describe": {

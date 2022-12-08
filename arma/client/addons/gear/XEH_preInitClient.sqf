@@ -44,6 +44,9 @@ GVAR(loadout_tracking) = false;
 
 // ============= Shop
 
+["ace_arsenal_displayOpened", FUNC(shop_arsenal_opened)] call CBA_fnc_addEventHandler;
+["ace_arsenal_displayClosed", FUNC(shop_arsenal_closed)] call CBA_fnc_addEventHandler;
+
 [QGVAR(shop_enter_ok), FUNC(shop_enter)] call CBA_fnc_addEventHandler;
 [QGVAR(shop_enter_err), {
     GVAR(shop_blurHandle) ppEffectAdjust [0];
@@ -55,4 +58,9 @@ GVAR(loadout_tracking) = false;
     player setVariable [QGVAR(shop_open), false, true];
     player enableSimulation true;
     systemChat "An error occurred while trying to enter the shop, please try again later.";
+}] call CBA_fnc_addEventHandler;
+
+[QGVAR(shop_leave_err), {
+    systemChat "An error occurred while trying to leave the shop, reverting changes.";
+    [player, GVAR(shop_preLoadout), false] call CBA_fnc_setLoadout;
 }] call CBA_fnc_addEventHandler;

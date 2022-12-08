@@ -45,6 +45,19 @@ if !(isMultiplayer) exitWith {};
     EXTCALL("gear:shop:enter", [ARR_3(_discord,_steam,_items)]);
 }] call CBA_fnc_addEventHandler;
 
+[QGVAR(shop_leave), {
+    params [
+        ["_player", objNull, [objNull]],
+        ["_loadout", [], [[]]],
+        ["_items", createHashMap, [createHashMap]]
+    ];
+    if (isNull _player) exitWith {};
+    private _discord = _player getVariable [QEGVAR(discord,id), ""];
+    if (_discord isEqualTo "") exitWith {};
+    private _steam = getPlayerUID _player;
+    EXTCALL("gear:shop:leave", [ARR_4(_discord,_steam,str ([_loadout] call FUNC(loadout_clean)),_items)]);
+}] call CBA_fnc_addEventHandler;
+
 addMissionEventHandler ["ExtensionCallback", {
     params ["_name", "_func", "_data"];
     switch (_name) do {
