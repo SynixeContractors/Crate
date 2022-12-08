@@ -13,6 +13,7 @@ pub fn group() -> Group {
 
 fn command_get(discord: String, steam: String) {
     RUNTIME.spawn(async move {
+        debug!("fetching loadout for {}", discord);
         let Ok(((db::Response::LoadoutGet(Ok(loadout)), _), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
@@ -21,15 +22,22 @@ fn command_get(discord: String, steam: String) {
             }
         ).await else {
             error!("failed to fetch loadout over nats");
+            CONTEXT.read().await.as_ref().unwrap().callback_data(
+                "crate:gear:loadout",
+                "get:err",
+                vec![steam],
+            );
             return;
         };
         if let Some(loadout) = loadout {
+            debug!("found loadout for {}", discord);
             CONTEXT.read().await.as_ref().unwrap().callback_data(
                 "crate:gear:loadout",
                 "get:set",
                 vec![steam, loadout],
             );
         } else {
+            debug!("no loadout found for {}", discord);
             CONTEXT.read().await.as_ref().unwrap().callback_data(
                 "crate:gear:loadout",
                 "get:empty",
@@ -54,15 +62,15 @@ fn command_store(discord: String, steam: String, loadout: String) {
             error!("failed to save loadout over nats");
             CONTEXT.read().await.as_ref().unwrap().callback_data(
                 "crate:gear:loadout",
-                "store",
-                vec![steam, "err".to_string()],
+                "store:err",
+                vec![steam],
             );
             return;
         };
         CONTEXT.read().await.as_ref().unwrap().callback_data(
             "crate:gear:loadout",
-            "store",
-            vec![steam, "ok".to_string()],
+            "store:ok",
+            vec![steam],
         );
     });
 }

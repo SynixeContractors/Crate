@@ -98,7 +98,7 @@ pub async fn handle(msg: Message, client: Bot) {
                 error!("Failed to respond to NATS");
                 return;
             };
-            if let Err(e) = synixe_meta::discord::channel::AUDIT
+            if let Err(e) = synixe_meta::discord::channel::LOG
                 .send_message(&client.http, |m| match message.content {
                     write::DiscordContent::Text(text) => m.content(text),
                     write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),

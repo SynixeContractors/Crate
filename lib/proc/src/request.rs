@@ -15,7 +15,7 @@ pub fn request(item: TokenStream) -> TokenStream {
             use synixe_events::Evokable;
             let body = #path::Request::#body;
             let path = body.self_path();
-            debug!("requesting on {:?}", path);
+            trace!("requesting on {:?}", path);
             let mut trace_body = synixe_events::Wrapper::new(body);
             synixe_events::opentelemetry::global::get_text_map_propagator(|injector| {
                 injector.inject_context(&synixe_events::opentelemetry::Context::current(), &mut trace_body);
