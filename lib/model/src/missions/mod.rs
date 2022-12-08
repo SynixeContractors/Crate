@@ -68,6 +68,18 @@ impl From<MissionType> for i32 {
     }
 }
 
+impl ToString for MissionType {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Contract => "Contract".to_string(),
+            Self::SubContract => "SubContract".to_string(),
+            Self::Training => "Training".to_string(),
+            Self::Special => "Special".to_string(),
+            Self::Other => "Other".to_string(),
+        }
+    }
+}
+
 #[cfg(feature = "mission-schedule")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]

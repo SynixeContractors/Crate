@@ -12,7 +12,18 @@ if !(isMultiplayer) exitWith {};
     ];
     if (_steam == "") exitWith {};
     if (_name == "") exitWith {};
-    EXTCALL("discord:member",[ARR_2(_steam,_name)]);
+    EXTCALL("discord:member:get",[ARR_2(_steam,_name)]);
+}] call CBA_fnc_addEventHandler;
+
+[QGVAR(saveDLC), {
+    params [
+        ["_player", objNull, [objNull]],
+        ["_dlc", [], [[]]]
+    ];
+    if (isNull _player) exitWith {};
+    private _discord = _player getVariable [QEGVAR(discord,id), ""];
+    if (_discord isEqualTo "") exitWith {};
+    EXTCALL("discord:member:save_dlc",[ARR_2(_discord,_dlc)]);
 }] call CBA_fnc_addEventHandler;
 
 addMissionEventHandler ["ExtensionCallback", {

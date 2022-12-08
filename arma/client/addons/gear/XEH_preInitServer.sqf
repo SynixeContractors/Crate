@@ -15,6 +15,8 @@ if !(isMultiplayer) exitWith {};
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(loadout_store), {
+    if !(GVAR(enabled)) exitWith {};
+    if (GVAR(readOnly)) exitWith {};
     params [
         ["_player", objNull, [objNull]],
         ["_loadout", [], [[]]]
@@ -34,6 +36,8 @@ if !(isMultiplayer) exitWith {};
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_enter), {
+    if !(GVAR(enabled)) exitWith {};
+    if (GVAR(readOnly)) exitWith {};
     params [
         ["_player", objNull, [objNull]],
         ["_items", createHashMap, [createHashMap]]
@@ -46,6 +50,8 @@ if !(isMultiplayer) exitWith {};
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_leave), {
+    if !(GVAR(enabled)) exitWith {};
+    if (GVAR(readOnly)) exitWith {};
     params [
         ["_player", objNull, [objNull]],
         ["_loadout", [], [[]]],
@@ -59,6 +65,8 @@ if !(isMultiplayer) exitWith {};
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_purchase), {
+    if !(GVAR(enabled)) exitWith {};
+    if (GVAR(readOnly)) exitWith {};
     params [
         ["_player", objNull, [objNull]],
         ["_items", createHashMap, [createHashMap]]

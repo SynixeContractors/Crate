@@ -6,7 +6,7 @@ class CfgPatches {
         units[] = {};
         weapons[] = {};
         requiredVersion = REQUIRED_VERSION;
-        requiredAddons[] = {"crate_client_main"};
+        requiredAddons[] = {"crate_client_main", "ace_arsenal"};
         author = "AUTHOR";
         VERSION_CONFIG;
     };

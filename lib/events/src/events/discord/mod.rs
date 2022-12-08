@@ -145,14 +145,21 @@ pub mod db {
         /// Get a discord user's ID from their name
         struct FromSteam {
             /// The steam ID to get the discord ID for
-            steam_id: String,
+            steam: String,
         } => (Result<Option<String>, String>)
         /// Save Steam ID to Database
         struct SaveSteam {
             /// The steam ID to save
-            steam_id: String,
+            steam: String,
             /// The member to link with
             member: UserId,
+        } => (Result<(), String>)
+        /// Save owned DLC
+        struct SaveDLC {
+            /// The steam ID to save the DLC for
+            member: UserId,
+            /// The DLC to save
+            dlc: Vec<u32>,
         } => (Result<(), String>)
     });
 }

@@ -70,6 +70,7 @@ GVAR(shop_processing) = false;
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_purchase_ok), {
+    systemChat "Purchase successful";
     params ["_locker", "_balance"];
     GVAR(shop_locker) = createHashMapFromArray _locker;
     GVAR(shop_balance) = _balance;

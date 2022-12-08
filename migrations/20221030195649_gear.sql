@@ -186,7 +186,7 @@ CREATE OR REPLACE FUNCTION gear_has_funds(VARCHAR(128), integer) RETURNS boolean
 DECLARE balance integer;
 BEGIN
     SELECT gear_get_member_balance($1) INTO balance;
-    RETURN balance >= $3;
+    RETURN balance >= $2;
 END
 $$ LANGUAGE plpgsql;
 

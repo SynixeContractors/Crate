@@ -38,8 +38,8 @@ private _fnc_onConfirm = {
     if (isNull _display) exitWith {};
 
     private _loadout = [player] call CBA_fnc_getLoadout;
-    private _items = [_loadout] call FUNC(shop_loadout_items);
-    [[_items] call FUNC(shop_items_difference)] call FUNC(shop_items_purchase);
+    private _items = [_loadout] call FUNC(loadout_items);
+    [[_items] call FUNC(shop_items_removeOwned)] call FUNC(shop_items_purchase);
 };
 
 private _cost = [_items, 0] call FUNC(shop_items_cost);

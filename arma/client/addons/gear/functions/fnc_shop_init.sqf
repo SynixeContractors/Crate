@@ -6,7 +6,10 @@ if !(GVAR(shop_enabled)) exitWith {};
 private _action = [QGVAR(box), "Shop", "", {
     [_target] call FUNC(shop_open);
 }, {
-    GVAR(enabled) && {!(player getVariable [QGVAR(shop_open), false])} && {count GVAR(shop_items) > 0}
+    GVAR(enabled)
+        && {(player getVariable [QEGVAR(discord,id), ""]) != }
+        && {!(player getVariable [QGVAR(shop_open), false])}
+        && {count GVAR(shop_items) > 0}
 }] call ace_interact_menu_fnc_createAction;
 
 {

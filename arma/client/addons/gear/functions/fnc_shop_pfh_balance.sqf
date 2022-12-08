@@ -24,7 +24,6 @@ if (_invalid isNotEqualTo []) exitWith {
 };
 
 private _cost = [_items] call FUNC(shop_items_cost);
-systemChat format ["cost of %1 items is %2", count _items, _cost];
 
 if (_cost == 0) then {
     _btnHide ctrlEnable false;

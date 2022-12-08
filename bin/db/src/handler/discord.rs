@@ -14,7 +14,7 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
-            Self::FromSteam { steam_id } => {
+            Self::FromSteam { steam } => {
                 fetch_one_and_respond!(
                     msg,
                     *db,
@@ -26,11 +26,11 @@ impl Handler for Request {
                         FROM
                             members_steam
                         WHERE
-                            steam_id = $1"#,
-                    steam_id,
+                            steam = $1"#,
+                    steam,
                 )
             }
-            Self::SaveSteam { steam_id, member } => {
+            Self::SaveSteam { steam, member } => {
                 execute_and_respond!(
                     msg,
                     *db,
@@ -38,14 +38,34 @@ impl Handler for Request {
                     Response::SaveSteam,
                     r#"
                         INSERT INTO
-                            members_steam (steam_id, member)
+                            members_steam (steam, member)
                         VALUES
                             ($1, $2)
                         ON CONFLICT (member)
                         DO UPDATE SET
-                            steam_id = $1"#,
-                    steam_id,
+                            steam = $1"#,
+                    steam,
                     member.to_string(),
+                )
+            }
+            Self::SaveDLC { member, dlc } => {
+                #[allow(clippy::cast_possible_wrap)]
+                let dlc = dlc.iter().map(|x| *x as i32).collect::<Vec<_>>();
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::SaveDLC,
+                    r#"
+                        INSERT INTO
+                            members_dlc (member, dlc)
+                        VALUES
+                            ($1, $2)
+                        ON CONFLICT (member)
+                        DO UPDATE
+                            SET dlc = $2"#,
+                    member.to_string(),
+                    &dlc,
                 )
             }
         }

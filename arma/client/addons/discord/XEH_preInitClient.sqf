@@ -7,6 +7,7 @@ if !(isMultiplayer) exitWith {};
 
 [QGVAR(updatedId), {
     call FUNC(diaryEntry);
+    [QGVAR(saveDLC), [player, getDLCs 1]] call CBA_fnc_serverEvent;
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(updatedRoles), {

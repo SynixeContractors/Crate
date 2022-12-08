@@ -131,25 +131,18 @@
     },
     "query": "INSERT INTO gear_bank_transfers (source, target, amount, reason) VALUES ($1, $2, $3, $4)"
   },
-  "1f301f9134b5dc78e353327f2fe22ea792f3463cea0f7bb2e6b553e6d75b3431": {
+  "3e9ba4b407c3eba4d40d4d3aff74356077576b4f82a013097e7ce712f834a54e": {
     "describe": {
-      "columns": [
-        {
-          "name": "value",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        }
-      ],
-      "nullable": [
-        false
-      ],
+      "columns": [],
+      "nullable": [],
       "parameters": {
         "Left": [
-          "Text"
+          "Varchar",
+          "Int4Array"
         ]
       }
     },
-    "query": "\n                        SELECT\n                            member AS value\n                        FROM\n                            members_steam\n                        WHERE\n                            steam_id = $1"
+    "query": "\n                        INSERT INTO\n                            members_dlc (member, dlc)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT (member)\n                        DO UPDATE\n                            SET dlc = $2"
   },
   "4efaab44dd6e786c4182108767fa7d5d41160284492c6e6acb365b6eb7a6a3d9": {
     "describe": {
@@ -730,6 +723,19 @@
     },
     "query": "\n                        SELECT\n                            DISTINCT ON (trainee, certification)\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW() OR valid_until IS NULL)\n                        ORDER BY trainee, certification, created DESC"
   },
+  "aca9efceaf3f1b2d4b026dbae5fe7fb903acb8daefe4443051640c26ec1114aa": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "\n                        INSERT INTO\n                            members_steam (steam, member)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT (member)\n                        DO UPDATE SET\n                            steam = $1"
+  },
   "af9c8265fb20c70fa528e4e0519010e393c42b2fbe3fb6587d3765adc44a466e": {
     "describe": {
       "columns": [
@@ -859,19 +865,6 @@
       }
     },
     "query": "INSERT INTO missions_schedule (mission, start) VALUES ($1, $2)"
-  },
-  "cf9ca89817026fd519c7807e5e4306d107911259b8f19b22419d3d619433db71": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Varchar"
-        ]
-      }
-    },
-    "query": "\n                        INSERT INTO\n                            members_steam (steam_id, member)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT (member)\n                        DO UPDATE SET\n                            steam_id = $1"
   },
   "d1c8e3ee1a6be107baaaf1b068d6946b7c62f3db5219ebf34c8fecf584d95f3b": {
     "describe": {
@@ -1067,6 +1060,26 @@
       }
     },
     "query": "SELECT EXISTS(SELECT 1 FROM recruitment_replied WHERE link = $1) AS value"
+  },
+  "ecfc862c94cf42f88643ab281575fcdf58c8e1768b2582e83cc6f720238276ec": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            member AS value\n                        FROM\n                            members_steam\n                        WHERE\n                            steam = $1"
   },
   "f1e3f31795f5896c84277358eaf566083ab79a2da0293a7227255ece894d12e0": {
     "describe": {

@@ -35,7 +35,7 @@ impl Handler for Request {
                         let now = time::OffsetDateTime::now_utc();
                         let mut posts = Vec::new();
                         for mission in missions {
-                            let num_minutes = (mission.start - now).whole_minutes();
+                            let num_minutes = (mission.start - now).whole_minutes() + 1;
                             match num_minutes {
                                 178..=182 => {
                                     posts.push((Some("3 hours!"), mission, num_minutes));
@@ -94,10 +94,12 @@ impl Handler for Request {
                                 } else if let Err(e) = publish!(
                                     bootstrap::NC::get().await,
                                     match minutes {
+                                        // Warn the mission will change 80 minutes before it starts
                                         78..=82 => synixe_events::missions::publish::Publish::WarnChangeMission {
                                             id: mission.mission,
                                             mission_type: mission_data.typ
                                         },
+                                        // Change the mission 70 minutes before it starts
                                         68..=72 => synixe_events::missions::publish::Publish::ChangeMission {
                                             id: mission.mission,
                                             mission_type: mission_data.typ

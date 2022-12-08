@@ -30,6 +30,11 @@ pub async fn events() {
         .unwrap();
     while let Some(msg) = sub.next().await {
         let nats = nats.clone();
-        synixe_events::listener!(msg, nats, synixe_events::discord::publish::Publish);
+        synixe_events::listener!(
+            msg,
+            nats,
+            synixe_events::discord::publish::Publish,
+            synixe_events::missions::publish::Publish
+        );
     }
 }

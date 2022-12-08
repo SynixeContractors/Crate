@@ -7,12 +7,12 @@ class ace_arsenal_display {
         class menuBar: RscControlsGroupNoScrollbars {
             class controls {
                 class buttonHide: ctrlButton {
-                    onButtonClick = QUOTE([ctrlParent (_this select 0)] call FUNC(btnHide_onClick));
+                    onButtonClick = QUOTE([ctrlParent (_this select 0)] call FUNC(shop_arsenal_btnHide));
                 };
             };
         };
         class rightTabContentListnBox: RscListNBox {
-            onLBSelChanged = QUOTE(_this call FUNC(onSelChangedRightListnBox));
+            onLBSelChanged = QUOTE(_this call FUNC(shop_arsenal_rightPanelSelChanged));
         };
     };
 };
