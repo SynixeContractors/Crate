@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
 use synixe_model::gear::Deposit;
@@ -85,6 +87,23 @@ pub async fn purchase(
             class,
             quantity,
             is_loadout,
+        );
+        query.execute(&mut *executor).await?;
+    }
+    Ok(())
+}
+
+pub async fn shop_purchase(
+    member: &UserId,
+    items: &HashMap<String, i32>,
+    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<(), anyhow::Error> {
+    for (class, quantity) in items {
+        let query = sqlx::query!(
+            "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), (SELECT cost FROM gear_item_current_cost($2)))",
+            member.0.to_string(),
+            class,
+            quantity,
         );
         query.execute(&mut *executor).await?;
     }

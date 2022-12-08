@@ -117,5 +117,12 @@ pub mod db {
             /// The loadout to set
             loadout: String,
         } => (Result<(), String>)
+        /// Helper for Arma to purchase items from the shop
+        struct ShopPurchase {
+            /// The member's ID
+            member: UserId,
+            /// The items to purchase
+            items: HashMap<String, i32>,
+        } => (Result<(HashMap<String, i32>, i32), String>)
     });
 }

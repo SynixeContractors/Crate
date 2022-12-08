@@ -168,6 +168,21 @@ impl Handler for Request {
                 respond!(msg, Response::ShopLeave(Ok(()))).await?;
                 Ok(())
             }
+            Self::ShopPurchase { member, items } => {
+                let mut tx = transaction!(db, msg, cx);
+                // Take the items from the locker
+                actor::gear::bank::shop_purchase(member, items, &mut tx).await?;
+                // Fetch the player's balance
+                let Some(balance) = actor::gear::bank::balance(member, &mut tx).await? else {
+                    respond!(msg, Response::ShopPurchase(Err("No balance found".into()))).await?;
+                    return Err(anyhow::anyhow!("No balance found"));
+                };
+                // Fetch the player's locker
+                let locker = actor::gear::locker::get(member, &mut tx).await?;
+                tx.commit().await?;
+                respond!(msg, Response::ShopPurchase(Ok((locker, balance)))).await?;
+                Ok(())
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ params [
 if (_class == "") exitWith {[]};
 
 if (_lookup) then {
-    _class = [_class] call FUNC(item_listing);
+    _class = [_class] call FUNC(shop_item_listing);
 };
 
-(GVAR(items) getOrDefault [_class, [-1,[],false]]) select 0
+(GVAR(shop_items) getOrDefault [_class, [-1,[],false]]) select 0

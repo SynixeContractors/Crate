@@ -16,7 +16,7 @@ private _cost = 0;
     private _need = _y - ([_x] call FUNC(shop_item_owned));
     if (_need > 0) then {
         private _class = [_x] call FUNC(shop_item_listing);
-        ([_class, false] call FUNC(item_price)) params ["_basePrice", "_currentPrice", "_global"];
+        ([_class, false] call FUNC(shop_item_price)) params ["_basePrice", "_currentPrice", "_global"];
         if (
             _globalMode == 2 || { _globalMode == (parseNumber _global) }
         ) then {

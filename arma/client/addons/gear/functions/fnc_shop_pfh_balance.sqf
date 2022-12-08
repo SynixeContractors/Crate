@@ -24,6 +24,7 @@ if (_invalid isNotEqualTo []) exitWith {
 };
 
 private _cost = [_items] call FUNC(shop_items_cost);
+systemChat format ["cost of %1 items is %2", count _items, _cost];
 
 if (_cost == 0) then {
     _btnHide ctrlEnable false;
@@ -31,7 +32,7 @@ if (_cost == 0) then {
     _btnHide ctrlSetTooltip "Current PMC Balance";
     _btnClose ctrlSetText "Apply";
 } else {
-    if (EGVAR(bank,processing)) then {
+    if (GVAR(shop_processing)) then {
         _btnHide ctrlEnable false;
         _btnHide ctrlSetText "Processing";
     } else {

@@ -39,4 +39,15 @@ switch (_func) do {
         private _player = [_steam] call EFUNC(common,playerFromSteam);
         [QGVAR(shop_leave_err), [], [_player]] call CBA_fnc_targetEvent;
     };
+
+    case "purchase:ok": {
+        (parseSimpleArray _data) params ["_steam", "_locker", "_balance"];
+        private _player = [_steam] call EFUNC(common,playerFromSteam);
+        [QGVAR(shop_purchase_ok), [_item, _locker, _balance], [_player]] call CBA_fnc_targetEvent;
+    };
+    case "purchase:err": {
+        (parseSimpleArray _data) params ["_steam"];
+        private _player = [_steam] call EFUNC(common,playerFromSteam);
+        [QGVAR(shop_purchase_err), [], [_player]] call CBA_fnc_targetEvent;
+    };
 };

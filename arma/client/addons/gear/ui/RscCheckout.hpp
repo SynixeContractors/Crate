@@ -10,7 +10,7 @@ class RscPicture;
 class GVAR(RscCheckout) {
     idd = IDD_RSCDISPLAYCHECKOUT;
     name = QGVAR(RscCheckout);
-    onLoad = QUOTE(_this call FUNC(checkout_onLoad));
+    onLoad = QUOTE(_this call FUNC(shop_checkout_onLoad));
     class controls {
         class Background: RscPicture {
             text = "#(argb,8,8,3)color(0,0,0,0.8)";

@@ -44,8 +44,12 @@ GVAR(loadout_tracking) = false;
 
 // ============= Shop
 
+GVAR(shop_processing) = false;
+
 ["ace_arsenal_displayOpened", FUNC(shop_arsenal_opened)] call CBA_fnc_addEventHandler;
 ["ace_arsenal_displayClosed", FUNC(shop_arsenal_closed)] call CBA_fnc_addEventHandler;
+["ace_arsenal_leftPanelFilled", FUNC(shop_arsenal_leftPanelFilled)] call CBA_fnc_addEventHandler;
+["ace_arsenal_rightPanelFilled", FUNC(shop_arsenal_rightPanelFilled)] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_enter_ok), FUNC(shop_enter)] call CBA_fnc_addEventHandler;
 [QGVAR(shop_enter_err), {
@@ -63,4 +67,16 @@ GVAR(loadout_tracking) = false;
 [QGVAR(shop_leave_err), {
     systemChat "An error occurred while trying to leave the shop, reverting changes.";
     [player, GVAR(shop_preLoadout), false] call CBA_fnc_setLoadout;
+}] call CBA_fnc_addEventHandler;
+
+[QGVAR(shop_purchase_ok), {
+    params ["_locker", "_balance"];
+    GVAR(shop_locker) = createHashMapFromArray _locker;
+    GVAR(shop_balance) = _balance;
+    GVAR(shop_processing) = false;
+}] call CBA_fnc_addEventHandler;
+
+[QGVAR(shop_purchase_err), {
+    systemChat "An error occurred while trying to purchase";
+    GVAR(shop_processing) = false;
 }] call CBA_fnc_addEventHandler;

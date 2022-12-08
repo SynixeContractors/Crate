@@ -12,6 +12,7 @@ pub fn group() -> Group {
         .command("items", command_items)
         .command("enter", command_enter)
         .command("leave", command_leave)
+        .command("purchase", command_purchase)
 }
 
 fn command_items() {
@@ -107,5 +108,33 @@ fn command_leave(discord: String, steam: String, loadout: String, items: HashMap
             vec![steam.to_arma()],
         );
         debug!("shop left for {}", discord);
+    });
+}
+
+fn command_purchase(discord: String, steam: String, items: HashMap<String, i32>) {
+    RUNTIME.spawn(async move {
+        debug!("purchasing items for {} with {:?} items", discord, items.len());
+        let Ok(((db::Response::ShopPurchase(Ok((locker, balance))), _), _)) = events_request!(
+            bootstrap::NC::get().await,
+            synixe_events::gear::db,
+            ShopPurchase {
+                member: UserId(discord.parse().unwrap()),
+                items,
+            }
+        ).await else {
+            error!("failed to purchase items over nats");
+            CONTEXT.read().await.as_ref().unwrap().callback_data(
+                "crate:gear:shop",
+                "purchase:err",
+                vec![steam],
+            );
+            return;
+        };
+        CONTEXT.read().await.as_ref().unwrap().callback_data(
+            "crate:gear:shop",
+            "purchase:ok",
+            vec![steam.to_arma(), locker.to_arma(), balance.to_arma()],
+        );
+        debug!("shop purchase for {}", discord);
     });
 }
