@@ -47,7 +47,7 @@ pub mod db {
         struct BankBalance {
             /// The member's ID
             member: UserId,
-        } => (Result<Option<i64>, String>)
+        } => (Result<Option<i32>, String>)
         /// Deposit money into a member's bank
         struct BankDepositNew {
             /// The member's ID
@@ -105,7 +105,7 @@ pub mod db {
             member: UserId,
             /// The items to store
             items: HashMap<String, i32>,
-        } => (Result<(HashMap<String, i32>, i64), String>)
+        } => (Result<(HashMap<String, i32>, i32), String>)
         /// Helper for Arma to:
         /// - Set the player's loadout
         /// - Take items from the locker

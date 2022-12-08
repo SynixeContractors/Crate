@@ -114,7 +114,7 @@ CREATE TABLE gear_bank_balance_cache (
 
 CREATE TABLE gear_bank_purchases (
     member VARCHAR(128) NOT NULL,
-    class VARCHAR(16) NOT NULL,
+    class VARCHAR(255) NOT NULL,
     quantity INTEGER NOT NULL,
     cost INTEGER NOT NULL,
     global BOOLEAN NOT NULL DEFAULT false,
@@ -297,7 +297,7 @@ CREATE TRIGGER bank_transfers_update_balance_cache_target
 -- Locker
 CREATE TABLE gear_locker (
     member VARCHAR(128) NOT NULL,
-    class VARCHAR(16) NOT NULL,
+    class VARCHAR(255) NOT NULL,
     quantity SERIAL NOT NULL,
     PRIMARY KEY (member, class)
 );
@@ -307,7 +307,7 @@ CREATE INDEX locker_class_idx ON gear_locker (class);
 
 CREATE TABLE gear_locker_log (
     member VARCHAR(128) NOT NULL,
-    class VARCHAR(16) NOT NULL,
+    class VARCHAR(255) NOT NULL,
     quantity INTEGER NOT NULL,
     created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (member, class, created)
@@ -318,7 +318,7 @@ CREATE INDEX locker_log_class_idx ON gear_locker_log (class);
 CREATE INDEX locker_log_created_idx ON gear_locker_log (created);
 
 -- Update the gear_locker to reflect the gear_locker log
-CREATE OR REPLACE FUNCTION gear_locker_update(VARCHAR(128), VARCHAR(16)) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION gear_locker_update(VARCHAR(128), VARCHAR(255)) RETURNS void AS $$
 DECLARE stored integer;
 BEGIN
     SELECT COALESCE(SUM(quantity), 0) INTO stored FROM gear_locker_log WHERE member = $1 AND class = $2;

@@ -3,7 +3,7 @@ use sqlx::{Executor, Postgres};
 use synixe_model::gear::Deposit;
 use uuid::Uuid;
 
-pub async fn balance<'a, E>(member: &UserId, executor: E) -> Result<Option<i64>, anyhow::Error>
+pub async fn balance<'a, E>(member: &UserId, executor: E) -> Result<Option<i32>, anyhow::Error>
 where
     E: Executor<'a, Database = Postgres>,
 {

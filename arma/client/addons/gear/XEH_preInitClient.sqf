@@ -1,6 +1,10 @@
 #include "script_component.hpp"
 
+GVAR(shop_boxes) = [];
+
 if !(isMultiplayer) exitWith {};
+
+// ============= Loadout 
 
 GVAR(loadout_tracking) = false;
 
@@ -36,4 +40,19 @@ GVAR(loadout_tracking) = false;
         player getVariable [QEGVAR(discord,id), ""],
         getPlayerUID player
     ]] call CBA_fnc_serverEvent;
+}] call CBA_fnc_addEventHandler;
+
+// ============= Shop
+
+[QGVAR(shop_enter_ok), FUNC(shop_enter)] call CBA_fnc_addEventHandler;
+[QGVAR(shop_enter_err), {
+    GVAR(shop_blurHandle) ppEffectAdjust [0];
+    GVAR(shop_blurHandle) ppEffectCommit 0.25;
+    [{
+        GVAR(shop_blurHandle) ppEffectEnable false;
+        ppEffectDestroy GVAR(shop_blurHandle);
+    }, [], 1] call CBA_fnc_waitAndExecute;
+    player setVariable [QGVAR(shop_open), false, true];
+    player enableSimulation true;
+    systemChat "An error occurred while trying to enter the shop, please try again later.";
 }] call CBA_fnc_addEventHandler;

@@ -1,6 +1,6 @@
 #[must_use]
 /// Format a number with commas as used in American currency.
-pub fn money(i: i64) -> String {
+pub fn money(i: i32) -> String {
     let mut s = String::new();
     let i_str = i.to_string();
     let a = i_str.chars().rev().enumerate();

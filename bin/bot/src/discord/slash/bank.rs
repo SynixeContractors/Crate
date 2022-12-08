@@ -108,6 +108,7 @@ async fn balance(
         .await;
 }
 
+#[allow(clippy::cast_possible_truncation)]
 async fn transfer(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
@@ -164,7 +165,7 @@ async fn transfer(
     interaction
         .reply(format!(
             "Transferred ${} to <@{}>",
-            bootstrap::format::money(*amount),
+            bootstrap::format::money(*amount as i32),
             user.id
         ))
         .await;

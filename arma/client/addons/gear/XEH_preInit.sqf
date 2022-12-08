@@ -24,4 +24,15 @@ ADDON = false;
     true
 ] call CBA_fnc_addSetting;
 
+[
+    QGVAR(shop_enabled),
+    "CHECKBOX",
+    ["Enabled", "Are shops usable?"],
+    ["Crate - Persistent Gear", "Shops"],
+    true,
+    true,
+    {},
+    true
+] call CBA_fnc_addSetting;
+
 ADDON = true;
