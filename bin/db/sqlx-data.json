@@ -1,5 +1,73 @@
 {
   "db": "PostgreSQL",
+  "020b05d4e9d60536283808ec335507c1e8c82993b9a955850910b02fdec0ce06": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "instructor",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "trainee",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "certification",
+          "ordinal": 3,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "notes",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "passed",
+          "ordinal": 5,
+          "type_info": "Bool"
+        },
+        {
+          "name": "valid_for",
+          "ordinal": 6,
+          "type_info": "Int4"
+        },
+        {
+          "name": "valid_until",
+          "ordinal": 7,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "created",
+          "ordinal": 8,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Float8"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            DISTINCT ON (trainee, certification)\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW())\n                            AND valid_until < NOW() + $1 * INTERVAL '1 day'\n                        ORDER BY trainee, certification, created DESC"
+  },
   "0279d05fdc27ad1fd760b385c1afd68e1fe176ee9721320e56b2e2148ad9adda": {
     "describe": {
       "columns": [],
@@ -616,47 +684,7 @@
     },
     "query": "SELECT loadout AS value FROM gear_loadouts WHERE member = $1 LIMIT 1"
   },
-  "af9c8265fb20c70fa528e4e0519010e393c42b2fbe3fb6587d3765adc44a466e": {
-    "describe": {
-      "columns": [
-        {
-          "name": "value",
-          "ordinal": 0,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        null
-      ],
-      "parameters": {
-        "Left": [
-          "Timestamptz"
-        ]
-      }
-    },
-    "query": "SELECT EXISTS(SELECT 1 FROM missions_schedule WHERE start = $1) AS value"
-  },
-  "afbd9afacfcc77dece153c9e6138dbf6362881121955822f8aa66b6084bb0453": {
-    "describe": {
-      "columns": [
-        {
-          "name": "value",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        }
-      ],
-      "nullable": [
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n                    SELECT\n                        name AS value\n                    FROM\n                        certifications\n                    WHERE\n                        id = $1"
-  },
-  "b24b3526ed948bbea6e4a85fce6891d26505553eaa64201e30bbcf5d7e37000f": {
+  "a80cd694ff0906d3d1e9f3ba97a307232d766bfbea9158f13727b68666226564": {
     "describe": {
       "columns": [
         {
@@ -720,7 +748,47 @@
         "Left": []
       }
     },
-    "query": "\n                        SELECT\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW() OR valid_until IS NULL)\n                        GROUP BY id ORDER BY created DESC"
+    "query": "\n                        SELECT\n                            DISTINCT ON (trainee, certification)\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW() OR valid_until IS NULL)\n                        ORDER BY trainee, certification, created DESC"
+  },
+  "af9c8265fb20c70fa528e4e0519010e393c42b2fbe3fb6587d3765adc44a466e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Timestamptz"
+        ]
+      }
+    },
+    "query": "SELECT EXISTS(SELECT 1 FROM missions_schedule WHERE start = $1) AS value"
+  },
+  "afbd9afacfcc77dece153c9e6138dbf6362881121955822f8aa66b6084bb0453": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n                    SELECT\n                        name AS value\n                    FROM\n                        certifications\n                    WHERE\n                        id = $1"
   },
   "c60864b08b9c5a73c6c67386be6ef4abdb9a0af733b3737d9a244c25bcbbffe8": {
     "describe": {
@@ -932,74 +1000,6 @@
       }
     },
     "query": "INSERT INTO recruitment_replied (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created = NOW()"
-  },
-  "d84bcfdaac87813f498cf9695aa4103539a47774f52d5fb77adb08a8f5545889": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "instructor",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "trainee",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "certification",
-          "ordinal": 3,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "notes",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "passed",
-          "ordinal": 5,
-          "type_info": "Bool"
-        },
-        {
-          "name": "valid_for",
-          "ordinal": 6,
-          "type_info": "Int4"
-        },
-        {
-          "name": "valid_until",
-          "ordinal": 7,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "created",
-          "ordinal": 8,
-          "type_info": "Timestamptz"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Float8"
-        ]
-      }
-    },
-    "query": "\n                        SELECT\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW())\n                            AND valid_until < NOW() + $1 * INTERVAL '1 day'\n                        GROUP BY id ORDER BY created DESC"
   },
   "dc9c428bc346fe4d412c80c129f2612b539bccfa726c4162bf790ac3cf4a97a0": {
     "describe": {

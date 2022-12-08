@@ -5,7 +5,12 @@
 use std::collections::HashMap;
 
 use arma_rs::{arma, Context, Extension};
-use synixe_events::{arma_server::publish::Publish, publish};
+use synixe_events::{
+    arma_server::publish::Publish,
+    discord::write::{DiscordContent, DiscordMessage},
+    publish,
+};
+use synixe_proc::events_request;
 use tokio::sync::RwLock;
 
 #[macro_use]
@@ -25,6 +30,23 @@ lazy_static::lazy_static! {
         .expect("failed to initialize tokio runtime");
     pub static ref CONTEXT: RwLock<Option<Context>> = RwLock::new(None);
     pub static ref STEAM_CACHE: RwLock<HashMap<String, String>> = RwLock::new(HashMap::new());
+}
+
+async fn audit(message: String) {
+    if let Err(e) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::discord::write,
+        Audit {
+            message: DiscordMessage {
+                content: DiscordContent::Text(message),
+                reactions: Vec::new(),
+            }
+        }
+    )
+    .await
+    {
+        error!("failed to send audit message over nats: {}", e);
+    }
 }
 
 #[arma]

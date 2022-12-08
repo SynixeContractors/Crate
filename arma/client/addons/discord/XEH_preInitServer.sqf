@@ -20,7 +20,7 @@ addMissionEventHandler ["ExtensionCallback", {
     if (_name != "crate:discord") exitWith {};
 
     switch (_func) do {
-        case "member": {
+        case "member:get:ok": {
             (parseSimpleArray _data) params ["_steam", "_discord", "_roles"];
             private _player = [_steam] call EFUNC(common,playerFromSteam);
             if ((_player getVariable [QGVAR(id), ""]) != _discord) then {
@@ -32,10 +32,15 @@ addMissionEventHandler ["ExtensionCallback", {
                 [QGVAR(updatedRoles), [_roles], [_player]] call CBA_fnc_targetEvent;
             };
         };
-        case "needs_link": {
+        case "member:get:err": {
+            (parseSimpleArray _data) params ["_steam"];
+            serverCommand format ['#kick %1', _steam];
+        };
+        case "member:get:needs_link": {
             (parseSimpleArray _data) params ["_steam"];
             private _player = [_steam] call EFUNC(common,playerFromSteam);
             [QGVAR(needsLink), [], [_player]] call CBA_fnc_targetEvent;
+            serverCommand format ['#kick %1', _steam];
         };
     };
 }];

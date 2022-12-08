@@ -7,6 +7,7 @@ use synixe_meta::discord::GUILD;
 
 use crate::Bot;
 
+#[allow(clippy::too_many_lines)]
 pub async fn handle(msg: Message, client: Bot) {
     let ((ev, _), pcx) = synixe_events::parse_data!(msg, write::Request);
     let _span = opentelemetry::global::tracer("bot").start_with_context(ev.name(), &pcx);
@@ -89,6 +90,24 @@ pub async fn handle(msg: Message, client: Bot) {
                         error!("Failed to respond to NATS: {}", e);
                     }
                     return;
+                }
+            }
+        }
+        write::Request::Audit { message } => {
+            let Ok(_) = respond!(msg, write::Response::Audit(Ok(()))).await else {
+                error!("Failed to respond to NATS");
+                return;
+            };
+            if let Err(e) = synixe_meta::discord::channel::AUDIT
+                .send_message(&client.http, |m| match message.content {
+                    write::DiscordContent::Text(text) => m.content(text),
+                    write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
+                })
+                .await
+            {
+                error!("Failed to send message: {}", e);
+                if let Err(e) = respond!(msg, write::Response::Audit(Err(e.to_string()))).await {
+                    error!("Failed to respond to NATS: {}", e);
                 }
             }
         }

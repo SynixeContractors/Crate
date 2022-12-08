@@ -92,6 +92,11 @@ pub mod write {
             /// The roles to check
             roles: Vec<RoleId>,
         } => (Result<(), String>)
+        /// Write a message to the audit log
+        struct Audit {
+            /// The message to audit
+            message: DiscordMessage,
+        } => (Result<(), String>)
     });
 }
 

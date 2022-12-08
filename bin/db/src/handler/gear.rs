@@ -359,6 +359,12 @@ impl Handler for Request {
                 }
                 Ok(())
             }
+            Self::ShopEnter { member, items } => unimplemented!(),
+            Self::ShopLeave {
+                member,
+                items,
+                loadout,
+            } => unimplemented!(),
         }
     }
 }

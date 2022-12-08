@@ -40,3 +40,5 @@ pub const APPLICATIONS: ChannelId = ChannelId(917_108_105_567_944_704);
 pub const RECRUITING: ChannelId = ChannelId(757_732_083_178_274_937);
 /// Discord event log
 pub const LOG: ChannelId = ChannelId(700_943_290_102_448_208);
+/// Discord audit log
+pub const AUDIT: ChannelId = ChannelId(1_050_300_688_145_592_380);

@@ -95,5 +95,27 @@ pub mod db {
             /// The item to get the price of
             item: String,
         } => (Result<Price, String>)
+
+        /// Helper for Arma to:
+        /// - Set the loadout to blank
+        /// - Store items in the locker
+        /// - Get the player's bank balance
+        struct ShopEnter {
+            /// The member's ID
+            member: UserId,
+            /// The items to store
+            items: HashMap<String, i32>,
+        } => (Result<(HashMap<String, i32>, i64), String>)
+        /// Helper for Arma to:
+        /// - Set the player's loadout
+        /// - Take items from the locker
+        struct ShopLeave {
+            /// The member's ID
+            member: UserId,
+            /// The items to take
+            items: HashMap<String, i32>,
+            /// The loadout to set
+            loadout: String,
+        } => (Result<(), String>)
     });
 }

@@ -285,7 +285,7 @@ impl Handler for Request {
                             passed IS TRUE
                             AND (valid_until > NOW())
                             AND valid_until < NOW() + $1 * INTERVAL '1 day'
-                        GROUP BY certification ORDER BY trainee, certification, created DESC"#,
+                        ORDER BY trainee, certification, created DESC"#,
                     f64::from(*days),
                 )?;
                 Ok(())

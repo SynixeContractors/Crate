@@ -3,7 +3,7 @@ use serenity::model::prelude::UserId;
 use synixe_events::discord::{self, db, info};
 use synixe_proc::events_request;
 
-use crate::{CONTEXT, RUNTIME, STEAM_CACHE};
+use crate::{audit, CONTEXT, RUNTIME, STEAM_CACHE};
 
 pub fn group() -> Group {
     Group::new()
@@ -11,6 +11,7 @@ pub fn group() -> Group {
         .command("guild", command_guild)
 }
 
+#[allow(clippy::manual_let_else)] // seems to be a false positive
 /// Fetches a user's discord id and roles
 fn command_member(steam: String, name: String) {
     if steam == "_SP_PLAYER_" {
@@ -25,6 +26,9 @@ fn command_member(steam: String, name: String) {
             }
         ).await else {
             error!("failed to fetch discord id over nats");
+            CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:err", vec![
+                arma_rs::Value::String(steam),
+            ]);
             return;
         };
         let discord_id = if let Ok(Some(discord_id)) = resp { discord_id } else {
@@ -36,7 +40,8 @@ fn command_member(steam: String, name: String) {
                 }
             ).await else {
                 error!("failed to check for name match over nats");
-                CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "needs_link", vec![steam.clone()]);
+                audit(format!("Steam account {steam} failed to link using the name {name}")).await;
+                CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:needs_link", vec![steam.clone()]);
                 return;
             };
             let Ok(((db::Response::SaveSteam(Ok(())), _), _)) = events_request!(
@@ -48,8 +53,12 @@ fn command_member(steam: String, name: String) {
                 }
             ).await else {
                 error!("failed to save discord id over nats");
+                CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:err", vec![
+                    arma_rs::Value::String(steam),
+                ]);
                 return;
             };
+            audit(format!("Steam account {steam} is now linked to <@{discord_id}>")).await;
             discord_id.to_string()
         };
         let Ok(((info::Response::MemberRoles(resp), _), _)) = events_request!(
@@ -60,14 +69,20 @@ fn command_member(steam: String, name: String) {
             }
         ).await else {
             error!("failed to fetch discord roles over nats");
+            CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:err", vec![
+                arma_rs::Value::String(steam),
+            ]);
             return;
         };
         let Ok(roles) = resp else {
             error!("failed to fetch discord roles over nats");
+            CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:err", vec![
+                arma_rs::Value::String(steam),
+            ]);
             return;
         };
         STEAM_CACHE.write().await.insert(discord_id.clone(), steam.clone());
-        CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member", vec![
+        CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:ok", vec![
             arma_rs::Value::String(steam),
             arma_rs::Value::String(discord_id),
             arma_rs::Value::Array(

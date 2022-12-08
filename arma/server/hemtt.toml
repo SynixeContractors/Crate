@@ -1,5 +1,6 @@
 [project]
 name = "crate-server"
+version = "0.10.0"
 files = [
     "crate_server_x64.dll"
 ]
