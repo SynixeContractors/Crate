@@ -720,9 +720,8 @@ fn make_post_embed(
     }
 
     embed.title(&mission.name);
-    // embed.description(&mission.description);
+    embed.description(&mission.summary);
     embed.color(0x00ff_d731);
-    embed.timestamp(schedule.start.format(&Rfc3339).unwrap());
     embed.field(
         "🕒 Time",
         format!(
