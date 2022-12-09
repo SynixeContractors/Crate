@@ -727,12 +727,8 @@ fn make_post_embed(
         "🕒 Time",
         format!(
             "<t:{}:F> - <t:{}:R>",
-            schedule
-                .start
-                .unix_timestamp(),
-            schedule
-                .start
-                .unix_timestamp()
+            schedule.start.unix_timestamp(),
+            schedule.start.unix_timestamp()
         ),
         false,
     );
