@@ -724,6 +724,19 @@ fn make_post_embed(
     embed.color(0x00ff_d731);
     embed.timestamp(schedule.start.format(&Rfc3339).unwrap());
     embed.field(
+        "🕒 Time",
+        format!(
+            "<t:{}:F> - <t:{}:R>",
+            schedule
+                .start
+                .unix_timestamp(),
+            schedule
+                .start
+                .unix_timestamp()
+        ),
+        false,
+    );
+    embed.field(
         format!("🟩 Confirmed ({})", yes.len()),
         {
             let out = yes
