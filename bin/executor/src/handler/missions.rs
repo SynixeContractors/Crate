@@ -40,7 +40,7 @@ impl Handler for Request {
                                 178..=182 => {
                                     posts.push((Some("3 hours!"), mission, num_minutes));
                                 }
-                                78..=82 | 68..=72 => {
+                                78..=82 | 68..=72 | -1..=2 => {
                                     posts.push((None, mission, num_minutes));
                                 }
                                 58..=62 => {
