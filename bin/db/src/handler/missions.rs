@@ -37,19 +37,19 @@ impl Handler for Request {
                     date,
                 )
             }
-            Self::Unschedule { scheduled_mission } => {
+            Self::Unschedule { scheduled } => {
                 execute_and_respond!(
                     msg,
                     *db,
                     cx,
                     Response::Unschedule,
                     "DELETE FROM missions_schedule WHERE id = $1",
-                    scheduled_mission,
+                    scheduled,
                 )
             }
             Self::SetScheduledMesssage {
-                scheduled_mission,
-                schedule_message_id,
+                scheduled,
+                message_id,
             } => {
                 execute_and_respond!(
                     msg,
@@ -57,8 +57,8 @@ impl Handler for Request {
                     cx,
                     Response::SetScheduledMesssage,
                     "UPDATE missions_schedule SET schedule_message_id = $1 WHERE id = $2",
-                    schedule_message_id,
-                    scheduled_mission,
+                    message_id,
+                    scheduled,
                 )
             }
             Self::UpcomingSchedule {} => {
@@ -161,20 +161,20 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::FetchMissionRsvps { mission } => {
+            Self::FetchMissionRsvps { scheduled } => {
                 fetch_as_and_respond!(
                     msg,
                     *db,
                     cx,
                     synixe_model::missions::MissionRsvp,
                     Response::FetchMissionRsvps,
-                    "SELECT mission, member, state as \"state: Rsvp\", details FROM missions_schedule_rsvp WHERE mission = $1",
-                    mission,
+                    "SELECT scheduled, member, state as \"state: Rsvp\", details FROM missions_schedule_rsvp WHERE scheduled = $1",
+                    scheduled,
                 )?;
                 Ok(())
             }
             Self::AddMissionRsvp {
-                mission,
+                scheduled,
                 member,
                 rsvp,
                 details,
@@ -184,8 +184,8 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::AddMissionRsvp,
-                    "INSERT INTO missions_schedule_rsvp (mission, member, state, details) VALUES ($1, $2, $3, $4) ON CONFLICT (mission, member) DO UPDATE SET state = $3, details = $4",
-                    mission,
+                    "INSERT INTO missions_schedule_rsvp (scheduled, member, state, details) VALUES ($1, $2, $3, $4) ON CONFLICT (scheduled, member) DO UPDATE SET state = $3, details = $4",
+                    scheduled,
                     member,
                     *rsvp as Rsvp,
                     details.as_ref(),

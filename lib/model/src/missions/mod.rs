@@ -118,8 +118,8 @@ pub enum Rsvp {
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 /// A scheduled mission RSVP
 pub struct MissionRsvp {
-    /// Mission id
-    pub mission: String,
+    /// Schedule mission id
+    pub scheduled: Uuid,
     /// User's discord id
     pub member: String,
     /// User's RSVP

@@ -26,14 +26,14 @@ pub mod db {
         /// Remove a scheduled mission.
         struct Unschedule {
             /// The mission to remove.
-            scheduled_mission: Uuid,
+            scheduled: Uuid,
         } => (Result<(), String>)
         /// Set the message for a scheduled mission.
         struct SetScheduledMesssage {
             /// The scheduled mission to update.
-            scheduled_mission: Uuid,
+            scheduled: Uuid,
             /// The message in #schedule
-            schedule_message_id: String,
+            message_id: String,
         } => (Result<(), String>)
         /// Gets all upcoming missions.
         struct UpcomingSchedule {} => (Result<Vec<ScheduledMission>, String>)
@@ -57,12 +57,12 @@ pub mod db {
         /// Fetch the RSVPs for a mission
         struct FetchMissionRsvps {
             /// The mission to fetch.
-            mission: String,
+            scheduled: Uuid,
         } => (Result<Vec<MissionRsvp>, String>)
         /// Add an RSVP to a mission
         struct AddMissionRsvp {
             /// The mission to RSVP to.
-            mission: String,
+            scheduled: Uuid,
             /// The user to RSVP.
             member: String,
             /// Their RSVP.

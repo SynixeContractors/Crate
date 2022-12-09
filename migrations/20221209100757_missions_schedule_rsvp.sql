@@ -6,9 +6,9 @@ EXCEPTION
 END $$;
 
 CREATE TABLE IF NOT EXISTS missions_schedule_rsvp (
-    mission VARCHAR(128) NOT NULL,
+    scheduled UUID NOT NULL,
     member VARCHAR(128) NOT NULL,
     state missions_schedule_rsvp_state NOT NULL,
     details TEXT,
-    PRIMARY KEY (mission, member)
+    PRIMARY KEY (scheduled, member)
 );

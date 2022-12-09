@@ -140,7 +140,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     AddMissionRsvp {
-                        mission: scheduled.mission.to_string(),
+                        scheduled: scheduled.id,
                         member: component.user.id.to_string(),
                         rsvp: Rsvp::Yes,
                         details: None,
@@ -180,7 +180,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     AddMissionRsvp {
-                        mission: scheduled.mission.to_string(),
+                        scheduled: scheduled.id,
                         member: component.user.id.to_string(),
                         rsvp: Rsvp::Maybe,
                         details: Some(reason),
@@ -213,7 +213,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     AddMissionRsvp {
-                        mission: scheduled.mission.to_string(),
+                        scheduled: scheduled.id,
                         member: component.user.id.to_string(),
                         rsvp: Rsvp::No,
                         details: Some(reason),
@@ -233,7 +233,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
             events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
-                FetchMissionRsvps { mission: mission.id.clone() }
+                FetchMissionRsvps { scheduled: scheduled.id }
             )
             .await
         else {
@@ -469,7 +469,7 @@ pub async fn remove(
         interaction.reply("Failed to fetch missions").await;
         return
     };
-    let Some(mission_id) = interaction.choice("Select Mission", &missions.iter().map(|m| (format!(
+    let Some(scheduled_id) = interaction.choice("Select Mission", &missions.iter().map(|m| (format!(
         "{} - {}",
         m.mission,
         &m
@@ -481,8 +481,8 @@ pub async fn remove(
         interaction.reply("Cancelled").await;
         return
     };
-    let mission_id = mission_id.parse().unwrap();
-    let scheduled = missions.iter().find(|m| m.id == mission_id).unwrap();
+    let scheduled_id = scheduled_id.parse().unwrap();
+    let scheduled = missions.iter().find(|m| m.id == scheduled_id).unwrap();
     interaction
         .reply(format!(
             "{} - {}",
@@ -511,7 +511,7 @@ pub async fn remove(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 Unschedule {
-                    scheduled_mission: mission_id
+                    scheduled: scheduled_id
                 }
             )
             .await
@@ -582,7 +582,7 @@ async fn post(
         return
     };
     let next_unposted = missions.iter().find(|m| m.schedule_message_id.is_none());
-    let Some(mission) = next_unposted else {
+    let Some(scheduled) = next_unposted else {
         interaction.reply("No unposted missions").await;
         return
     };
@@ -590,8 +590,8 @@ async fn post(
     let confirm = interaction
         .confirm(&format!(
             "Are you sure you want to post `{} - {}`?",
-            mission.mission,
-            mission
+            scheduled.mission,
+            scheduled
                 .start
                 .to_timezone(NEW_YORK)
                 .format(&format_description::parse(TIME_FORMAT).unwrap())
@@ -600,11 +600,11 @@ async fn post(
         .await;
     match confirm {
         Confirmation::Yes => {
-            if let Ok(((Response::FetchMission(Ok(Some(mission_data))), _), _)) = events_request!(
+            if let Ok(((Response::FetchMission(Ok(Some(mission))), _), _)) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 FetchMission {
-                    mission: mission.mission.clone()
+                    mission: scheduled.mission.clone()
                 }
             )
             .await
@@ -613,7 +613,7 @@ async fn post(
                     events_request!(
                         bootstrap::NC::get().await,
                         synixe_events::missions::db,
-                        FetchMissionRsvps { mission: mission_data.id.clone() }
+                        FetchMissionRsvps { scheduled: scheduled.id }
                     )
                     .await
                 else {
@@ -622,7 +622,7 @@ async fn post(
                 let sched = SCHEDULE
                     .send_message(&ctx, |s| {
                         s.embed(|f| {
-                            make_post_embed(f, &mission_data, mission, &rsvps);
+                            make_post_embed(f, &mission, scheduled, &rsvps);
                             f
                         });
                         s.components(|c| {
@@ -649,14 +649,14 @@ async fn post(
                     .unwrap();
                 tokio::time::sleep(Duration::from_millis(500)).await;
                 let sched_thread = SCHEDULE
-                    .create_public_thread(&ctx, sched.id, |t| t.name(&mission_data.name))
+                    .create_public_thread(&ctx, sched.id, |t| t.name(&mission.name))
                     .await
                     .unwrap();
                 tokio::time::sleep(Duration::from_millis(100)).await;
                 sched_thread
                     .send_message(&ctx, |pt| {
                         pt.content(
-                            mission_data
+                            mission
                                 .description
                                 .replace("            <br/>", "\n")
                                 .replace("<font color='#D81717'>", "")
@@ -673,18 +673,18 @@ async fn post(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     SetScheduledMesssage {
-                        scheduled_mission: mission.id,
-                        schedule_message_id: sched.id.0.to_string(),
+                        scheduled: scheduled.id,
+                        message_id: sched.id.0.to_string(),
                     }
                 )
                 .await
                 {
                     interaction
-                        .reply(format!("Posted `{}`", mission.mission))
+                        .reply(format!("Posted `{}`", scheduled.mission))
                         .await;
                 } else {
                     interaction
-                        .reply(format!("Failed to post `{}`", mission.mission))
+                        .reply(format!("Failed to post `{}`", scheduled.mission))
                         .await;
                 }
             }
