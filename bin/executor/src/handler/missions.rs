@@ -89,25 +89,27 @@ impl Handler for Request {
                                     {
                                         error!("error posting to reddit: {:?}", e);
                                     }
-                                } else if let Err(e) = publish!(
-                                    bootstrap::NC::get().await,
-                                    match minutes {
-                                        // Warn the mission will change 80 minutes before it starts
-                                        78..=82 => synixe_events::missions::publish::Publish::WarnChangeMission {
-                                            id: scheduled.mission.clone(),
-                                            mission_type: mission.typ
-                                        },
-                                        // Change the mission 70 minutes before it starts
-                                        68..=72 => synixe_events::missions::publish::Publish::ChangeMission {
-                                            id: scheduled.mission.clone(),
-                                            mission_type: mission.typ
-                                        },
-                                        _ => unreachable!(),
+                                } else if let Some(event) = match minutes {
+                                    // Warn the mission will change 80 minutes before it starts
+                                    78..=82 => Some(synixe_events::missions::publish::Publish::WarnChangeMission {
+                                        id: scheduled.mission.clone(),
+                                        mission_type: mission.typ
+                                    }),
+                                    // Change the mission 70 minutes before it starts
+                                    68..=72 => Some(synixe_events::missions::publish::Publish::ChangeMission {
+                                        id: scheduled.mission.clone(),
+                                        mission_type: mission.typ
+                                    }),
+                                    _ => None,
+                                } {
+                                    if let Err(e) = publish!(
+                                        bootstrap::NC::get().await,
+                                        event
+                                    )
+                                    .await
+                                    {
+                                        error!("Failed to publish discord message: {}", e);
                                     }
-                                )
-                                .await
-                                {
-                                    error!("Failed to publish discord message: {}", e);
                                 }
                                 if let Err(e) = publish!(
                                     bootstrap::NC::get().await,
