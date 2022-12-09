@@ -84,6 +84,11 @@ impl EventHandler for Handler {
                             .with_context(cx)
                             .await;
                     }
+                    "certifications" => {
+                        slash::certifications::autocomplete(&ctx, &autocomplete)
+                            .with_context(cx)
+                            .await;
+                    }
                     _ => {}
                 }
             }

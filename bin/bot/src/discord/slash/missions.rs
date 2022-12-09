@@ -151,6 +151,27 @@ async fn new(
         .unwrap()
         .as_str()
         .unwrap();
+    let Ok(((Response::FetchMissionList(Ok(missions)), _), _)) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        FetchMissionList {
+            search: Some(mission_id.to_string()),
+        }
+    )
+    .await else {
+        error!("failed to fetch mission list");
+        return;
+    };
+    if missions.len() != 1 {
+        interaction
+            .reply(format!(
+                "Found {} missions matching `{}`",
+                missions.len(),
+                mission_id
+            ))
+            .await;
+        return;
+    }
     let confirm = interaction
         .confirm(&format!(
             "Schedule `{}` for <t:{}:F>?",
@@ -191,7 +212,6 @@ async fn new(
     }
 }
 
-#[allow(clippy::too_many_lines)]
 async fn new_autocomplete(
     ctx: &Context,
     autocomplete: &AutocompleteInteraction,
@@ -204,7 +224,7 @@ async fn new_autocomplete(
     if focus.name != "mission" {
         return;
     }
-    let Ok(((Response::FetchMissionList(Ok(missions)), _), _)) = events_request!(
+    let Ok(((Response::FetchMissionList(Ok(mut missions)), _), _)) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
@@ -216,12 +236,12 @@ async fn new_autocomplete(
         return;
     };
     if missions.len() > 25 {
-        return;
+        missions.truncate(25);
     }
     if let Err(e) = autocomplete
         .create_autocomplete_response(&ctx.http, |f| {
             for mission in missions {
-                f.add_string_choice(mission.id, mission.id);
+                f.add_string_choice(&mission.id, &mission.id);
             }
             f
         })

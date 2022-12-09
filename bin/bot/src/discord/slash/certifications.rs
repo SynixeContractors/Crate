@@ -6,6 +6,7 @@ use serenity::{
         application_command::{
             ApplicationCommandInteraction, CommandDataOption, CommandDataOptionValue,
         },
+        autocomplete::AutocompleteInteraction,
         command::CommandOptionType,
     },
     prelude::Context,
@@ -31,6 +32,14 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .description("The person you ran through the trial")
                         .kind(CommandOptionType::User)
                         .required(true)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("certification")
+                        .description("The certification you ran them through")
+                        .kind(CommandOptionType::String)
+                        .required(true)
+                        .set_autocomplete(true)
                 })
                 .create_sub_option(|option| {
                     option
@@ -89,6 +98,16 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
     }
 }
 
+pub async fn autocomplete(ctx: &Context, autocomplete: &AutocompleteInteraction) {
+    let subcommand = autocomplete.data.options.first().unwrap();
+    if subcommand.kind == CommandOptionType::SubCommand {
+        match subcommand.name.as_str() {
+            "trial" => trial_autocomplete(ctx, autocomplete, &subcommand.options).await,
+            _ => (),
+        }
+    }
+}
+
 async fn trial(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
@@ -113,8 +132,17 @@ async fn trial(
             .await;
         return;
     }
-    let Some(cert_id) = interaction.choice("Which certification did you run a trial for?", &certs.iter().map(|c| (c.name.clone(), c.id.to_string())).collect()).await else {
-        interaction.reply("Cancelled").await;
+    let cert = options
+        .iter()
+        .find(|option| option.name == "certification")
+        .unwrap()
+        .value
+        .as_ref()
+        .unwrap()
+        .as_str()
+        .unwrap();
+    let Some(cert) = certs.iter().find(|c| c.name == cert) else {
+        interaction.reply("Invalid certification").await;
         return;
     };
     let passed = options
@@ -152,7 +180,7 @@ async fn trial(
         Certify {
             instructor: command.member.as_ref().unwrap().user.id,
             trainee: trainee.id,
-            certification: cert_id.parse().unwrap(),
+            certification: cert.id,
             notes: notes.clone(),
             passed,
         }
@@ -174,6 +202,60 @@ async fn trial(
             }
         }
     };
+}
+
+async fn trial_autocomplete(
+    ctx: &Context,
+    autocomplete: &AutocompleteInteraction,
+    options: &[CommandDataOption],
+) {
+    let focus = options.iter().find(|o| o.focused);
+    let Some(focus) = focus else {
+        return;
+    };
+    if focus.name != "certification" {
+        return;
+    }
+    let Ok(((Response::ListInstructor(Ok(certs)), _), _)) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::certifications::db,
+        ListInstructor {
+            member: autocomplete.user.id
+        }
+    )
+    .await else {
+        error!("Failed to fetch certifications");
+        return;
+    };
+    let mut certs: Vec<_> = certs
+        .into_iter()
+        .filter(|c| {
+            c.name.to_lowercase().contains(
+                &focus
+                    .value
+                    .as_ref()
+                    .unwrap()
+                    .as_str()
+                    .unwrap()
+                    .to_string()
+                    .to_lowercase(),
+            )
+        })
+        .collect();
+    if certs.len() > 25 {
+        certs.truncate(25);
+    }
+    if let Err(e) = autocomplete
+        .create_autocomplete_response(&ctx.http, |f| {
+            for cert in certs {
+                f.add_string_choice(&cert.name, cert.id);
+            }
+            f
+        })
+        .await
+    {
+        error!("failed to create autocomplete response: {}", e);
+    }
 }
 
 async fn view(
