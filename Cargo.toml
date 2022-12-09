@@ -15,7 +15,7 @@ members = [
 ]
 
 [workspace.dependencies]
-arma-rs = "1.8.1"
+arma-rs = "1.8.2"
 async-trait = "0.1.59"
 time = "0.3.17"
 log = "0.4.17"
