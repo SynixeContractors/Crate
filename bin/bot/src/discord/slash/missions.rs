@@ -5,13 +5,13 @@ use serenity::{
     model::{
         application::interaction::application_command::ApplicationCommandInteraction,
         prelude::{
-            application_command::CommandDataOption, command::CommandOptionType, MessageId,
-            ReactionType,
+            application_command::CommandDataOption, autocomplete::AutocompleteInteraction,
+            command::CommandOptionType, MessageId, ReactionType,
         },
     },
     prelude::*,
 };
-use synixe_events::missions::db::{Response, ScheduledFilter};
+use synixe_events::missions::db::Response;
 use synixe_meta::discord::{channel::SCHEDULE, role::MISSION_REVIEWER};
 use synixe_proc::events_request;
 use time::format_description;
@@ -51,25 +51,19 @@ pub fn schedule(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 })
                 .create_sub_option(|option| {
                     option
+                        .name("mission")
+                        .description("Mission to schedule")
+                        .kind(CommandOptionType::String)
+                        .required(true)
+                        .set_autocomplete(true)
+                })
+                .create_sub_option(|option| {
+                    option
                         .name("hour")
                         .description("The starting hour to schedule the mission")
                         .kind(CommandOptionType::Integer)
                         .max_int_value(23)
                         .min_int_value(0)
-                        .required(false)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("unplayed")
-                        .description("Only show that haven't been previously scheduled")
-                        .kind(CommandOptionType::Boolean)
-                        .required(false)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("search")
-                        .description("Filter the list of missions by name")
-                        .kind(CommandOptionType::String)
                         .required(false)
                 })
         })
@@ -106,6 +100,16 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
     }
 }
 
+pub async fn schedule_autocomplete(ctx: &Context, autocomplete: &AutocompleteInteraction) {
+    let subcommand = autocomplete.data.options.first().unwrap();
+    if subcommand.kind == CommandOptionType::SubCommand {
+        match subcommand.name.as_str() {
+            "new" => new_autocomplete(ctx, autocomplete, &subcommand.options).await,
+            _ => (),
+        }
+    }
+}
+
 #[allow(clippy::too_many_lines)]
 async fn new(
     ctx: &Context,
@@ -138,47 +142,15 @@ async fn new(
             .await;
         return;
     }
-    debug!("fetching missions");
-    interaction.reply("Fetching missions...").await;
-    let filter = options
+    let mission_id = options
         .iter()
-        .find(|option| option.name == "unplayed")
-        .map_or_else(
-            || None,
-            |option| {
-                if option.value.as_ref().unwrap().as_bool().unwrap() {
-                    Some(ScheduledFilter::OnlyUnscheduled)
-                } else {
-                    None
-                }
-            },
-        );
-    let search = options
-        .iter()
-        .find(|option| option.name == "search")
-        .map_or_else(
-            || None,
-            |option| Some(option.value.as_ref().unwrap().as_str().unwrap().to_string()),
-        );
-    let Ok(((Response::FetchMissionList(Ok(missions)), _), _)) = events_request!(
-        bootstrap::NC::get().await,
-        synixe_events::missions::db,
-        FetchMissionList {
-            filter,
-            search,
-        }
-    )
-    .await else {
-        interaction.reply("Failed to fetch missions.").await;
-        return;
-    };
-    let Some(mission_id) = interaction.choice(&format!(
-        "Select mission for <t:{}:F>",
-        date.unix_timestamp()
-    ), &missions.iter().map(|m| (m.id.clone(), m.id.clone())).collect()).await else {
-        interaction.reply("No mission selected.").await;
-        return;
-    };
+        .find(|option| option.name == "mission")
+        .unwrap()
+        .value
+        .as_ref()
+        .unwrap()
+        .as_str()
+        .unwrap();
     let confirm = interaction
         .confirm(&format!(
             "Schedule `{}` for <t:{}:F>?",
@@ -216,6 +188,46 @@ async fn new(
             interaction.reply("Cancelled.").await;
         }
         Confirmation::Timeout => {}
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+async fn new_autocomplete(
+    ctx: &Context,
+    autocomplete: &AutocompleteInteraction,
+    options: &[CommandDataOption],
+) {
+    let focus = options.iter().find(|o| o.focused);
+    let Some(focus) = focus else {
+        return;
+    };
+    if focus.name != "mission" {
+        return;
+    }
+    let Ok(((Response::FetchMissionList(Ok(missions)), _), _)) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        FetchMissionList {
+            search: Some(focus.value.as_ref().unwrap().as_str().unwrap().to_string())
+        }
+    )
+    .await else {
+        error!("failed to fetch mission list");
+        return;
+    };
+    if missions.len() > 25 {
+        return;
+    }
+    if let Err(e) = autocomplete
+        .create_autocomplete_response(&ctx.http, |f| {
+            for mission in missions {
+                f.add_string_choice(mission.id, mission.id);
+            }
+            f
+        })
+        .await
+    {
+        error!("failed to create autocomplete response: {}", e);
     }
 }
 

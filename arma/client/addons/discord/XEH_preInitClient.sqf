@@ -1,7 +1,4 @@
 #include "script_component.hpp"
-ADDON = false;
-#include "XEH_PREP.hpp"
-ADDON = true;
 
 if !(isMultiplayer) exitWith {};
 
@@ -12,6 +9,7 @@ if !(isMultiplayer) exitWith {};
 
 [QGVAR(updatedRoles), {
     call FUNC(diaryEntry);
+    if !(GVAR(roles_enabled)) exitWith {};
     call FUNC(setTraits);
 }] call CBA_fnc_addEventHandler;
 

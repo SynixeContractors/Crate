@@ -32,37 +32,62 @@ impl EventHandler for Handler {
     }
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::ApplicationCommand(command) = interaction {
-            debug!("matching command: {:?}", command.data.name.as_str());
-            let tracer = bootstrap::tracer!("bot");
-            let mut span = tracer.start(format!("command:{}", command.data.name.as_str()));
-            span.set_attribute(KeyValue::new(
-                "command.data".to_string(),
-                serde_json::to_string(&command.data).unwrap(),
-            ));
-            let cx = opentelemetry::Context::new().with_span(span);
-            match command.data.name.as_str() {
-                "bank" => {
-                    slash::bank::run(&ctx, &command).with_context(cx).await;
+        match interaction {
+            Interaction::ApplicationCommand(command) => {
+                debug!("matching command: {:?}", command.data.name.as_str());
+                let tracer = bootstrap::tracer!("bot");
+                let mut span = tracer.start(format!("command:{}", command.data.name.as_str()));
+                span.set_attribute(KeyValue::new(
+                    "command.data".to_string(),
+                    serde_json::to_string(&command.data).unwrap(),
+                ));
+                let cx = opentelemetry::Context::new().with_span(span);
+                match command.data.name.as_str() {
+                    "bank" => {
+                        slash::bank::run(&ctx, &command).with_context(cx).await;
+                    }
+                    "certifications" => {
+                        slash::certifications::run(&ctx, &command)
+                            .with_context(cx)
+                            .await;
+                    }
+                    "meme" => slash::meme::run(&ctx, &command).with_context(cx).await,
+                    "schedule" => {
+                        slash::missions::schedule_run(&ctx, &command)
+                            .with_context(cx)
+                            .await;
+                    }
+                    "Recruiting - Reply" => {
+                        menu::recruiting::run_reply(&ctx, &command)
+                            .with_context(cx)
+                            .await;
+                    }
+                    _ => {}
                 }
-                "certifications" => {
-                    slash::certifications::run(&ctx, &command)
-                        .with_context(cx)
-                        .await;
-                }
-                "meme" => slash::meme::run(&ctx, &command).with_context(cx).await,
-                "schedule" => {
-                    slash::missions::schedule_run(&ctx, &command)
-                        .with_context(cx)
-                        .await;
-                }
-                "Recruiting - Reply" => {
-                    menu::recruiting::run_reply(&ctx, &command)
-                        .with_context(cx)
-                        .await;
-                }
-                _ => {}
             }
+            Interaction::Autocomplete(autocomplete) => {
+                debug!(
+                    "matching autocomplete: {:?}",
+                    autocomplete.data.name.as_str()
+                );
+                let tracer = bootstrap::tracer!("bot");
+                let mut span =
+                    tracer.start(format!("autocomplete:{}", autocomplete.data.name.as_str()));
+                span.set_attribute(KeyValue::new(
+                    "autocomplete.data".to_string(),
+                    serde_json::to_string(&autocomplete.data).unwrap(),
+                ));
+                let cx = opentelemetry::Context::new().with_span(span);
+                match autocomplete.data.name.as_str() {
+                    "schedule" => {
+                        slash::missions::schedule_autocomplete(&ctx, &autocomplete)
+                            .with_context(cx)
+                            .await;
+                    }
+                    _ => {}
+                }
+            }
+            _ => (),
         }
     }
 
