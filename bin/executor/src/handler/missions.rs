@@ -36,7 +36,6 @@ impl Handler for Request {
                         let mut posts = Vec::new();
                         for mission in missions {
                             let num_minutes = (mission.start - now).whole_minutes() + 1;
-                            println!("{} in {num_minutes} minutes", mission.mission);
                             match num_minutes {
                                 178..=182 => {
                                     posts.push((Some("3 hours!"), mission, num_minutes));
