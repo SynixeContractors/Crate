@@ -544,61 +544,6 @@
     },
     "query": "DELETE FROM missions_schedule WHERE id = $1"
   },
-  "7b17931b4c7dd09e5138c8a14d57d75ae3f2a14effba1caaafed31b9989bf542": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "mission",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "member",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "state: Rsvp",
-          "ordinal": 3,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "yes",
-                  "maybe",
-                  "no"
-                ]
-              },
-              "name": "missions_schedule_rsvp_state"
-            }
-          }
-        },
-        {
-          "name": "details",
-          "ordinal": 4,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT id, mission, member, state as \"state: Rsvp\", details FROM missions_schedule_rsvp WHERE mission = $1"
-  },
   "7d2f0431c6842dd17e6db00711f7b9caaed8a927b54e7ab88c45138c0463dd27": {
     "describe": {
       "columns": [],
@@ -1263,5 +1208,54 @@
       }
     },
     "query": "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), (SELECT cost FROM gear_item_current_cost($2)))"
+  },
+  "fce810c0a63e9f73508939f65118e17a95045de7cee430578a6d69f4c12246d6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "mission",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "member",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "state: Rsvp",
+          "ordinal": 2,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "yes",
+                  "maybe",
+                  "no"
+                ]
+              },
+              "name": "missions_schedule_rsvp_state"
+            }
+          }
+        },
+        {
+          "name": "details",
+          "ordinal": 3,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT mission, member, state as \"state: Rsvp\", details FROM missions_schedule_rsvp WHERE mission = $1"
   }
 }

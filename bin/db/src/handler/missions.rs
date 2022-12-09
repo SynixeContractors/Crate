@@ -168,7 +168,7 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::MissionRsvp,
                     Response::FetchMissionRsvps,
-                    "SELECT id, mission, member, state as \"state: Rsvp\", details FROM missions_schedule_rsvp WHERE mission = $1",
+                    "SELECT mission, member, state as \"state: Rsvp\", details FROM missions_schedule_rsvp WHERE mission = $1",
                     mission,
                 )?;
                 Ok(())

@@ -31,6 +31,7 @@ impl EventHandler for Handler {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         match interaction {
             Interaction::ApplicationCommand(command) => {
@@ -106,8 +107,8 @@ impl EventHandler for Handler {
                 ));
                 let cx = opentelemetry::Context::new().with_span(span);
                 match component.data.custom_id.as_str() {
-                    "missions" => {
-                        slash::missions::component(&ctx, &component)
+                    "rsvp_yes" | "rsvp_maybe" | "rsvp_no" => {
+                        slash::missions::rsvp_button(&ctx, &component)
                             .with_context(cx)
                             .await;
                     }

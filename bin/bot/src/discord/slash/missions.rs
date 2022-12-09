@@ -117,7 +117,7 @@ pub async fn schedule_autocomplete(ctx: &Context, autocomplete: &AutocompleteInt
 }
 
 #[allow(clippy::too_many_lines)]
-pub async fn component(ctx: &Context, component: &MessageComponentInteraction) {
+pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction) {
     let message = component.message.id;
     let Ok(((Response::FetchScheduledMission(Ok(Some(scheduled))), _), _)) =
         events_request!(
@@ -140,7 +140,7 @@ pub async fn component(ctx: &Context, component: &MessageComponentInteraction) {
             return;
         };
     match component.data.custom_id.as_str() {
-        "yes" => {
+        "rsvp_yes" => {
             let Ok(((Response::AddMissionRsvp(Ok(())), _), _)) =
                 events_request!(
                     bootstrap::NC::get().await,
@@ -157,7 +157,7 @@ pub async fn component(ctx: &Context, component: &MessageComponentInteraction) {
                     return;
                 };
         }
-        "maybe" => {
+        "rsvp_maybe" => {
             if let Err(e) = component
                 .create_interaction_response(&ctx.http, |r| {
                     r.kind(InteractionResponseType::Modal)
@@ -197,7 +197,7 @@ pub async fn component(ctx: &Context, component: &MessageComponentInteraction) {
                 error!("Failed to create interaction response for component: {}", e);
             }
         }
-        "no" => {
+        "rsvp_no" => {
             if let Err(e) = component
                 .create_interaction_response(&ctx.http, |r| {
                     r.kind(InteractionResponseType::Modal)
@@ -621,18 +621,18 @@ async fn post(
                         s.components(|c| {
                             c.create_action_row(|r| {
                                 r.create_button(|b| {
-                                    b.style(ButtonStyle::Primary)
-                                        .custom_id("yes")
+                                    b.style(ButtonStyle::Secondary)
+                                        .custom_id("rsvp_yes")
                                         .emoji(ReactionType::Unicode("🟩".to_string()))
                                 })
                                 .create_button(|b| {
-                                    b.style(ButtonStyle::Primary)
-                                        .custom_id("maybe")
+                                    b.style(ButtonStyle::Secondary)
+                                        .custom_id("rsvp_maybe")
                                         .emoji(ReactionType::Unicode("🟨".to_string()))
                                 })
                                 .create_button(|b| {
-                                    b.style(ButtonStyle::Primary)
-                                        .custom_id("no")
+                                    b.style(ButtonStyle::Secondary)
+                                        .custom_id("rsvp_no")
                                         .emoji(ReactionType::Unicode("🟥".to_string()))
                                 })
                             })
@@ -640,8 +640,8 @@ async fn post(
                     })
                     .await
                     .unwrap();
-                tokio::time::sleep(Duration::from_millis(100)).await;
-                let sched_thread = SCHEDULE
+                tokio::time::sleep(Duration::from_millis(500)).await;
+                let sched_thread = BOT
                     .create_public_thread(&ctx, sched.id, |t| t.name(&mission_data.name))
                     .await
                     .unwrap();
@@ -707,32 +707,55 @@ fn make_post_embed(
     }
 
     embed.title(&mission.name);
-    embed.description(&mission.description);
+    // embed.description(&mission.description);
     embed.color(0x00ff_d731);
     embed.timestamp(schedule.start.format(&Rfc3339).unwrap());
     embed.field(
         format!("🟩 Confirmed ({})", yes.len()),
-        yes.iter()
-            .map(|r| format!("> <@{}>", r.member))
-            .collect::<Vec<_>>()
-            .join("\n"),
+        {
+            let out = yes
+                .iter()
+                .map(|r| format!("> <@{}>", r.member))
+                .collect::<Vec<_>>()
+                .join("\n");
+            if out.is_empty() {
+                "-".to_string()
+            } else {
+                out
+            }
+        },
         true,
     );
     embed.field(
         format!("🟨 Maybe ({})", maybe.len()),
-        maybe
-            .iter()
-            .map(|r| format!("> <@{}>", r.member))
-            .collect::<Vec<_>>()
-            .join("\n"),
+        {
+            let out = maybe
+                .iter()
+                .map(|r| format!("> <@{}>", r.member))
+                .collect::<Vec<_>>()
+                .join("\n");
+            if out.is_empty() {
+                "-".to_string()
+            } else {
+                out
+            }
+        },
         true,
     );
     embed.field(
         format!("🟥 Declined ({})", no.len()),
-        no.iter()
-            .map(|r| format!("> <@{}>", r.member))
-            .collect::<Vec<_>>()
-            .join("\n"),
+        {
+            let out = no
+                .iter()
+                .map(|r| format!("> <@{}>", r.member))
+                .collect::<Vec<_>>()
+                .join("\n");
+            if out.is_empty() {
+                "-".to_string()
+            } else {
+                out
+            }
+        },
         true,
     );
 }
