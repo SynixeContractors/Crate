@@ -544,6 +544,42 @@
     },
     "query": "DELETE FROM missions_schedule WHERE id = $1"
   },
+  "77ca42983571c7db12317df7d5524b36ddca0872eee02ef94a56ac55a1e18930": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "mission",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "schedule_message_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "start",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "SELECT * FROM missions_schedule WHERE start > NOW() + '2 minutes'::Interval ORDER BY start ASC"
+  },
   "7d2f0431c6842dd17e6db00711f7b9caaed8a927b54e7ab88c45138c0463dd27": {
     "describe": {
       "columns": [],
@@ -1087,42 +1123,6 @@
       }
     },
     "query": "\n                        SELECT\n                            member AS value\n                        FROM\n                            members_steam\n                        WHERE\n                            steam = $1"
-  },
-  "f1e3f31795f5896c84277358eaf566083ab79a2da0293a7227255ece894d12e0": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "mission",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "schedule_message_id",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "start",
-          "ordinal": 3,
-          "type_info": "Timestamptz"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "SELECT * FROM missions_schedule WHERE start > NOW() ORDER BY start ASC"
   },
   "fa6b69f8918c2d69529145fdeb1afc796c7580005bdc84c52dd75b561cf5a072": {
     "describe": {

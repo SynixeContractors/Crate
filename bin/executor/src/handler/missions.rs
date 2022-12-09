@@ -58,18 +58,16 @@ impl Handler for Request {
                                 _ => {}
                             }
                         }
-                        for (text, mission, minutes) in posts {
-                            if let Ok((
-                                (db::Response::FetchMission(Ok(Some(mission_data))), _),
-                                _,
-                            )) = events_request!(
-                                bootstrap::NC::get().await,
-                                synixe_events::missions::db,
-                                FetchMission {
-                                    mission: mission.mission.clone()
-                                }
-                            )
-                            .await
+                        for (text, scheduled, minutes) in posts {
+                            if let Ok(((db::Response::FetchMission(Ok(Some(mission))), _), _)) =
+                                events_request!(
+                                    bootstrap::NC::get().await,
+                                    synixe_events::missions::db,
+                                    FetchMission {
+                                        mission: scheduled.mission.clone()
+                                    }
+                                )
+                                .await
                             {
                                 if let Some(text) = text {
                                     if let Err(e) = events_request!(
@@ -80,7 +78,7 @@ impl Handler for Request {
                                             message: DiscordMessage {
                                                 content: DiscordContent::Text(format!(
                                                     "**{}** starts in {text}",
-                                                    mission_data.name
+                                                    mission.name
                                                 )),
                                                 reactions: Vec::new(),
                                             },
@@ -96,13 +94,13 @@ impl Handler for Request {
                                     match minutes {
                                         // Warn the mission will change 80 minutes before it starts
                                         78..=82 => synixe_events::missions::publish::Publish::WarnChangeMission {
-                                            id: mission.mission,
-                                            mission_type: mission_data.typ
+                                            id: scheduled.mission.clone(),
+                                            mission_type: mission.typ
                                         },
                                         // Change the mission 70 minutes before it starts
                                         68..=72 => synixe_events::missions::publish::Publish::ChangeMission {
-                                            id: mission.mission,
-                                            mission_type: mission_data.typ
+                                            id: scheduled.mission.clone(),
+                                            mission_type: mission.typ
                                         },
                                         _ => unreachable!(),
                                     }
@@ -114,8 +112,8 @@ impl Handler for Request {
                                 if let Err(e) = publish!(
                                     bootstrap::NC::get().await,
                                     synixe_events::missions::publish::Publish::StartingSoon {
-                                        mission: mission_data,
-                                        start_time: mission.start,
+                                        mission,
+                                        scheduled,
                                         minutes,
                                     }
                                 )

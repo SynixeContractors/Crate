@@ -20,7 +20,7 @@ impl Listener for Publish {
         match &self {
             Self::StartingSoon {
                 mission,
-                start_time: _,
+                scheduled: _,
                 minutes,
             } => {
                 match minutes {
@@ -30,6 +30,16 @@ impl Listener for Publish {
                             "global_message",
                             vec![arma_rs::Value::String(format!(
                                 "[Mission] {} starts in {minutes} minutes!",
+                                mission.name
+                            ))],
+                        );
+                    }
+                    -1..=1 => {
+                        CONTEXT.read().await.as_ref().unwrap().callback_data(
+                            "crate",
+                            "global_message",
+                            vec![arma_rs::Value::String(format!(
+                                "[Mission] {} starting now!",
                                 mission.name
                             ))],
                         );

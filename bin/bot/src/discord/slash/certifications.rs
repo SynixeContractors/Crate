@@ -100,11 +100,8 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
 
 pub async fn autocomplete(ctx: &Context, autocomplete: &AutocompleteInteraction) {
     let subcommand = autocomplete.data.options.first().unwrap();
-    if subcommand.kind == CommandOptionType::SubCommand {
-        match subcommand.name.as_str() {
-            "trial" => trial_autocomplete(ctx, autocomplete, &subcommand.options).await,
-            _ => (),
-        }
+    if subcommand.kind == CommandOptionType::SubCommand && subcommand.name.as_str() == "trial" {
+        trial_autocomplete(ctx, autocomplete, &subcommand.options).await;
     }
 }
 

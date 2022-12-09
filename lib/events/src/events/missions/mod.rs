@@ -85,17 +85,16 @@ pub mod executions {
 
 /// Inform services about missions.
 pub mod publish {
-    use synixe_model::missions::{Mission, MissionType};
+    use synixe_model::missions::{Mission, MissionType, ScheduledMission};
     use synixe_proc::events_publish;
-    use time::OffsetDateTime;
 
     events_publish!(publish.missions {
         /// Publish a scheduled mission
         struct StartingSoon {
             /// The  mission starting soon
             mission: Mission,
-            /// Start time
-            start_time: OffsetDateTime,
+            /// The schedule mission
+            scheduled: ScheduledMission,
             /// Minutes until the mission starts
             minutes: i64,
         }

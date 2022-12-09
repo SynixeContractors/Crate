@@ -1,6 +1,7 @@
 include!("../../../../../lib/common/listener.rs");
 
 mod certifications;
+mod missions;
 
 pub async fn start() {
     // Init NATS connection
@@ -12,6 +13,11 @@ pub async fn start() {
         .unwrap();
     while let Some(msg) = sub.next().await {
         let nats = nats.clone();
-        synixe_events::listener!(msg, nats, synixe_events::certifications::publish::Publish);
+        synixe_events::listener!(
+            msg,
+            nats,
+            synixe_events::certifications::publish::Publish,
+            synixe_events::missions::publish::Publish
+        );
     }
 }

@@ -14,13 +14,10 @@ use serenity::{
     prelude::*,
 };
 use synixe_events::missions::db::Response;
-use synixe_meta::discord::{
-    channel::{SCHEDULE, STAFF},
-    role::MISSION_REVIEWER,
-};
+use synixe_meta::discord::{channel::SCHEDULE, role::MISSION_REVIEWER};
 use synixe_model::missions::{Mission, MissionRsvp, Rsvp, ScheduledMission};
 use synixe_proc::events_request;
-use time::format_description::{self, well_known::Rfc3339};
+use time::format_description;
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
 
 use crate::discord::interaction::{Confirmation, Generic, Interaction};
@@ -108,11 +105,8 @@ pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction
 
 pub async fn schedule_autocomplete(ctx: &Context, autocomplete: &AutocompleteInteraction) {
     let subcommand = autocomplete.data.options.first().unwrap();
-    if subcommand.kind == CommandOptionType::SubCommand {
-        match subcommand.name.as_str() {
-            "new" => new_autocomplete(ctx, autocomplete, &subcommand.options).await,
-            _ => (),
-        }
+    if subcommand.kind == CommandOptionType::SubCommand && subcommand.name.as_str() == "new" {
+        new_autocomplete(ctx, autocomplete, &subcommand.options).await;
     }
 }
 
@@ -245,7 +239,8 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
         else {
             return;
         };
-    if let Err(e) = STAFF
+    if let Err(e) = component
+        .channel_id
         .edit_message(&ctx.http, message, |s| {
             s.embed(|e| {
                 make_post_embed(e, &mission, &scheduled, &rsvps);
@@ -624,8 +619,7 @@ async fn post(
                 else {
                     return interaction.reply("Failed to fetch rsvps").await;
                 };
-                // let sched = SCHEDULE
-                let sched = STAFF
+                let sched = SCHEDULE
                     .send_message(&ctx, |s| {
                         s.embed(|f| {
                             make_post_embed(f, &mission_data, mission, &rsvps);
@@ -654,7 +648,7 @@ async fn post(
                     .await
                     .unwrap();
                 tokio::time::sleep(Duration::from_millis(500)).await;
-                let sched_thread = STAFF
+                let sched_thread = SCHEDULE
                     .create_public_thread(&ctx, sched.id, |t| t.name(&mission_data.name))
                     .await
                     .unwrap();
@@ -732,7 +726,7 @@ fn make_post_embed(
         false,
     );
     embed.field(
-        format!("🟩 Confirmed ({})", yes.len()),
+        format!("🟩 Attending ({})", yes.len()),
         {
             let out = yes
                 .iter()
