@@ -4,6 +4,7 @@
 
 /// Interact with the database.
 pub mod db {
+    use serenity::model::prelude::MessageId;
     use synixe_model::missions::{Mission, MissionRsvp, Rsvp, ScheduledMission};
     use synixe_proc::events_requests;
     use time::OffsetDateTime;
@@ -48,6 +49,11 @@ pub mod db {
             /// The mission to fetch.
             mission: String,
         } => (Result<Option<Mission>, String>)
+        /// Fetch a single scheduled mission by it's message id
+        struct FetchScheduledMission {
+            /// The message id to fetch.
+            message: MessageId,
+        } => (Result<Option<ScheduledMission>, String>)
         /// Fetch the RSVPs for a mission
         struct FetchMissionRsvps {
             /// The mission to fetch.

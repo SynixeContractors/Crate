@@ -149,6 +149,18 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
+            Self::FetchScheduledMission { message } => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FetchScheduledMission,
+                    "SELECT * FROM missions_schedule WHERE schedule_message_id = $1",
+                    message.to_string(),
+                )?;
+                Ok(())
+            }
             Self::FetchMissionRsvps { mission } => {
                 fetch_as_and_respond!(
                     msg,

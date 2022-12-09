@@ -92,7 +92,47 @@ impl EventHandler for Handler {
                     _ => {}
                 }
             }
-            _ => (),
+            Interaction::MessageComponent(component) => {
+                debug!(
+                    "matching component: {:?}",
+                    component.data.custom_id.as_str()
+                );
+                let tracer = bootstrap::tracer!("bot");
+                let mut span =
+                    tracer.start(format!("component:{}", component.data.custom_id.as_str()));
+                span.set_attribute(KeyValue::new(
+                    "component.data".to_string(),
+                    serde_json::to_string(&component.data).unwrap(),
+                ));
+                let cx = opentelemetry::Context::new().with_span(span);
+                match component.data.custom_id.as_str() {
+                    "missions" => {
+                        slash::missions::component(&ctx, &component)
+                            .with_context(cx)
+                            .await;
+                    }
+                    _ => {}
+                }
+            }
+            Interaction::ModalSubmit(modal) => {
+                debug!("matching modal: {:?}", modal.data.custom_id.as_str());
+                let tracer = bootstrap::tracer!("bot");
+                let mut span = tracer.start(format!("modal:{}", modal.data.custom_id.as_str()));
+                span.set_attribute(KeyValue::new(
+                    "modal.data".to_string(),
+                    serde_json::to_string(&modal.data).unwrap(),
+                ));
+                let cx = opentelemetry::Context::new().with_span(span);
+                match modal.data.custom_id.as_str() {
+                    "rsvp_maybe" | "rsvp_no" => {
+                        slash::missions::rsvp_modal(&ctx, &modal)
+                            .with_context(cx)
+                            .await;
+                    }
+                    _ => {}
+                }
+            }
+            Interaction::Ping(_) => (),
         }
     }
 

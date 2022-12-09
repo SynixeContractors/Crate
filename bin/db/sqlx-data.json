@@ -228,6 +228,44 @@
     },
     "query": "SELECT loadout FROM gear_loadouts WHERE member = $1 LIMIT 1"
   },
+  "58d061181021fb18f3d48d45fc36dbcc26eceb203db8a960f34f2237b7e498e0": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "mission",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "schedule_message_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "start",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT * FROM missions_schedule WHERE schedule_message_id = $1"
+  },
   "599656998a4b7d69c2f86e6415712a7c2cb5d133d56fc3335c8cb187c89e4b42": {
     "describe": {
       "columns": [],
