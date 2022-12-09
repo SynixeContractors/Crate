@@ -7,15 +7,15 @@ use serenity::{
         prelude::{
             application_command::CommandDataOption, autocomplete::AutocompleteInteraction,
             command::CommandOptionType, component::ButtonStyle,
-            message_component::MessageComponentInteraction, modal::ModalSubmitInteraction,
-            InteractionResponseType, MessageId, ReactionType,
+            message_component::MessageComponentInteraction, InteractionResponseType, MessageId,
+            ReactionType,
         },
     },
     prelude::*,
 };
 use synixe_events::missions::db::Response;
 use synixe_meta::discord::{
-    channel::{BOT, SCHEDULE},
+    channel::{SCHEDULE, STAFF},
     role::MISSION_REVIEWER,
 };
 use synixe_model::missions::{Mission, MissionRsvp, Rsvp, ScheduledMission};
@@ -23,7 +23,7 @@ use synixe_proc::events_request;
 use time::format_description::{self, well_known::Rfc3339};
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
 
-use crate::discord::interaction::{Confirmation, Interaction};
+use crate::discord::interaction::{Confirmation, Generic, Interaction};
 
 const TIME_FORMAT: &str =
     "[year]-[month]-[day] [hour]:[minute] [offset_hour sign:mandatory]:[offset_minute]";
@@ -146,7 +146,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     AddMissionRsvp {
-                        mission: scheduled.mission,
+                        mission: scheduled.mission.to_string(),
                         member: component.user.id.to_string(),
                         rsvp: Rsvp::Yes,
                         details: None,
@@ -156,94 +156,107 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                     error!("Failed to add mission rsvp for component");
                     return;
                 };
+            if let Err(e) = component
+                .create_interaction_response(&ctx.http, |r| {
+                    r.kind(InteractionResponseType::DeferredUpdateMessage)
+                })
+                .await
+            {
+                error!("Failed to create interaction response: {}", e);
+            }
         }
         "rsvp_maybe" => {
-            if let Err(e) = component
-                .create_interaction_response(&ctx.http, |r| {
-                    r.kind(InteractionResponseType::Modal)
-                        .interaction_response_data(|d| {
-                            d.custom_id("rsvp_maybe")
-                                .content("Please provide details for your maybe RSVP")
-                                .components(|c| {
-                                    c.create_action_row(|r| {
-                                        r.create_select_menu(|s| {
-                                            s.custom_id("maybe_reason").options(|o| {
-                                                o.create_option(|o| {
-                                                    o.label("I'm not sure if I can make it")
-                                                        .value("not_sure")
-                                                })
-                                                .create_option(|o| {
-                                                    o.label("I'm not interested in this mission")
-                                                        .value("not_interested")
-                                                })
-                                                .create_option(|o| {
-                                                    o.label("I'm burnt out and may not want to")
-                                                        .value("burnt_out")
-                                                })
-                                                .create_option(|o| o.label("Other").value("other"))
-                                            })
-                                        })
-                                        .create_input_text(|i| {
-                                            i.custom_id("maybe_details")
-                                                .placeholder("Details")
-                                                .required(false)
-                                        })
-                                    })
-                                })
-                        })
-                })
+            let mut interaction = Interaction::new(ctx, Generic::Message(component));
+            let Some(reason) = interaction
+                .choice("Please provide a reason, this helps us make informed decision to improve Synixe!",
+                &vec![
+                    ("I'm might not be able to make it".to_string(), "not_sure".to_string()),
+                    ("I'm not interested in this mission".to_string(), "not_interested".to_string()),
+                    ("I'm burnt out and may not want to attend".to_string(), "burnt_out".to_string()),
+                    ("Other".to_string(), "other".to_string()),
+                ]
+                )
                 .await
-            {
-                error!("Failed to create interaction response for component: {}", e);
-            }
+            else {
+                warn!("No reason provided for rsvp_maybe");
+                return
+            };
+            let Ok(((Response::AddMissionRsvp(Ok(())), _), _)) =
+                events_request!(
+                    bootstrap::NC::get().await,
+                    synixe_events::missions::db,
+                    AddMissionRsvp {
+                        mission: scheduled.mission.to_string(),
+                        member: component.user.id.to_string(),
+                        rsvp: Rsvp::Maybe,
+                        details: Some(reason),
+                    }
+                )
+                .await else {
+                    error!("Failed to add mission rsvp for component");
+                    return;
+                };
+            interaction.reply("Thank you for your RSVP!").await;
         }
         "rsvp_no" => {
-            if let Err(e) = component
-                .create_interaction_response(&ctx.http, |r| {
-                    r.kind(InteractionResponseType::Modal)
-                        .interaction_response_data(|d| {
-                            d.custom_id("rsvp_no")
-                                .content("Please provide details for your no RSVP")
-                                .components(|c| {
-                                    c.create_action_row(|r| {
-                                        r.create_select_menu(|s| {
-                                            s.custom_id("no_reason").options(|o| {
-                                                o.create_option(|o| {
-                                                    o.label("I won't be able to make it")
-                                                        .value("not_sure")
-                                                })
-                                                .create_option(|o| {
-                                                    o.label("I'm not interested in this mission")
-                                                        .value("not_interested")
-                                                })
-                                                .create_option(|o| {
-                                                    o.label("I'm burnt out").value("burnt_out")
-                                                })
-                                            })
-                                        })
-                                        .create_input_text(|i| {
-                                            i.custom_id("maybe_details")
-                                                .placeholder("Details")
-                                                .required(false)
-                                        })
-                                    })
-                                })
-                        })
-                })
+            let mut interaction = Interaction::new(ctx, Generic::Message(component));
+            let Some(reason) = interaction
+                .choice("Please provide a reason, this helps us make informed decision to improve Synixe!",
+                    &vec![
+                        ("I'm won't be able to make it".to_string(), "not_sure".to_string()),
+                        ("I'm not interested in this mission".to_string(), "not_interested".to_string()),
+                        ("I'm burnt out".to_string(), "burnt_out".to_string()),
+                        ("Other".to_string(), "other".to_string()),
+                    ]
+                )
                 .await
-            {
-                error!("Failed to create interaction response for component: {}", e);
-            }
+            else {
+                warn!("No reason provided for rsvp_no");
+                return
+            };
+            let Ok(((Response::AddMissionRsvp(Ok(())), _), _)) =
+                events_request!(
+                    bootstrap::NC::get().await,
+                    synixe_events::missions::db,
+                    AddMissionRsvp {
+                        mission: scheduled.mission.to_string(),
+                        member: component.user.id.to_string(),
+                        rsvp: Rsvp::No,
+                        details: Some(reason),
+                    }
+                )
+                .await else {
+                    error!("Failed to add mission rsvp for component");
+                    return;
+                };
+            interaction.reply("Thank you for your RSVP!").await;
         }
         _ => {
             warn!("Unknown component id: {}", component.data.custom_id);
         }
     }
-}
-
-#[allow(clippy::unused_async)]
-pub async fn rsvp_modal(ctx: &Context, modal: &ModalSubmitInteraction) {
-    println!("{:?}", modal.data.components[0]);
+    let Ok(((Response::FetchMissionRsvps(Ok(rsvps)), _), _)) =
+            events_request!(
+                bootstrap::NC::get().await,
+                synixe_events::missions::db,
+                FetchMissionRsvps { mission: mission.id.clone() }
+            )
+            .await
+        else {
+            return;
+        };
+    if let Err(e) = STAFF
+        .edit_message(&ctx.http, message, |s| {
+            s.embed(|e| {
+                make_post_embed(e, &mission, &scheduled, &rsvps);
+                e
+            });
+            s
+        })
+        .await
+    {
+        error!("Failed to edit message: {}", e);
+    }
 }
 
 #[allow(clippy::too_many_lines)]
@@ -252,7 +265,7 @@ async fn new(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     let date = super::get_datetime(options);
     super::requires_role(
         MISSION_REVIEWER,
@@ -392,7 +405,7 @@ async fn upcoming(
     command: &ApplicationCommandInteraction,
     _options: &[CommandDataOption],
 ) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     match events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
@@ -441,7 +454,7 @@ pub async fn remove(
     command: &ApplicationCommandInteraction,
     _options: &[CommandDataOption],
 ) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     super::requires_role(
         MISSION_REVIEWER,
         &command.member.as_ref().unwrap().roles,
@@ -554,7 +567,7 @@ async fn post(
     command: &ApplicationCommandInteraction,
     _options: &[CommandDataOption],
 ) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     super::requires_role(
         MISSION_REVIEWER,
         &command.member.as_ref().unwrap().roles,
@@ -612,7 +625,7 @@ async fn post(
                     return interaction.reply("Failed to fetch rsvps").await;
                 };
                 // let sched = SCHEDULE
-                let sched = BOT
+                let sched = STAFF
                     .send_message(&ctx, |s| {
                         s.embed(|f| {
                             make_post_embed(f, &mission_data, mission, &rsvps);
@@ -641,7 +654,7 @@ async fn post(
                     .await
                     .unwrap();
                 tokio::time::sleep(Duration::from_millis(500)).await;
-                let sched_thread = BOT
+                let sched_thread = STAFF
                     .create_public_thread(&ctx, sched.id, |t| t.name(&mission_data.name))
                     .await
                     .unwrap();

@@ -11,7 +11,7 @@ use serenity::{
 use synixe_events::gear::db::Response;
 use synixe_proc::events_request;
 
-use crate::discord::interaction::Interaction;
+use crate::discord::interaction::{Generic, Interaction};
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -77,7 +77,7 @@ async fn balance(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     interaction.reply("Fetching balance...").await;
     let CommandDataOptionValue::User(user, _member) = options
         .iter()
@@ -114,7 +114,7 @@ async fn transfer(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     interaction.reply("Transferring money...").await;
     let CommandDataOptionValue::User(user, _member) = options
         .iter()

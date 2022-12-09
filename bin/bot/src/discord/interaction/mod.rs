@@ -1,10 +1,12 @@
-use std::{collections::HashMap, fmt::Display, time::Duration};
+use std::{fmt::Display, time::Duration};
 
 use serenity::{
-    builder::CreateInteractionResponseFollowup,
+    builder::{CreateInteractionResponse, CreateInteractionResponseFollowup},
+    http::Http,
     model::prelude::{
         application_command::ApplicationCommandInteraction, component::ButtonStyle,
-        InteractionResponseType, Message,
+        message_component::MessageComponentInteraction, InteractionResponseType, Message,
+        MessageId,
     },
     prelude::Context,
 };
@@ -12,15 +14,72 @@ use serenity::{
 mod confirm;
 pub use confirm::Confirmation;
 
+pub enum Generic<'a> {
+    Application(&'a ApplicationCommandInteraction),
+    Message(&'a MessageComponentInteraction),
+}
+
+impl<'a> Generic<'a> {
+    pub async fn create_interaction_response<'c, F>(
+        &self,
+        http: impl AsRef<Http> + Send + Sync,
+        f: F,
+    ) -> serenity::Result<()>
+    where
+        for<'b> F: FnOnce(&'b mut CreateInteractionResponse<'c>) -> &'b mut CreateInteractionResponse<'c>
+            + Send,
+    {
+        match self {
+            Self::Application(i) => i.create_interaction_response(http, f).await,
+            Self::Message(i) => i.create_interaction_response(http, f).await,
+        }
+    }
+
+    pub async fn edit_followup_message<'c, F, M: Into<MessageId> + Send>(
+        &self,
+        http: impl AsRef<Http> + Send + Sync,
+        message_id: M,
+        f: F,
+    ) -> serenity::Result<Message>
+    where
+        for<'b> F: FnOnce(
+                &'b mut CreateInteractionResponseFollowup<'c>,
+            ) -> &'b mut CreateInteractionResponseFollowup<'c>
+            + Send,
+    {
+        match self {
+            Self::Application(i) => i.edit_followup_message(http, message_id, f).await,
+            Self::Message(i) => i.edit_followup_message(http, message_id, f).await,
+        }
+    }
+
+    pub async fn create_followup_message<'c, F>(
+        &self,
+        http: impl AsRef<Http> + Send + Sync,
+        f: F,
+    ) -> serenity::Result<Message>
+    where
+        for<'b> F: FnOnce(
+                &'b mut CreateInteractionResponseFollowup<'c>,
+            ) -> &'b mut CreateInteractionResponseFollowup<'c>
+            + Send,
+    {
+        match self {
+            Self::Application(i) => i.create_followup_message(http, f).await,
+            Self::Message(i) => i.create_followup_message(http, f).await,
+        }
+    }
+}
+
 pub struct Interaction<'a> {
     message: Option<Message>,
-    interaction: &'a ApplicationCommandInteraction,
+    interaction: Generic<'a>,
     ctx: &'a Context,
     initial_response: bool,
 }
 
 impl<'a> Interaction<'a> {
-    pub const fn new(ctx: &'a Context, interaction: &'a ApplicationCommandInteraction) -> Self {
+    pub const fn new(ctx: &'a Context, interaction: Generic<'a>) -> Self {
         Self {
             message: None,
             interaction,
@@ -64,15 +123,15 @@ impl<'a> Interaction<'a> {
 
     pub async fn choice<T: ToString + Display + Sync>(
         &mut self,
-        promot: &str,
-        choices: &HashMap<String, T>,
+        prompt: &str,
+        choices: &Vec<(String, T)>,
     ) -> Option<String> {
         self.initial().await;
-        debug!("prompting for choice: {}", promot);
+        debug!("prompting for choice: {}", prompt);
         if let Some(message) = self.message.as_ref() {
             self.interaction
                 .edit_followup_message(&self.ctx, message.id, |r| {
-                    Self::_choice(promot, choices, r);
+                    Self::_choice(prompt, choices, r);
                     r
                 })
                 .await
@@ -81,7 +140,7 @@ impl<'a> Interaction<'a> {
             self.message = Some(
                 self.interaction
                     .create_followup_message(&self.ctx, |r| {
-                        Self::_choice(promot, choices, r);
+                        Self::_choice(prompt, choices, r);
                         r
                     })
                     .await
@@ -158,7 +217,7 @@ impl<'a> Interaction<'a> {
 impl Interaction<'_> {
     fn _choice<T: ToString + Display>(
         prompt: &str,
-        choices: &HashMap<String, T>,
+        choices: &Vec<(String, T)>,
         r: &mut CreateInteractionResponseFollowup,
     ) {
         r.content(prompt).components(|c| {
@@ -166,7 +225,9 @@ impl Interaction<'_> {
                 r.create_select_menu(|m| {
                     m.custom_id("choice").options(|o| {
                         for choice in choices {
-                            o.create_option(|o| o.label(choice.0).value(choice.1));
+                            o.create_option(|o| {
+                                o.label(choice.0.to_string()).value(choice.1.to_string())
+                            });
                         }
                         o
                     })

@@ -15,7 +15,7 @@ use synixe_events::certifications::db::Response;
 use synixe_meta::discord::role::{JUNIOR, MEMBER};
 use synixe_proc::events_request;
 
-use crate::discord::interaction::Interaction;
+use crate::discord::interaction::{Generic, Interaction};
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -113,7 +113,7 @@ async fn trial(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     interaction.reply("Fetching certifications...").await;
     let Ok(((Response::ListInstructor(Ok(certs)), _), _)) = events_request!(
         bootstrap::NC::get().await,
@@ -263,7 +263,7 @@ async fn view(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     interaction.reply("Fetching certifications...").await;
     let CommandDataOptionValue::User(user, _member) = options
         .iter()
@@ -326,7 +326,7 @@ async fn list(
     _options: &[CommandDataOption],
     available: bool,
 ) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     interaction.reply("Fetching certifications...").await;
     let Ok(((Response::List(Ok(mut certs)), _), _)) = events_request!(
         bootstrap::NC::get().await,

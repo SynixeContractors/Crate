@@ -11,7 +11,7 @@ use serenity::{
 use synixe_meta::discord::channel::RECRUITING;
 use synixe_proc::events_request;
 
-use crate::discord::interaction::Interaction;
+use crate::discord::interaction::{Generic, Interaction};
 
 pub fn reply(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -20,7 +20,7 @@ pub fn reply(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCo
 }
 
 pub async fn run_reply(ctx: &Context, command: &ApplicationCommandInteraction) {
-    let mut interaction = Interaction::new(ctx, command);
+    let mut interaction = Interaction::new(ctx, Generic::Application(command));
     let Ok(msg) = RECRUITING
         .message(&ctx.http, MessageId::from(command.data.target_id.unwrap()))
         .await

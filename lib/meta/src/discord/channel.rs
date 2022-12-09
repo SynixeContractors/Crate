@@ -34,6 +34,8 @@ pub const MISSION_MAKING: ChannelId = ChannelId(700_901_938_123_767_828);
 pub const MOD_SUGGESTIONS: ChannelId = ChannelId(1_020_494_672_818_360_411);
 
 // Administration
+/// Staff discussions
+pub const STAFF: ChannelId = ChannelId(842_995_066_792_181_790);
 /// Website applications
 pub const APPLICATIONS: ChannelId = ChannelId(917_108_105_567_944_704);
 /// Recruiting discussions
