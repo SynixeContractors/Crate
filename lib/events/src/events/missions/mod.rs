@@ -90,6 +90,7 @@ pub mod publish {
 
     events_publish!(publish.missions {
         /// Publish a scheduled mission
+        /// This event can be fired at any 5 minute inverval, but is not guaranteed
         struct StartingSoon {
             /// The  mission starting soon
             mission: Mission,

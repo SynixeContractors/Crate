@@ -68,7 +68,7 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::ScheduledMission,
                     Response::UpcomingSchedule,
-                    "SELECT * FROM missions_schedule WHERE start > NOW() + '2 minutes'::Interval ORDER BY start ASC",
+                    "SELECT * FROM missions_schedule WHERE start + '2 minutes'::Interval > NOW() ORDER BY start ASC",
                 )?;
                 Ok(())
             }
