@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use serenity::{
-    builder::CreateApplicationCommand,
+    builder::{CreateApplicationCommand, CreateEmbed},
     model::{
         application::interaction::application_command::ApplicationCommandInteraction,
         prelude::{
@@ -13,8 +13,9 @@ use serenity::{
 };
 use synixe_events::missions::db::Response;
 use synixe_meta::discord::{channel::SCHEDULE, role::MISSION_REVIEWER};
+use synixe_model::missions::{Mission, MissionRsvp, ScheduledMission};
 use synixe_proc::events_request;
-use time::format_description;
+use time::format_description::{self, well_known::Rfc3339};
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
 
 use crate::discord::interaction::{Confirmation, Interaction};
@@ -466,15 +467,7 @@ async fn post(
             .await
             {
                 let sched = SCHEDULE
-                    .send_message(&ctx, |s| {
-                        s.content(format!(
-                            "**{}**\n<t:{}:F> - <t:{}:R>\n\n{}",
-                            mission_data.name,
-                            mission.start.unix_timestamp(),
-                            mission.start.unix_timestamp(),
-                            mission_data.summary
-                        ))
-                    })
+                    .send_message(&ctx, |s| s.embed(|f| f))
                     .await
                     .unwrap();
                 for reaction in ["🟩", "🟨", "🟥"] {
@@ -533,4 +526,26 @@ async fn post(
         }
         Confirmation::Timeout => {}
     }
+}
+
+async fn make_post_embed(
+    mission: &Mission,
+    schedule: &ScheduledMission,
+) -> Result<CreateEmbed, ()> {
+    let Ok(((Response::FetchMissionRsvps(Ok(rsvps)), _), _)) =
+        events_request!(
+            bootstrap::NC::get().await,
+            synixe_events::missions::db,
+            FetchMissionRsvps { mission: mission.id.clone() }
+        )
+        .await
+    else {
+        return Err(())
+    };
+    let mut embed = CreateEmbed::default();
+    embed.title(&mission.name);
+    embed.description(&mission.description);
+    embed.color(0x00ff_d731);
+    embed.timestamp(schedule.start.format(&Rfc3339).unwrap());
+    Ok(embed)
 }

@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use synixe_events::missions::db::{Request, Response};
 use synixe_meta::missions::MISSION_LIST;
-use synixe_model::missions::{Mission, MissionType};
+use synixe_model::missions::{Mission, MissionType, Rsvp};
 
 use super::Handler;
 
@@ -148,6 +148,36 @@ impl Handler for Request {
                     mission,
                 )?;
                 Ok(())
+            }
+            Self::FetchMissionRsvps { mission } => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::MissionRsvp,
+                    Response::FetchMissionRsvps,
+                    "SELECT id, mission, member, state as \"state: Rsvp\", details FROM missions_schedule_rsvp WHERE mission = $1",
+                    mission,
+                )?;
+                Ok(())
+            }
+            Self::AddMissionRsvp {
+                mission,
+                member,
+                rsvp,
+                details,
+            } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::AddMissionRsvp,
+                    "INSERT INTO missions_schedule_rsvp (mission, member, state, details) VALUES ($1, $2, $3, $4) ON CONFLICT (mission, member) DO UPDATE SET state = $3, details = $4",
+                    mission,
+                    member,
+                    *rsvp as Rsvp,
+                    details.as_ref(),
+                )
             }
         }
     }

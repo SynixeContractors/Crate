@@ -4,7 +4,7 @@
 
 /// Interact with the database.
 pub mod db {
-    use synixe_model::missions::{Mission, ScheduledMission};
+    use synixe_model::missions::{Mission, MissionRsvp, Rsvp, ScheduledMission};
     use synixe_proc::events_requests;
     use time::OffsetDateTime;
     use uuid::Uuid;
@@ -48,6 +48,22 @@ pub mod db {
             /// The mission to fetch.
             mission: String,
         } => (Result<Option<Mission>, String>)
+        /// Fetch the RSVPs for a mission
+        struct FetchMissionRsvps {
+            /// The mission to fetch.
+            mission: String,
+        } => (Result<Vec<MissionRsvp>, String>)
+        /// Add an RSVP to a mission
+        struct AddMissionRsvp {
+            /// The mission to RSVP to.
+            mission: String,
+            /// The user to RSVP.
+            member: String,
+            /// Their RSVP.
+            rsvp: Rsvp,
+            /// Extra details
+            details: Option<String>,
+        } => (Result<(), String>)
     });
 }
 

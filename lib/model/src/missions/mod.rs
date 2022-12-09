@@ -94,3 +94,38 @@ pub struct ScheduledMission {
     /// Start datetime
     pub start: OffsetDateTime,
 }
+
+#[cfg(feature = "mission-schedule")]
+#[derive(Debug, Default, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
+#[cfg_attr(
+    feature = "sqlx",
+    sqlx(type_name = "missions_schedule_rsvp_state", rename_all = "lowercase")
+)]
+/// Mission type
+pub enum Rsvp {
+    /// The user is attending
+    #[default]
+    Yes,
+    /// The user may attend, or be late
+    Maybe,
+    /// The user is not attending
+    No,
+}
+
+#[cfg(feature = "mission-schedule")]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
+/// A scheduled mission RSVP
+pub struct MissionRsvp {
+    /// Unique id
+    pub id: Uuid,
+    /// Mission id
+    pub mission: String,
+    /// User's discord id
+    pub member: String,
+    /// User's RSVP
+    pub state: Rsvp,
+    /// Extra details
+    pub details: Option<String>,
+}

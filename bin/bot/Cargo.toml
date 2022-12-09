@@ -8,6 +8,7 @@ bootstrap = { path = "../../lib/bootstrap", features = ["nats", "otlp"] }
 synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-proc = { path = "../../lib/proc" }
+synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 anyhow = "1.0.66"
 async-trait = { workspace = true }
