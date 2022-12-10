@@ -18,7 +18,7 @@ fn command_get(steam: String, name: String) {
         return;
     }
     RUNTIME.spawn(async move {
-        let Ok(((db::Response::FromSteam(resp), _), _)) = events_request!(
+        let Ok((db::Response::FromSteam(resp), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::discord::db,
             FromSteam {
@@ -32,7 +32,7 @@ fn command_get(steam: String, name: String) {
             return;
         };
         let discord_id = if let Ok(Some(discord_id)) = resp { discord_id } else {
-            let Ok(((discord::info::Response::MemberByName(Ok(Some(discord_id))), _), _)) = events_request!(
+            let Ok((discord::info::Response::MemberByName(Ok(Some(discord_id))), _)) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::info,
                 MemberByName {
@@ -44,7 +44,7 @@ fn command_get(steam: String, name: String) {
                 CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:needs_link", vec![steam.clone()]);
                 return;
             };
-            let Ok(((db::Response::SaveSteam(Ok(())), _), _)) = events_request!(
+            let Ok((db::Response::SaveSteam(Ok(())), _)) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::db,
                 SaveSteam {
@@ -61,7 +61,7 @@ fn command_get(steam: String, name: String) {
             audit(format!("Steam account {steam} is now linked to <@{discord_id}>")).await;
             discord_id.to_string()
         };
-        let Ok(((info::Response::MemberRoles(resp), _), _)) = events_request!(
+        let Ok((info::Response::MemberRoles(resp), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::discord::info,
             MemberRoles {
@@ -98,7 +98,7 @@ fn command_get(steam: String, name: String) {
 
 fn command_save_dlc(discord: String, dlc: Vec<u32>) {
     RUNTIME.spawn(async move {
-        let Ok(((db::Response::SaveDLC(Ok(())), _), _)) = events_request!(
+        let Ok((db::Response::SaveDLC(Ok(())), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::discord::db,
             SaveDLC {

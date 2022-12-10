@@ -19,12 +19,11 @@ impl Handler for Request {
         &self,
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
-        _cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::CheckExpiries {} => {
                 respond!(msg, Response::CheckExpiries(Ok(()))).await?;
-                let Ok(((db::Response::AllExpiring(Ok(expiring)), _), _)) = events_request!(
+                let Ok((db::Response::AllExpiring(Ok(expiring)), _)) = events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::certifications::db,
                     AllExpiring { days: 30 }
@@ -70,14 +69,14 @@ impl Handler for Request {
             }
             Self::CheckRoles {} => {
                 respond!(msg, Response::CheckRoles(Ok(()))).await?;
-                let Ok(((db::Response::AllActive(Ok(active)), _), _)) = events_request!(
+                let Ok((db::Response::AllActive(Ok(active)), _)) = events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::certifications::db,
                     AllActive {}
                 ).await else {
                     return Ok(());
                 };
-                if let Ok(((db::Response::List(Ok(certs)), _), _)) = events_request!(
+                if let Ok((db::Response::List(Ok(certs)), _)) = events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::certifications::db,
                     List {}

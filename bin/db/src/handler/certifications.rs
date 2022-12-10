@@ -1,7 +1,6 @@
 #![allow(clippy::cast_possible_wrap)]
 
 use async_trait::async_trait;
-use opentelemetry::trace::FutureExt;
 use synixe_events::{
     certifications::db::{Request, Response},
     publish, respond,
@@ -16,7 +15,6 @@ impl Handler for Request {
         &self,
         msg: nats::asynk::Message,
         nats: std::sync::Arc<nats::asynk::Connection>,
-        cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
@@ -199,7 +197,6 @@ impl Handler for Request {
                     nats,
                     synixe_events::certifications::publish::Publish::TrialSubmitted { trial }
                 )
-                .with_context(cx)
                 .await?;
                 Ok(())
             }

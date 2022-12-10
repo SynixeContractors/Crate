@@ -1,16 +1,14 @@
 #![deny(clippy::unwrap_used)]
 
 use nats::asynk::Message;
-use opentelemetry::trace::Tracer;
-use synixe_events::{discord::write, respond, Evokable};
+use synixe_events::{discord::write, respond};
 use synixe_meta::discord::GUILD;
 
 use crate::Bot;
 
 #[allow(clippy::too_many_lines)]
 pub async fn handle(msg: Message, client: Bot) {
-    let ((ev, _), pcx) = synixe_events::parse_data!(msg, write::Request);
-    let _span = opentelemetry::global::tracer("bot").start_with_context(ev.name(), &pcx);
+    let (ev, _) = synixe_events::parse_data!(msg, write::Request);
     match ev {
         write::Request::ChannelMessage {
             channel,

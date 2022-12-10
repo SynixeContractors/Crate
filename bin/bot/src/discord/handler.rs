@@ -1,7 +1,3 @@
-use opentelemetry::{
-    trace::{FutureExt, Span, TraceContextExt, Tracer},
-    KeyValue,
-};
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
 use synixe_proc::events_request;
@@ -36,32 +32,19 @@ impl EventHandler for Handler {
         match interaction {
             Interaction::ApplicationCommand(command) => {
                 debug!("matching command: {:?}", command.data.name.as_str());
-                let tracer = bootstrap::tracer!("bot");
-                let mut span = tracer.start(format!("command:{}", command.data.name.as_str()));
-                span.set_attribute(KeyValue::new(
-                    "command.data".to_string(),
-                    serde_json::to_string(&command.data).unwrap(),
-                ));
-                let cx = opentelemetry::Context::new().with_span(span);
                 match command.data.name.as_str() {
                     "bank" => {
-                        slash::bank::run(&ctx, &command).with_context(cx).await;
+                        slash::bank::run(&ctx, &command).await;
                     }
                     "certifications" => {
-                        slash::certifications::run(&ctx, &command)
-                            .with_context(cx)
-                            .await;
+                        slash::certifications::run(&ctx, &command).await;
                     }
-                    "meme" => slash::meme::run(&ctx, &command).with_context(cx).await,
+                    "meme" => slash::meme::run(&ctx, &command).await,
                     "schedule" => {
-                        slash::missions::schedule_run(&ctx, &command)
-                            .with_context(cx)
-                            .await;
+                        slash::missions::schedule_run(&ctx, &command).await;
                     }
                     "Recruiting - Reply" => {
-                        menu::recruiting::run_reply(&ctx, &command)
-                            .with_context(cx)
-                            .await;
+                        menu::recruiting::run_reply(&ctx, &command).await;
                     }
                     _ => {}
                 }
@@ -71,24 +54,12 @@ impl EventHandler for Handler {
                     "matching autocomplete: {:?}",
                     autocomplete.data.name.as_str()
                 );
-                let tracer = bootstrap::tracer!("bot");
-                let mut span =
-                    tracer.start(format!("autocomplete:{}", autocomplete.data.name.as_str()));
-                span.set_attribute(KeyValue::new(
-                    "autocomplete.data".to_string(),
-                    serde_json::to_string(&autocomplete.data).unwrap(),
-                ));
-                let cx = opentelemetry::Context::new().with_span(span);
                 match autocomplete.data.name.as_str() {
                     "schedule" => {
-                        slash::missions::schedule_autocomplete(&ctx, &autocomplete)
-                            .with_context(cx)
-                            .await;
+                        slash::missions::schedule_autocomplete(&ctx, &autocomplete).await;
                     }
                     "certifications" => {
-                        slash::certifications::autocomplete(&ctx, &autocomplete)
-                            .with_context(cx)
-                            .await;
+                        slash::certifications::autocomplete(&ctx, &autocomplete).await;
                     }
                     _ => {}
                 }
@@ -98,19 +69,9 @@ impl EventHandler for Handler {
                     "matching component: {:?}",
                     component.data.custom_id.as_str()
                 );
-                let tracer = bootstrap::tracer!("bot");
-                let mut span =
-                    tracer.start(format!("component:{}", component.data.custom_id.as_str()));
-                span.set_attribute(KeyValue::new(
-                    "component.data".to_string(),
-                    serde_json::to_string(&component.data).unwrap(),
-                ));
-                let cx = opentelemetry::Context::new().with_span(span);
                 match component.data.custom_id.as_str() {
                     "rsvp_yes" | "rsvp_maybe" | "rsvp_no" => {
-                        slash::missions::rsvp_button(&ctx, &component)
-                            .with_context(cx)
-                            .await;
+                        slash::missions::rsvp_button(&ctx, &component).await;
                     }
                     _ => {}
                 }
@@ -180,7 +141,7 @@ impl EventHandler for Handler {
             .unwrap();
         }
         if new.roles.contains(&synixe_meta::discord::role::RECRUIT) {
-            let Ok(((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _), _)) = events_request!(
+            let Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _)) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
                 BankDepositSearch {
@@ -195,7 +156,7 @@ impl EventHandler for Handler {
             if !deposits.is_empty() {
                 return;
             }
-            let Ok(((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _), _)) = events_request!(
+            let Ok((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _)) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
                 BankDepositNew {

@@ -19,7 +19,6 @@ async-trait = { workspace = true }
 lazy_static = "1.4.0"
 log = "0.4.17"
 nats = { workspace = true }
-opentelemetry = { workspace = true }
 regex = "1.7.0"
 serenity = { workspace = true }
 tokio = { workspace = true, features = ["full"] }

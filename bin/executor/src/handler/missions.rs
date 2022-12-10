@@ -19,7 +19,6 @@ impl Handler for Request {
         &self,
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
-        _cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::PostUpcomingMissions {} => {
@@ -31,7 +30,7 @@ impl Handler for Request {
                 )
                 .await
                 {
-                    Ok(((db::Response::UpcomingSchedule(Ok(missions)), _), _)) => {
+                    Ok((db::Response::UpcomingSchedule(Ok(missions)), _)) => {
                         let now = time::OffsetDateTime::now_utc();
                         let mut posts = Vec::new();
                         for mission in missions {
@@ -59,7 +58,7 @@ impl Handler for Request {
                             }
                         }
                         for (text, scheduled, minutes) in posts {
-                            if let Ok(((db::Response::FetchMission(Ok(Some(mission))), _), _)) =
+                            if let Ok((db::Response::FetchMission(Ok(Some(mission))), _)) =
                                 events_request!(
                                     bootstrap::NC::get().await,
                                     synixe_events::missions::db,

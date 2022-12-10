@@ -13,7 +13,6 @@ type Bot = std::sync::Arc<serenity::CacheAndHttp>;
 #[tokio::main]
 async fn main() {
     bootstrap::logger::init();
-    bootstrap::tracer!("bot");
 
     let bot = discord::build().await;
 

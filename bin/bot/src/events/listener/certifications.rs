@@ -14,13 +14,12 @@ impl Listener for Publish {
         &self,
         _msg: nats::asynk::Message,
         nats: std::sync::Arc<nats::asynk::Connection>,
-        _cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::TrialSubmitted { trial } => {
                 info!("Trial submitted: {:?}", trial);
                 if trial.passed {
-                    if let Ok(((Response::List(Ok(certs)), _), _)) =
+                    if let Ok((Response::List(Ok(certs)), _)) =
                         events_request!(nats, synixe_events::certifications::db, List {}).await
                     {
                         let cert = certs
@@ -51,7 +50,7 @@ impl Listener for Publish {
                 Ok(())
             }
             Self::TrialExpiring { trial, days } => {
-                if let Ok(((Response::List(Ok(certs)), _), _)) =
+                if let Ok((Response::List(Ok(certs)), _)) =
                     events_request!(nats, synixe_events::certifications::db, List {}).await
                 {
                     let message = if *days == 0 {

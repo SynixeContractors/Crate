@@ -25,7 +25,6 @@ macro_rules! fetch_one_and_respond {
 
 macro_rules! fetch_as_and_respond {
     ($msg:expr, $db:expr, $cx:expr, $as:path, $respond:path, $query:expr, $($args:expr,)*) => {{
-        use opentelemetry::trace::FutureExt;
         let query = sqlx::query_as!(
             $as,
             $query,
@@ -34,12 +33,12 @@ macro_rules! fetch_as_and_respond {
         let res = query.fetch_all(&$db).await;
         match res {
             Ok(data) => {
-                synixe_events::respond!($msg, $respond(Ok(data.clone()))).with_context($cx).await?;
+                synixe_events::respond!($msg, $respond(Ok(data.clone()))).await?;
                 Result::<_, anyhow::Error>::Ok(data)
             }
             Err(e) => {
                 error!("{:?}", e);
-                synixe_events::respond!($msg, $respond(Err(e.to_string()))).with_context($cx).await?;
+                synixe_events::respond!($msg, $respond(Err(e.to_string()))).await?;
                 Result::<_, anyhow::Error>::Err(e.into())
             }
         }
@@ -48,7 +47,6 @@ macro_rules! fetch_as_and_respond {
 
 macro_rules! fetch_one_as_and_respond {
     ($msg:expr, $db:expr, $cx:expr, $as:path, $respond:path, $query:expr, $($args:expr,)*) => {{
-        use opentelemetry::trace::FutureExt;
         let query = sqlx::query_as!(
             $as,
             $query,
@@ -57,12 +55,12 @@ macro_rules! fetch_one_as_and_respond {
         let res = query.fetch_one(&$db).await;
         match res {
             Ok(data) => {
-                synixe_events::respond!($msg, $respond(Ok(Some(data.clone())))).with_context($cx).await?;
+                synixe_events::respond!($msg, $respond(Ok(Some(data.clone())))).await?;
                 Result::<_, anyhow::Error>::Ok(data)
             }
             Err(e) => {
                 error!("{:?}", e);
-                synixe_events::respond!($msg, $respond(Err(e.to_string()))).with_context($cx).await?;
+                synixe_events::respond!($msg, $respond(Err(e.to_string()))).await?;
                 Result::<_, anyhow::Error>::Err(e.into())
             }
         }
@@ -71,7 +69,6 @@ macro_rules! fetch_one_as_and_respond {
 
 macro_rules! execute_and_respond {
     ($msg:expr, $db:expr, $cx:expr, $respond:path, $query:expr, $($args:expr,)*) => {{
-        use opentelemetry::trace::FutureExt;
         let query = sqlx::query!(
             $query,
             $($args,)*
@@ -79,12 +76,12 @@ macro_rules! execute_and_respond {
         let res = query.execute(&$db).await;
         match res {
             Ok(_) => {
-                synixe_events::respond!($msg, $respond(Ok(()))).with_context($cx).await?;
+                synixe_events::respond!($msg, $respond(Ok(()))).await?;
                 Ok(())
             }
             Err(e) => {
                 error!("{:?}", e);
-                synixe_events::respond!($msg, $respond(Err(e.to_string()))).with_context($cx).await?;
+                synixe_events::respond!($msg, $respond(Err(e.to_string()))).await?;
                 Err(e.into())
             }
         }
@@ -95,20 +92,14 @@ macro_rules! match_no_return {
     ($query:expr, $typ:ident, $msg:expr, $cx:expr) => {{
         match $query.await {
             Ok(_) => {
-                if let Err(e) = respond!($msg, Response::$typ(Ok(())))
-                    .with_context($cx)
-                    .await
-                {
+                if let Err(e) = respond!($msg, Response::$typ(Ok(()))).await {
                     error!("Failed to respond to {}: {}", stringify!($typ), e);
                     return Err(e.into());
                 }
                 Result::<(), anyhow::Error>::Ok(())
             }
             Err(e) => {
-                if let Err(e) = respond!($msg, Response::$typ(Err(e.to_string())))
-                    .with_context($cx)
-                    .await
-                {
+                if let Err(e) = respond!($msg, Response::$typ(Err(e.to_string()))).await {
                     error!("Failed to respond to {}: {}", stringify!($typ), e);
                     return Err(e.into());
                 }
@@ -122,20 +113,14 @@ macro_rules! match_with_return {
     ($query:expr, $typ:ident, $msg:expr, $cx:expr) => {{
         match $query.await {
             Ok(data) => {
-                if let Err(e) = respond!($msg, Response::$typ(Ok(data)))
-                    .with_context($cx)
-                    .await
-                {
+                if let Err(e) = respond!($msg, Response::$typ(Ok(data))).await {
                     error!("Failed to respond to {}: {}", stringify!($typ), e);
                     return Err(e.into());
                 }
                 Result::<(), anyhow::Error>::Ok(())
             }
             Err(e) => {
-                if let Err(e) = respond!($msg, Response::$typ(Err(e.to_string())))
-                    .with_context($cx)
-                    .await
-                {
+                if let Err(e) = respond!($msg, Response::$typ(Err(e.to_string()))).await {
                     error!("Failed to respond to {}: {}", stringify!($typ), e);
                     return Err(e.into());
                 }
@@ -150,10 +135,7 @@ macro_rules! transaction {
         match $db.begin().await {
             Ok(tx) => tx,
             Err(e) => {
-                if let Err(e) = respond!($msg, Response::LockerStore(Err(e.to_string())))
-                    .with_context($cx)
-                    .await
-                {
+                if let Err(e) = respond!($msg, Response::LockerStore(Err(e.to_string()))).await {
                     error!("Failed to respond to LockerStore: {}", e);
                     return Err(e.into());
                 }

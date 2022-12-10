@@ -13,7 +13,6 @@ mod macros;
 #[tokio::main]
 async fn main() {
     bootstrap::logger::init();
-    bootstrap::tracer!("scheduler");
 
     let mut sched = Scheduler::default();
 

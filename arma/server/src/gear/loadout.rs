@@ -14,7 +14,7 @@ pub fn group() -> Group {
 fn command_get(discord: String, steam: String) {
     RUNTIME.spawn(async move {
         debug!("fetching loadout for {}", discord);
-        let Ok(((db::Response::LoadoutGet(Ok(loadout)), _), _)) = events_request!(
+        let Ok((db::Response::LoadoutGet(Ok(loadout)), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             LoadoutGet {
@@ -49,7 +49,7 @@ fn command_get(discord: String, steam: String) {
 
 fn command_store(discord: String, steam: String, loadout: String) {
     RUNTIME.spawn(async move {
-        let Ok(((db::Response::LoadoutStore(Ok(())), _), _)) = events_request!(
+        let Ok((db::Response::LoadoutStore(Ok(())), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             LoadoutStore {

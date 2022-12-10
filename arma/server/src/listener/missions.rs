@@ -15,7 +15,6 @@ impl Listener for Publish {
         &self,
         _msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
-        _cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::StartingSoon {

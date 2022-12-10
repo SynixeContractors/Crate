@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use opentelemetry::trace::FutureExt;
 use synixe_events::{
     gear::db::{Request, Response},
     respond,
@@ -16,7 +15,6 @@ impl Handler for Request {
         &self,
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
-        cx: opentelemetry::Context,
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {

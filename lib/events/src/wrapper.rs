@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use opentelemetry::propagation::{Extractor, Injector};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -35,24 +34,5 @@ impl<T> Wrapper<T> {
     #[allow(clippy::missing_const_for_fn)] // False positive
     pub fn into_parts(self) -> (T, HashMap<String, String>) {
         (self.inner, self.metadata)
-    }
-}
-
-impl<T> Injector for Wrapper<T> {
-    fn set(&mut self, key: &str, value: String) {
-        self.metadata.insert(key.to_string(), value);
-    }
-}
-
-impl<T> Extractor for Wrapper<T> {
-    fn get(&self, key: &str) -> Option<&str> {
-        self.metadata.get(key).map(std::string::String::as_str)
-    }
-
-    fn keys(&self) -> Vec<&str> {
-        self.metadata
-            .keys()
-            .map(std::string::String::as_str)
-            .collect()
     }
 }

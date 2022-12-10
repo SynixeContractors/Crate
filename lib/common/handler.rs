@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use nats::asynk::{Connection, Message};
-use opentelemetry::Context;
 use synixe_events::Evokable;
 
 #[async_trait]
@@ -13,6 +12,5 @@ pub trait Handler: Evokable {
         &self,
         msg: Message,
         nats: Arc<Connection>,
-        cx: Context,
     ) -> Result<(), anyhow::Error>;
 }

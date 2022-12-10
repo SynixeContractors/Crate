@@ -12,7 +12,6 @@ pub use events::*;
 pub use wrapper::Wrapper;
 
 // Rexport
-pub use opentelemetry;
 pub use serde_json;
 
 /// The Event can be invoked to get a response.

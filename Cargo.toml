@@ -20,7 +20,6 @@ async-trait = "0.1.59"
 anyhow = "1.0.66"
 log = "0.4.17"
 nats = { version = "0.23.1" }
-opentelemetry = { version = "0.18.0", default-features = false, features = ["trace", "rt-tokio"] }
 serde = { version = "1.0.149", features = ["derive"] }
 serenity = { git = "https://github.com/serenity-rs/serenity", rev = "6d82cf242380d2ea9925cd96127c3f2e5dfe6cfd", default-features = false }
 sqlx = { version = "0.6.2", features = ["offline"] }

@@ -15,6 +15,5 @@ mod handler;
 #[tokio::main]
 async fn main() {
     bootstrap::logger::init();
-    bootstrap::tracer!("executor");
     handler::start().await;
 }

@@ -19,7 +19,7 @@ pub fn group() -> Group {
 
 fn command_items() {
     RUNTIME.spawn(async {
-        let Ok(((db::Response::ShopGetAll(Ok(items)), _), _)) = events_request!(
+        let Ok((db::Response::ShopGetAll(Ok(items)), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopGetAll {}
@@ -60,7 +60,7 @@ fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>
     clean_items(&mut items);
     RUNTIME.spawn(async move {
         debug!("entering shop for {} with {:?} items", discord, items.len());
-        let Ok(((db::Response::ShopEnter(Ok((locker, balance))), _), _)) = events_request!(
+        let Ok((db::Response::ShopEnter(Ok((locker, balance))), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopEnter {
@@ -89,7 +89,7 @@ fn command_leave(discord: String, steam: String, loadout: String, mut items: Has
     clean_items(&mut items);
     RUNTIME.spawn(async move {
         debug!("leaving shop for {} with {:?} items", discord, items.len());
-        let Ok(((db::Response::ShopLeave(Ok(())), _), _)) = events_request!(
+        let Ok((db::Response::ShopLeave(Ok(())), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopLeave {
@@ -119,7 +119,7 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
     clean_items(&mut items);
     RUNTIME.spawn(async move {
         debug!("purchasing for {}: {:?}", discord, items);
-        let Ok(((db::Response::ShopPurchase(Ok((locker, balance))), _), _)) = events_request!(
+        let Ok((db::Response::ShopPurchase(Ok((locker, balance))), _)) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopPurchase {
