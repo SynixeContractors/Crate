@@ -13,7 +13,7 @@ synixe-events = { path = "../../lib/events" }
 synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["gear", "arma-rs"] }
 
-anyhow = "1.0.66"
+anyhow = { workspace = true }
 arma-rs = { workspace = true }
 async-trait = { workspace = true }
 lazy_static = "1.4.0"
@@ -22,8 +22,8 @@ nats = { workspace = true }
 opentelemetry = { workspace = true }
 regex = "1.7.0"
 serenity = { workspace = true }
-tokio = { version = "1.23.0", features = ["full"] }
-uuid = "1.2.2"
+tokio = { workspace = true, features = ["full"] }
+uuid = { workspace = true }
 
 [dev-dependencies]
 nats = { workspace = true }

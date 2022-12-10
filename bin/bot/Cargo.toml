@@ -10,7 +10,7 @@ synixe-meta = { path = "../../lib/meta" }
 synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
 
-anyhow = "1.0.66"
+anyhow = { workspace = true }
 async-trait = { workspace = true }
 log = { workspace = true }
 nats = { workspace = true }
@@ -21,7 +21,7 @@ serde_json = "1.0.89"
 serenity = { workspace = true, features = ["builder", "cache", "client", "collector", "gateway", "http", "model", "utils", "rustls_backend"]}
 time = { workspace = true }
 time-tz = "1.0.2"
-tokio = { version = "1.23.0", features = ["full"] }
+tokio = { workspace = true, features = ["full"] }
 uuid = { workspace = true }
 
 [build-dependencies]

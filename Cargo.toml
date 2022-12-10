@@ -17,12 +17,14 @@ members = [
 [workspace.dependencies]
 arma-rs = "1.8.2"
 async-trait = "0.1.59"
-time = "0.3.17"
+anyhow = "1.0.66"
 log = "0.4.17"
 nats = { version = "0.23.1" }
 opentelemetry = { version = "0.18.0", default-features = false, features = ["trace", "rt-tokio"] }
 serde = { version = "1.0.149", features = ["derive"] }
-serenity = { git = "https://github.com/serenity-rs/serenity", rev = "5b687e52f3d5a3a43549e641ea7c8d2b1e7fe2ab", default-features = false }
+serenity = { git = "https://github.com/serenity-rs/serenity", rev = "6d82cf242380d2ea9925cd96127c3f2e5dfe6cfd", default-features = false }
 sqlx = { version = "0.6.2", features = ["offline"] }
+time = "0.3.17"
+tokio = "1.23.0"
 uuid = "1.2.2"
 vergen = "7.4.3"
