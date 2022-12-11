@@ -20,7 +20,7 @@ pub async fn start() {
             nats,
             synixe_events::recruiting::executions::Request,
             synixe_events::missions::executions::Request,
-            synixe_events::certifications::executions::Request
+            synixe_events::certifications::executions::Request,
         );
     }
 }

@@ -1,7 +1,7 @@
 #[macro_export]
 /// Handle the event.
 macro_rules! handler {
-    ($msg:expr, $nats:expr, $($events:ty),*) => {{
+    ($msg:expr, $nats:expr, $($events:ty),*,) => {{
         use synixe_events::Evokable;
         let subject = $msg.subject.clone();
         let sub = subject.as_str();

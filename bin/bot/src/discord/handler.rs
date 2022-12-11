@@ -41,6 +41,7 @@ impl EventHandler for Handler {
                         slash::certifications::run(&ctx, &command).await;
                     }
                     "meme" => slash::meme::run(&ctx, &command).await,
+                    "garage" => slash::garage::run(&ctx, &command).await,
                     "schedule" => {
                         slash::missions::schedule_run(&ctx, &command).await;
                     }
@@ -49,7 +50,7 @@ impl EventHandler for Handler {
                     }
                     _ => {}
                 }
-            },
+            }
             Interaction::Autocomplete(autocomplete) => {
                 debug!(
                     "matching autocomplete: {:?}",
@@ -61,6 +62,9 @@ impl EventHandler for Handler {
                     }
                     "certifications" => {
                         slash::certifications::autocomplete(&ctx, &autocomplete).await;
+                    }
+                    "garage" => {
+                        slash::garage::autocomplete(&ctx, &autocomplete).await;
                     }
                     _ => {}
                 }

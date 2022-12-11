@@ -10,14 +10,21 @@ pub mod db {
         struct FetchVehicleAssets {
             /// Filter the list of vehicles by stored status
             stored: Option<bool>,
+            /// Search for a specific vehicle
+            plate: Option<String>,
         } => (Result<Vec<VehicleAsset>, String>)
         /// Fetch a vehicle asset
         struct FetchVehicleAsset {
             /// The vehicle to fetch
-            plate: String
+            plate: String,
         } => (Result<Option<VehicleAsset>, String>)
         /// Get all vehicle assets in the shop
         struct FetchAllShopAssests {
         } => (Result<Vec<ShopAsset>, String>)
+        /// Fetch a shop asset
+        struct FetchShopAsset {
+            /// The asset to fetch
+            asset: String
+        } => (Result<Option<ShopAsset>, String>)
     });
 }

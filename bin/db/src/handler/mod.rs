@@ -25,7 +25,8 @@ pub async fn start() {
             synixe_events::discord::db::Request,
             synixe_events::gear::db::Request,
             synixe_events::missions::db::Request,
-            synixe_events::recruiting::db::Request
+            synixe_events::recruiting::db::Request,
+            synixe_events::garage::db::Request,
         );
     }
 }
