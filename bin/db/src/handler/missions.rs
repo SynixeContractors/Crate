@@ -82,17 +82,21 @@ impl Handler for Request {
                     .await
                     .map_err(std::convert::Into::into);
                 };
+                sqlx::query!("UPDATE missions SET archived = true")
+                    .execute(&*db)
+                    .await?;
                 match response.json::<Vec<Mission>>().await {
                     Ok(missions) => {
                         for mission in missions {
                             let query = sqlx::query!(
-                                r#"INSERT INTO missions (id, name, summary, description, type)
-                                    VALUES ($1, $2, $3, $4, $5)
+                                r#"INSERT INTO missions (id, name, summary, description, type, archived)
+                                    VALUES ($1, $2, $3, $4, $5, false)
                                     ON CONFLICT (id) DO UPDATE SET
                                         name = $2,
                                         summary = $3,
                                         description = $4,
-                                        type = $5"#,
+                                        type = $5,
+                                        archived = false"#,
                                 mission.id,
                                 mission.name,
                                 mission.summary,
@@ -131,7 +135,7 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::Mission,
                     Response::FetchMissionList,
-                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE LOWER(missions.name) LIKE LOWER($1) OR LOWER(missions.id) LIKE LOWER($1) ORDER BY name ASC",
+                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE archived = FALSE and LOWER(missions.name) LIKE LOWER($1) OR LOWER(missions.id) LIKE LOWER($1) ORDER BY name ASC",
                     format!("%{search}%"),
                 )?;
                 Ok(())

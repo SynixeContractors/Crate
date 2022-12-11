@@ -96,6 +96,35 @@
     },
     "query": "INSERT INTO gear_loadouts (member, loadout) VALUES ($1, $2) ON CONFLICT (member) DO UPDATE SET loadout = $2"
   },
+  "05701ce57600da9f75a08befb898f7f4c516a53e0a1c43e12270ae6d538088d2": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Text",
+          {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        ]
+      }
+    },
+    "query": "INSERT INTO missions (id, name, summary, description, type, archived)\n                                    VALUES ($1, $2, $3, $4, $5, false)\n                                    ON CONFLICT (id) DO UPDATE SET\n                                        name = $2,\n                                        summary = $3,\n                                        description = $4,\n                                        type = $5,\n                                        archived = false"
+  },
   "1064a304ef408c4e242dc6c47c5ffcdf9ab3ec43d250657a63a8fa7de78966f8": {
     "describe": {
       "columns": [
@@ -532,63 +561,6 @@
     },
     "query": "\n                            INSERT INTO\n                                certifications_trials\n                                (instructor, trainee, certification, notes, passed, valid_for)\n                            VALUES\n                                ($1, $2, $3, $4, true, $5)\n                            RETURNING\n                                id,\n                                instructor,\n                                trainee,\n                                certification,\n                                notes,\n                                passed,\n                                valid_for,\n                                valid_until,\n                                created"
   },
-  "7053a5d93564247cfcc2598e36fe2ec4e14f87756e30e485c4200710649217e4": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 4,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE LOWER(missions.name) LIKE LOWER($1) OR LOWER(missions.id) LIKE LOWER($1) ORDER BY name ASC"
-  },
   "713a1d9e5f789e6d6c953a9d3441c676b8df41086b7091775b2c94f4eb286982": {
     "describe": {
       "columns": [],
@@ -650,35 +622,6 @@
       }
     },
     "query": "SELECT * FROM missions_schedule WHERE start + '2 minutes'::Interval > NOW() ORDER BY start ASC"
-  },
-  "7d2f0431c6842dd17e6db00711f7b9caaed8a927b54e7ab88c45138c0463dd27": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Varchar",
-          "Varchar",
-          "Text",
-          {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        ]
-      }
-    },
-    "query": "INSERT INTO missions (id, name, summary, description, type)\n                                    VALUES ($1, $2, $3, $4, $5)\n                                    ON CONFLICT (id) DO UPDATE SET\n                                        name = $2,\n                                        summary = $3,\n                                        description = $4,\n                                        type = $5"
   },
   "815617522fc3f0a9a5f494efd0416f0c840495523152f95ccad384167fbc22ec": {
     "describe": {
@@ -789,6 +732,63 @@
       }
     },
     "query": "\n                        SELECT\n                            c.id,\n                            c.name,\n                            c.link,\n                            c.roles_required,\n                            c.roles_granted,\n                            c.valid_for,\n                            c.created\n                        FROM\n                            certifications c\n                        INNER JOIN\n                            certifications_instructors ci\n                        ON\n                            ci.certification = c.id\n                        WHERE\n                            ci.member = $1"
+  },
+  "9343e3de63535b24418fa0321d176eec3c2c51bb4e652fdd30e5e948db1758f8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 4,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE archived = FALSE and LOWER(missions.name) LIKE LOWER($1) OR LOWER(missions.id) LIKE LOWER($1) ORDER BY name ASC"
   },
   "9710594c233f7ed7960a122bcec5394465e054e8a57c2f6ed72e584050c4dea8": {
     "describe": {
@@ -972,6 +972,16 @@
       }
     },
     "query": "\n                    SELECT\n                        name AS value\n                    FROM\n                        certifications\n                    WHERE\n                        id = $1"
+  },
+  "b8a25dc33c0644eb158bf10e82cf3ce3f63e143926bc2389ba2d7d30af726872": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "UPDATE missions SET archived = true"
   },
   "be9d7102a0c2621d3d42b660434065c449ff3ff571dab74372d2937fea8835a9": {
     "describe": {
