@@ -12,6 +12,8 @@ members = [
     "bin/scheduler",
 
     "arma/server",
+
+    "utils/gear_migration",
 ]
 
 [workspace.dependencies]

@@ -33,4 +33,29 @@ impl DB {
             SINGLETON.assume_init_ref().clone()
         }
     }
+
+    /// Gets a reference to the database pool.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the database pool can not be initialized.
+    pub async fn get_custom(url: &str) -> DBPool {
+        static mut SINGLETON: MaybeUninit<DBPool> = MaybeUninit::uninit();
+        static mut INIT: bool = false;
+
+        unsafe {
+            if !INIT {
+                SINGLETON.write(Arc::new(
+                    PgPoolOptions::new()
+                        .min_connections(1)
+                        .max_connections(5)
+                        .connect(url)
+                        .await
+                        .unwrap(),
+                ));
+                INIT = true;
+            }
+            SINGLETON.assume_init_ref().clone()
+        }
+    }
 }
