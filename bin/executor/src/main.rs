@@ -4,7 +4,7 @@
 use rust_embed::RustEmbed;
 
 #[macro_use]
-extern crate log;
+extern crate tracing;
 
 #[derive(RustEmbed)]
 #[folder = "assets"]

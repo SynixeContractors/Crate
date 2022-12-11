@@ -2,7 +2,7 @@
 #![warn(clippy::nursery, clippy::all)]
 
 #[macro_use]
-extern crate log;
+extern crate tracing;
 
 mod cache_http;
 mod discord;

@@ -131,6 +131,54 @@
     },
     "query": "INSERT INTO gear_bank_transfers (source, target, amount, reason) VALUES ($1, $2, $3, $4)"
   },
+  "3bb77da35adb64b25c4f0d1d9232bfca9633b231468f94d9371ae1fc7a7f42a5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "class",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "roles",
+          "ordinal": 1,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "global",
+          "ordinal": 2,
+          "type_info": "Bool"
+        },
+        {
+          "name": "base",
+          "ordinal": 3,
+          "type_info": "Int4"
+        },
+        {
+          "name": "cost",
+          "ordinal": 4,
+          "type_info": "Int4"
+        },
+        {
+          "name": "end_date",
+          "ordinal": 5,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        null,
+        null,
+        null
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "SELECT i.class, i.roles, i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.enabled = TRUE"
+  },
   "3e9ba4b407c3eba4d40d4d3aff74356077576b4f82a013097e7ce712f834a54e": {
     "describe": {
       "columns": [],
@@ -1025,54 +1073,6 @@
       }
     },
     "query": "\n                        SELECT\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            trainee = $1\n                            AND passed IS TRUE\n                            AND (valid_until > NOW() OR valid_until IS NULL)\n                        GROUP BY id ORDER BY created DESC"
-  },
-  "d29291565a90c01b1e20a18099a02175ce44657a4ba28ebd2d76c5657a293434": {
-    "describe": {
-      "columns": [
-        {
-          "name": "class",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "roles",
-          "ordinal": 1,
-          "type_info": "VarcharArray"
-        },
-        {
-          "name": "global",
-          "ordinal": 2,
-          "type_info": "Bool"
-        },
-        {
-          "name": "base",
-          "ordinal": 3,
-          "type_info": "Int4"
-        },
-        {
-          "name": "cost",
-          "ordinal": 4,
-          "type_info": "Int4"
-        },
-        {
-          "name": "end_date",
-          "ordinal": 5,
-          "type_info": "Timestamptz"
-        }
-      ],
-      "nullable": [
-        false,
-        true,
-        false,
-        null,
-        null,
-        null
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "SELECT i.class, i.roles, i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c"
   },
   "d4b22c007b1776085c8d65b791c2ad147f53d2548ad5aff73ab9c28a9bb0922c": {
     "describe": {

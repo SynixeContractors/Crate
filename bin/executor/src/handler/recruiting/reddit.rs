@@ -18,6 +18,7 @@ use super::{
 const REDDIT_FINDAUNIT: &str =
     "https://www.reddit.com/r/FindAUnit/new/?f=flair_name%3A%22Request%22";
 
+#[allow(clippy::cognitive_complexity)]
 pub async fn check_reddit_findaunit() {
     debug!("Checking reddit findaunit for new posts");
 
@@ -111,6 +112,7 @@ pub async fn check_reddit_findaunit() {
     }
 }
 
+#[allow(clippy::cognitive_complexity)]
 pub async fn post_reddit_findaunit() {
     debug!("in executor post reddit");
     let client = Reddit::new(

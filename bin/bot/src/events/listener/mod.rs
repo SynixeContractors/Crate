@@ -3,6 +3,7 @@ include!("../../../../../lib/common/listener.rs");
 mod certifications;
 mod missions;
 
+#[allow(clippy::cognitive_complexity)]
 pub async fn start() {
     // Init NATS connection
     let nats = bootstrap::NC::get().await;

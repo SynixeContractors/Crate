@@ -12,7 +12,6 @@ synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-log = { workspace = true }
 nats = { workspace = true }
 reqwest = { version = "0.11.13", features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
@@ -21,6 +20,7 @@ serenity = { workspace = true, features = ["builder", "cache", "client", "collec
 time = { workspace = true }
 time-tz = "1.0.2"
 tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
 uuid = { workspace = true }
 
 [build-dependencies]

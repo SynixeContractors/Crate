@@ -5,7 +5,7 @@ use synixe_proc::events_request;
 use tokio_simple_scheduler::{Job, Scheduler};
 
 #[macro_use]
-extern crate log;
+extern crate tracing;
 
 #[macro_use]
 mod macros;

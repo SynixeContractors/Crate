@@ -9,6 +9,7 @@ use super::{
 
 const STEAM_FORUM: &str = "https://steamcommunity.com/app/107410/discussions/21/";
 
+#[allow(clippy::cognitive_complexity)]
 pub async fn check_steam_forums() {
     debug!("Checking steam forums for new posts");
 
