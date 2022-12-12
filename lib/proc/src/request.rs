@@ -20,7 +20,7 @@ pub fn request(item: TokenStream) -> TokenStream {
             let response = #nats.request_timeout(
                 path,
                 synixe_events::serde_json::to_vec(&trace_body).unwrap(),
-                std::time::Duration::from_secs(2),
+                std::time::Duration::from_secs(5),
             ).await;
             match response {
                 Ok(response) => {

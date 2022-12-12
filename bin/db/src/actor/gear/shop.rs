@@ -16,7 +16,8 @@ pub async fn items(
             (
                 row.class,
                 (
-                    row.roles,
+                    row.roles
+                        .map(|r| r.into_iter().filter(|r| !r.is_empty()).collect()),
                     Price::new(row.base.unwrap(), row.cost, row.end_date, row.global),
                 ),
             )

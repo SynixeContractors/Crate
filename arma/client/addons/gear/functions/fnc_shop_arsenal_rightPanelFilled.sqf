@@ -19,7 +19,7 @@ if (_leftIDC in [IDC_buttonPrimaryWeapon, IDC_buttonSecondaryWeapon, IDC_buttonH
             } else {
                 private _owned = [_raw_class] call FUNC(shop_item_owned);
                 private _cost = _price#1;
-                if (_price#1 > _price#2) then {
+                if (_price#1 > _price#0) then {
                     _ctrlPanel lbSetColor [_lbIndex, [1, 0, 0, 1]];
                     _cost = format ["%1\nRegular: %2", _cost, _price#0];
                 };

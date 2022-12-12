@@ -24,5 +24,6 @@ PREP(shop_items_difference);
 PREP(shop_items_purchasable);
 PREP(shop_items_purchase);
 PREP(shop_items_removeOwned);
+PREP(shop_lockBackpack);
 PREP(shop_open);
 PREP(shop_pfh_balance);

@@ -1,7 +1,5 @@
 #include "script_component.hpp"
 
-GVAR(shop_boxes) = [];
-
 if !(isMultiplayer) exitWith {};
 
 // ============= Loadout 

@@ -1,3 +1,6 @@
 [project]
 name = "crate-client"
-version = "0.10.0"
+version = "0.10.1"
+
+[hemtt.signing]
+authority = "synixe_crate"

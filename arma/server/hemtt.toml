@@ -1,6 +1,9 @@
 [project]
 name = "crate-server"
-version = "0.10.0"
+version = "0.10.1"
 files = [
     "crate_server_x64.dll"
 ]
+
+[hemtt.signing]
+authority = "synixe_crate"
