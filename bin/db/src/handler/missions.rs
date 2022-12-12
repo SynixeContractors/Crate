@@ -135,7 +135,7 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::Mission,
                     Response::FetchMissionList,
-                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE archived = FALSE and LOWER(missions.name) LIKE LOWER($1) OR LOWER(missions.id) LIKE LOWER($1) ORDER BY name ASC",
+                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE archived = FALSE AND (LOWER(missions.name) LIKE LOWER($1) OR LOWER(missions.id) LIKE LOWER($1)) ORDER BY name ASC",
                     format!("%{search}%"),
                 )?;
                 Ok(())
