@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "synixe.fullname" . }}-hooks
+  labels:
+    app: hooks
+    {{- include "synixe.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: hooks
+    {{- include "synixe.selectorLabels" . | nindent 4 }}
