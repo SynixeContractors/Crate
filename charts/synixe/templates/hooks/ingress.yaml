@@ -9,6 +9,7 @@ spec:
   - websecure
   routes:
   - match: PathPrefix(`/hooks`)
+    kind: Rule
     services:
     - name: {{ include "synixe.fullname" . }}-hooks
       port: http
