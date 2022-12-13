@@ -20,11 +20,14 @@ mod missions;
 async fn main() {
     bootstrap::logger::init();
 
-    let app = Router::new()
-        .route("/health", get(health_check))
-        .route("/health_auth", get(auth_check))
-        .route("/missions/list_updated", post(missions::list_updated))
-        .route_layer(middleware::from_fn(check_token));
+    let app = Router::new().nest(
+        "/hooks",
+        Router::new()
+            .route("/health", get(health_check))
+            .route("/health_auth", get(auth_check))
+            .route("/missions/list_updated", post(missions::list_updated))
+            .route_layer(middleware::from_fn(check_token)),
+    );
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 6000));
     debug!("Listening on {}", addr);
