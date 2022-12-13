@@ -8,8 +8,10 @@ spec:
   entryPoints:
   - websecure
   routes:
-  - match: PathPrefix(`/hooks`)
+  - match: Host(`cluster.synixe.contractors`) && PathPrefix(`/hooks`)
     kind: Rule
     services:
     - name: {{ include "synixe.fullname" . }}-hooks
       port: http
+  tls:
+    secretName: cluster-synixe-cert
