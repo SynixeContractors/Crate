@@ -1,0 +1,16 @@
+[package]
+name = "synixe-hooks"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-proc = { path = "../../lib/proc" }
+
+axum = "0.6.1"
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+
+[build-dependencies]
+vergen = { workspace = true }

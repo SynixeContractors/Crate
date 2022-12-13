@@ -1,0 +1,14 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  labels:
+    {{- include "synixe.labels" . | nindent 4 }}
+  name: {{ include "synixe.fullname" . }}-hooks
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - match: PathPrefix(`/hooks`)
+    services:
+    - name: {{ include "synixe.fullname" . }}-hooks
+      port: http

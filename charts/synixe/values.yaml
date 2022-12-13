@@ -63,3 +63,6 @@ config:
 
   # db
   database_url: ~
+
+  # hooks
+  hooks_token: ~

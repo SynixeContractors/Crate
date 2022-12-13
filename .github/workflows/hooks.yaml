@@ -1,0 +1,60 @@
+name: hooks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/hooks.yaml
+      - Cargo.toml
+      - bin/hooks/**
+      - lib/bootstrap/**
+      - lib/events/**
+      - lib/meta/**
+      - lib/proc/**
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: Swatinem/rust-cache@v1
+        with:
+          key: hooks
+
+      - run: cargo build --release
+        working-directory: ./bin/hooks
+
+      - run: cp target/release/synixe-hooks ./bin/hooks/synixe-hooks
+
+      - name: Build Image
+        working-directory: ./bin/hooks
+        run: docker build . -t hooks
+
+      - name: Tag Image
+        run: docker tag hooks ghcr.io/synixecontractors/apps-hooks:latest
+
+      - name: Push Image
+        run: docker push ghcr.io/synixecontractors/apps-hooks:latest
