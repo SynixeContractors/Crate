@@ -117,6 +117,7 @@ fn command_leave(discord: String, steam: String, loadout: String, mut items: Has
 
 fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i32>) {
     clean_items(&mut items);
+    items.retain(|_, v| *v > 0);
     RUNTIME.spawn(async move {
         debug!("purchasing for {}: {:?}", discord, items);
         let Ok((db::Response::ShopPurchase(Ok((locker, balance))), _)) = events_request!(

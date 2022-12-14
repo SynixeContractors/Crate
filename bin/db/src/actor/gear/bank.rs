@@ -81,14 +81,17 @@ pub async fn purchase(
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<(), anyhow::Error> {
     for (class, quantity, is_loadout) in items {
-        let query = sqlx::query!(
-            "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost) VALUES ($1, $2, $3, $4, (SELECT cost FROM gear_item_current_cost($2)))",
-            member.0.to_string(),
-            class,
-            quantity,
-            is_loadout,
-        );
-        query.execute(&mut *executor).await?;
+        // Prevent negative quantities
+        if *quantity > 0 {
+            let query = sqlx::query!(
+                "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost) VALUES ($1, $2, $3, $4, (SELECT cost FROM gear_item_current_cost($2)))",
+                member.0.to_string(),
+                class,
+                quantity,
+                is_loadout,
+            );
+            query.execute(&mut *executor).await?;
+        }
     }
     Ok(())
 }

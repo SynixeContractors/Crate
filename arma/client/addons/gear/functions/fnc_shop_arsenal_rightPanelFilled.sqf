@@ -26,7 +26,7 @@ if (_leftIDC in [IDC_buttonPrimaryWeapon, IDC_buttonSecondaryWeapon, IDC_buttonH
                 if (_owned > 0) then {
                     _ctrlPanel lbSetColor [_lbIndex, [0, 1, 0, 1]];
                 };
-                if (_price#1 < _price#2) then {
+                if (_price#1 < _price#0) then {
                     _ctrlPanel lbSetColor [_lbIndex, [0.25, 0.33, 1, 1]];
                     _cost = format ["%1\nRegular: %2", _cost, _price#0];
                 };
