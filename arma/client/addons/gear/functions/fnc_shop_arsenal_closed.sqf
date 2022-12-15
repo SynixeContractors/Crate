@@ -8,7 +8,7 @@ if (GVAR(readOnly)) exitWith {};
 if (ace_player isNotEqualTo player) exitWith {};
 if !(player getVariable [QGVAR(shop_open), false]) exitWith {};
 
-player setVariable [QGVAR(shop_open), false];
+player setVariable [QGVAR(shop_open), false, true];
 
 [GVAR(shop_balanceHandle)] call CBA_fnc_removePerFrameHandler;
 

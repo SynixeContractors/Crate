@@ -6,15 +6,15 @@ private _target = objectParent _backpack;
 
 if (isNull _target) exitWith {false};
 
-if (alive _target && {_target getVariable [QGVAR(shop_open),false]}) exitWith {
+if (alive _target && {_target getVariable [QGVAR(shop_open), false]}) exitWith {
     [{
         !isNull (findDisplay 602)
     },
     {
+        params ["_target"];
         (findDisplay 602) closeDisplay 0;
         (format ["%1 is in the Shop", name _target]) call CBA_fnc_notify;
-    },
-    []] call CBA_fnc_waitUntilAndExecute;
+    }, [_target]] call CBA_fnc_waitUntilAndExecute;
 };
 
 // return false to open inventory as usual
