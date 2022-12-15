@@ -21,7 +21,7 @@ arma-rs = "1.8.2"
 async-trait = "0.1.59"
 nats = { version = "0.23.1" }
 serde = { version = "1.0.150", features = ["derive"] }
-serenity = { git = "https://github.com/serenity-rs/serenity", rev = "4edc1de050bbf486c60f8b4bba74d40b2ab6969b", default-features = false }
+serenity = { git = "https://github.com/serenity-rs/serenity", rev = "fc9c420a034b110e427a65f3b72cc1a55bc33d44", default-features = false }
 sqlx = { version = "0.6.2", features = ["offline"] }
 time = "0.3.17"
 tokio = "1.23.0"
