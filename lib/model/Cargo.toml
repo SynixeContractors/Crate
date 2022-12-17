@@ -8,7 +8,7 @@ arma-rs = { workspace = true, optional = true }
 time = { workspace = true, optional = true, features = ["serde-well-known"] }
 serde = { workspace = true, features = ["derive"] }
 sqlx = { workspace = true, optional = true }
-uuid = { workspace = true, optional = true, features = ["serde"] }
+uuid = { workspace = true, optional = true, features = ["serde", "v4"] }
 serenity = { workspace = true, features = ["utils", "builder"], optional = true }
 
 [features]
@@ -24,3 +24,4 @@ missions = ["uuid", "time"]
 roles = [ "serenity" ]
 gear = ["time"]
 garage = []
+

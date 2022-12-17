@@ -69,14 +69,21 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::FetchAllShopAssests {} => {
+            Self::FetchAllShopAssests { search } => {
+                let search = search.clone().unwrap_or_default();
                 fetch_as_and_respond!(
                     msg,
                     *db,
                     cx,
                     synixe_model::garage::ShopAsset,
                     Response::FetchAllShopAssests,
-                    "SELECT name, cost, class FROM garage_shop",
+                    "SELECT 
+                        *
+                    FROM 
+                        garage_shop 
+                    WHERE 
+                        name LIKE $1",
+                    format!("%{search}%"),
                 )?;
                 Ok(())
             }
@@ -87,10 +94,27 @@ impl Handler for Request {
                     cx,
                     synixe_model::garage::ShopAsset,
                     Response::FetchShopAsset,
-                    "SELECT name, cost, class FROM garage_shop WHERE name = $1",
-                    asset,
+                    "SELECT 
+                        *
+                    FROM 
+                        garage_shop 
+                    WHERE 
+                        name Like $1",
+                    format!("%{asset}%"),
                 )?;
                 Ok(())
+            }
+            Self::PurchaseVehicleAsset { plate, id, member } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::PurchaseVehicleAsset,
+                    "INSERT INTO garage_purchases (plate, id, member, cost) VALUES ($1, $2, $3)",
+                    plate,
+                    id,
+                    member.to_string(),
+                )
             }
         }
     }
