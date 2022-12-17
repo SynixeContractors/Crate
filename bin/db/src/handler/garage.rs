@@ -110,7 +110,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::PurchaseVehicleAsset,
-                    "INSERT INTO garage_purchases (plate, id, member, cost) VALUES ($1, $2, $3)",
+                    "INSERT INTO garage_purchases (plate, id, member) VALUES ($1, $2, $3)",
                     plate,
                     id,
                     member.to_string(),
