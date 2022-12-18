@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
 use axum::{response::IntoResponse, routing::get, Router, Server};
-use chrono::NaiveDateTime;
+use chrono::{Duration, NaiveDateTime};
 use icalendar::{Calendar, Component, Event, EventLike};
 use synixe_events::missions::db::Response;
 use synixe_proc::events_request;
@@ -51,5 +51,8 @@ async fn calendar() -> impl IntoResponse {
                 .done(),
         );
     }
-    calendar.name("Synixe Contractors").to_string()
+    calendar
+        .name("Synixe Contractors")
+        .ttl(&Duration::hours(3))
+        .to_string()
 }
