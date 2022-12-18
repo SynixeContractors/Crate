@@ -4,19 +4,17 @@ use serenity::model::application::interaction::application_command::CommandDataO
 use synixe_events::garage::db::Response;
 use synixe_proc::events_request;
 
-use super::enums::GarageSubCommands;
+use crate::discord::slash::garage::enums::{GarageCommands, GarageSubCommands};
 use super::purchase;
-
-
 
 pub async fn autocomplete(ctx: &Context, autocomplete: &AutocompleteInteraction) {
     let subcommand = autocomplete.data.options.first().unwrap();
-    match GarageSubCommands::from_str(subcommand.name.as_str()).unwrap() {
-        GarageSubCommands::Vehicle | GarageSubCommands::Addon => {
+    match GarageCommands::from_str(subcommand.name.as_str()).unwrap() {
+        GarageCommands::PurchaseVehicle | GarageCommands::PurchaseAddon => {
             purchase::purchase_autocomplete(ctx, autocomplete, &subcommand.options).await
         }
-        GarageSubCommands::Attach => attach_autocomplete(ctx, autocomplete, &subcommand.options).await,
-        _ => unreachable!(),
+        GarageCommands::Attach => attach_autocomplete(ctx, autocomplete, &subcommand.options).await,
+        _ => {}
     }
 }
 
@@ -29,8 +27,8 @@ async fn attach_autocomplete(
     let Some(focus) = focus else {
         return;
     };
-    match focus.name.as_str() {
-        "vehicle" => autocomplete_vehicle(ctx, autocomplete, &focus).await,
+    match GarageSubCommands::from_str(focus.name.as_str()).unwrap() {
+        GarageSubCommands::Vehicle => autocomplete_vehicle(ctx, autocomplete, &focus).await,
         // "addon" => autocomplete_addon(ctx, autocomplete, &focus).await,
         _ => unreachable!(),
     }

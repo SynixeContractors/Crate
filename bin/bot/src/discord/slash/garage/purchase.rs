@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use serenity::{
     model::prelude::{
         application_command::ApplicationCommandInteraction, autocomplete::AutocompleteInteraction,
@@ -11,6 +13,8 @@ use synixe_proc::events_request;
 
 use crate::discord::{self, interaction::Interaction};
 
+use super::enums::GarageSubCommands;
+
 pub async fn purchase_autocomplete(
     ctx: &Context,
     autocomplete: &AutocompleteInteraction,
@@ -20,9 +24,9 @@ pub async fn purchase_autocomplete(
     let Some(focus) = focus else {
         return;
     };
-    match focus.name.as_str() {
-        "vehicle" => autocomplete_shop_assets(ctx, autocomplete, &focus, true).await,
-        "addon" => autocomplete_shop_assets(ctx, autocomplete, &focus, false).await,
+    match GarageSubCommands::from_str(focus.name.as_str()).unwrap() {
+        GarageSubCommands::Vehicle => autocomplete_shop_assets(ctx, autocomplete, &focus, true).await,
+        GarageSubCommands::Addon => autocomplete_shop_assets(ctx, autocomplete, &focus, false).await,
         _ => unreachable!(),
     }
 }
@@ -76,13 +80,13 @@ pub async fn purchase(
 
     let plate = options
         .iter()
-        .find(|option| option.name == "plate")
+        .find(|option| option.name == "plate" || option.name == "addon")
         .unwrap()
         .value
         .as_ref()
         .unwrap()
         .as_str()
-        .unwrap()
+        .unwrap_or(&format!("addon-{}", uuid::Uuid::new_v4()))
         .to_string();
 
     let id = options
@@ -99,11 +103,11 @@ pub async fn purchase(
     let Ok((Response::PurchaseVehicleAsset(Ok(())), _)) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
-        PurchaseVehicleAsset{ id: id.parse().unwrap(), plate, member: command.member.as_ref().unwrap().user.id}
+        PurchaseVehicleAsset{ id: id.parse().unwrap(), plate: plate.clone(), member: command.member.as_ref().unwrap().user.id}
     ).await else {
         interaction.reply("Error purchasing asset").await;
         return;
     };
 
-    interaction.reply(format!("**Asset Purchase**\n\n")).await;
+    interaction.reply(format!("**Asset Purchase: {}**\n\n", plate.clone())).await;
 }
