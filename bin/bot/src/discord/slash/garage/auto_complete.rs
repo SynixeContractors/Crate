@@ -4,15 +4,18 @@ use serenity::model::application::interaction::application_command::CommandDataO
 use synixe_events::garage::db::Response;
 use synixe_proc::events_request;
 
+use super::enums::GarageSubCommands;
 use super::purchase;
+
+
 
 pub async fn autocomplete(ctx: &Context, autocomplete: &AutocompleteInteraction) {
     let subcommand = autocomplete.data.options.first().unwrap();
-    match subcommand.name.as_str() {
-        "purchase_vehicle" | "purchase_addon" => {
+    match GarageSubCommands::from_str(subcommand.name.as_str()).unwrap() {
+        GarageSubCommands::Vehicle | GarageSubCommands::Addon => {
             purchase::purchase_autocomplete(ctx, autocomplete, &subcommand.options).await
         }
-        "attach" => attach_autocomplete(ctx, autocomplete, &subcommand.options).await,
+        GarageSubCommands::Attach => attach_autocomplete(ctx, autocomplete, &subcommand.options).await,
         _ => unreachable!(),
     }
 }

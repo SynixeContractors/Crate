@@ -73,7 +73,13 @@ pub struct ShopAsset {
 impl ShopAsset {
     /// Create a new shop asset
     pub fn new(name: String, cost: i32, class: String, base: Option<Uuid>) -> Self {
-        Self { id: uuid::Uuid::new_v4() , name, cost, class, base }
+        Self {
+            id: uuid::Uuid::new_v4(),
+            name,
+            cost,
+            class,
+            base,
+        }
     }
 
     #[must_use]

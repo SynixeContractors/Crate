@@ -12,8 +12,12 @@ use synixe_proc::events_request;
 
 use crate::discord::{self, interaction::Interaction};
 
+use self::enums::GarageCommands;
+// use super::enums::{GarageCommands, GarageSubCommands};
+
 mod attachment;
 pub mod auto_complete;
+mod enums;
 mod purchase;
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
@@ -109,13 +113,15 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
 pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
     let subcommand = command.data.options.first().unwrap();
     if subcommand.kind == CommandOptionType::SubCommand {
-        match subcommand.name.as_str() {
-            "view" => view(ctx, command, &subcommand.options).await,
-            "purchase_vehicle" | "purchase_addon" => {
+        match GarageCommands::from_str(subcommand.name.as_str()).unwrap() {
+            GarageCommands::View => view(ctx, command, &subcommand.options).await,
+            GarageCommands::PurchaseVehicle | GarageCommands::PurchaseAddon => {
                 purchase::purchase(ctx, command, &subcommand.options).await
             }
-            "attach" => attachment::attach(ctx, command, &subcommand.options).await,
-            // "detach" => detach(ctx, command, &subcommand.options).await,
+            GarageCommands::Attach => attachment::attach(ctx, command, &subcommand.options).await,
+            // GarageCommands::Detach => {
+            //     // detach(ctx, command, &subcommand.options).await
+            // }
             _ => unreachable!(),
         }
     }
