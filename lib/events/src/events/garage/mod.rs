@@ -29,7 +29,7 @@ pub mod db {
             /// The asset to fetch
             asset: String
         } => (Result<Option<ShopAsset>, String>)
-        /// Purchase a shop asset
+        /// Purchase a Vehicle asset
         struct PurchaseVehicleAsset {
             /// The asset to purchase
             id: uuid::Uuid,

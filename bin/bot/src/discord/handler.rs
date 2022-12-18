@@ -64,7 +64,7 @@ impl EventHandler for Handler {
                         slash::certifications::autocomplete(&ctx, &autocomplete).await;
                     }
                     "garage" => {
-                        slash::garage::autocomplete(&ctx, &autocomplete).await;
+                        slash::garage::auto_complete::autocomplete(&ctx, &autocomplete).await;
                     }
                     _ => {}
                 }

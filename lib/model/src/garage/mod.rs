@@ -20,12 +20,12 @@ pub struct VehicleAsset {
 
 impl VehicleAsset {
     /// Create a new vehicle
-    pub fn new(plate: String) -> Self {
+    pub fn new(plate: String, class: String, name: String) -> Self {
         Self {
             plate,
             stored: true,
-            class: String::new(),
-            name: String::new(),
+            class,
+            name,
             id: uuid::Uuid::new_v4(),
         }
     }
