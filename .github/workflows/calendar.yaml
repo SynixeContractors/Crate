@@ -1,0 +1,59 @@
+name: calendar
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/calendar.yaml
+      - Cargo.toml
+      - bin/calendar/**
+      - lib/bootstrap/**
+      - lib/events/**
+      - lib/proc/**
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: Swatinem/rust-cache@v1
+        with:
+          key: calendar
+
+      - run: cargo build --release
+        working-directory: ./bin/calendar
+
+      - run: cp target/release/synixe-calendar ./bin/calendar/synixe-calendar
+
+      - name: Build Image
+        working-directory: ./bin/calendar
+        run: docker build . -t calendar
+
+      - name: Tag Image
+        run: docker tag calendar ghcr.io/synixecontractors/apps-calendar:latest
+
+      - name: Push Image
+        run: docker push ghcr.io/synixecontractors/apps-calendar:latest

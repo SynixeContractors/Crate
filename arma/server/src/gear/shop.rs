@@ -19,23 +19,23 @@ pub fn group() -> Group {
 
 fn command_items() {
     RUNTIME.spawn(async {
+        let context_store = CONTEXT.read().await;
+        let Some(context) = context_store.as_ref() else {
+            error!("command received before context was initialized");
+            return;
+        };
         let Ok(Ok((db::Response::ShopGetAll(Ok(items)), _))) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopGetAll {}
         ).await else {
             error!("failed to fetch shop items over nats");
-            CONTEXT.read().await.as_ref().unwrap().callback_null("crate:gear:shop", "items:err");
+            context.callback_null("crate:gear:shop", "items:err");
             return;
         };
-        CONTEXT
-            .read()
-            .await
-            .as_ref()
-            .unwrap()
-            .callback_null("crate:gear:shop", "items:clear");
+        context.callback_null("crate:gear:shop", "items:clear");
         for (class, (roles, price)) in items {
-            CONTEXT.read().await.as_ref().unwrap().callback_data(
+            context.callback_data(
                 "crate:gear:shop",
                 "items:set",
                 vec![
@@ -47,36 +47,40 @@ fn command_items() {
                 ],
             );
         }
-        CONTEXT
-            .read()
-            .await
-            .as_ref()
-            .unwrap()
-            .callback_null("crate:gear:shop", "items:publish");
+        context.callback_null("crate:gear:shop", "items:publish");
     });
 }
 
 fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>) {
+    let Ok(discord) = discord.parse::<u64>() else {
+        error!("invalid discord id: {}", discord);
+        return;
+    };
     clean_items(&mut items);
     RUNTIME.spawn(async move {
+        let context_store = CONTEXT.read().await;
+        let Some(context) = context_store.as_ref() else {
+            error!("command received before context was initialized");
+            return;
+        };
         debug!("entering shop for {} with {:?} items", discord, items.len());
         let Ok(Ok((db::Response::ShopEnter(Ok((locker, balance))), _))) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopEnter {
-                member: UserId(discord.parse().unwrap()),
+                member: UserId(discord),
                 items,
             }
         ).await else {
             error!("failed to enter shop over nats");
-            CONTEXT.read().await.as_ref().unwrap().callback_data(
+            context.callback_data(
                 "crate:gear:shop",
                 "enter:err",
                 vec![steam],
             );
             return;
         };
-        CONTEXT.read().await.as_ref().unwrap().callback_data(
+        context.callback_data(
             "crate:gear:shop",
             "enter:ok",
             vec![steam.to_arma(), locker.to_arma(), balance.to_arma()],
@@ -86,57 +90,71 @@ fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>
 }
 
 fn command_leave(discord: String, steam: String, loadout: String, mut items: HashMap<String, i32>) {
+    let Ok(discord) = discord.parse::<u64>() else {
+        error!("invalid discord id: {}", discord);
+        return;
+    };
     clean_items(&mut items);
     RUNTIME.spawn(async move {
+        let context_store = CONTEXT.read().await;
+        let Some(context) = context_store.as_ref() else {
+            error!("command received before context was initialized");
+            return;
+        };
         debug!("leaving shop for {} with {:?} items", discord, items.len());
         let Ok(Ok((db::Response::ShopLeave(Ok(())), _))) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopLeave {
-                member: UserId(discord.parse().unwrap()),
+                member: UserId(discord),
                 loadout: loadout.replace("\"\"", "\""),
                 items,
             }
         ).await else {
             error!("failed to leave shop over nats");
-            CONTEXT.read().await.as_ref().unwrap().callback_data(
+            context.callback_data(
                 "crate:gear:shop",
                 "leave:err",
                 vec![steam],
             );
             return;
         };
-        CONTEXT.read().await.as_ref().unwrap().callback_data(
-            "crate:gear:shop",
-            "leave:ok",
-            vec![steam.to_arma()],
-        );
+        context.callback_data("crate:gear:shop", "leave:ok", vec![steam.to_arma()]);
         debug!("shop left for {}", discord);
     });
 }
 
 fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i32>) {
+    let Ok(discord) = discord.parse::<u64>() else {
+        error!("invalid discord id: {}", discord);
+        return;
+    };
     clean_items(&mut items);
     items.retain(|_, v| *v > 0);
     RUNTIME.spawn(async move {
+        let context_store = CONTEXT.read().await;
+        let Some(context) = context_store.as_ref() else {
+            error!("command received before context was initialized");
+            return;
+        };
         debug!("purchasing for {}: {:?}", discord, items);
         let Ok(Ok((db::Response::ShopPurchase(Ok((locker, balance))), _))) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopPurchase {
-                member: UserId(discord.parse().unwrap()),
+                member: UserId(discord),
                 items,
             }
         ).await else {
             error!("failed to purchase items over nats");
-            CONTEXT.read().await.as_ref().unwrap().callback_data(
+            context.callback_data(
                 "crate:gear:shop",
                 "purchase:err",
                 vec![steam],
             );
             return;
         };
-        CONTEXT.read().await.as_ref().unwrap().callback_data(
+        context.callback_data(
             "crate:gear:shop",
             "purchase:ok",
             vec![steam.to_arma(), locker.to_arma(), balance.to_arma()],

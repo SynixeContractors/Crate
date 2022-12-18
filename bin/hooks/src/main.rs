@@ -29,7 +29,7 @@ async fn main() {
             .route_layer(middleware::from_fn(check_token)),
     );
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 6000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     debug!("Listening on {}", addr);
     Server::bind(&addr)
         .serve(app.into_make_service())

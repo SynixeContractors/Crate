@@ -1,0 +1,22 @@
+[package]
+name = "synixe-calendar"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-proc = { path = "../../lib/proc" }
+synixe-model = { path = "../../lib/model", features = ["missions"] }
+
+axum = "0.6.1"
+chrono = "0.4.23"
+icalendar = "0.14.2"
+nats = { workspace = true }
+time = { workspace = true }
+time-tz = "1.0.2"
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+
+[build-dependencies]
+vergen = { workspace = true }

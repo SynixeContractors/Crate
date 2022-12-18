@@ -24,10 +24,11 @@ pub async fn heart() {
 pub async fn events() {
     let nats = bootstrap::NC::get().await;
 
-    let sub = nats
+    let Ok(sub) = nats
         .queue_subscribe("synixe.publish.>", &format!("arma-server-{}", *SERVER_ID))
-        .await
-        .unwrap();
+        .await else {
+            panic!("failed to subscribe to publish events");
+        };
     while let Some(msg) = sub.next().await {
         synixe_events::listener!(
             msg.clone(),

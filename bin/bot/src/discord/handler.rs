@@ -188,22 +188,4 @@ impl EventHandler for Handler {
                 .unwrap();
         }
     }
-
-    async fn reaction_add(&self, _ctx: Context, reaction: Reaction) {
-        publish!(
-            bootstrap::NC::get().await,
-            Publish::ReactionAdd { reaction }
-        )
-        .await
-        .unwrap();
-    }
-
-    async fn reaction_remove(&self, _ctx: Context, reaction: Reaction) {
-        publish!(
-            bootstrap::NC::get().await,
-            Publish::ReactionRemove { reaction }
-        )
-        .await
-        .unwrap();
-    }
 }

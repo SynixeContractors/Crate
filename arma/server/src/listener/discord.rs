@@ -19,7 +19,6 @@ impl Listener for Publish {
             return Ok(());
         };
         match &self {
-            Self::ReactionRemove { reaction: _ } | Self::ReactionAdd { reaction: _ } => Ok(()),
             Self::MemberUpdate { member } => {
                 if let Some(steam) = STEAM_CACHE.read().await.get(&member.user.id.to_string()) {
                     context.callback_data(

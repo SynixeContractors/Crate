@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "synixe.fullname" . }}-hooks
+  name: {{ include "synixe.fullname" . }}-calendar
   labels:
     {{- include "synixe.labels" . | nindent 4 }}
-    app: hooks
+    app: calendar
 spec:
   replicas: 1
   selector:
     matchLabels:
       {{- include "synixe.selectorLabels" . | nindent 6 }}
-      app: hooks
+      app: calendar
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -19,7 +19,7 @@ spec:
       {{- end }}
       labels:
         {{- include "synixe.selectorLabels" . | nindent 8 }}
-        app: hooks
+        app: calendar
     spec:
       imagePullSecrets:
         {{- if .Values.regcred }}
@@ -32,7 +32,7 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: synixe-hooks
+        - name: synixe-calendar
           env:
             - name: HOOKS_TOKEN
               value: {{ .Values.config.hooks_token | quote }}
@@ -42,15 +42,15 @@ spec:
               value: {{ .Values.config.lightstep_access_token | quote }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "ghcr.io/synixecontractors/apps-hooks:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "ghcr.io/synixecontractors/apps-calendar:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             requests:
-              memory: {{ dig "resources" "requests" "hooks" "memory" "5Mi" (.Values | merge (dict)) | quote }}
-              cpu: {{ dig "resources" "requests" "hooks" "cpu" "100m" (.Values | merge (dict)) | quote }}
+              memory: {{ dig "resources" "requests" "calendar" "memory" "5Mi" (.Values | merge (dict)) | quote }}
+              cpu: {{ dig "resources" "requests" "calendar" "cpu" "100m" (.Values | merge (dict)) | quote }}
             limits:
-              memory: {{ dig "resources" "limits" "hooks" "memory" "20Mi" (.Values | merge (dict)) | quote }}
-              cpu: {{ dig "resources" "limits" "hooks" "cpu" "500m" (.Values | merge (dict)) | quote }}
+              memory: {{ dig "resources" "limits" "calendar" "memory" "20Mi" (.Values | merge (dict)) | quote }}
+              cpu: {{ dig "resources" "limits" "calendar" "cpu" "500m" (.Values | merge (dict)) | quote }}
           ports:
             - name: http
               containerPort: 3000

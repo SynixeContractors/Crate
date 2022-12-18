@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cluster-synixe-cert
+  namespace: synixe
+spec:
+  commonName: cluster.synixe.contractors
+  secretName: cluster-synixe-cert
+  dnsNames:
+    - cluster.synixe.contractors
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer

@@ -7,6 +7,7 @@ members = [
     "lib/proc",
 
     "bin/bot",
+    "bin/calendar",
     "bin/db",
     "bin/executor",
     "bin/hooks",
@@ -16,7 +17,7 @@ members = [
 ]
 
 [workspace.dependencies]
-anyhow = "1.0.66"
+anyhow = "1.0.67"
 arma-rs = "1.8.2"
 async-trait = "0.1.59"
 nats = { version = "0.23.1" }

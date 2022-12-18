@@ -62,14 +62,17 @@ fn init() -> Extension {
     std::thread::spawn(move || {
         RUNTIME.block_on(async {
             *CONTEXT.write().await = Some(ctx_tokio);
-            publish!(
+            if let Err(e) = publish!(
                 bootstrap::NC::get().await,
                 Publish::Wake {
                     id: SERVER_ID.clone(),
                 }
             )
             .await
-            .unwrap();
+            {
+                error!("failed to publish wake event: {e}");
+                panic!("failed to publish wake event: {e}");
+            }
             tokio::join!(background::heart(), background::events());
         });
     });

@@ -1,0 +1,17 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  labels:
+    {{- include "synixe.labels" . | nindent 4 }}
+  name: {{ include "synixe.fullname" . }}-calendar
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - match: Host(`cluster.synixe.contractors`) && PathPrefix(`/calendar`)
+    kind: Rule
+    services:
+    - name: {{ include "synixe.fullname" . }}-calendar
+      port: http
+  tls:
+    secretName: cluster-synixe-cert

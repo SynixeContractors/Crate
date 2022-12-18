@@ -11,13 +11,17 @@ pub fn group() -> Group {
         .command("save_dlc", command_save_dlc)
 }
 
-#[allow(clippy::manual_let_else)] // seems to be a false positive
 /// Fetches a user's discord id and roles
 fn command_get(steam: String, name: String) {
     if steam == "_SP_PLAYER_" {
         return;
     }
     RUNTIME.spawn(async move {
+        let context_store = CONTEXT.read().await;
+        let Some(context) = context_store.as_ref() else {
+            error!("command received before context was initialized");
+            return;
+        };
         let Ok(Ok((db::Response::FromSteam(resp), _))) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::discord::db,
@@ -26,7 +30,7 @@ fn command_get(steam: String, name: String) {
             }
         ).await else {
             error!("failed to fetch discord id over nats");
-            CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:err", vec![
+            context.callback_data("crate:discord", "member:get:err", vec![
                 arma_rs::Value::String(steam),
             ]);
             return;
@@ -41,7 +45,7 @@ fn command_get(steam: String, name: String) {
             ).await else {
                 error!("failed to check for name match over nats");
                 audit(format!("Steam account {steam} failed to link using the name {name}")).await;
-                CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:needs_link", vec![steam.clone()]);
+                context.callback_data("crate:discord", "member:get:needs_link", vec![steam.clone()]);
                 return;
             };
             let Ok(Ok((db::Response::SaveSteam(Ok(())), _))) = events_request!(
@@ -53,7 +57,7 @@ fn command_get(steam: String, name: String) {
                 }
             ).await else {
                 error!("failed to save discord id over nats");
-                CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:err", vec![
+                context.callback_data("crate:discord", "member:get:err", vec![
                     arma_rs::Value::String(steam),
                 ]);
                 return;
@@ -61,28 +65,35 @@ fn command_get(steam: String, name: String) {
             audit(format!("Steam account {steam} is now linked to <@{discord_id}>")).await;
             discord_id.to_string()
         };
+        let Ok(discord_id_u64) = discord_id.parse::<u64>() else {
+            error!("failed to parse discord id");
+            context.callback_data("crate:discord", "member:get:err", vec![
+                arma_rs::Value::String(steam),
+            ]);
+            return;
+        };
         let Ok(Ok((info::Response::MemberRoles(resp), _))) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::discord::info,
             MemberRoles {
-                user: UserId(discord_id.parse().unwrap()),
+                user: UserId(discord_id_u64),
             }
         ).await else {
             error!("failed to fetch discord roles over nats");
-            CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:err", vec![
+            context.callback_data("crate:discord", "member:get:err", vec![
                 arma_rs::Value::String(steam),
             ]);
             return;
         };
         let Ok(roles) = resp else {
             error!("failed to fetch discord roles over nats");
-            CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:err", vec![
+            context.callback_data("crate:discord", "member:get:err", vec![
                 arma_rs::Value::String(steam),
             ]);
             return;
         };
         STEAM_CACHE.write().await.insert(discord_id.clone(), steam.clone());
-        CONTEXT.read().await.as_ref().unwrap().callback_data("crate:discord", "member:get:ok", vec![
+        context.callback_data("crate:discord", "member:get:ok", vec![
             arma_rs::Value::String(steam),
             arma_rs::Value::String(discord_id),
             arma_rs::Value::Array(
@@ -97,12 +108,16 @@ fn command_get(steam: String, name: String) {
 }
 
 fn command_save_dlc(discord: String, dlc: Vec<u32>) {
+    let Ok(discord_u64) = discord.parse::<u64>() else {
+        error!("failed to parse discord id");
+        return;
+    };
     RUNTIME.spawn(async move {
         let Ok(Ok((db::Response::SaveDLC(Ok(())), _))) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::discord::db,
             SaveDLC {
-                member: UserId(discord.parse().unwrap()),
+                member: UserId(discord_u64),
                 dlc,
             }
         ).await else {
