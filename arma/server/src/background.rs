@@ -23,18 +23,25 @@ pub async fn heart() {
 
 pub async fn events() {
     let nats = bootstrap::NC::get().await;
-
-    let sub = nats
-        .queue_subscribe("synixe.publish.>", &format!("arma-server-{}", *SERVER_ID))
-        .await
-        .unwrap();
-    while let Some(msg) = sub.next().await {
-        let nats = nats.clone();
-        synixe_events::listener!(
-            msg,
-            nats,
-            synixe_events::discord::publish::Publish,
-            synixe_events::missions::publish::Publish
-        );
+    loop {
+        debug!("Starting event listener...");
+        let sub = nats
+            .queue_subscribe("synixe.publish.>", &format!("arma-server-{}", *SERVER_ID))
+            .await
+            .unwrap();
+        let inner = panic::catch_unwind(|| {
+            while let Some(msg) = sub.next().await {
+                let nats = nats.clone();
+                synixe_events::listener!(
+                    msg,
+                    nats,
+                    synixe_events::discord::publish::Publish,
+                    synixe_events::missions::publish::Publish
+                );
+            }
+        });
+        if let Err(e) = inner {
+            error!("panic while handling event: {:?}", e);
+        }
     }
 }
