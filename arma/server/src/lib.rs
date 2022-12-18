@@ -70,8 +70,7 @@ fn init() -> Extension {
             )
             .await
             .unwrap();
-            background::events();
-            background::heart().await;
+            tokio::join!(background::heart(), background::events());
         });
     });
     logger::init(ext.context());
