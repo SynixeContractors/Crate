@@ -13,10 +13,9 @@ pub async fn start() {
         .await
         .unwrap();
     while let Some(msg) = sub.next().await {
-        let nats = nats.clone();
         synixe_events::listener!(
-            msg,
-            nats,
+            msg.clone(),
+            nats.clone(),
             synixe_events::certifications::publish::Publish,
             synixe_events::missions::publish::Publish
         );

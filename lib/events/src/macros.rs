@@ -32,7 +32,6 @@ macro_rules! listener {
                 if let Err(e) = ev.listen($msg, $nats).await {
                     error!("Error in handler {}: {}", sub, e);
                 }
-                continue
             }
         )*
     }}
