@@ -51,5 +51,5 @@ async fn calendar() -> impl IntoResponse {
                 .done(),
         );
     }
-    calendar.to_string()
+    calendar.name("Synixe Contractors").to_string()
 }
