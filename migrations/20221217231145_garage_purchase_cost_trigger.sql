@@ -1,11 +1,8 @@
 -- Add migration script here
 CREATE OR REPLACE FUNCTION add_cost_to_garage_purchase() RETURNS TRIGGER AS $$
-DECLARE
-    cost INTEGER;
 BEGIN
     IF NEW.cost IS NULL THEN
-        SELECT cost INTO cost FROM garage_shop WHERE id = NEW.id;
-        NEW.cost = cost;
+        NEW.cost = (SELECT cost FROM garage_shop WHERE id = NEW.id);
     END IF;
     RETURN NEW;
 END;
