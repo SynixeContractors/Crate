@@ -65,7 +65,7 @@ pub async fn has_seen(url: String) -> bool {
         HasSeen { url }
     )
     .await;
-    if let Ok((ev, _)) = req {
+    if let Ok(Ok((ev, _))) = req {
         if let db::Response::HasSeen(seen) = ev {
             if let Ok(seen) = seen {
                 return seen == Some(Some(true));

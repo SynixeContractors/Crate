@@ -10,12 +10,18 @@ use crate::{CONTEXT, SERVER_ID};
 use super::Listener;
 
 #[async_trait]
+#[deny(clippy::unwrap_used)]
 impl Listener for Publish {
     async fn listen(
         &self,
         _msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
+        let context_store = CONTEXT.read().await;
+        let Some(context) = context_store.as_ref() else {
+            error!("event received before context was initialized");
+            return Ok(());
+        };
         match &self {
             Self::StartingSoon {
                 mission,
@@ -24,7 +30,7 @@ impl Listener for Publish {
             } => {
                 match minutes {
                     4..=6 | 9..=11 | 14..=16 | 29..=31 | 59..=61 | 89..=91 | 119..=121 => {
-                        CONTEXT.read().await.as_ref().unwrap().callback_data(
+                        context.callback_data(
                             "crate",
                             "global_message",
                             vec![arma_rs::Value::String(format!(
@@ -34,7 +40,7 @@ impl Listener for Publish {
                         );
                     }
                     -1..=1 => {
-                        CONTEXT.read().await.as_ref().unwrap().callback_data(
+                        context.callback_data(
                             "crate",
                             "global_message",
                             vec![arma_rs::Value::String(format!(
@@ -48,6 +54,10 @@ impl Listener for Publish {
                 Ok(())
             }
             Self::ChangeMission { id, mission_type } => {
+                let Ok(regex) = Regex::new(r"(?m)template = ([^;]+);") else {
+                    error!("failed to compile regex");
+                    return Ok(());
+                };
                 match mission_type {
                     MissionType::Contract | MissionType::SubContract | MissionType::Special => {
                         if *SERVER_ID != "primary-contracts" {
@@ -56,14 +66,14 @@ impl Listener for Publish {
                     }
                     _ => return Ok(()),
                 }
-                CONTEXT.read().await.as_ref().unwrap().callback_data(
+                context.callback_data(
                     "crate",
                     "global_message",
                     vec![arma_rs::Value::String(format!(
                         "[Mission] You will be disconnected. Server is changing mission: {id}"
                     ))],
                 );
-                CONTEXT.read().await.as_ref().unwrap().callback_data(
+                context.callback_data(
                     "crate",
                     "global_message",
                     vec![arma_rs::Value::String(
@@ -72,15 +82,9 @@ impl Listener for Publish {
                     )],
                 );
                 tokio::time::sleep(std::time::Duration::from_secs(30)).await;
-                CONTEXT
-                    .read()
-                    .await
-                    .as_ref()
-                    .unwrap()
-                    .callback_null("crate", "restart");
+                context.callback_null("crate", "restart");
                 tokio::time::sleep(std::time::Duration::from_secs(30)).await;
                 let current_config = std::fs::read_to_string("./configs/main.cfg")?;
-                let regex = Regex::new(r"(?m)template = ([^;]+);").unwrap();
                 let new_config = regex
                     .replace_all(&current_config, format!("template = {id};"))
                     .to_string();
@@ -93,7 +97,7 @@ impl Listener for Publish {
                 id,
                 mission_type: _,
             } => {
-                CONTEXT.read().await.as_ref().unwrap().callback_data(
+                context.callback_data(
                     "crate",
                     "global_message",
                     vec![arma_rs::Value::String(format!(

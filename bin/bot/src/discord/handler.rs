@@ -141,7 +141,7 @@ impl EventHandler for Handler {
             .unwrap();
         }
         if new.roles.contains(&synixe_meta::discord::role::RECRUIT) {
-            let Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _)) = events_request!(
+            let Ok(Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _))) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
                 BankDepositSearch {
@@ -156,7 +156,7 @@ impl EventHandler for Handler {
             if !deposits.is_empty() {
                 return;
             }
-            let Ok((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _)) = events_request!(
+            let Ok(Ok((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _))) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
                 BankDepositNew {

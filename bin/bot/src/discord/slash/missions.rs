@@ -113,7 +113,7 @@ pub async fn schedule_autocomplete(ctx: &Context, autocomplete: &AutocompleteInt
 #[allow(clippy::too_many_lines)]
 pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction) {
     let message = component.message.id;
-    let Ok((Response::FetchScheduledMission(Ok(Some(scheduled))), _)) =
+    let Ok(Ok((Response::FetchScheduledMission(Ok(Some(scheduled))), _))) =
         events_request!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
@@ -123,7 +123,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
             error!("Failed to fetch scheduled mission for component");
             return;
         };
-    let Ok((Response::FetchMission(Ok(Some(mission))), _)) =
+    let Ok(Ok((Response::FetchMission(Ok(Some(mission))), _))) =
         events_request!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
@@ -135,7 +135,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
         };
     match component.data.custom_id.as_str() {
         "rsvp_yes" => {
-            let Ok((Response::AddMissionRsvp(Ok(())), _)) =
+            let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
                 events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
@@ -175,7 +175,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                 warn!("No reason provided for rsvp_maybe");
                 return
             };
-            let Ok((Response::AddMissionRsvp(Ok(())), _)) =
+            let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
                 events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
@@ -208,7 +208,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                 warn!("No reason provided for rsvp_no");
                 return
             };
-            let Ok((Response::AddMissionRsvp(Ok(())), _)) =
+            let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
                 events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
@@ -229,7 +229,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
             warn!("Unknown component id: {}", component.data.custom_id);
         }
     }
-    let Ok((Response::FetchMissionRsvps(Ok(rsvps)), _)) =
+    let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) =
             events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
@@ -268,12 +268,13 @@ async fn new(
         &mut interaction,
     )
     .await;
-    if let Ok((Response::IsScheduled(Ok(Some(Some(false) | None) | None)), _)) = events_request!(
-        bootstrap::NC::get().await,
-        synixe_events::missions::db,
-        IsScheduled { date }
-    )
-    .await
+    if let Ok(Ok((Response::IsScheduled(Ok(Some(Some(false) | None) | None)), _))) =
+        events_request!(
+            bootstrap::NC::get().await,
+            synixe_events::missions::db,
+            IsScheduled { date }
+        )
+        .await
     {
         debug!("No mission scheduled for {}", date);
     } else {
@@ -294,7 +295,7 @@ async fn new(
         .unwrap()
         .as_str()
         .unwrap();
-    let Ok((Response::FetchMissionList(Ok(missions)), _)) = events_request!(
+    let Ok(Ok((Response::FetchMissionList(Ok(missions)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
@@ -367,7 +368,7 @@ async fn new_autocomplete(
     if focus.name != "mission" {
         return;
     }
-    let Ok((Response::FetchMissionList(Ok(mut missions)), _)) = events_request!(
+    let Ok(Ok((Response::FetchMissionList(Ok(mut missions)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
@@ -407,10 +408,10 @@ async fn upcoming(
     )
     .await
     {
-        Ok((Response::UpcomingSchedule(Ok(upcoming)), _)) => {
+        Ok(Ok((Response::UpcomingSchedule(Ok(upcoming)), _))) => {
             let mut content = String::from("**Upcoming Missions**\n\n");
             for mission in upcoming {
-                if let Ok((Response::FetchMission(Ok(Some(data))), _)) = events_request!(
+                if let Ok(Ok((Response::FetchMission(Ok(Some(data))), _))) = events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     FetchMission {
@@ -458,7 +459,7 @@ pub async fn remove(
     let time_format = format_description::parse(TIME_FORMAT).unwrap();
     debug!("fetching missions");
     interaction.reply("Fetching missions...").await;
-    let Ok((Response::UpcomingSchedule(Ok(missions)), _)) = events_request!(
+    let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         UpcomingSchedule {}
@@ -506,7 +507,7 @@ pub async fn remove(
         .await;
     match confirm {
         Confirmation::Yes => {
-            if let Ok((Response::Unschedule(Ok(())), _)) = events_request!(
+            if let Ok(Ok((Response::Unschedule(Ok(())), _))) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 Unschedule {
@@ -570,7 +571,7 @@ async fn post(
     .await;
     debug!("fetching missions");
     interaction.reply("Fetching missions...").await;
-    let Ok((Response::UpcomingSchedule(Ok(missions)), _)) = events_request!(
+    let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         UpcomingSchedule {}
@@ -599,7 +600,7 @@ async fn post(
         .await;
     match confirm {
         Confirmation::Yes => {
-            if let Ok((Response::FetchMission(Ok(Some(mission))), _)) = events_request!(
+            if let Ok(Ok((Response::FetchMission(Ok(Some(mission))), _))) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 FetchMission {
@@ -608,7 +609,7 @@ async fn post(
             )
             .await
             {
-                let Ok((Response::FetchMissionRsvps(Ok(rsvps)), _)) =
+                let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) =
                     events_request!(
                         bootstrap::NC::get().await,
                         synixe_events::missions::db,
@@ -668,7 +669,7 @@ async fn post(
                     })
                     .await
                     .unwrap();
-                if let Ok((Response::SetScheduledMesssage(Ok(())), _)) = events_request!(
+                if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     SetScheduledMesssage {

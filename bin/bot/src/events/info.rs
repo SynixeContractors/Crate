@@ -6,7 +6,9 @@ use synixe_events::{discord::info, respond};
 use crate::Bot;
 
 pub async fn handle(msg: Message, client: Bot) {
-    let (ev, _) = synixe_events::parse_data!(msg, info::Request);
+    let Ok((ev, _)) = synixe_events::parse_data!(msg, info::Request) else {
+        return;
+    };
     match ev {
         info::Request::Username { user } => {
             match synixe_meta::discord::GUILD.member(&client, user).await {

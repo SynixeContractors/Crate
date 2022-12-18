@@ -8,7 +8,9 @@ use crate::Bot;
 
 #[allow(clippy::too_many_lines)]
 pub async fn handle(msg: Message, client: Bot) {
-    let (ev, _) = synixe_events::parse_data!(msg, write::Request);
+    let Ok((ev, _)) = synixe_events::parse_data!(msg, write::Request) else {
+        return;
+    };
     match ev {
         write::Request::ChannelMessage {
             channel,

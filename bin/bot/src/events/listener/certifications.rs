@@ -19,7 +19,7 @@ impl Listener for Publish {
             Self::TrialSubmitted { trial } => {
                 info!("Trial submitted: {:?}", trial);
                 if trial.passed {
-                    if let Ok((Response::List(Ok(certs)), _)) =
+                    if let Ok(Ok((Response::List(Ok(certs)), _))) =
                         events_request!(nats, synixe_events::certifications::db, List {}).await
                     {
                         let cert = certs
@@ -50,7 +50,7 @@ impl Listener for Publish {
                 Ok(())
             }
             Self::TrialExpiring { trial, days } => {
-                if let Ok((Response::List(Ok(certs)), _)) =
+                if let Ok(Ok((Response::List(Ok(certs)), _))) =
                     events_request!(nats, synixe_events::certifications::db, List {}).await
                 {
                     let message = if *days == 0 {

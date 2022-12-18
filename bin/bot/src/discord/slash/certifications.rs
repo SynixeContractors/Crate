@@ -112,7 +112,7 @@ async fn trial(
 ) {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
     interaction.reply("Fetching certifications...").await;
-    let Ok((Response::ListInstructor(Ok(certs)), _)) = events_request!(
+    let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         ListInstructor {
@@ -184,7 +184,7 @@ async fn trial(
     )
     .await
     {
-        Err(e) | Ok((Response::Certify(Err(e)), _)) => {
+        Err(e) | Ok(Ok((Response::Certify(Err(e)), _))) => {
             interaction
                 .reply(format!("Failed to submit trial: {e}"))
                 .await;
@@ -213,7 +213,7 @@ async fn trial_autocomplete(
     if focus.name != "certification" {
         return;
     }
-    let Ok((Response::ListInstructor(Ok(certs)), _)) = events_request!(
+    let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         ListInstructor {
@@ -271,7 +271,7 @@ async fn view(
         .unwrap() else {
         panic!("Invalid member");
     };
-    let Ok((Response::Active(Ok(certs)), _)) = events_request!(
+    let Ok(Ok((Response::Active(Ok(certs)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         Active { member: user.id }
@@ -289,7 +289,7 @@ async fn view(
     }
     let mut content = format!("**<@{}> Certifications**\n\n", user.id);
     for cert in certs {
-        if let Ok((Response::Name(Ok(Some(name))), _)) = events_request!(
+        if let Ok(Ok((Response::Name(Ok(Some(name))), _))) = events_request!(
             bootstrap::NC::get().await,
             synixe_events::certifications::db,
             Name {
@@ -325,7 +325,7 @@ async fn list(
 ) {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
     interaction.reply("Fetching certifications...").await;
-    let Ok((Response::List(Ok(mut certs)), _)) = events_request!(
+    let Ok(Ok((Response::List(Ok(mut certs)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         List {}

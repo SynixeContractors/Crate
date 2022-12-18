@@ -23,7 +23,7 @@ impl Handler for Request {
         match &self {
             Self::CheckExpiries {} => {
                 respond!(msg, Response::CheckExpiries(Ok(()))).await?;
-                let Ok((db::Response::AllExpiring(Ok(expiring)), _)) = events_request!(
+                let Ok(Ok((db::Response::AllExpiring(Ok(expiring)), _))) = events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::certifications::db,
                     AllExpiring { days: 30 }
@@ -69,14 +69,14 @@ impl Handler for Request {
             }
             Self::CheckRoles {} => {
                 respond!(msg, Response::CheckRoles(Ok(()))).await?;
-                let Ok((db::Response::AllActive(Ok(active)), _)) = events_request!(
+                let Ok(Ok((db::Response::AllActive(Ok(active)), _))) = events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::certifications::db,
                     AllActive {}
                 ).await else {
                     return Ok(());
                 };
-                if let Ok((db::Response::List(Ok(certs)), _)) = events_request!(
+                if let Ok(Ok((db::Response::List(Ok(certs)), _))) = events_request!(
                     bootstrap::NC::get().await,
                     synixe_events::certifications::db,
                     List {}
@@ -88,7 +88,7 @@ impl Handler for Request {
                             .iter()
                             .find(|cert| cert.id == trial.certification)
                             .unwrap();
-                        events_request!(
+                        if let Err(e) = events_request!(
                             bootstrap::NC::get().await,
                             synixe_events::discord::write,
                             EnsureRoles {
@@ -101,7 +101,10 @@ impl Handler for Request {
                             }
                         )
                         .await
-                        .unwrap();
+                        .unwrap()
+                        {
+                            error!("Failed to ensure roles for trial {}: {}", trial.id, e);
+                        }
                     }
                 }
                 Ok(())

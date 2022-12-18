@@ -144,7 +144,9 @@ mod tests {
                 .unwrap();
                 let sub = nats.subscribe("synixe.publish.arma_server").unwrap();
                 while let Some(msg) = sub.next() {
-                    let (data, _) = synixe_events::parse_data!(msg, publish::Publish);
+                    let Ok((data, _)) = synixe_events::parse_data!(msg, publish::Publish) else {
+                        continue;
+                    };
                     match data {
                         publish::Publish::Wake { id } | publish::Publish::Heartbeat { id } => {
                             if id == key {

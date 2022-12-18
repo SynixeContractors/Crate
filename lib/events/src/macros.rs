@@ -7,7 +7,10 @@ macro_rules! handler {
         let sub = subject.as_str();
         $(
             if sub == <$events>::path() {
-                let (ev, _) = synixe_events::parse_data!($msg, $events);
+                let Ok((ev, _)) = synixe_events::parse_data!($msg, $events) else {
+                    error!("Failed to parse event: {}", sub);
+                    continue
+                };
                 debug!("Handling event: {}", ev.name());
                 if let Err(e) = ev.handle($msg, $nats).await {
                     error!("Error in handler {}: {}", sub, e);
@@ -27,7 +30,10 @@ macro_rules! listener {
         let sub = subject.as_str();
         $(
             if sub == <$events>::path() {
-                let (ev, pcx) = synixe_events::parse_data!($msg, $events);
+                let Ok((ev, pcx)) = synixe_events::parse_data!($msg, $events) else {
+                    error!("Failed to parse event: {}", sub);
+                    continue
+                };
                 debug!("Handling event: {}", ev.name());
                 if let Err(e) = ev.listen($msg, $nats).await {
                     error!("Error in handler {}: {}", sub, e);
@@ -63,8 +69,6 @@ macro_rules! respond {
 /// Unwraps an event.
 macro_rules! parse_data {
     ($msg:expr, $t:ty) => {{
-        $crate::serde_json::from_slice::<$crate::Wrapper<$t>>(&$msg.data)
-            .unwrap()
-            .into_parts()
+        $crate::serde_json::from_slice::<$crate::Wrapper<$t>>(&$msg.data).map(|d| d.into_parts())
     }};
 }
