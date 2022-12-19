@@ -162,16 +162,16 @@ async fn transfer(
         interaction.reply("Failed to transfer money").await;
         return;
     };
-    interaction
-        .reply(format!(
-            "Transferred ${} to <@{}>",
-            bootstrap::format::money(*amount as i32),
-            user.id
-        ))
-        .await;
+    let reply = format!(
+        "Transferred ${} to <@{}>",
+        bootstrap::format::money(*amount as i32),
+        user.id
+    );
+    interaction.reply(&reply).await;
 
     let Ok(private_channel) = user.create_dm_channel(&ctx).await else {
         error!("Unable to create DM channel for transfer notification");
+        interaction.reply(&format!("{reply}, but I wasn't able to notify them")).await;
         return;
     };
 
@@ -179,13 +179,17 @@ async fn transfer(
         .say(
             &ctx.http,
             format!(
-                "<@{}> transferred you ${}",
+                "<@{}> transferred you ${}\n> {}",
                 command.member.as_ref().unwrap().user.id,
-                bootstrap::format::money(*amount as i32)
+                bootstrap::format::money(*amount as i32),
+                reason.clone(),
             ),
         )
         .await
     {
         error!("failed to send dm: {}", e);
+        interaction
+            .reply(&format!("{reply}, but I wasn't able to notify them"))
+            .await;
     }
 }
