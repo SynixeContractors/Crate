@@ -16,7 +16,6 @@ impl Listener for Publish {
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::StartingSoon {
-                mission: _,
                 scheduled,
                 minutes,
             } => {

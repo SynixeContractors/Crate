@@ -58,70 +58,58 @@ impl Handler for Request {
                             }
                         }
                         for (text, scheduled, minutes) in posts {
-                            if let Ok(Ok((db::Response::FetchMission(Ok(Some(mission))), _))) =
-                                events_request!(
+                            if let Some(text) = text {
+                                if let Err(e) = events_request!(
                                     bootstrap::NC::get().await,
-                                    synixe_events::missions::db,
-                                    FetchMission {
-                                        mission: scheduled.mission.clone()
+                                    synixe_events::discord::write,
+                                    ChannelMessage {
+                                        channel: ONTOPIC,
+                                        message: DiscordMessage {
+                                            content: DiscordContent::Text(format!(
+                                                "**{}** starts in {text}",
+                                                scheduled.name
+                                            )),
+                                            reactions: Vec::new(),
+                                        },
+                                        thread: None,
                                     }
                                 )
                                 .await
-                            {
-                                if let Some(text) = text {
-                                    if let Err(e) = events_request!(
-                                        bootstrap::NC::get().await,
-                                        synixe_events::discord::write,
-                                        ChannelMessage {
-                                            channel: ONTOPIC,
-                                            message: DiscordMessage {
-                                                content: DiscordContent::Text(format!(
-                                                    "**{}** starts in {text}",
-                                                    mission.name
-                                                )),
-                                                reactions: Vec::new(),
-                                            },
-                                            thread: None,
-                                        }
-                                    )
-                                    .await
-                                    {
-                                        error!("error posting to reddit: {:?}", e);
-                                    }
-                                } else if let Some(event) = match minutes {
-                                    // Warn the mission will change 80 minutes before it starts
-                                    78..=82 => Some(synixe_events::missions::publish::Publish::WarnChangeMission {
-                                        id: scheduled.mission.clone(),
-                                        mission_type: mission.typ
-                                    }),
-                                    // Change the mission 70 minutes before it starts
-                                    68..=72 => Some(synixe_events::missions::publish::Publish::ChangeMission {
-                                        id: scheduled.mission.clone(),
-                                        mission_type: mission.typ
-                                    }),
-                                    _ => None,
-                                } {
-                                    if let Err(e) = publish!(
-                                        bootstrap::NC::get().await,
-                                        event
-                                    )
-                                    .await
-                                    {
-                                        error!("Failed to publish discord message: {}", e);
-                                    }
+                                {
+                                    error!("error posting to reddit: {:?}", e);
                                 }
+                            } else if let Some(event) = match minutes {
+                                // Warn the mission will change 80 minutes before it starts
+                                78..=82 => Some(synixe_events::missions::publish::Publish::WarnChangeMission {
+                                    id: scheduled.mission.clone(),
+                                    mission_type: scheduled.typ
+                                }),
+                                // Change the mission 70 minutes before it starts
+                                68..=72 => Some(synixe_events::missions::publish::Publish::ChangeMission {
+                                    id: scheduled.mission.clone(),
+                                    mission_type: scheduled.typ
+                                }),
+                                _ => None,
+                            } {
                                 if let Err(e) = publish!(
                                     bootstrap::NC::get().await,
-                                    synixe_events::missions::publish::Publish::StartingSoon {
-                                        mission,
-                                        scheduled,
-                                        minutes,
-                                    }
+                                    event
                                 )
                                 .await
                                 {
                                     error!("Failed to publish discord message: {}", e);
                                 }
+                            }
+                            if let Err(e) = publish!(
+                                bootstrap::NC::get().await,
+                                synixe_events::missions::publish::Publish::StartingSoon {
+                                    scheduled,
+                                    minutes,
+                                }
+                            )
+                            .await
+                            {
+                                error!("Failed to publish discord message: {}", e);
                             }
                         }
                         Ok(())

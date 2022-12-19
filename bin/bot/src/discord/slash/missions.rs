@@ -15,7 +15,7 @@ use serenity::{
 };
 use synixe_events::missions::db::Response;
 use synixe_meta::discord::{channel::SCHEDULE, role::MISSION_REVIEWER};
-use synixe_model::missions::{Mission, MissionRsvp, Rsvp, ScheduledMission};
+use synixe_model::missions::{MissionRsvp, Rsvp, ScheduledMission};
 use synixe_proc::events_request;
 use time::format_description;
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
@@ -121,16 +121,6 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
         )
         .await else {
             error!("Failed to fetch scheduled mission for component");
-            return;
-        };
-    let Ok(Ok((Response::FetchMission(Ok(Some(mission))), _))) =
-        events_request!(
-            bootstrap::NC::get().await,
-            synixe_events::missions::db,
-            FetchMission { mission: scheduled.mission.clone() }
-        )
-        .await else {
-            error!("Failed to fetch mission for component");
             return;
         };
     match component.data.custom_id.as_str() {
@@ -243,7 +233,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
         .channel_id
         .edit_message(&ctx.http, message, |s| {
             s.embed(|e| {
-                make_post_embed(e, &mission, &scheduled, &rsvps);
+                make_post_embed(e, &scheduled, &rsvps);
                 e
             });
             s
@@ -410,24 +400,14 @@ async fn upcoming(
     {
         Ok(Ok((Response::UpcomingSchedule(Ok(upcoming)), _))) => {
             let mut content = String::from("**Upcoming Missions**\n\n");
-            for mission in upcoming {
-                if let Ok(Ok((Response::FetchMission(Ok(Some(data))), _))) = events_request!(
-                    bootstrap::NC::get().await,
-                    synixe_events::missions::db,
-                    FetchMission {
-                        mission: mission.mission
-                    }
-                )
-                .await
-                {
-                    content.push_str(&format!(
-                        "**{}**\n<t:{}:F> - <t:{}:R>\n*{}*\n\n",
-                        data.name,
-                        mission.start.unix_timestamp(),
-                        mission.start.unix_timestamp(),
-                        data.summary,
-                    ));
-                }
+            for scheduled in upcoming {
+                content.push_str(&format!(
+                    "**{}**\n<t:{}:F> - <t:{}:R>\n*{}*\n\n",
+                    scheduled.name,
+                    scheduled.start.unix_timestamp(),
+                    scheduled.start.unix_timestamp(),
+                    scheduled.summary,
+                ));
             }
             interaction.reply(content).await;
         }
@@ -600,93 +580,83 @@ async fn post(
         .await;
     match confirm {
         Confirmation::Yes => {
-            if let Ok(Ok((Response::FetchMission(Ok(Some(mission))), _))) = events_request!(
+            let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) =
+                events_request!(
+                    bootstrap::NC::get().await,
+                    synixe_events::missions::db,
+                    FetchMissionRsvps { scheduled: scheduled.id }
+                )
+                .await
+            else {
+                return interaction.reply("Failed to fetch rsvps").await;
+            };
+            let sched = SCHEDULE
+                .send_message(&ctx, |s| {
+                    s.embed(|f| {
+                        make_post_embed(f, scheduled, &rsvps);
+                        f
+                    });
+                    s.components(|c| {
+                        c.create_action_row(|r| {
+                            r.create_button(|b| {
+                                b.style(ButtonStyle::Secondary)
+                                    .custom_id("rsvp_yes")
+                                    .emoji(ReactionType::Unicode("🟩".to_string()))
+                            })
+                            .create_button(|b| {
+                                b.style(ButtonStyle::Secondary)
+                                    .custom_id("rsvp_maybe")
+                                    .emoji(ReactionType::Unicode("🟨".to_string()))
+                            })
+                            .create_button(|b| {
+                                b.style(ButtonStyle::Secondary)
+                                    .custom_id("rsvp_no")
+                                    .emoji(ReactionType::Unicode("🟥".to_string()))
+                            })
+                        })
+                    })
+                })
+                .await
+                .unwrap();
+            tokio::time::sleep(Duration::from_millis(500)).await;
+            let sched_thread = SCHEDULE
+                .create_public_thread(&ctx, sched.id, |t| t.name(&scheduled.name))
+                .await
+                .unwrap();
+            tokio::time::sleep(Duration::from_millis(100)).await;
+            sched_thread
+                .send_message(&ctx, |pt| {
+                    pt.content(
+                        scheduled
+                            .description
+                            .replace("            <br/>", "\n")
+                            .replace("<font color='#D81717'>", "")
+                            .replace("<font color='#1D69F6'>", "")
+                            .replace("<font color='#993399'>", "")
+                            .replace("<font color='#663300'>", "")
+                            .replace("</font color>", "") // felix you scoundrel
+                            .replace("</font>", ""),
+                    )
+                })
+                .await
+                .unwrap();
+            if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
-                FetchMission {
-                    mission: scheduled.mission.clone()
+                SetScheduledMesssage {
+                    scheduled: scheduled.id,
+                    message_id: sched.id.0.to_string(),
                 }
             )
             .await
             {
-                let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) =
-                    events_request!(
-                        bootstrap::NC::get().await,
-                        synixe_events::missions::db,
-                        FetchMissionRsvps { scheduled: scheduled.id }
-                    )
-                    .await
-                else {
-                    return interaction.reply("Failed to fetch rsvps").await;
-                };
-                let sched = SCHEDULE
-                    .send_message(&ctx, |s| {
-                        s.embed(|f| {
-                            make_post_embed(f, &mission, scheduled, &rsvps);
-                            f
-                        });
-                        s.components(|c| {
-                            c.create_action_row(|r| {
-                                r.create_button(|b| {
-                                    b.style(ButtonStyle::Secondary)
-                                        .custom_id("rsvp_yes")
-                                        .emoji(ReactionType::Unicode("🟩".to_string()))
-                                })
-                                .create_button(|b| {
-                                    b.style(ButtonStyle::Secondary)
-                                        .custom_id("rsvp_maybe")
-                                        .emoji(ReactionType::Unicode("🟨".to_string()))
-                                })
-                                .create_button(|b| {
-                                    b.style(ButtonStyle::Secondary)
-                                        .custom_id("rsvp_no")
-                                        .emoji(ReactionType::Unicode("🟥".to_string()))
-                                })
-                            })
-                        })
-                    })
-                    .await
-                    .unwrap();
-                tokio::time::sleep(Duration::from_millis(500)).await;
-                let sched_thread = SCHEDULE
-                    .create_public_thread(&ctx, sched.id, |t| t.name(&mission.name))
-                    .await
-                    .unwrap();
-                tokio::time::sleep(Duration::from_millis(100)).await;
-                sched_thread
-                    .send_message(&ctx, |pt| {
-                        pt.content(
-                            mission
-                                .description
-                                .replace("            <br/>", "\n")
-                                .replace("<font color='#D81717'>", "")
-                                .replace("<font color='#1D69F6'>", "")
-                                .replace("<font color='#993399'>", "")
-                                .replace("<font color='#663300'>", "")
-                                .replace("</font color>", "") // felix you scoundrel
-                                .replace("</font>", ""),
-                        )
-                    })
-                    .await
-                    .unwrap();
-                if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request!(
-                    bootstrap::NC::get().await,
-                    synixe_events::missions::db,
-                    SetScheduledMesssage {
-                        scheduled: scheduled.id,
-                        message_id: sched.id.0.to_string(),
-                    }
-                )
-                .await
-                {
-                    interaction
-                        .reply(format!("Posted `{}`", scheduled.mission))
-                        .await;
-                } else {
-                    interaction
-                        .reply(format!("Failed to post `{}`", scheduled.mission))
-                        .await;
-                }
+                interaction
+                    .reply(format!("Posted `{}`", scheduled.mission))
+                    .await;
+            } else {
+                interaction
+                    .reply(format!("Failed to post `{}`", scheduled.mission))
+                    .await;
             }
         }
         Confirmation::No => {
@@ -698,8 +668,7 @@ async fn post(
 
 fn make_post_embed(
     embed: &mut CreateEmbed,
-    mission: &Mission,
-    schedule: &ScheduledMission,
+    scheduled: &ScheduledMission,
     rsvps: &[MissionRsvp],
 ) {
     let mut yes = Vec::new();
@@ -713,15 +682,15 @@ fn make_post_embed(
         }
     }
 
-    embed.title(&mission.name);
-    embed.description(&mission.summary);
+    embed.title(&scheduled.name);
+    embed.description(&scheduled.summary);
     embed.color(0x00ff_d731);
     embed.field(
         "🕒 Time",
         format!(
             "<t:{}:F> - <t:{}:R>",
-            schedule.start.unix_timestamp(),
-            schedule.start.unix_timestamp()
+            scheduled.start.unix_timestamp(),
+            scheduled.start.unix_timestamp()
         ),
         false,
     );

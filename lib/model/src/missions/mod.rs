@@ -93,6 +93,15 @@ pub struct ScheduledMission {
     pub schedule_message_id: Option<String>,
     /// Start datetime
     pub start: OffsetDateTime,
+    /// Mission name
+    pub name: String,
+    /// Mission summary
+    pub summary: String,
+    /// Mission description
+    pub description: String,
+    /// Mission type
+    #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
+    pub typ: MissionType,
 }
 
 #[cfg(feature = "mission-schedule")]

@@ -34,18 +34,11 @@ async fn calendar() -> impl IntoResponse {
     };
     let mut calendar = Calendar::new();
     for scheduled in schedule {
-        let Ok(Ok((Response::FetchMission(Ok(Some(mission))), _))) = events_request!(
-            bootstrap::NC::get().await,
-            synixe_events::missions::db,
-            FetchMission { mission: scheduled.mission }
-        ).await else {
-            return "Error".to_string();
-        };
         let start = NaiveDateTime::from_timestamp_opt(scheduled.start.unix_timestamp(), 0).unwrap();
         calendar.push(
             Event::new()
-                .summary(&mission.name)
-                .description(&mission.description)
+                .summary(&scheduled.name)
+                .description(&scheduled.description)
                 .starts(start)
                 .ends(start + chrono::Duration::minutes(150i64))
                 .done(),

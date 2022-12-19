@@ -67,7 +67,21 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::ScheduledMission,
                     Response::UpcomingSchedule,
-                    "SELECT * FROM missions_schedule WHERE start + '2 minutes'::Interval > NOW() ORDER BY start ASC",
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE
+                        start + '2 minutes'::Interval > NOW() ORDER BY start ASC",
                 )?;
                 Ok(())
             }
@@ -159,7 +173,20 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::ScheduledMission,
                     Response::FetchScheduledMission,
-                    "SELECT * FROM missions_schedule WHERE schedule_message_id = $1",
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE schedule_message_id = $1",
                     message.to_string(),
                 )?;
                 Ok(())

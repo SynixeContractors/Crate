@@ -37,6 +37,7 @@ pub mod db {
         } => (Result<(), String>)
         /// Gets all upcoming missions.
         struct UpcomingSchedule {} => (Result<Vec<ScheduledMission>, String>)
+
         /// Update missions from the GitHub list
         struct UpdateMissionList {} => (Result<(), String>)
         /// Fetch the list of missions
@@ -54,6 +55,7 @@ pub mod db {
             /// The message id to fetch.
             message: MessageId,
         } => (Result<Option<ScheduledMission>, String>)
+
         /// Fetch the RSVPs for a mission
         struct FetchMissionRsvps {
             /// The mission to fetch.
@@ -85,15 +87,13 @@ pub mod executions {
 
 /// Inform services about missions.
 pub mod publish {
-    use synixe_model::missions::{Mission, MissionType, ScheduledMission};
+    use synixe_model::missions::{MissionType, ScheduledMission};
     use synixe_proc::events_publish;
 
     events_publish!(publish.missions {
         /// Publish a scheduled mission
         /// This event can be fired at any 5 minute inverval, but is not guaranteed
         struct StartingSoon {
-            /// The  mission starting soon
-            mission: Mission,
             /// The schedule mission
             scheduled: ScheduledMission,
             /// Minutes until the mission starts

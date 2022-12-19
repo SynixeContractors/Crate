@@ -24,8 +24,7 @@ impl Listener for Publish {
         };
         match &self {
             Self::StartingSoon {
-                mission,
-                scheduled: _,
+                scheduled,
                 minutes,
             } => {
                 match minutes {
@@ -35,7 +34,7 @@ impl Listener for Publish {
                             "global_message",
                             vec![arma_rs::Value::String(format!(
                                 "[Mission] {} starts in {minutes} minutes!",
-                                mission.name
+                                scheduled.name
                             ))],
                         );
                     }
@@ -45,7 +44,7 @@ impl Listener for Publish {
                             "global_message",
                             vec![arma_rs::Value::String(format!(
                                 "[Mission] {} starting now!",
-                                mission.name
+                                scheduled.name
                             ))],
                         );
                     }
