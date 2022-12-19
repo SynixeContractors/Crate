@@ -12,7 +12,7 @@ use synixe_proc::events_request;
 
 use crate::discord::{self, interaction::Interaction};
 
-use self::enums::GarageCommands;
+use self::enums::Command;
 // use super::enums::{GarageCommands, GarageSubCommands};
 
 mod attachment;
@@ -105,6 +105,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .name("vehicle")
                         .description("The vehicle in question")
                         .kind(CommandOptionType::String)
+                        .set_autocomplete(true)
                         .required(true)
                 })
         })
@@ -113,16 +114,13 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
 pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
     let subcommand = command.data.options.first().unwrap();
     if subcommand.kind == CommandOptionType::SubCommand {
-        match GarageCommands::from_str(subcommand.name.as_str()).unwrap() {
-            GarageCommands::View => view(ctx, command, &subcommand.options).await,
-            GarageCommands::PurchaseVehicle | GarageCommands::PurchaseAddon => {
-                purchase::purchase(ctx, command, &subcommand.options).await
+        match Command::from_str(subcommand.name.as_str()).unwrap() {
+            Command::View => view(ctx, command, &subcommand.options).await,
+            Command::PurchaseVehicle | Command::PurchaseAddon => {
+                purchase::purchase(ctx, command, &subcommand.options).await;
             }
-            GarageCommands::Attach => attachment::attach(ctx, command, &subcommand.options).await,
-            // GarageCommands::Detach => {
-            //     // detach(ctx, command, &subcommand.options).await
-            // }
-            _ => unreachable!(),
+            Command::Attach => attachment::attach(ctx, command, &subcommand.options).await,
+            Command::Detach => attachment::detach(ctx, command, &subcommand.options).await,
         }
     }
 }
@@ -136,10 +134,10 @@ async fn view(
         Interaction::new(ctx, discord::interaction::Generic::Application(command));
     interaction.reply("This is the garage view command").await;
 
-    let Ok((Response::FetchVehicleAssets(Ok(vehicles)), _)) = events_request!(
+    let Ok(Ok((Response::FetchStoredVehicles(Ok(vehicles)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
-        FetchVehicleAssets{ stored: None, plate: None }
+        FetchStoredVehicles{ stored: None, plate: None }
     ).await else {
         interaction.reply("Error fetching vehicle assests").await;
         return;
@@ -150,7 +148,7 @@ async fn view(
         return;
     }
 
-    let mut content = format!("**Vehicle Assests**\n\n");
+    let mut content = "**Vehicle Assests**\n\n".to_string();
     for vehicle in vehicles {
         content.push_str(&format!(
             "**{} - stored: {}**\n",

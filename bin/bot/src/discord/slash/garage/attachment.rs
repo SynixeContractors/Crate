@@ -28,24 +28,70 @@ pub async fn attach(
         .unwrap()
         .to_string();
 
-    let Ok((Response::FetchVehicleAsset(Ok(vehicle)), _)) = events_request!(
+    let addon = options
+        .iter()
+        .find(|option| option.name == "addon")
+        .unwrap()
+        .value
+        .as_ref()
+        .unwrap()
+        .as_str()
+        .unwrap()
+        .to_string()
+        .parse()
+        .unwrap();
+
+    let Ok(Ok((Response::AttachAddon(Ok(())), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
-        FetchVehicleAsset { plate }
-    ).await else {
-        interaction.reply("Error fetching vehicle assests").await;
+        AttachAddon {
+            plate,
+            addon,
+            member: command.member.as_ref().unwrap().user.id
+        }
+    )
+    .await
+    else {
+        interaction.reply("Error attaching addon").await;
         return;
     };
 
-    let Some(vehicle) = vehicle else {
-        interaction.reply("No vehicle assests found").await;
+    interaction.reply("**Addon Attached**\n\n").await;
+}
+
+pub async fn detach(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    options: &[CommandDataOption],
+) {
+    let mut interaction =
+        Interaction::new(ctx, discord::interaction::Generic::Application(command));
+    interaction.reply("This is the garage detach command").await;
+
+    let plate = options
+        .iter()
+        .find(|option| option.name == "vehicle")
+        .unwrap()
+        .value
+        .as_ref()
+        .unwrap()
+        .as_str()
+        .unwrap()
+        .to_string();
+
+    let Ok(Ok((Response::DetachAddon(Ok(())), _))) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::garage::db,
+        DetachAddon {
+            plate,
+            member: command.member.as_ref().unwrap().user.id
+        }
+    )
+    .await
+    else {
+        interaction.reply("Error detaching addon").await;
         return;
     };
 
-    let mut content = format!("**Vehicle**\n\n");
-    content.push_str(&format!(
-        "**{} - stored: {}**\n",
-        vehicle.plate, vehicle.stored
-    ));
-    interaction.reply(content).await;
+    interaction.reply("**Addon Detached**\n\n").await;
 }

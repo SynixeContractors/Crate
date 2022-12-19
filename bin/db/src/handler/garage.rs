@@ -13,19 +13,20 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
-            Self::FetchVehicleAssets { stored, plate } => {
+            Self::FetchStoredVehicles { stored, plate } => {
                 let plate = plate.clone().unwrap_or_default();
                 fetch_as_and_respond!(
                     msg,
                     *db,
                     cx,
                     synixe_model::garage::VehicleAsset,
-                    Response::FetchVehicleAssets,
+                    Response::FetchStoredVehicles,
                     r#"
                     SELECT 
-                        v.plate, 
-                        v.stored, 
+                        v.plate,
                         v.id,
+                        v.addon,
+                        v.stored,
                         s.name,
                         s.class
                     FROM 
@@ -44,18 +45,19 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::FetchVehicleAsset { plate } => {
+            Self::FetchStoredVehicle { plate } => {
                 fetch_one_as_and_respond!(
                     msg,
                     *db,
                     cx,
                     synixe_model::garage::VehicleAsset,
-                    Response::FetchVehicleAsset,
+                    Response::FetchStoredVehicle,
                     r#"
                     SELECT 
                         v.plate, 
-                        v.stored, 
                         v.id,
+                        v.addon,
+                        v.stored, 
                         s.name,
                         s.class
                     FROM 
@@ -69,14 +71,41 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::FetchAllShopAssests { search } => {
+            Self::FetchStoredAddons { plate } => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::garage::ShopAsset,
+                    Response::FetchStoredAddons,
+                    r#"
+                    SELECT
+                        a.id,
+                        s.name,
+                        s.cost,
+                        s.class,
+                        s.base
+                    FROM
+                        garage_addons a
+                    INNER JOIN
+                        garage_shop s
+                    ON
+                        s.id = a.id
+                    WHERE
+                        s.base = (SELECT v.id FROM garage_vehicles v WHERE v.plate = $1)
+                        AND a.count > 0"#,
+                    plate,
+                )?;
+                Ok(())
+            }
+            Self::FetchShopAssets { search } => {
                 let search = search.clone().unwrap_or_default();
                 fetch_as_and_respond!(
                     msg,
                     *db,
                     cx,
                     synixe_model::garage::ShopAsset,
-                    Response::FetchAllShopAssests,
+                    Response::FetchShopAssets,
                     "SELECT 
                         *
                     FROM 
@@ -104,15 +133,42 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::PurchaseVehicleAsset { plate, id, member } => {
+            Self::PurchaseShopAsset { plate, id, member } => {
                 execute_and_respond!(
                     msg,
                     *db,
                     cx,
-                    Response::PurchaseVehicleAsset,
-                    "INSERT INTO garage_purchases (plate, id, member) VALUES ($1, $2, $3)",
-                    plate,
+                    Response::PurchaseShopAsset,
+                    "INSERT INTO garage_purchases (id, plate, member) VALUES ($1, $2, $3)",
                     id,
+                    plate.as_ref(),
+                    member.to_string(),
+                )
+            }
+            Self::AttachAddon {
+                plate,
+                addon,
+                member,
+            } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::AttachAddon,
+                    "INSERT into garage_log (plate, action, member, data) VALUES ($1, 'attach', $2, $3)",
+                    plate,
+                    member.to_string(),
+                    serde_json::json!({ "addon": addon }),
+                )
+            }
+            Self::DetachAddon { plate, member } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::DetachAddon,
+                    "INSERT into garage_log (plate, action, member) VALUES ($1, 'detach', $2)",
+                    plate,
                     member.to_string(),
                 )
             }
