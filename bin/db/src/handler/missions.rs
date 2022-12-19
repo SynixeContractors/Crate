@@ -232,7 +232,9 @@ impl Handler for Request {
                 .execute(&mut tx)
                 .await?;
                 tx.commit().await?;
-                Ok(())
+                synixe_events::respond!(msg, Response::PayMission(Ok(())))
+                    .await
+                    .map_err(std::convert::Into::into)
             }
             Self::UpdateMissionList {} => {
                 let Ok(response) = reqwest::get(MISSION_LIST).await else {

@@ -27,6 +27,7 @@ impl Aar {
     ///
     /// Returns an error if the message is not a valid AAR.
     pub fn from_message(content: &str) -> Result<Self, String> {
+        let content = content.trim_matches('`');
         let lower = content.to_lowercase();
         let Ok(regex) = Regex::new(r"(?m)(\d+)(?:.+?)(no|light|medium|heavy)") else {
             return Err("Could not compile regex.".to_string());
@@ -338,17 +339,17 @@ impl PaymentType {
 
     #[must_use]
     /// Returns the payment type from the given value.
-    pub fn from_string(value: &str) -> Option<Self> {
+    pub fn from_i32(value: i32) -> Option<Self> {
         match value {
-            "Protection (Low Risk)" => Some(Self::ProtectionLowRisk),
-            "Protection (High Risk)" => Some(Self::ProtectionHighRisk),
-            "Logistics" => Some(Self::Logistics),
-            "Recon" => Some(Self::Recon),
-            "Offensive" => Some(Self::Offensive),
-            "Defensive" => Some(Self::Defensive),
-            "Support" => Some(Self::Support),
-            "Security" => Some(Self::Security),
-            "Smash and Grab" => Some(Self::SmashGrab),
+            0 => Some(Self::ProtectionLowRisk),
+            1 => Some(Self::ProtectionHighRisk),
+            2 => Some(Self::Logistics),
+            3 => Some(Self::Recon),
+            4 => Some(Self::Offensive),
+            5 => Some(Self::Defensive),
+            6 => Some(Self::Support),
+            7 => Some(Self::Security),
+            8 => Some(Self::SmashGrab),
             _ => None,
         }
     }
@@ -446,14 +447,12 @@ mod tests {
     #[test]
     fn test_parse_aar() {
         let aar = Aar::from_message(
-            r#"
-```
-Contract: Pusherman
+            r#"```Contract: Pusherman
 Date: 2022-12-17
 OL: Jake King
 ELs: Carson Sering (KIA), Chaplain Yi (After Casualty), John Lamb (KIA)
 
-Contractors: Jake King, Brett Harrison, Nathanial Greene, Carson Sering, Sean Miles, Chaplain Yi, Matias Jackson, John Brown, John Lamb
+Contractors: Jake King, Brett Harrison, Nathanial Greene, Carson Sering, Sean Miles, Chaplain Yi, Matías Jackson, John Brown, John Lamb
 Assets Deployed: 2x Arcadian
 Assets Lost: None
 Casualties: John Lamb, Carson Sering
@@ -462,9 +461,7 @@ AAR: Contractors were tasked with destroying Cartel Assets on the island nation 
 
 Operation Successful.
 
-Payment request: 60 No Combat 30 Light Combat 45 Medium Combat 5 Heavy Combat
-```
-"#,
+Payment request: 60 No Combat 30 Light Combat 45 Medium Combat 15 Heavy Combat```"#,
         );
         assert!(aar.is_ok());
         println!("{}", aar.unwrap().show_math(PaymentType::Defensive));

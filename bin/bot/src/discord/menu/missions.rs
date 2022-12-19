@@ -11,7 +11,7 @@ use synixe_model::missions::aar::{Aar, PaymentType};
 use synixe_proc::events_request;
 
 use crate::discord::{
-    interaction::{Generic, Interaction},
+    interaction::{Confirmation, Generic, Interaction},
     utils::find_members,
 };
 
@@ -60,9 +60,9 @@ pub fn aar_pay(command: &mut CreateApplicationCommand) -> &mut CreateApplication
 
 pub async fn run_aar_pay(ctx: &Context, command: &ApplicationCommandInteraction) {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
-    let Some(ref member) = command.user.member else {
+    let Some(member) = command.member.as_ref() else {
         interaction
-            .reply("You must be in the server to use this command")
+            .reply("Failed to get member")
             .await;
         return;
     };
@@ -81,11 +81,13 @@ pub async fn run_aar_pay(ctx: &Context, command: &ApplicationCommandInteraction)
             .await;
         return;
     };
-    let Ok(aar) = Aar::from_message(&message.content) else {
-        if let Err(e) = message.reply(&ctx.http, ":confused: I couldn't parse that AAR. Please make sure you're using the template.").await {
-            error!("Error replying to message: {}", e);
-        };
-        return;
+    info!("Parsing AAR from message {}", message.content);
+    let aar = match Aar::from_message(&message.content) {
+        Ok(aar) => aar,
+        Err(e) => {
+            interaction.reply(format!(":confused: I couldn't parse that AAR. Please make sure you're using the template. Error: {e}")).await;
+            return;
+        }
     };
     match find_members(ctx, aar.contractors()).await {
         Ok(ids) => {
@@ -111,7 +113,7 @@ pub async fn run_aar_pay(ctx: &Context, command: &ApplicationCommandInteraction)
                         .await;
                     return;
                 };
-                let Some(payment) = PaymentType::from_string(&payment) else {
+                let Some(payment) = PaymentType::from_i32(payment.parse().unwrap()) else {
                     interaction
                         .reply("Failed to get payment type")
                         .await;
@@ -129,12 +131,28 @@ pub async fn run_aar_pay(ctx: &Context, command: &ApplicationCommandInteraction)
                 )
                 .await
                 {
-                    interaction
-                        .reply(format!("Misson Paid\n```{}```", aar.show_math(payment)))
-                        .await;
+                    if interaction.confirm(&aar.show_math(payment)).await == Confirmation::Yes {
+                        if let Err(e) = message
+                            .reply(
+                                &ctx.http,
+                                format!(
+                                    ":white_check_mark: **Paid**\n```{}```",
+                                    aar.show_math(payment)
+                                ),
+                            )
+                            .await
+                        {
+                            error!("Error replying to message: {}", e);
+                        }
+                        interaction.reply("Mission Paid").await;
+                    } else {
+                        interaction.reply("Mission not paid").await;
+                    }
                 } else {
                     interaction.reply("Failed to pay mission").await;
                 }
+            } else {
+                interaction.reply("Failed to find scheduled date").await;
             }
         }
         Err(e) => {
