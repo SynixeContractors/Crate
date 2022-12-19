@@ -43,10 +43,13 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
         )
         .await
         {
-            message.reply(&ctx.http, e).await;
+            if let Err(e) = message.reply(&ctx.http, e).await {
+                error!("Error replying to message: {}", e);
+            };
+            return;
         }
         if let Err(e) = message
-            .reply(&ctx.http, ":white_check_mark: AAR validated!")
+            .reply(&ctx.http, ":white_check_mark: AAR Valid!")
             .await
         {
             error!("Error replying to message: {}", e);
@@ -117,7 +120,6 @@ fn parse_aar(content: &str) -> Result<Aar, String> {
         }
     };
     let Some(mission_name) = lines.get(mission_type) else { return Err(format!("Could not find mission name for mission type {mission_type}")) };
-    println!("Mission Name: {mission_name}");
 
     let Some(date) = lines.get("date") else { return Err("Could not find date.".to_string()) };
 
@@ -199,6 +201,5 @@ Payment request: 60 No Combat 30 Light Combat 45 Medium Combat 15 Heavy Combat
 "#,
         );
         assert!(aar.is_ok());
-        println!("{aar:?}");
     }
 }
