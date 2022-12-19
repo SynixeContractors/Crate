@@ -169,4 +169,23 @@ async fn transfer(
             user.id
         ))
         .await;
+
+    let Ok(private_channel) = user.create_dm_channel(&ctx).await else {
+        error!("Unable to create DM channel for transfer notification");
+        return;
+    };
+
+    if let Err(e) = private_channel
+        .say(
+            &ctx.http,
+            format!(
+                "<@{}> transferred you ${}",
+                command.member.as_ref().unwrap().user.id,
+                bootstrap::format::money(*amount as i32)
+            ),
+        )
+        .await
+    {
+        error!("failed to send dm: {}", e);
+    }
 }
