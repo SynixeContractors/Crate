@@ -33,6 +33,10 @@ pub const MISSION_MAKING: ChannelId = ChannelId(700_901_938_123_767_828);
 /// Suggest new mods
 pub const MOD_SUGGESTIONS: ChannelId = ChannelId(1_020_494_672_818_360_411);
 
+// Departments
+/// Financial, for using group funds
+pub const FINANCIALS: ChannelId = ChannelId(833_129_840_193_699_860);
+
 // Administration
 /// Staff discussions
 pub const STAFF: ChannelId = ChannelId(842_995_066_792_181_790);

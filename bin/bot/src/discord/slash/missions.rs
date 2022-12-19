@@ -113,11 +113,11 @@ pub async fn schedule_autocomplete(ctx: &Context, autocomplete: &AutocompleteInt
 #[allow(clippy::too_many_lines)]
 pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction) {
     let message = component.message.id;
-    let Ok(Ok((Response::FetchScheduledMission(Ok(Some(scheduled))), _))) =
+    let Ok(Ok((Response::FetchScheduledMessage(Ok(Some(scheduled))), _))) =
         events_request!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
-            FetchScheduledMission { message }
+            FetchScheduledMessage { message }
         )
         .await else {
             error!("Failed to fetch scheduled mission for component");
@@ -645,7 +645,7 @@ async fn post(
                 synixe_events::missions::db,
                 SetScheduledMesssage {
                     scheduled: scheduled.id,
-                    message_id: sched.id.0.to_string(),
+                    message_id: sched.id,
                 }
             )
             .await

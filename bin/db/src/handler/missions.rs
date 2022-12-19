@@ -56,9 +56,73 @@ impl Handler for Request {
                     cx,
                     Response::SetScheduledMesssage,
                     "UPDATE missions_schedule SET schedule_message_id = $1 WHERE id = $2",
-                    message_id,
+                    message_id.to_string(),
                     scheduled,
                 )
+            }
+            Self::FetchScheduledMessage { message } => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FetchScheduledMessage,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE schedule_message_id = $1",
+                    message.to_string(),
+                )?;
+                Ok(())
+            }
+            Self::SetScheduledAar {
+                scheduled,
+                message_id,
+            } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::SetScheduledAar,
+                    "UPDATE missions_schedule SET aar_message_id = $1 WHERE id = $2",
+                    message_id.to_string(),
+                    scheduled,
+                )
+            }
+            Self::FetchScheduledAar { message } => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FetchScheduledAar,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE aar_message_id = $1",
+                    message.to_string(),
+                )?;
+                Ok(())
             }
             Self::UpcomingSchedule {} => {
                 fetch_as_and_respond!(
@@ -82,6 +146,34 @@ impl Handler for Request {
                         missions m ON m.id = s.mission
                     WHERE
                         start + '2 minutes'::Interval > NOW() ORDER BY start ASC",
+                )?;
+                Ok(())
+            }
+            Self::FindScheduledDate { mission, date } => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FindScheduledDate,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE
+                        LOWER(m.name) = LOWER($1) AND
+                        (start > $2::TIMESTAMPTZ and start < $2::TIMESTAMPTZ + '2 Day'::INTERVAL)",
+                    mission,
+                    date,
                 )?;
                 Ok(())
             }
@@ -163,31 +255,6 @@ impl Handler for Request {
                     Response::FetchMission,
                     "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE id = $1",
                     mission,
-                )?;
-                Ok(())
-            }
-            Self::FetchScheduledMission { message } => {
-                fetch_one_as_and_respond!(
-                    msg,
-                    *db,
-                    cx,
-                    synixe_model::missions::ScheduledMission,
-                    Response::FetchScheduledMission,
-                    "SELECT
-                        s.id,
-                        s.mission,
-                        s.schedule_message_id,
-                        s.start,
-                        m.name,
-                        m.summary,
-                        m.description,
-                        m.type as \"typ: MissionType\"
-                    FROM
-                        missions_schedule s
-                    INNER JOIN
-                        missions m ON m.id = s.mission
-                    WHERE schedule_message_id = $1",
-                    message.to_string(),
                 )?;
                 Ok(())
             }

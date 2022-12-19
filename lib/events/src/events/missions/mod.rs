@@ -7,7 +7,7 @@ pub mod db {
     use serenity::model::prelude::MessageId;
     use synixe_model::missions::{Mission, MissionRsvp, Rsvp, ScheduledMission};
     use synixe_proc::events_requests;
-    use time::OffsetDateTime;
+    use time::{Date, OffsetDateTime};
     use uuid::Uuid;
 
     events_requests!(db.missions {
@@ -33,10 +33,34 @@ pub mod db {
             /// The scheduled mission to update.
             scheduled: Uuid,
             /// The message in #schedule
-            message_id: String,
+            message_id: MessageId,
         } => (Result<(), String>)
+        /// Fetch a single scheduled mission by it's message id
+        struct FetchScheduledMessage {
+            /// The message id to fetch.
+            message: MessageId,
+        } => (Result<Option<ScheduledMission>, String>)
+        /// Set the AAR message for a scheduled mission.
+        struct SetScheduledAar {
+            /// The scheduled mission to update.
+            scheduled: Uuid,
+            /// The message in #aar
+            message_id: MessageId,
+        } => (Result<(), String>)
+        /// Fetch a single scheduled mission by it's AAR message id
+        struct FetchScheduledAar {
+            /// The message id to fetch.
+            message: MessageId,
+        } => (Result<Option<ScheduledMission>, String>)
         /// Gets all upcoming missions.
         struct UpcomingSchedule {} => (Result<Vec<ScheduledMission>, String>)
+        /// Find a scheduled mission by date
+        struct FindScheduledDate {
+            /// The mission name
+            mission: String,
+            /// The date to find.
+            date: Date,
+        } => (Result<Option<ScheduledMission>, String>)
 
         /// Update missions from the GitHub list
         struct UpdateMissionList {} => (Result<(), String>)
@@ -50,11 +74,6 @@ pub mod db {
             /// The mission to fetch.
             mission: String,
         } => (Result<Option<Mission>, String>)
-        /// Fetch a single scheduled mission by it's message id
-        struct FetchScheduledMission {
-            /// The message id to fetch.
-            message: MessageId,
-        } => (Result<Option<ScheduledMission>, String>)
 
         /// Fetch the RSVPs for a mission
         struct FetchMissionRsvps {

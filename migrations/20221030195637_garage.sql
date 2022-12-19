@@ -10,11 +10,12 @@ CREATE TABLE IF NOT EXISTS garage_shop (
 CREATE INDEX IF NOT EXISTS garage_shop_base_idx ON garage_shop (base);
 
 CREATE TABLE IF NOT EXISTS garage_purchases (
-    plate VARCHAR(10) PRIMARY KEY,
+    plate VARCHAR(10),
     id UUID,
     member VARCHAR(128) NOT NULL,
     cost INTEGER NOT NULL,
     created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id, created),
     CONSTRAINT garage_purchases_id FOREIGN KEY (id) REFERENCES garage_shop (id) ON DELETE CASCADE
 );
 
@@ -61,14 +62,14 @@ CREATE TABLE IF NOT EXISTS garage_log (
     CONSTRAINT garage_log_action CHECK (action IN ('store', 'retrieve', 'attach', 'detach', 'state')),
     CONSTRAINT garage_log_data CHECK (
         (action IN ('store', 'state') AND jsonb_typeof(data) = 'object') OR
-        (action IN ('attach', 'detach') AND jsonb_typeof(data) = 'object') OR
-        (action IN ('retrieve') AND data IS NULL)
+        (action IN ('attach') AND jsonb_typeof(data) = 'object') OR
+        (action IN ('retrieve', 'detach') AND data IS NULL)
     )
 );
 
 CREATE OR REPLACE FUNCTION garage_log_has_addon() RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.action IN ('attach', 'detach') THEN
+    IF NEW.action IN ('attach') THEN
         IF NEW.data->>'addon' IS NULL THEN
             RAISE EXCEPTION 'addon is required';
         END IF;
@@ -85,6 +86,7 @@ CREATE TRIGGER garage_log_has_addon
 CREATE OR REPLACE FUNCTION garage_log_determine_state(VARCHAR(10)) RETURNS void AS $$
 DECLARE lastAction VARCHAR(16);
 DECLARE lastData JSONB;
+DECLARE lastAddon UUID;
 BEGIN
     SELECT action, data INTO lastAction, lastData FROM garage_log WHERE plate = $1 ORDER BY created DESC LIMIT 1;
     IF lastAction = 'store' THEN
@@ -97,8 +99,9 @@ BEGIN
         UPDATE garage_vehicles SET updated = NOW(), addon = (lastData->>'addon')::uuid WHERE plate = $1;
         UPDATE garage_addons SET count = count - 1 WHERE id = (lastData->>'addon')::uuid;
     ELSEIF lastAction = 'detach' THEN
-        UPDATE garage_vehicles SET updated = NOW(), addon = (lastData->>'addon')::uuid WHERE plate = $1;
-        UPDATE garage_addons SET count = count + 1 WHERE id = (lastData->>'addon')::uuid;
+        SELECT addon INTO lastAddon FROM garage_vehicles WHERE plate = $1;
+        UPDATE garage_vehicles SET updated = NOW(), addon = null WHERE plate = $1;
+        UPDATE garage_addons SET count = count + 1 WHERE id = lastAddon;
     END IF;
 END;
 $$ LANGUAGE plpgsql;
@@ -126,3 +129,16 @@ CREATE TRIGGER garage_log_determine_state_delete
     AFTER DELETE ON garage_log
     FOR EACH ROW
     EXECUTE PROCEDURE garage_log_determine_state_delete();
+
+CREATE OR REPLACE FUNCTION add_cost_to_garage_purchase() RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.cost IS NULL THEN
+        NEW.cost = (SELECT cost FROM garage_shop WHERE id = NEW.id);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_cost_to_garage_purchase
+BEFORE INSERT ON garage_purchases
+FOR EACH ROW EXECUTE PROCEDURE add_cost_to_garage_purchase();
