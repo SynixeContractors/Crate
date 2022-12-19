@@ -158,10 +158,10 @@ impl Aar {
     #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
     /// Calculates the employer payment for the mission.
     pub fn employer_payment(&self, payment_type: PaymentType) -> i32 {
-        let mut payment = 20_000f32;
+        let mut payment = 0f32;
         payment += self.payment.total() as f32 / 60f32 * payment_type.employer() as f32;
         payment *= self.outcome.employer_multiplier();
-        payment as i32
+        (payment as i32).max(20_000)
     }
 
     #[must_use]
@@ -230,11 +230,14 @@ impl Aar {
             self.outcome.employer_multiplier(),
             bootstrap::format::money(self.employer_payment(payment_type))
         ));
+        if self.outcome() == &Outcome::Failure {
+            math.push_str("Base      | $20,000");
+        }
         math
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 /// The outcome of a mission.
 pub enum Outcome {
     /// The mission was a success.
