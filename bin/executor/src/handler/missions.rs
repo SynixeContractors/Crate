@@ -80,23 +80,22 @@ impl Handler for Request {
                                 }
                             } else if let Some(event) = match minutes {
                                 // Warn the mission will change 80 minutes before it starts
-                                78..=82 => Some(synixe_events::missions::publish::Publish::WarnChangeMission {
-                                    id: scheduled.mission.clone(),
-                                    mission_type: scheduled.typ
-                                }),
+                                78..=82 => Some(
+                                    synixe_events::missions::publish::Publish::WarnChangeMission {
+                                        id: scheduled.mission.clone(),
+                                        mission_type: scheduled.typ,
+                                    },
+                                ),
                                 // Change the mission 70 minutes before it starts
-                                68..=72 => Some(synixe_events::missions::publish::Publish::ChangeMission {
-                                    id: scheduled.mission.clone(),
-                                    mission_type: scheduled.typ
-                                }),
+                                68..=72 => {
+                                    Some(synixe_events::missions::publish::Publish::ChangeMission {
+                                        id: scheduled.mission.clone(),
+                                        mission_type: scheduled.typ,
+                                    })
+                                }
                                 _ => None,
                             } {
-                                if let Err(e) = publish!(
-                                    bootstrap::NC::get().await,
-                                    event
-                                )
-                                .await
-                                {
+                                if let Err(e) = publish!(bootstrap::NC::get().await, event).await {
                                     error!("Failed to publish discord message: {}", e);
                                 }
                             }

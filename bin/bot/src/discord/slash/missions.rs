@@ -666,11 +666,7 @@ async fn post(
     }
 }
 
-fn make_post_embed(
-    embed: &mut CreateEmbed,
-    scheduled: &ScheduledMission,
-    rsvps: &[MissionRsvp],
-) {
+fn make_post_embed(embed: &mut CreateEmbed, scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) {
     let mut yes = Vec::new();
     let mut maybe = Vec::new();
     let mut no = Vec::new();

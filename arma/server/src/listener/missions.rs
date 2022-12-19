@@ -23,10 +23,7 @@ impl Listener for Publish {
             return Ok(());
         };
         match &self {
-            Self::StartingSoon {
-                scheduled,
-                minutes,
-            } => {
+            Self::StartingSoon { scheduled, minutes } => {
                 match minutes {
                     4..=6 | 9..=11 | 14..=16 | 29..=31 | 59..=61 | 89..=91 | 119..=121 => {
                         context.callback_data(

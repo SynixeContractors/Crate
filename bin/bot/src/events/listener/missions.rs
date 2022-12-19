@@ -15,10 +15,7 @@ impl Listener for Publish {
         _nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
         match &self {
-            Self::StartingSoon {
-                scheduled,
-                minutes,
-            } => {
+            Self::StartingSoon { scheduled, minutes } => {
                 let Some(ref message) = scheduled.schedule_message_id else { return Ok(()) };
                 if (-1..=1).contains(minutes) {
                     if let Err(e) = SCHEDULE
