@@ -5,9 +5,11 @@ use serenity::{
     },
     prelude::Context,
 };
-use synixe_meta::discord::GUILD;
 
-use crate::discord::interaction::{Generic, Interaction};
+use crate::discord::{
+    interaction::{Generic, Interaction},
+    utils::find_members,
+};
 
 pub fn aar_ids(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command.name("AAR - Get IDs").kind(CommandType::Message)
@@ -34,28 +36,17 @@ pub async fn run_aar_ids(ctx: &Context, command: &ApplicationCommandInteraction)
         .trim_start_matches("Contractors: ")
         .split(", ")
         .collect::<Vec<_>>();
-    let Ok(members) = GUILD.members(&ctx.http, None, None).await else {
-        interaction
-            .reply("Failed to get members")
-            .await;
-        return;
-    };
-    let mut ids = Vec::with_capacity(names.len());
-    for name in names {
-        // Handle the special snowflake
-        if name == "Nathanial Greene" {
-            ids.push("358146229626077187".to_string());
-            continue;
-        }
-        let Some(member) = members.iter().find(|m| m.display_name().to_string().to_lowercase() == name.to_lowercase()) else {
+    match find_members(ctx, &names).await {
+        Ok(ids) => {
+            let ids = ids.into_iter().map(|id| id.to_string()).collect::<Vec<_>>();
             interaction
-                .reply(format!("Failed to find member {name}"))
+                .reply(format!("**IDs**\n{}", ids.join("\n")))
                 .await;
-            return;
-        };
-        ids.push(member.user.id.0.to_string());
+        }
+        Err(e) => {
+            interaction
+                .reply(format!("Failed to find members: {e}"))
+                .await;
+        }
     }
-    interaction
-        .reply(format!("**IDs**\n{}", ids.join("\n")))
-        .await;
 }

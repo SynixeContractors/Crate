@@ -6,6 +6,8 @@ use synixe_events::missions::db::Response;
 use synixe_proc::events_request;
 use time::Date;
 
+use crate::discord::utils::find_members;
+
 pub async fn validate_aar(ctx: &Context, message: Message) {
     if !(message.content.starts_with("```") || message.content.ends_with("```")) {
         return;
@@ -32,6 +34,17 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
             };
             return;
         };
+        if let Err(e) = find_members(
+            ctx,
+            &aar.contractors
+                .iter()
+                .map(std::string::String::as_str)
+                .collect::<Vec<_>>(),
+        )
+        .await
+        {
+            message.reply(&ctx.http, e).await;
+        }
         if let Err(e) = message
             .reply(&ctx.http, ":white_check_mark: AAR validated!")
             .await

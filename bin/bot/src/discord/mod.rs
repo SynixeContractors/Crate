@@ -4,6 +4,7 @@ mod handler;
 pub mod interaction;
 mod menu;
 mod slash;
+mod utils;
 
 pub async fn build() -> Client {
     // Login with a bot token from the environment

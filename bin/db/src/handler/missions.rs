@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use sqlx::types::time::Time;
 use synixe_events::missions::db::{Request, Response};
 use synixe_meta::missions::MISSION_LIST;
 use synixe_model::missions::{Mission, MissionType, Rsvp};
@@ -150,6 +151,9 @@ impl Handler for Request {
                 Ok(())
             }
             Self::FindScheduledDate { mission, date } => {
+                let date = date
+                    .with_time(Time::from_hms(0, 0, 0).unwrap())
+                    .assume_utc();
                 fetch_one_as_and_respond!(
                     msg,
                     *db,
@@ -171,7 +175,7 @@ impl Handler for Request {
                         missions m ON m.id = s.mission
                     WHERE
                         LOWER(m.name) = LOWER($1) AND
-                        (start > $2::TIMESTAMPTZ and start < $2::TIMESTAMPTZ + '2 Day'::INTERVAL)",
+                        (start > $2 and start < $2 + '2 Day'::INTERVAL)",
                     mission,
                     date,
                 )?;
