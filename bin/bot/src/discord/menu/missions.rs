@@ -1,7 +1,7 @@
 use serenity::{
     builder::CreateApplicationCommand,
     model::prelude::{
-        application_command::ApplicationCommandInteraction, command::CommandType, MessageId,
+        application_command::ApplicationCommandInteraction, command::CommandType, MessageId, ReactionType,
     },
     prelude::Context,
 };
@@ -82,7 +82,6 @@ pub async fn run_aar_pay(ctx: &Context, command: &ApplicationCommandInteraction)
             .await;
         return;
     };
-    info!("Parsing AAR from message {}", message.content);
     let aar = match Aar::from_message(&message.content) {
         Ok(aar) => aar,
         Err(e) => {
@@ -150,6 +149,9 @@ pub async fn run_aar_pay(ctx: &Context, command: &ApplicationCommandInteraction)
                             error!("Error replying to message: {}", e);
                         }
                         interaction.reply("Mission Paid").await;
+                        if let Err(e) = message.react(&ctx.http, ReactionType::Unicode("✅".to_string())).await {
+                            error!("Error reacting to message: {}", e);
+                        }
                     } else {
                         interaction.reply("Failed to pay mission").await;
                     }
