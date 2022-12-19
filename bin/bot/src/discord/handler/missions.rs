@@ -9,6 +9,9 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
     if !(message.content.starts_with("```") || message.content.ends_with("```")) {
         return;
     }
+    if message.author.bot {
+        return;
+    }
     let Ok(aar) = Aar::from_message(&message.content) else {
         if let Err(e) = message.reply(&ctx.http, ":confused: I couldn't parse that AAR. Please make sure you're using the template.").await {
             error!("Error replying to message: {}", e);

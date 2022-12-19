@@ -58,6 +58,7 @@ pub fn aar_pay(command: &mut CreateApplicationCommand) -> &mut CreateApplication
     command.name("AAR - Pay").kind(CommandType::Message)
 }
 
+#[allow(clippy::too_many_lines)]
 pub async fn run_aar_pay(ctx: &Context, command: &ApplicationCommandInteraction) {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
     let Some(member) = command.member.as_ref() else {
@@ -119,19 +120,23 @@ pub async fn run_aar_pay(ctx: &Context, command: &ApplicationCommandInteraction)
                         .await;
                     return;
                 };
-                if let Ok(Ok((Response::PayMission(Ok(_)), _))) = events_request!(
-                    bootstrap::NC::get().await,
-                    synixe_events::missions::db,
-                    PayMission {
-                        scheduled: scheduled.id,
-                        contractors: ids,
-                        contractor_amount: aar.contractor_payment(payment),
-                        group_amount: aar.employer_payment(payment),
-                    }
-                )
-                .await
+                if interaction
+                    .confirm(&format!("```{}```", &aar.show_math(payment)))
+                    .await
+                    == Confirmation::Yes
                 {
-                    if interaction.confirm(&aar.show_math(payment)).await == Confirmation::Yes {
+                    if let Ok(Ok((Response::PayMission(Ok(_)), _))) = events_request!(
+                        bootstrap::NC::get().await,
+                        synixe_events::missions::db,
+                        PayMission {
+                            scheduled: scheduled.id,
+                            contractors: ids,
+                            contractor_amount: aar.contractor_payment(payment),
+                            group_amount: aar.employer_payment(payment),
+                        }
+                    )
+                    .await
+                    {
                         if let Err(e) = message
                             .reply(
                                 &ctx.http,
@@ -146,10 +151,10 @@ pub async fn run_aar_pay(ctx: &Context, command: &ApplicationCommandInteraction)
                         }
                         interaction.reply("Mission Paid").await;
                     } else {
-                        interaction.reply("Mission not paid").await;
+                        interaction.reply("Failed to pay mission").await;
                     }
                 } else {
-                    interaction.reply("Failed to pay mission").await;
+                    interaction.reply("Mission not paid").await;
                 }
             } else {
                 interaction.reply("Failed to find scheduled date").await;

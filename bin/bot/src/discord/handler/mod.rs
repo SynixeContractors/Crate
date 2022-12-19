@@ -216,9 +216,14 @@ impl EventHandler for Handler {
         event: MessageUpdateEvent,
     ) {
         if event.channel_id == FINANCIALS {
+            #[allow(clippy::single_match_else)]
             let message = match new {
                 Some(message) => message,
-                None => event.channel_id.message(&ctx.http, event.id).await.unwrap(),
+                None => {
+                    // event.channel_id.message(&ctx.http, event.id).await.unwrap(),
+                    warn!("Message update event with no message");
+                    return;
+                }
             };
             missions::validate_aar(&ctx, message).await;
         }

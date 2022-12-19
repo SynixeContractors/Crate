@@ -179,30 +179,38 @@ impl Aar {
     /// ```
     pub fn show_math(&self, payment_type: PaymentType) -> String {
         let mut math = String::new();
-        math.push_str(&format!(
-            "No Combat  | {:03}/h x {:02} = {}\n",
-            payment_type.no_combat(),
-            self.payment.no_combat,
-            self.payment.no_combat as f32 / 60f32 * payment_type.no_combat() as f32
-        ));
-        math.push_str(&format!(
-            "Light      | {:03}/h x {:02} = {}\n",
-            payment_type.light_combat(),
-            self.payment.light_combat,
-            self.payment.light_combat as f32 / 60f32 * payment_type.light_combat() as f32
-        ));
-        math.push_str(&format!(
-            "Medium     | {:03}/h x {:02} = {}\n",
-            payment_type.medium_combat(),
-            self.payment.medium_combat,
-            self.payment.medium_combat as f32 / 60f32 * payment_type.medium_combat() as f32
-        ));
-        math.push_str(&format!(
-            "Heavy      | {:03}/h x {:02} = {}\n",
-            payment_type.heavy_combat(),
-            self.payment.heavy_combat,
-            self.payment.heavy_combat as f32 / 60f32 * payment_type.heavy_combat() as f32
-        ));
+        if self.payment.no_combat > 0 {
+            math.push_str(&format!(
+                "No Combat  | {:03}/h x {:02} = {}\n",
+                payment_type.no_combat(),
+                self.payment.no_combat,
+                self.payment.no_combat as f32 / 60f32 * payment_type.no_combat() as f32
+            ));
+        }
+        if self.payment.light_combat > 0 {
+            math.push_str(&format!(
+                "Light      | {:03}/h x {:02} = {}\n",
+                payment_type.light_combat(),
+                self.payment.light_combat,
+                self.payment.light_combat as f32 / 60f32 * payment_type.light_combat() as f32
+            ));
+        }
+        if self.payment.medium_combat > 0 {
+            math.push_str(&format!(
+                "Medium     | {:03}/h x {:02} = {}\n",
+                payment_type.medium_combat(),
+                self.payment.medium_combat,
+                self.payment.medium_combat as f32 / 60f32 * payment_type.medium_combat() as f32
+            ));
+        }
+        if self.payment.heavy_combat > 0 {
+            math.push_str(&format!(
+                "Heavy      | {:03}/h x {:02} = {}\n",
+                payment_type.heavy_combat(),
+                self.payment.heavy_combat,
+                self.payment.heavy_combat as f32 / 60f32 * payment_type.heavy_combat() as f32
+            ));
+        }
         math.push_str(&format!(
             "{}    | x{:.1}       = ${}\n",
             self.outcome,
@@ -339,7 +347,7 @@ impl PaymentType {
 
     #[must_use]
     /// Returns the payment type from the given value.
-    pub fn from_i32(value: i32) -> Option<Self> {
+    pub const fn from_i32(value: i32) -> Option<Self> {
         match value {
             0 => Some(Self::ProtectionLowRisk),
             1 => Some(Self::ProtectionHighRisk),
