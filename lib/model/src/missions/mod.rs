@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
 
+pub mod aar;
+
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 /// A mission object
@@ -72,7 +74,7 @@ impl ToString for MissionType {
     fn to_string(&self) -> String {
         match self {
             Self::Contract => "Contract".to_string(),
-            Self::SubContract => "SubContract".to_string(),
+            Self::SubContract => "Subcontract".to_string(),
             Self::Training => "Training".to_string(),
             Self::Special => "Special".to_string(),
             Self::Other => "Other".to_string(),

@@ -24,13 +24,13 @@ impl EventHandler for Handler {
                     .create_application_command(|command| slash::missions::schedule(command))
                     .create_application_command(|command| menu::recruiting::reply(command))
                     .create_application_command(|command| menu::missions::aar_ids(command))
+                    .create_application_command(|command| menu::missions::aar_pay(command))
             })
             .await
         {
             error!("Cannot register slash commands: {}", e);
         }
 
-        // ChannelId(833_129_840_193_699_860).message(&ctx.http, 1_053_912_971_597_848_726).await.unwrap().reply(&ctx.http, "I am unable to find the contractor 'Matias Jackson'. Please edit your AAR to include the correct name.").await.unwrap();
         // ChannelId(833_129_840_193_699_860).message(&ctx.http, 1_053_850_477_101_588_480).await.unwrap().reply(&ctx.http, "I am unable to find the contractor 'Sean Miles. Andrew Libby'. Please edit your AAR to include the correct name.").await.unwrap();
     }
 
@@ -55,6 +55,9 @@ impl EventHandler for Handler {
                     }
                     "AAR - Get IDs" => {
                         menu::missions::run_aar_ids(&ctx, &command).await;
+                    }
+                    "AAR - Pay" => {
+                        menu::missions::run_aar_pay(&ctx, &command).await;
                     }
                     _ => {}
                 }

@@ -4,7 +4,7 @@
 
 /// Interact with the database.
 pub mod db {
-    use serenity::model::prelude::MessageId;
+    use serenity::model::prelude::{MessageId, UserId};
     use synixe_model::missions::{Mission, MissionRsvp, Rsvp, ScheduledMission};
     use synixe_proc::events_requests;
     use time::{Date, OffsetDateTime};
@@ -61,6 +61,17 @@ pub mod db {
             /// The date to find.
             date: Date,
         } => (Result<Option<ScheduledMission>, String>)
+        /// Pays the group and contractors for a mission.
+        struct PayMission {
+            /// The mission to pay.
+            scheduled: Uuid,
+            /// The contractors to pay.
+            contractors: Vec<UserId>,
+            /// The amount to pay contractors
+            contractor_amount: i32,
+            /// The amount to pay the group
+            group_amount: i32,
+        } => (Result<(), String>)
 
         /// Update missions from the GitHub list
         struct UpdateMissionList {} => (Result<(), String>)

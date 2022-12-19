@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use sqlx::types::time::Time;
 use synixe_events::missions::db::{Request, Response};
 use synixe_meta::missions::MISSION_LIST;
-use synixe_model::missions::{Mission, MissionType, Rsvp};
+use synixe_model::missions::{Mission, MissionType, Rsvp, ScheduledMission};
 
 use super::Handler;
 
@@ -179,6 +179,59 @@ impl Handler for Request {
                     mission,
                     date,
                 )?;
+                Ok(())
+            }
+            Self::PayMission {
+                scheduled,
+                contractors,
+                contractor_amount,
+                group_amount,
+            } => {
+                let mut tx = db.begin().await?;
+                let scheduled: ScheduledMission = sqlx::query_as!(
+                    ScheduledMission,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE
+                        s.id = $1",
+                    scheduled,
+                )
+                .fetch_one(&mut tx)
+                .await?;
+                let end = scheduled.start + time::Duration::hours(2);
+                for contractor in contractors {
+                    sqlx::query!(
+                        "INSERT INTO gear_bank_deposits (member, amount, reason, id, created) VALUES ($1, $2, $3, $4, $5)",
+                        contractor.to_string(),
+                        contractor_amount,
+                        format!("{}: {}", scheduled.typ.to_string(), scheduled.name),
+                        scheduled.id,
+                        end,
+                    )
+                    .execute(&mut tx)
+                    .await?;
+                }
+                sqlx::query!(
+                    "INSERT INTO gear_bank_deposits (member, amount, reason, id, created) VALUES ('0', $1, $2, $3, $4)",
+                    group_amount,
+                    format!("{}: {}", scheduled.typ.to_string(), scheduled.name),
+                    scheduled.id,
+                    end,
+                )
+                .execute(&mut tx)
+                .await?;
+                tx.commit().await?;
                 Ok(())
             }
             Self::UpdateMissionList {} => {
