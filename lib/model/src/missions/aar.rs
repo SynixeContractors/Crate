@@ -181,7 +181,7 @@ impl Aar {
         let mut math = String::new();
         if self.payment.no_combat > 0 {
             math.push_str(&format!(
-                "No Combat  | {:03}/h x {:02} = {}\n",
+                "No Combat  | {:03}/h x {:02} = {.0}\n",
                 payment_type.no_combat(),
                 self.payment.no_combat,
                 self.payment.no_combat as f32 / 60f32 * payment_type.no_combat() as f32
@@ -189,7 +189,7 @@ impl Aar {
         }
         if self.payment.light_combat > 0 {
             math.push_str(&format!(
-                "Light      | {:03}/h x {:02} = {}\n",
+                "Light      | {:03}/h x {:02} = {.0}\n",
                 payment_type.light_combat(),
                 self.payment.light_combat,
                 self.payment.light_combat as f32 / 60f32 * payment_type.light_combat() as f32
@@ -197,7 +197,7 @@ impl Aar {
         }
         if self.payment.medium_combat > 0 {
             math.push_str(&format!(
-                "Medium     | {:03}/h x {:02} = {}\n",
+                "Medium     | {:03}/h x {:02} = {.0}\n",
                 payment_type.medium_combat(),
                 self.payment.medium_combat,
                 self.payment.medium_combat as f32 / 60f32 * payment_type.medium_combat() as f32
@@ -205,7 +205,7 @@ impl Aar {
         }
         if self.payment.heavy_combat > 0 {
             math.push_str(&format!(
-                "Heavy      | {:03}/h x {:02} = {}\n",
+                "Heavy      | {:03}/h x {:02} = {.0}\n",
                 payment_type.heavy_combat(),
                 self.payment.heavy_combat,
                 self.payment.heavy_combat as f32 / 60f32 * payment_type.heavy_combat() as f32
@@ -219,7 +219,7 @@ impl Aar {
         ));
         math.push('\n');
         math.push_str(&format!(
-            "Group      | {}/h x {:03} = {}\n",
+            "Group      | {}/h x {:03} = {.0}\n",
             payment_type.employer(),
             self.payment.total(),
             self.payment.total() as f32 / 60f32 * payment_type.employer() as f32
@@ -230,9 +230,6 @@ impl Aar {
             self.outcome.employer_multiplier(),
             bootstrap::format::money(self.employer_payment(payment_type))
         ));
-        if self.outcome() == &Outcome::Failure {
-            math.push_str("Base      | $20,000");
-        }
         math
     }
 }
