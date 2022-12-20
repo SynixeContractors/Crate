@@ -154,7 +154,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
             let Some(reason) = interaction
                 .choice("Please provide a reason, this helps us make informed decision to improve Synixe!",
                 &vec![
-                    ("I'm might not be able to make it".to_string(), "not_sure".to_string()),
+                    ("I might not be able to make it".to_string(), "not_sure".to_string()),
                     ("I'm not interested in this mission".to_string(), "not_interested".to_string()),
                     ("I'm burnt out and may not want to attend".to_string(), "burnt_out".to_string()),
                     ("Other".to_string(), "other".to_string()),
@@ -187,7 +187,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
             let Some(reason) = interaction
                 .choice("Please provide a reason, this helps us make informed decision to improve Synixe!",
                     &vec![
-                        ("I'm won't be able to make it".to_string(), "not_sure".to_string()),
+                        ("I won't be able to make it".to_string(), "not_sure".to_string()),
                         ("I'm not interested in this mission".to_string(), "not_interested".to_string()),
                         ("I'm burnt out".to_string(), "burnt_out".to_string()),
                         ("Other".to_string(), "other".to_string()),
