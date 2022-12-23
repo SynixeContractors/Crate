@@ -15,12 +15,13 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
 
 pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
     let meme = loop {
-        let meme: MemeResponse = reqwest::get("https://meme-api.com/gimme/memes+dankmemes+armamemes")
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
+        let meme: MemeResponse =
+            reqwest::get("https://meme-api.com/gimme/memes+dankmemes+armamemes")
+                .await
+                .unwrap()
+                .json()
+                .await
+                .unwrap();
         if meme.nsfw {
             continue;
         }
