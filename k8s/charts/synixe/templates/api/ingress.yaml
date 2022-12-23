@@ -8,7 +8,7 @@ spec:
   entryPoints:
   - websecure
   routes:
-  - match: Host(`cluster.synixe.contractors`) && PathPrefix(`/api/*`)
+  - match: Host(`cluster.synixe.contractors`) && PathPrefix(`/api`)
     kind: Rule
     services:
     - name: {{ include "synixe.fullname" . }}-api
