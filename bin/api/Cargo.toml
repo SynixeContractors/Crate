@@ -7,16 +7,9 @@ edition = "2021"
 bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
 synixe-events = { path = "../../lib/events" }
 synixe-proc = { path = "../../lib/proc" }
-synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 axum = "0.6.1"
-chrono = "0.4.23"
 nats = { workspace = true }
-time = { workspace = true }
-time-tz = "1.0.2"
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 serenity = { workspace = true, features = [ "builder" ] }
-
-[build-dependencies]
-vergen = { workspace = true }

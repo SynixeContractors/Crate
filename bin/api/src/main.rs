@@ -14,7 +14,7 @@ async fn main() {
     let app = Router::new().route("/api/bank/balance/:member", get(balance));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    info!("Listening on {}", addr);
+    debug!("Listening on {}", addr);
     Server::bind(&addr)
         .serve(app.into_make_service())
         .await
