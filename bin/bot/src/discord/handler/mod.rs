@@ -30,8 +30,6 @@ impl EventHandler for Handler {
         {
             error!("Cannot register slash commands: {}", e);
         }
-
-        // ChannelId(833_129_840_193_699_860).message(&ctx.http, 1_053_850_477_101_588_480).await.unwrap().reply(&ctx.http, "I am unable to find the contractor 'Sean Miles. Andrew Libby'. Please edit your AAR to include the correct name.").await.unwrap();
     }
 
     #[allow(clippy::too_many_lines)]

@@ -1,6 +1,6 @@
 use serenity::{model::prelude::Message, prelude::Context};
 use synixe_events::missions::db::Response;
-use synixe_model::missions::aar::Aar;
+use synixe_model::missions::{aar::Aar, MissionType};
 use synixe_proc::events_request;
 
 use crate::discord::utils::find_members;
@@ -60,5 +60,11 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
         } else {
             error!("Failed to set AAR for scheduled {}", scheduled.id);
         };
+    } else if aar.typ() == MissionType::Contract {
+        if let Err(e) = message.reply(&ctx.http, ":confused: I couldn't find that mission on that date. Double check the date and mission name.").await {
+            error!("Error replying to message: {}", e);
+        }
+    } else if let Err(e) = message.reply(&ctx.http, ":white_check_mark: AAR Valid! Although since this is a non-contract mission, it won't be automatically linked to a mission.").await {
+        error!("Error replying to message: {}", e);
     }
 }

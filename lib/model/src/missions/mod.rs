@@ -82,6 +82,21 @@ impl ToString for MissionType {
     }
 }
 
+impl std::str::FromStr for MissionType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "contract" => Ok(Self::Contract),
+            "subcontract" => Ok(Self::SubContract),
+            "training" => Ok(Self::Training),
+            "special" => Ok(Self::Special),
+            "other" => Ok(Self::Other),
+            _ => Err(format!("Invalid mission type: {s}")),
+        }
+    }
+}
+
 #[cfg(feature = "mission-schedule")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]

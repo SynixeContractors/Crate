@@ -1,13 +1,16 @@
 //! After action report
 
-use std::{collections::HashMap, fmt::Display};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use regex::Regex;
 use time::Date;
 
+use super::MissionType;
+
 #[derive(Debug)]
 /// After action report
 pub struct Aar {
+    typ: MissionType,
     /// Mission pretty name
     mission: String,
     /// Mission date
@@ -103,12 +106,19 @@ impl Aar {
         };
 
         Ok(Self {
+            typ: MissionType::from_str(mission_type)?,
             mission: (*mission_name).to_string(),
             date,
             contractors,
             outcome,
             payment,
         })
+    }
+
+    #[must_use]
+    /// Returns the mission type.
+    pub const fn typ(&self) -> MissionType {
+        self.typ
     }
 
     #[must_use]
