@@ -13,7 +13,7 @@ anyhow = { workspace = true }
 async-trait = { workspace = true }
 nats = { workspace = true }
 reqwest = { version = "0.11.13", features = ["json"] }
-serenity = { workspace = true, features = [ "builder" ] }
+serenity = { workspace = true, features = ["builder"] }
 sqlx = { workspace = true, features = ["postgres", "runtime-tokio-native-tls", "offline", "time", "uuid", "json"] }
 time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
@@ -21,4 +21,4 @@ tracing = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }
 
 [build-dependencies]
-vergen = { workspace = true, features = ["git"]}
+vergen = { workspace = true, features = ["git"] }

@@ -20,8 +20,8 @@ default = [
     "roles",
     "gear",
 ]
-certifications = [ "uuid", "roles", "time" ]
-mission-schedule = [ "missions", "time", "uuid" ]
+certifications = ["uuid", "roles", "time"]
+mission-schedule = ["missions", "time", "uuid"]
 missions = ["uuid", "time", "regex"]
-roles = [ "serenity" ]
+roles = ["serenity"]
 gear = ["time"]
