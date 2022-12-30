@@ -220,9 +220,12 @@ impl EventHandler for Handler {
             let message = match new {
                 Some(message) => message,
                 None => {
-                    // event.channel_id.message(&ctx.http, event.id).await.unwrap(),
-                    warn!("Message update event with no message");
-                    return;
+                    if let Some(content) = event.content {
+                        if !(content.starts_with("```") || content.ends_with("```")) {
+                            return;
+                        }
+                    }
+                    event.channel_id.message(&ctx.http, event.id).await.unwrap()
                 }
             };
             missions::validate_aar(&ctx, message).await;
