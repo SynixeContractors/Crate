@@ -7,6 +7,7 @@ pub async fn find_members(ctx: &Context, names: &[String]) -> Result<Vec<UserId>
     };
     let mut ids = Vec::with_capacity(names.len());
     for name in names {
+        let name = name.trim();
         // Handle the special snowflake
         if name == "Nathanial Greene" {
             ids.push(UserId(358_146_229_626_077_187));

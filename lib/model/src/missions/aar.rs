@@ -67,8 +67,8 @@ impl Aar {
         let contractors = {
             let Some(contractors) = lines.get("contractors") else { return Err("Could not find contractors.".to_string()) };
             contractors
-                .split(", ")
-                .map(std::string::ToString::to_string)
+                .split(',')
+                .map(|s| s.trim().to_string())
                 .collect()
         };
 
