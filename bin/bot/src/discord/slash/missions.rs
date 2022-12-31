@@ -20,7 +20,10 @@ use synixe_proc::events_request;
 use time::format_description;
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
 
-use crate::discord::interaction::{Confirmation, Generic, Interaction};
+use crate::{
+    discord::interaction::{Confirmation, Generic, Interaction},
+    get_option,
+};
 
 const TIME_FORMAT: &str =
     "[year]-[month]-[day] [hour]:[minute] [offset_hour sign:mandatory]:[offset_minute]";
@@ -90,28 +93,45 @@ pub fn schedule(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         })
 }
 
-pub async fn schedule_run(ctx: &Context, command: &ApplicationCommandInteraction) {
-    let subcommand = command.data.options.first().unwrap();
+pub async fn schedule_run(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+) -> serenity::Result<()> {
+    let Some(subcommand) = command.data.options.first() else {
+        warn!("No subcommand for bank provided");
+        return Ok(());
+    };
     if subcommand.kind == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
-            "new" => new(ctx, command, &subcommand.options).await,
-            "upcoming" => upcoming(ctx, command, &subcommand.options).await,
-            "remove" => remove(ctx, command, &subcommand.options).await,
-            "post" => post(ctx, command, &subcommand.options).await,
+            "new" => new(ctx, command, &subcommand.options).await?,
+            "upcoming" => upcoming(ctx, command, &subcommand.options).await?,
+            "remove" => remove(ctx, command, &subcommand.options).await?,
+            "post" => post(ctx, command, &subcommand.options).await?,
             _ => unreachable!(),
         }
     }
+    Ok(())
 }
 
-pub async fn schedule_autocomplete(ctx: &Context, autocomplete: &AutocompleteInteraction) {
-    let subcommand = autocomplete.data.options.first().unwrap();
+pub async fn schedule_autocomplete(
+    ctx: &Context,
+    autocomplete: &AutocompleteInteraction,
+) -> serenity::Result<()> {
+    let Some(subcommand) = autocomplete.data.options.first() else {
+        warn!("No subcommand for bank provided");
+        return Ok(());
+    };
     if subcommand.kind == CommandOptionType::SubCommand && subcommand.name.as_str() == "new" {
-        new_autocomplete(ctx, autocomplete, &subcommand.options).await;
+        new_autocomplete(ctx, autocomplete, &subcommand.options).await?;
     }
+    Ok(())
 }
 
 #[allow(clippy::too_many_lines)]
-pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction) {
+pub async fn rsvp_button(
+    ctx: &Context,
+    component: &MessageComponentInteraction,
+) -> serenity::Result<()> {
     let message = component.message.id;
     let Ok(Ok((Response::FetchScheduledMessage(Ok(Some(scheduled))), _))) =
         events_request!(
@@ -121,7 +141,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
         )
         .await else {
             error!("Failed to fetch scheduled mission for component");
-            return;
+            return Ok(());
         };
     match component.data.custom_id.as_str() {
         "rsvp_yes" => {
@@ -138,7 +158,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                 )
                 .await else {
                     error!("Failed to add mission rsvp for component");
-                    return;
+                    return Ok(());
                 };
             if let Err(e) = component
                 .create_interaction_response(&ctx.http, |r| {
@@ -160,10 +180,10 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                     ("Other".to_string(), "other".to_string()),
                 ]
                 )
-                .await
+                .await?
             else {
                 warn!("No reason provided for rsvp_maybe");
-                return
+                return Ok(());
             };
             let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
                 events_request!(
@@ -178,9 +198,9 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                 )
                 .await else {
                     error!("Failed to add mission rsvp for component");
-                    return;
+                    return Ok(());
                 };
-            interaction.reply("Thank you for your RSVP!").await;
+            interaction.reply("Thank you for your RSVP!").await?;
         }
         "rsvp_no" => {
             let mut interaction = Interaction::new(ctx, Generic::Message(component));
@@ -193,10 +213,10 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                         ("Other".to_string(), "other".to_string()),
                     ]
                 )
-                .await
+                .await?
             else {
                 warn!("No reason provided for rsvp_no");
-                return
+                return Ok(());
             };
             let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
                 events_request!(
@@ -211,9 +231,9 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
                 )
                 .await else {
                     error!("Failed to add mission rsvp for component");
-                    return;
+                    return Ok(());
                 };
-            interaction.reply("Thank you for your RSVP!").await;
+            interaction.reply("Thank you for your RSVP!").await?;
         }
         _ => {
             warn!("Unknown component id: {}", component.data.custom_id);
@@ -227,7 +247,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
             )
             .await
         else {
-            return;
+            return Ok(());
         };
     if let Err(e) = component
         .channel_id
@@ -242,6 +262,7 @@ pub async fn rsvp_button(ctx: &Context, component: &MessageComponentInteraction)
     {
         error!("Failed to edit message: {}", e);
     }
+    Ok(())
 }
 
 #[allow(clippy::too_many_lines)]
@@ -249,15 +270,19 @@ async fn new(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
     let date = super::get_datetime(options);
     super::requires_role(
         MISSION_REVIEWER,
-        &command.member.as_ref().unwrap().roles,
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
         &mut interaction,
     )
-    .await;
+    .await?;
     if let Ok(Ok((Response::IsScheduled(Ok(Some(Some(false) | None) | None)), _))) =
         events_request!(
             bootstrap::NC::get().await,
@@ -268,23 +293,18 @@ async fn new(
     {
         debug!("No mission scheduled for {}", date);
     } else {
-        interaction
+        return interaction
             .reply(format!(
                 "A mission is already scheduled at <t:{}:F>, or the check failed.",
                 date.unix_timestamp()
             ))
             .await;
-        return;
     }
-    let mission_id = options
-        .iter()
-        .find(|option| option.name == "mission")
-        .unwrap()
-        .value
-        .as_ref()
-        .unwrap()
-        .as_str()
-        .unwrap();
+    let Some(mission_id) = get_option!(options, "mission", String) else {
+        return interaction
+            .reply("Required option not provided: mission")
+            .await;
+    };
     let Ok(Ok((Response::FetchMissionList(Ok(missions)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
@@ -294,17 +314,16 @@ async fn new(
     )
     .await else {
         error!("failed to fetch mission list");
-        return;
+        return Ok(());
     };
     if missions.len() != 1 {
-        interaction
+        return interaction
             .reply(format!(
                 "Found {} missions matching `{}`",
                 missions.len(),
                 mission_id
             ))
             .await;
-        return;
     }
     let confirm = interaction
         .confirm(&format!(
@@ -312,7 +331,7 @@ async fn new(
             mission_id,
             date.unix_timestamp()
         ))
-        .await;
+        .await?;
     match confirm {
         Confirmation::Yes => {
             if let Err(e) = events_request!(
@@ -328,7 +347,7 @@ async fn new(
                 error!("failed to schedule mission: {}", e);
                 interaction
                     .reply(format!("Failed to schedule mission: {e}"))
-                    .await;
+                    .await?;
             } else {
                 interaction
                     .reply(format!(
@@ -336,38 +355,38 @@ async fn new(
                         mission_id,
                         date.unix_timestamp()
                     ))
-                    .await;
+                    .await?;
             }
         }
         Confirmation::No => {
-            interaction.reply("Cancelled.").await;
+            interaction.reply("Cancelled.").await?;
         }
         Confirmation::Timeout => {}
     }
+    Ok(())
 }
 
 async fn new_autocomplete(
     ctx: &Context,
     autocomplete: &AutocompleteInteraction,
     options: &[CommandDataOption],
-) {
-    let focus = options.iter().find(|o| o.focused);
-    let Some(focus) = focus else {
-        return;
+) -> serenity::Result<()> {
+    let Some(focus) = options.iter().find(|o| o.focused) else {
+        return Ok(());
     };
     if focus.name != "mission" {
-        return;
+        return Ok(());
     }
     let Ok(Ok((Response::FetchMissionList(Ok(mut missions)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
-            search: Some(focus.value.as_ref().unwrap().as_str().unwrap().to_string())
+            search: Some(focus.value.as_ref().expect("value should always exist").as_str().expect("discord should enforce string type").to_string())
         }
     )
     .await else {
         error!("failed to fetch mission list");
-        return;
+        return Ok(());
     };
     if missions.len() > 25 {
         missions.truncate(25);
@@ -383,13 +402,14 @@ async fn new_autocomplete(
     {
         error!("failed to create autocomplete response: {}", e);
     }
+    Ok(())
 }
 
 async fn upcoming(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     _options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
     match events_request!(
         bootstrap::NC::get().await,
@@ -409,18 +429,21 @@ async fn upcoming(
                     scheduled.summary,
                 ));
             }
-            interaction.reply(content).await;
+            interaction.reply(content).await?;
         }
         Ok(_) => {
-            interaction.reply("Failed to fetch upcoming missions").await;
+            interaction
+                .reply("Failed to fetch upcoming missions")
+                .await?;
         }
         Err(e) => {
             error!("failed to fetch upcoming missions: {}", e);
             interaction
                 .reply(format!("Failed to fetch upcoming missions: {e}"))
-                .await;
+                .await?;
         }
     }
+    Ok(())
 }
 
 #[allow(clippy::too_many_lines)]
@@ -428,17 +451,22 @@ pub async fn remove(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     _options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
     super::requires_role(
         MISSION_REVIEWER,
-        &command.member.as_ref().unwrap().roles,
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
         &mut interaction,
     )
-    .await;
-    let time_format = format_description::parse(TIME_FORMAT).unwrap();
+    .await?;
+    let time_format =
+        format_description::parse(TIME_FORMAT).expect("Time format should have been valid");
     debug!("fetching missions");
-    interaction.reply("Fetching missions...").await;
+    interaction.reply("Fetching missions...").await?;
     let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
@@ -446,8 +474,7 @@ pub async fn remove(
     )
     .await
     else {
-        interaction.reply("Failed to fetch missions").await;
-        return
+        return interaction.reply("Failed to fetch missions").await;
     };
     let Some(scheduled_id) = interaction.choice("Select Mission", &missions.iter().map(|m| (format!(
         "{} - {}",
@@ -456,13 +483,15 @@ pub async fn remove(
             .start
             .to_timezone(NEW_YORK)
             .format(&time_format)
-            .unwrap()
-    ), m.id)).collect()).await else {
-        interaction.reply("Cancelled").await;
-        return
+            .expect("Should have been able to format time")
+    ), m.id)).collect()).await? else {
+        return interaction.reply("Cancelled").await;
     };
-    let scheduled_id = scheduled_id.parse().unwrap();
-    let scheduled = missions.iter().find(|m| m.id == scheduled_id).unwrap();
+    let scheduled_id = scheduled_id.parse().expect("Should have been a valid uuid");
+    let scheduled = missions
+        .iter()
+        .find(|m| m.id == scheduled_id)
+        .expect("Options are limited to this list");
     interaction
         .reply(format!(
             "{} - {}",
@@ -471,9 +500,9 @@ pub async fn remove(
                 .start
                 .to_timezone(NEW_YORK)
                 .format(&time_format)
-                .unwrap()
+                .expect("Should have been able to format time")
         ))
-        .await;
+        .await?;
     let confirm = interaction
         .confirm(&format!(
             "Are you sure you want to remove `{} - {}`?",
@@ -482,9 +511,9 @@ pub async fn remove(
                 .start
                 .to_timezone(NEW_YORK)
                 .format(&time_format)
-                .unwrap()
+                .expect("Should have been able to format time")
         ))
-        .await;
+        .await?;
     match confirm {
         Confirmation::Yes => {
             if let Ok(Ok((Response::Unschedule(Ok(())), _))) = events_request!(
@@ -497,10 +526,11 @@ pub async fn remove(
             .await
             {
                 if let Some(mid) = &scheduled.schedule_message_id {
-                    if let Err(e) = SCHEDULE
-                        .delete_message(&ctx, MessageId(mid.parse().unwrap()))
-                        .await
-                    {
+                    let Ok(mid) = mid.parse::<u64>() else {
+                        error!("failed to parse schedule message id");
+                        return Ok(());
+                    };
+                    if let Err(e) = SCHEDULE.delete_message(&ctx, MessageId(mid)).await {
                         error!("failed to delete schedule message: {}", e);
                     }
                 }
@@ -512,9 +542,9 @@ pub async fn remove(
                             .start
                             .to_timezone(NEW_YORK)
                             .format(&time_format)
-                            .unwrap()
+                            .expect("Should have been able to format time")
                     ))
-                    .await;
+                    .await?;
             } else {
                 interaction
                     .reply(format!(
@@ -524,16 +554,17 @@ pub async fn remove(
                             .start
                             .to_timezone(NEW_YORK)
                             .format(&time_format)
-                            .unwrap()
+                            .expect("Should have been able to format time")
                     ))
-                    .await;
+                    .await?;
             }
         }
         Confirmation::No => {
-            interaction.reply("Cancelled mission removal").await;
+            interaction.reply("Cancelled mission removal").await?;
         }
         Confirmation::Timeout => {}
     }
+    Ok(())
 }
 
 #[allow(clippy::too_many_lines)]
@@ -541,16 +572,20 @@ async fn post(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     _options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
     super::requires_role(
         MISSION_REVIEWER,
-        &command.member.as_ref().unwrap().roles,
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
         &mut interaction,
     )
-    .await;
+    .await?;
     debug!("fetching missions");
-    interaction.reply("Fetching missions...").await;
+    interaction.reply("Fetching missions...").await?;
     let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
@@ -558,13 +593,11 @@ async fn post(
     )
     .await
     else {
-        interaction.reply("Failed to fetch missions").await;
-        return
+        return interaction.reply("Failed to fetch missions").await;
     };
     let next_unposted = missions.iter().find(|m| m.schedule_message_id.is_none());
     let Some(scheduled) = next_unposted else {
-        interaction.reply("No unposted missions").await;
-        return
+        return interaction.reply("No unposted missions").await;
     };
     debug!("sending confirmation");
     let confirm = interaction
@@ -574,10 +607,13 @@ async fn post(
             scheduled
                 .start
                 .to_timezone(NEW_YORK)
-                .format(&format_description::parse(TIME_FORMAT).unwrap())
-                .unwrap()
+                .format(
+                    &format_description::parse(TIME_FORMAT)
+                        .expect("Time format should have been valid")
+                )
+                .expect("Should have been able to format time")
         ))
-        .await;
+        .await?;
     match confirm {
         Confirmation::Yes => {
             let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) =
@@ -590,7 +626,7 @@ async fn post(
             else {
                 return interaction.reply("Failed to fetch rsvps").await;
             };
-            let sched = SCHEDULE
+            let Ok(sched) = SCHEDULE
                 .send_message(&ctx, |s| {
                     s.embed(|f| {
                         make_post_embed(f, scheduled, &rsvps);
@@ -616,15 +652,17 @@ async fn post(
                         })
                     })
                 })
-                .await
-                .unwrap();
+                .await else {
+                    return interaction.reply("Failed to post mission").await;
+                };
             tokio::time::sleep(Duration::from_millis(500)).await;
-            let sched_thread = SCHEDULE
+            let Ok(sched_thread) = SCHEDULE
                 .create_public_thread(&ctx, sched.id, |t| t.name(&scheduled.name))
-                .await
-                .unwrap();
+                .await else {
+                    return interaction.reply("Failed to create thread").await;
+                };
             tokio::time::sleep(Duration::from_millis(100)).await;
-            sched_thread
+            if let Err(e) = sched_thread
                 .send_message(&ctx, |pt| {
                     pt.content(
                         scheduled
@@ -639,7 +677,9 @@ async fn post(
                     )
                 })
                 .await
-                .unwrap();
+            {
+                error!("Failed to post mission description: {}", e);
+            }
             if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
@@ -652,18 +692,19 @@ async fn post(
             {
                 interaction
                     .reply(format!("Posted `{}`", scheduled.mission))
-                    .await;
+                    .await?;
             } else {
                 interaction
                     .reply(format!("Failed to post `{}`", scheduled.mission))
-                    .await;
+                    .await?;
             }
         }
         Confirmation::No => {
-            interaction.reply("Cancelled mission posting").await;
+            interaction.reply("Cancelled mission posting").await?;
         }
         Confirmation::Timeout => {}
     }
+    Ok(())
 }
 
 fn make_post_embed(embed: &mut CreateEmbed, scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) {

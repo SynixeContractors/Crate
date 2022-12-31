@@ -19,16 +19,18 @@ pub fn reply(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCo
         .kind(CommandType::Message)
 }
 
-pub async fn run_reply(ctx: &Context, command: &ApplicationCommandInteraction) {
+pub async fn run_reply(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
     let Ok(msg) = RECRUITING
-        .message(&ctx.http, MessageId::from(command.data.target_id.unwrap()))
+        .message(&ctx.http, MessageId::from(command.data.target_id.expect("Should only be possible to run this command on a message")))
         .await
     else {
-        interaction
+        return interaction
             .reply("Failed to find message")
             .await;
-        return;
     };
     if let Some(embed) = msg.embeds.first() {
         debug!("embeded url {:?}", embed.url);
@@ -75,4 +77,5 @@ pub async fn run_reply(ctx: &Context, command: &ApplicationCommandInteraction) {
             }
         }
     }
+    Ok(())
 }

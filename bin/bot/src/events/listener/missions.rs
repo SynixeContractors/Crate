@@ -17,9 +17,13 @@ impl Listener for Publish {
         match &self {
             Self::StartingSoon { scheduled, minutes } => {
                 let Some(ref message) = scheduled.schedule_message_id else { return Ok(()) };
+                let Ok(message_id) = message.parse::<u64>() else {
+                    error!("Failed to parse message id");
+                    return Ok(());
+                };
                 if (-1..=1).contains(minutes) {
                     if let Err(e) = SCHEDULE
-                        .edit_message(&Bot::get().http, MessageId(message.parse().unwrap()), |m| {
+                        .edit_message(&Bot::get().http, MessageId(message_id), |m| {
                             m.components(|f| f);
                             m
                         })

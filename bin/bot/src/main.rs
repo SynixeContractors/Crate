@@ -1,4 +1,4 @@
-#![deny(clippy::pedantic)]
+#![deny(clippy::pedantic, clippy::unwrap_used)]
 #![warn(clippy::nursery, clippy::all)]
 
 #[macro_use]

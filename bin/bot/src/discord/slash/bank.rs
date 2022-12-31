@@ -11,7 +11,10 @@ use serenity::{
 use synixe_events::gear::db::Response;
 use synixe_proc::events_request;
 
-use crate::discord::interaction::{Generic, Interaction};
+use crate::{
+    discord::interaction::{Generic, Interaction},
+    get_option, get_option_user,
+};
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -61,32 +64,36 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         })
 }
 
-pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
-    let subcommand = command.data.options.first().unwrap();
+pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+    let Some(subcommand) = command.data.options.first() else {
+        warn!("No subcommand for bank provided");
+        return Ok(());
+    };
     if subcommand.kind == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
-            "balance" => balance(ctx, command, &subcommand.options).await,
-            "transfer" => transfer(ctx, command, &subcommand.options).await,
+            "balance" => balance(ctx, command, &subcommand.options).await?,
+            "transfer" => transfer(ctx, command, &subcommand.options).await?,
             _ => unreachable!(),
         }
     }
+    Ok(())
 }
 
 async fn balance(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
-    interaction.reply("Fetching balance...").await;
+    interaction.reply("Fetching balance...").await?;
     let CommandDataOptionValue::User(user, _member) = options
         .iter()
         .find(|option| option.name == "member")
-        .unwrap()
+        .expect("Required option not provided: member")
         .resolved
         .as_ref()
-        .unwrap() else {
-        panic!("Invalid member");
+        .expect("required member type should be resolved") else {
+        return interaction.reply("Invalid member").await;
     };
     let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request!(
         bootstrap::NC::get().await,
@@ -96,8 +103,7 @@ async fn balance(
         }
     )
     .await else {
-        interaction.reply("Failed to fetch balance").await;
-        return;
+        return interaction.reply("Failed to fetch balance").await;
     };
     interaction
         .reply(format!(
@@ -105,7 +111,7 @@ async fn balance(
             user.id,
             bootstrap::format::money(balance)
         ))
-        .await;
+        .await
 }
 
 #[allow(clippy::cast_possible_truncation)]
@@ -113,45 +119,26 @@ async fn transfer(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
-    interaction.reply("Transferring money...").await;
-    let CommandDataOptionValue::User(user, _member) = options
-        .iter()
-        .find(|option| option.name == "member")
-        .unwrap()
-        .resolved
-        .as_ref()
-        .unwrap() else {
-        panic!("Invalid member");
+    interaction.reply("Transferring money...").await?;
+    let Some(user) = get_option_user!(options, "member") else {
+        return interaction.reply("Invalid member").await;
     };
     if user.bot && user.id.0 != 1_028_418_063_168_708_638 {
-        interaction.reply("You can't transfer money to a bot").await;
-        return;
+        return interaction.reply("You can't transfer money to a bot").await;
     }
-    let CommandDataOptionValue::Integer(amount) = options
-        .iter()
-        .find(|option| option.name == "amount")
-        .unwrap()
-        .resolved
-        .as_ref()
-        .unwrap() else {
-        panic!("Invalid amount");
+    let Some(amount) = get_option!(options, "amount", Integer) else {
+        return interaction.reply("Invalid amount").await;
     };
-    let CommandDataOptionValue::String(reason) = options
-        .iter()
-        .find(|option| option.name == "reason")
-        .unwrap()
-        .resolved
-        .as_ref()
-        .unwrap() else {
-        panic!("Invalid reason");
+    let Some(reason) = get_option!(options, "reason", String) else {
+        return interaction.reply("Invalid reason").await;
     };
     let Ok(Ok((Response::BankTransferNew(Ok(_)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankTransferNew {
-            source: command.member.as_ref().unwrap().user.id,
+            source: command.member.as_ref().expect("member should always exist on guild commands").user.id,
             target: user.id,
             #[allow(clippy::cast_possible_truncation)]
             amount: *amount as i32,
@@ -159,20 +146,18 @@ async fn transfer(
         }
     )
     .await else {
-        interaction.reply("Failed to transfer money").await;
-        return;
+        return interaction.reply("Failed to transfer money").await;
     };
     let reply = format!(
         "Transferred ${} to <@{}>",
         bootstrap::format::money(*amount as i32),
         user.id
     );
-    interaction.reply(&reply).await;
+    interaction.reply(&reply).await?;
 
     let Ok(private_channel) = user.create_dm_channel(&ctx).await else {
         error!("Unable to create DM channel for transfer notification");
-        interaction.reply(&format!("{reply}, but I wasn't able to notify them")).await;
-        return;
+        return interaction.reply(&format!("{reply}, but I wasn't able to notify them")).await;
     };
 
     if let Err(e) = private_channel
@@ -180,7 +165,12 @@ async fn transfer(
             &ctx.http,
             format!(
                 "<@{}> transferred you ${}\n> {}",
-                command.member.as_ref().unwrap().user.id,
+                command
+                    .member
+                    .as_ref()
+                    .expect("member should always exist on guild commands")
+                    .user
+                    .id,
                 bootstrap::format::money(*amount as i32),
                 reason.clone(),
             ),
@@ -190,6 +180,7 @@ async fn transfer(
         error!("failed to send dm: {}", e);
         interaction
             .reply(&format!("{reply}, but I wasn't able to notify them"))
-            .await;
+            .await?;
     }
+    Ok(())
 }

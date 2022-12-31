@@ -11,7 +11,7 @@ pub async fn start() {
     let sub = nats
         .queue_subscribe("synixe.publish.>", "synixe-bot")
         .await
-        .unwrap();
+        .expect("Failed to subscribe to synixe.publish.*");
     while let Some(msg) = sub.next().await {
         synixe_events::listener!(
             msg.clone(),

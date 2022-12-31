@@ -1,5 +1,3 @@
-#![deny(clippy::unwrap_used)]
-
 use nats::asynk::Message;
 use synixe_events::{discord::write, respond};
 use synixe_meta::discord::GUILD;

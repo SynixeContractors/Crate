@@ -15,7 +15,7 @@ async fn write(http: Bot) {
         .await
         .queue_subscribe(discord::write::Request::path(), "synixe-bot")
         .await
-        .unwrap();
+        .expect("Failed to subscribe to write queue");
     while let Some(msg) = sub.next().await {
         write::handle(msg, http.clone()).await;
     }
@@ -26,7 +26,7 @@ async fn info(http: Bot) {
         .await
         .queue_subscribe(discord::info::Request::path(), "synixe-bot")
         .await
-        .unwrap();
+        .expect("Failed to subscribe to info queue");
     while let Some(msg) = sub.next().await {
         info::handle(msg, http.clone()).await;
     }
