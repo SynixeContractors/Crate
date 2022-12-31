@@ -1,4 +1,4 @@
-#![deny(clippy::pedantic)]
+#![deny(clippy::pedantic, clippy::unwrap_used)]
 #![warn(clippy::nursery, clippy::all)]
 #![allow(clippy::needless_pass_by_value)]
 
@@ -93,12 +93,12 @@ fn command_test_tokio() {
             }
         )
         .await
-        .unwrap();
+        .expect("failed to publish heartbeat");
         CONTEXT
             .read()
             .await
             .as_ref()
-            .unwrap()
+            .expect("context not initialized")
             .callback_null("crate", "test_tokio");
     });
 }
@@ -144,8 +144,10 @@ mod tests {
                 let nats = nats::connect(
                     std::env::var("NATS_URL").expect("Expected the NATS_URL in the environment"),
                 )
-                .unwrap();
-                let sub = nats.subscribe("synixe.publish.arma_server").unwrap();
+                .expect("failed to connect to nats");
+                let sub = nats
+                    .subscribe("synixe.publish.arma_server")
+                    .expect("failed to subscribe");
                 while let Some(msg) = sub.next() {
                     let Ok((data, _)) = synixe_events::parse_data!(msg, publish::Publish) else {
                         continue;
