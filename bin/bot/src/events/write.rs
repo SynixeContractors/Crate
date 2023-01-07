@@ -2,10 +2,10 @@ use nats::asynk::Message;
 use synixe_events::{discord::write, respond};
 use synixe_meta::discord::GUILD;
 
-use crate::Bot;
+use crate::ArcCacheAndHttp;
 
 #[allow(clippy::too_many_lines)]
-pub async fn handle(msg: Message, client: Bot) {
+pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
     let Ok((ev, _)) = synixe_events::parse_data!(msg, write::Request) else {
         return;
     };

@@ -1,9 +1,9 @@
 use nats::asynk::Message;
 use synixe_events::{discord::info, respond};
 
-use crate::Bot;
+use crate::ArcCacheAndHttp;
 
-pub async fn handle(msg: Message, client: Bot) {
+pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
     let Ok((ev, _)) = synixe_events::parse_data!(msg, info::Request) else {
         return;
     };

@@ -347,6 +347,34 @@ impl Handler for Request {
                     details.as_ref(),
                 )
             }
+            Self::FetchCurrentMission {} => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FetchCurrentMission,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE
+                        s.start <= NOW() AND s.start + INTERVAL '150 minutes' >= NOW()
+                    ORDER BY
+                        s.start ASC
+                    LIMIT 1",
+                )?;
+                Ok(())
+            }
         }
     }
 }

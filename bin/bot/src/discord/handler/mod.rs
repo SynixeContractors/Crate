@@ -4,6 +4,8 @@ use synixe_meta::discord::channel::FINANCIALS;
 use synixe_proc::events_request;
 use uuid::Uuid;
 
+use crate::bot::Bot;
+
 use super::{menu, slash};
 
 mod missions;
@@ -14,6 +16,8 @@ pub struct Handler;
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
+
+        Bot::init(ctx.shard.into());
 
         if let Err(e) =
             GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {

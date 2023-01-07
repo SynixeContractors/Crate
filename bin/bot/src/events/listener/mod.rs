@@ -1,3 +1,5 @@
+use synixe_events::global::Publish;
+
 include!("../../../../../lib/common/listener.rs");
 
 mod certifications;
@@ -17,7 +19,27 @@ pub async fn start() {
             msg.clone(),
             nats.clone(),
             synixe_events::certifications::publish::Publish,
-            synixe_events::missions::publish::Publish
+            synixe_events::missions::publish::Publish,
+            synixe_events::global::Publish,
         );
+    }
+}
+
+#[async_trait]
+impl Listener for Publish {
+    async fn listen(
+        &self,
+        _msg: nats::asynk::Message,
+        nats: std::sync::Arc<nats::asynk::Connection>,
+    ) -> Result<(), anyhow::Error> {
+        match &self {
+            Self::Tick { time } => {
+                info!("Tick: {:?}", time);
+                if time.minute() % 5 == 0 {
+                    missions::tick(nats).await;
+                }
+            }
+        }
+        Ok(())
     }
 }

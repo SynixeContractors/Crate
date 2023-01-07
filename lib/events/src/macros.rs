@@ -24,7 +24,7 @@ macro_rules! handler {
 #[macro_export]
 /// Handle the event.
 macro_rules! listener {
-    ($msg:expr, $nats:expr, $($events:ty),*) => {{
+    ($msg:expr, $nats:expr, $($events:ty),*,) => {{
         use synixe_events::Publishable;
         let subject = $msg.subject.clone();
         let sub = subject.as_str();

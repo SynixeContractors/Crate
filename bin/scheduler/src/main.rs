@@ -1,6 +1,7 @@
 #![deny(clippy::pedantic)]
 #![warn(clippy::nursery, clippy::all)]
 
+use synixe_events::global::Publish;
 use synixe_proc::events_request;
 use tokio_simple_scheduler::{Job, Scheduler};
 
@@ -18,6 +19,16 @@ async fn main() {
 
     // Init NATS connection
     bootstrap::NC::get().await;
+
+    // Global
+    event!(
+        sched,
+        "Global - Tick",
+        "0 * * * * *",
+        Publish::Tick {
+            time: time::OffsetDateTime::now_utc()
+        }
+    );
 
     // Recruiting
     job!(

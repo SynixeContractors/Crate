@@ -102,6 +102,9 @@ pub mod db {
             /// Extra details
             details: Option<String>,
         } => (Result<(), String>)
+
+        /// Fetch the current mission
+        struct FetchCurrentMission {} => (Result<Option<ScheduledMission>, String>)
     });
 }
 

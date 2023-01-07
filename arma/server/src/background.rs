@@ -34,7 +34,7 @@ pub async fn events() {
             msg.clone(),
             nats.clone(),
             synixe_events::discord::publish::Publish,
-            synixe_events::missions::publish::Publish
+            synixe_events::missions::publish::Publish,
         );
     }
 }
