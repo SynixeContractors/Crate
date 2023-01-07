@@ -161,6 +161,14 @@ pub mod db {
             /// The DLC to save
             dlc: Vec<u32>,
         } => (Result<(), String>)
+        /// Get all owned DLC
+        struct GetAllDLC {
+        } => (Result<Vec<(String, Vec<u32>)>, String>)
+        /// Get owned DLC for a user
+        struct GetMemberDLC {
+            /// The steam ID to get the DLC for
+            member: UserId,
+        } => (Result<Vec<u32>, String>)
     });
 }
 

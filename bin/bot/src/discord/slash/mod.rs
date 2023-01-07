@@ -9,6 +9,7 @@ use super::interaction::Interaction;
 
 pub mod bank;
 pub mod certifications;
+pub mod dlc;
 pub mod meme;
 pub mod missions;
 

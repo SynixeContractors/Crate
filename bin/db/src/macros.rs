@@ -23,6 +23,38 @@ macro_rules! fetch_one_and_respond {
     }}
 }
 
+macro_rules! fetch_all_and_respond {
+    ($msg:expr, $db:expr, $cx:expr, $respond:path, $query:expr, $($args:expr,)*) => {{
+        let query = sqlx::query!(
+            $query,
+            $($args,)*
+        );
+        let res = query.fetch_all(&$db).await;
+        match res {
+            Ok(data) => {
+                synixe_events::respond!($msg, $respond(Ok(
+                    data
+                        .into_iter()
+                        .map(|d| d.value)
+                        .filter(|v| v.is_some())
+                        .map(|v| v.unwrap())
+                        .collect::<Vec<_>>()
+                ))).await?;
+                Ok(())
+            }
+            Err(sqlx::Error::RowNotFound) => {
+                synixe_events::respond!($msg, $respond(Ok(Vec::new()))).await?;
+                Ok(())
+            }
+            Err(e) => {
+                error!("{:?}", e);
+                synixe_events::respond!($msg, $respond(Err(e.to_string()))).await?;
+                Err(e.into())
+            }
+        }
+    }}
+}
+
 macro_rules! fetch_as_and_respond {
     ($msg:expr, $db:expr, $cx:expr, $as:path, $respond:path, $query:expr, $($args:expr,)*) => {{
         let query = sqlx::query_as!(

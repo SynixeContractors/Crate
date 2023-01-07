@@ -20,6 +20,7 @@ impl EventHandler for Handler {
                 commands
                     .create_application_command(|command| slash::bank::register(command))
                     .create_application_command(|command| slash::certifications::register(command))
+                    .create_application_command(|command| slash::dlc::register(command))
                     .create_application_command(|command| slash::meme::register(command))
                     .create_application_command(|command| slash::missions::schedule(command))
                     .create_application_command(|command| menu::recruiting::reply(command))
@@ -40,6 +41,7 @@ impl EventHandler for Handler {
                 match command.data.name.as_str() {
                     "bank" => slash::bank::run(&ctx, &command).await,
                     "certifications" => slash::certifications::run(&ctx, &command).await,
+                    "dlc" => slash::dlc::run(&ctx, &command).await,
                     "meme" => slash::meme::run(&ctx, &command).await,
                     "schedule" => slash::missions::schedule_run(&ctx, &command).await,
                     "Recruiting - Reply" => menu::recruiting::run_reply(&ctx, &command).await,

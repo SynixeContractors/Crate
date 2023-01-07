@@ -67,6 +67,19 @@ impl Handler for Request {
                     &dlc,
                 )
             }
+            Self::GetAllDLC {  } => {
+                fetch_all_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::GetAllDLC,
+                    r#"
+                        SELECT
+                            (member, dlc) as value
+                        FROM
+                            members_dlc"#,
+                )
+            }
         }
     }
 }
