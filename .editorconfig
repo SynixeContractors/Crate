@@ -4,3 +4,7 @@ insert_final_newline = true
 [*.sqf]
 indent_size = 4
 indent_style = space
+
+[*.hpp,*.cpp]
+indent_size = 4
+indent_style = space
