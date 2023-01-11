@@ -145,6 +145,18 @@
     },
     "query": "\n                        SELECT\n                            valid_for\n                        FROM\n                            certifications\n                        WHERE\n                            id = $1"
   },
+  "1295389d95ec074d6bfdebb383be142d5449a8c52e731ccac26077c1436c7747": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO missions_maps (map, archived)\n                                    VALUES ($1, false)\n                                    ON CONFLICT (map) DO UPDATE SET\n                                        archived = false"
+  },
   "1de41f7aead3bb3e5e5923d1d88ea092d9b9faf91ddc4e451095148128a0b84f": {
     "describe": {
       "columns": [],
@@ -1584,6 +1596,16 @@
       }
     },
     "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        s.start <= NOW() AND s.start + INTERVAL '150 minutes' >= NOW()\n                    ORDER BY\n                        s.start ASC\n                    LIMIT 1"
+  },
+  "f8ac5fbedb7c1df86cab2428b5711ad428bfe171f60d5c0c4463dfcd0b02d90c": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "UPDATE missions_maps SET archived = true"
   },
   "f8b62144d49a4ce758018383935d4d243f844ba53a345c15a7cfc6a32da6c529": {
     "describe": {

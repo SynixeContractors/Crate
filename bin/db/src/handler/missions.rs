@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use sqlx::types::time::Time;
 use synixe_events::missions::db::{Request, Response};
 use synixe_meta::missions::MISSION_LIST;
-use synixe_model::missions::{Listing, Mission, MissionType, Rsvp, ScheduledMission};
+use synixe_model::missions::{Listing, MissionType, Rsvp, ScheduledMission};
 
 use super::Handler;
 
@@ -250,6 +250,9 @@ impl Handler for Request {
                 sqlx::query!("UPDATE missions SET archived = true")
                     .execute(&*db)
                     .await?;
+                sqlx::query!("UPDATE missions_maps SET archived = true")
+                    .execute(&*db)
+                    .await?;
                 match response.json::<Listing>().await {
                     Ok(listing) => {
                         for mission in listing.missions() {
@@ -267,6 +270,23 @@ impl Handler for Request {
                                 mission.summary,
                                 mission.description,
                                 mission.typ as MissionType,
+                            );
+                            if let Err(e) = query.execute(&*db).await {
+                                error!("{:?}", e);
+                                synixe_events::respond!(
+                                    msg,
+                                    Response::UpdateMissionList(Err(e.to_string()))
+                                )
+                                .await?;
+                            }
+                        }
+                        for map in listing.maps() {
+                            let query = sqlx::query!(
+                                r#"INSERT INTO missions_maps (map, archived)
+                                    VALUES ($1, false)
+                                    ON CONFLICT (map) DO UPDATE SET
+                                        archived = false"#,
+                                map
                             );
                             if let Err(e) = query.execute(&*db).await {
                                 error!("{:?}", e);
