@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use sqlx::types::time::Time;
 use synixe_events::missions::db::{Request, Response};
 use synixe_meta::missions::MISSION_LIST;
-use synixe_model::missions::{Mission, MissionType, Rsvp, ScheduledMission};
+use synixe_model::missions::{Listing, Mission, MissionType, Rsvp, ScheduledMission};
 
 use super::Handler;
 
@@ -250,9 +250,9 @@ impl Handler for Request {
                 sqlx::query!("UPDATE missions SET archived = true")
                     .execute(&*db)
                     .await?;
-                match response.json::<Vec<Mission>>().await {
-                    Ok(missions) => {
-                        for mission in missions {
+                match response.json::<Listing>().await {
+                    Ok(listing) => {
+                        for mission in listing.missions() {
                             let query = sqlx::query!(
                                 r#"INSERT INTO missions (id, name, summary, description, type, archived)
                                     VALUES ($1, $2, $3, $4, $5, false)
