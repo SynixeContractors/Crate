@@ -25,7 +25,8 @@ impl EventHandler for Handler {
                     .create_application_command(|command| slash::bank::register(command))
                     .create_application_command(|command| slash::certifications::register(command))
                     .create_application_command(|command| slash::meme::register(command))
-                    .create_application_command(|command| slash::missions::schedule(command))
+                    .create_application_command(|command| slash::missions::register(command))
+                    .create_application_command(|command| slash::schedule::register(command))
                     .create_application_command(|command| menu::recruiting::reply(command))
                     .create_application_command(|command| menu::missions::aar_ids(command))
                     .create_application_command(|command| menu::missions::aar_pay(command))
@@ -45,7 +46,8 @@ impl EventHandler for Handler {
                     "bank" => slash::bank::run(&ctx, &command).await,
                     "certifications" => slash::certifications::run(&ctx, &command).await,
                     "meme" => slash::meme::run(&ctx, &command).await,
-                    "schedule" => slash::missions::schedule_run(&ctx, &command).await,
+                    "missions" => slash::missions::run(&ctx, &command).await,
+                    "schedule" => slash::schedule::run(&ctx, &command).await,
                     "Recruiting - Reply" => menu::recruiting::run_reply(&ctx, &command).await,
                     "AAR - Get IDs" => menu::missions::run_aar_ids(&ctx, &command).await,
                     "AAR - Pay" => menu::missions::run_aar_pay(&ctx, &command).await,
@@ -58,10 +60,11 @@ impl EventHandler for Handler {
                     autocomplete.data.name.as_str()
                 );
                 match autocomplete.data.name.as_str() {
-                    "schedule" => slash::missions::schedule_autocomplete(&ctx, &autocomplete).await,
                     "certifications" => {
                         slash::certifications::autocomplete(&ctx, &autocomplete).await
                     }
+                    "missions" => slash::missions::autocomplete(&ctx, &autocomplete).await,
+                    "schedule" => slash::schedule::autocomplete(&ctx, &autocomplete).await,
                     _ => Ok(()),
                 }
             }
@@ -72,7 +75,7 @@ impl EventHandler for Handler {
                 );
                 match component.data.custom_id.as_str() {
                     "rsvp_yes" | "rsvp_maybe" | "rsvp_no" => {
-                        slash::missions::rsvp_button(&ctx, &component).await
+                        slash::schedule::rsvp_button(&ctx, &component).await
                     }
                     _ => Ok(()),
                 }

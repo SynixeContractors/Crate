@@ -11,6 +11,7 @@ pub mod bank;
 pub mod certifications;
 pub mod meme;
 pub mod missions;
+pub mod schedule;
 
 pub async fn requires_role(
     needle: RoleId,

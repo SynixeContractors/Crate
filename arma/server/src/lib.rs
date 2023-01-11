@@ -2,6 +2,7 @@
 #![warn(clippy::nursery, clippy::all)]
 #![allow(clippy::needless_pass_by_value)]
 
+use core::panic;
 use std::collections::HashMap;
 
 use arma_rs::{arma, Context, Extension};
@@ -54,6 +55,7 @@ fn init() -> Extension {
     info!("Initializing for server `{}`", *SERVER_ID);
     let ext = Extension::build()
         .command("id", command_id)
+        .command("restart", command_restart)
         .command("test_tokio", command_test_tokio)
         .group("gear", gear::group())
         .group("discord", discord::group())
@@ -82,6 +84,10 @@ fn init() -> Extension {
 
 fn command_id() -> String {
     SERVER_ID.clone()
+}
+
+fn command_restart() {
+    panic!("restart requested");
 }
 
 fn command_test_tokio() {

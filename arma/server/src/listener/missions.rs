@@ -86,8 +86,8 @@ impl Listener for Publish {
                     .to_string();
                 let mut file = File::create("./configs/main.cfg")?;
                 file.write_all(new_config.as_bytes())?;
-                // time for a gamer move
-                panic!("mission change");
+                context.callback_null("crate:restart", "restart");
+                Ok(())
             }
             Self::WarnChangeMission {
                 id,
