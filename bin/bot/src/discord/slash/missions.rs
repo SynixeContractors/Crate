@@ -33,13 +33,6 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .required(true)
                         .set_autocomplete(true)
                 })
-                .create_sub_option(|option| {
-                    option
-                        .name("server")
-                        .description("The server to load the mission onto")
-                        .kind(CommandOptionType::String)
-                        .set_autocomplete(true)
-                })
         })
 }
 
