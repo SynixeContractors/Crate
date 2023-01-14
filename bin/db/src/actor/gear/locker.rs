@@ -55,3 +55,20 @@ pub async fn take(
     }
     Ok(())
 }
+
+pub async fn balance<'a, E>(member: &UserId, executor: E) -> Result<i32, anyhow::Error>
+where
+    E: Executor<'a, Database = Postgres>,
+{
+    let query = sqlx::query!(
+        "SELECT SUM(gc.cost * gl.quantity)
+        FROM gear_locker gl
+        INNER JOIN gear_cost gc ON gc.class = gl.class
+        INNER JOIN gear_items gi on gc.class = gi.class
+        WHERE gl.member = $1 AND gi.global = false AND gc.priority = 0;",
+        member.0.to_string(),
+    );
+    let res = query.fetch_one(executor).await?;
+    #[allow(clippy::cast_possible_truncation)]
+    Ok(res.sum.unwrap_or(0) as i32)
+}

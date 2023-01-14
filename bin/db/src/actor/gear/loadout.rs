@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
 
@@ -28,4 +30,35 @@ pub async fn store(
     );
     query.execute(&mut *executor).await?;
     Ok(())
+}
+
+pub async fn balance<'a, E>(
+    loadout: HashMap<String, u32>,
+    executor: E,
+) -> Result<i32, anyhow::Error>
+where
+    E: Executor<'a, Database = Postgres>,
+{
+    let items = loadout
+        .keys()
+        .map(std::string::ToString::to_string)
+        .collect::<Vec<String>>();
+
+    let query = sqlx::query!(
+        "SELECT class, cost FROM gear_cost WHERE class=ANY($1);",
+        &items
+    );
+    let res = query.fetch_all(executor).await?;
+
+    let balance = res
+        .iter()
+        .map(|row| {
+            let class: &String = &row.class;
+            let cost: &i32 = &row.cost;
+            #[allow(clippy::cast_possible_wrap)]
+            loadout.get(class).map(|quantity| cost * *quantity as i32)
+        })
+        .sum::<Option<i32>>();
+
+    Ok(balance.unwrap_or(0))
 }
