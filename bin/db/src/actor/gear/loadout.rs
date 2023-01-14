@@ -45,7 +45,10 @@ where
         .collect::<Vec<String>>();
 
     let query = sqlx::query!(
-        "SELECT class, cost FROM gear_cost WHERE class=ANY($1);",
+        "SELECT gc.class, gc.cost 
+        FROM gear_cost gc
+        INNER JOIN gear_items gi on gi.class = gc.class
+        WHERE gc.class=ANY($1) AND gi.global = false;",
         &items
     );
     let res = query.fetch_all(executor).await?;

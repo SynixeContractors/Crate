@@ -10,7 +10,7 @@ synixe-meta = { path = "../../lib/meta" }
 synixe-model = { path = "../../lib/model", features = ["sqlx", "gear", "mission-schedule"] }
 
 anyhow = { workspace = true }
-arma-rs = "1.9.0"
+arma-rs = "1.9.1"
 async-trait = { workspace = true }
 nats = { workspace = true }
 reqwest = { version = "0.11.13", features = ["json"] }
