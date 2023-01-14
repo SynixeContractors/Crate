@@ -8,6 +8,7 @@ use crate::cache_http::CacheAndHttp;
 
 use super::Listener;
 
+#[allow(clippy::too_many_lines)]
 #[async_trait]
 impl Listener for Publish {
     async fn listen(
@@ -98,8 +99,19 @@ impl Listener for Publish {
                             error!("Failed to create dm channel");
                             return Ok(());
                         };
-                    if let Err(e) = dm.say(&*CacheAndHttp::get(), message).await {
+                    if let Err(e) = dm.say(&*CacheAndHttp::get(), &message).await {
                         error!("Failed to send message: {}", e);
+                    }
+                    if let Err(e) = synixe_meta::discord::channel::LOG
+                        .send_message(&*CacheAndHttp::get(), |m| {
+                            m.content(&format!(
+                                "<@{}> has been notified\n> {message}",
+                                trial.trainee
+                            ))
+                        })
+                        .await
+                    {
+                        error!("Cannot send ban message: {}", e);
                     }
                 }
                 Ok(())

@@ -89,13 +89,7 @@ async fn balance(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Fetching balance...").await?;
-    let CommandDataOptionValue::User(user, _member) = options
-        .iter()
-        .find(|option| option.name == "member")
-        .expect("Required option not provided: member")
-        .resolved
-        .as_ref()
-        .expect("required member type should be resolved") else {
+    let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
     };
     let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request!(
