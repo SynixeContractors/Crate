@@ -22,12 +22,21 @@ pub mod db {
             /// The loadout to set
             loadout: String,
         } => (Result<(), String>)
-
+        /// Get all items stored in a member's locker
+        struct LoadoutBalance {
+            /// The member's ID
+            member: UserId,
+        } => (Result<i32, String>)
         /// Get all items stored in a member's locker
         struct LockerGet {
             /// The member's ID
             member: UserId,
         } => (Result<HashMap<String, i32>, String>)
+        /// Get balance of items in a member's locker
+        struct LockerBalance {
+            /// The member's ID
+            member: UserId,
+        } => (Result<i32, String>)
         /// Store items in a member's locker
         struct LockerStore {
             /// The member's ID

@@ -344,6 +344,32 @@
     },
     "query": "SELECT i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.class = $1"
   },
+  "4f32832806b4e2c842ad632b18f2707247c510738dc078d54ee910a7eac6c251": {
+    "describe": {
+      "columns": [
+        {
+          "name": "class",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "cost",
+          "ordinal": 1,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray"
+        ]
+      }
+    },
+    "query": "SELECT class, cost FROM gear_cost WHERE class=ANY($1);"
+  },
   "56abd10226b406a046e2ec1b8f65eca6ca18feabe2541d09ac3eaf2e3523b67d": {
     "describe": {
       "columns": [
@@ -1309,6 +1335,26 @@
       }
     },
     "query": "\n                        SELECT\n                            EXISTS(\n                                SELECT\n                                    1\n                                FROM\n                                    certifications_instructors\n                                WHERE\n                                    member = $1\n                                    AND certification = $2\n                            ) AS \"instructor_certified!\""
+  },
+  "dfe8e5e4cf1668fd8d3ec4cb7318d500c80012e675337c555c4b5cd192cf61a0": {
+    "describe": {
+      "columns": [
+        {
+          "name": "sum",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT SUM(gc.cost * gl.quantity)\n        FROM gear_locker gl\n        INNER JOIN gear_cost gc ON gc.class = gl.class\n        INNER JOIN gear_items gi on gc.class = gi.class\n        WHERE gl.member = $1 AND gi.global = false AND gc.priority = 0;"
   },
   "e44bf77aa7feb47efc20fa54fa81fe1caa7295b3e2c632ea9af9d9a9cbab5e58": {
     "describe": {

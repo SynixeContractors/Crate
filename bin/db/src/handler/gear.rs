@@ -1,3 +1,4 @@
+use arma_rs::{loadout::Loadout, FromArma};
 use async_trait::async_trait;
 use synixe_events::{
     gear::db::{Request, Response},
@@ -34,6 +35,24 @@ impl Handler for Request {
             }
             Self::LockerGet { member } => {
                 match_with_return!(actor::gear::locker::get(member, &*db), LockerGet, msg, cx)
+            }
+            Self::LoadoutBalance { member } => {
+                let l = actor::gear::loadout::get(member, &*db).await?;
+                let loadout_items = Loadout::from_arma(l.unwrap()).unwrap().classes();
+                match_with_return!(
+                    actor::gear::loadout::balance(loadout_items, &*db),
+                    LoadoutBalance,
+                    msg,
+                    cx
+                )
+            }
+            Self::LockerBalance { member } => {
+                match_with_return!(
+                    actor::gear::locker::balance(member, &*db),
+                    LockerBalance,
+                    msg,
+                    cx
+                )
             }
             Self::LockerStore { member, items } => {
                 quick_transaction!(
