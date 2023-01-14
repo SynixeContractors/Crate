@@ -16,3 +16,4 @@ class CfgPatches {
 #include "CfgEventHandlers.hpp"
 #include "ui\ACE_Arsenal.hpp"
 #include "ui\RscCheckout.hpp"
+#include "AceArsenalSorts.hpp"

@@ -24,7 +24,7 @@ impl NC {
                             .expect("Expected the NATS_URL in the environment"),
                     )
                     .await
-                    .unwrap(),
+                    .expect("Failed to connect to NATS"),
                 ));
                 INIT = true;
             }

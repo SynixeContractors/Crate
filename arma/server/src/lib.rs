@@ -1,7 +1,8 @@
-#![deny(clippy::pedantic)]
+#![deny(clippy::pedantic, clippy::unwrap_used)]
 #![warn(clippy::nursery, clippy::all)]
 #![allow(clippy::needless_pass_by_value)]
 
+use core::panic;
 use std::collections::HashMap;
 
 use arma_rs::{arma, Context, Extension};
@@ -54,6 +55,7 @@ fn init() -> Extension {
     info!("Initializing for server `{}`", *SERVER_ID);
     let ext = Extension::build()
         .command("id", command_id)
+        .command("restart", command_restart)
         .command("test_tokio", command_test_tokio)
         .group("gear", gear::group())
         .group("discord", discord::group())
@@ -84,6 +86,10 @@ fn command_id() -> String {
     SERVER_ID.clone()
 }
 
+fn command_restart() {
+    panic!("restart requested");
+}
+
 fn command_test_tokio() {
     RUNTIME.spawn(async {
         publish!(
@@ -93,12 +99,12 @@ fn command_test_tokio() {
             }
         )
         .await
-        .unwrap();
+        .expect("failed to publish heartbeat");
         CONTEXT
             .read()
             .await
             .as_ref()
-            .unwrap()
+            .expect("context not initialized")
             .callback_null("crate", "test_tokio");
     });
 }
@@ -144,8 +150,10 @@ mod tests {
                 let nats = nats::connect(
                     std::env::var("NATS_URL").expect("Expected the NATS_URL in the environment"),
                 )
-                .unwrap();
-                let sub = nats.subscribe("synixe.publish.arma_server").unwrap();
+                .expect("failed to connect to nats");
+                let sub = nats
+                    .subscribe("synixe.publish.arma_server")
+                    .expect("failed to subscribe");
                 while let Some(msg) = sub.next() {
                     let Ok((data, _)) = synixe_events::parse_data!(msg, publish::Publish) else {
                         continue;

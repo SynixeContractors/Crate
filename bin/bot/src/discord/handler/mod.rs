@@ -1,9 +1,14 @@
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
+use synixe_meta::discord::channel::FINANCIALS;
 use synixe_proc::events_request;
 use uuid::Uuid;
 
+use crate::bot::Bot;
+
 use super::{menu, slash};
+
+mod missions;
 
 pub struct Handler;
 
@@ -12,15 +17,20 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
 
+        Bot::init(ctx.shard.into());
+
         if let Err(e) =
             GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {
                 commands
+                    .create_application_command(|command| menu::missions::aar_ids(command))
+                    .create_application_command(|command| menu::missions::aar_pay(command))
+                    .create_application_command(|command| menu::recruiting::reply(command))
                     .create_application_command(|command| slash::bank::register(command))
                     .create_application_command(|command| slash::certifications::register(command))
-                    .create_application_command(|command| slash::meme::register(command))
-                    .create_application_command(|command| slash::missions::schedule(command))
                     .create_application_command(|command| slash::garage::register(command))
-                    .create_application_command(|command| menu::recruiting::reply(command))
+                    .create_application_command(|command| slash::meme::register(command))
+                    .create_application_command(|command| slash::missions::register(command))
+                    .create_application_command(|command| slash::schedule::register(command))
             })
             .await
         {
@@ -30,25 +40,20 @@ impl EventHandler for Handler {
 
     #[allow(clippy::too_many_lines)]
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        match interaction {
+        if let Err(e) = match interaction {
             Interaction::ApplicationCommand(command) => {
                 debug!("matching command: {:?}", command.data.name.as_str());
                 match command.data.name.as_str() {
-                    "bank" => {
-                        slash::bank::run(&ctx, &command).await;
-                    }
-                    "certifications" => {
-                        slash::certifications::run(&ctx, &command).await;
-                    }
-                    "meme" => slash::meme::run(&ctx, &command).await,
+                    "AAR - Get IDs" => menu::missions::run_aar_ids(&ctx, &command).await,
+                    "AAR - Pay" => menu::missions::run_aar_pay(&ctx, &command).await,
+                    "bank" => slash::bank::run(&ctx, &command).await,
+                    "certifications" => slash::certifications::run(&ctx, &command).await,
                     "garage" => slash::garage::run(&ctx, &command).await,
-                    "schedule" => {
-                        slash::missions::schedule_run(&ctx, &command).await;
-                    }
-                    "Recruiting - Reply" => {
-                        menu::recruiting::run_reply(&ctx, &command).await;
-                    }
-                    _ => {}
+                    "meme" => slash::meme::run(&ctx, &command).await,
+                    "missions" => slash::missions::run(&ctx, &command).await,
+                    "Recruiting - Reply" => menu::recruiting::run_reply(&ctx, &command).await,
+                    "schedule" => slash::schedule::run(&ctx, &command).await,
+                    _ => Ok(()),
                 }
             }
             Interaction::Autocomplete(autocomplete) => {
@@ -57,16 +62,15 @@ impl EventHandler for Handler {
                     autocomplete.data.name.as_str()
                 );
                 match autocomplete.data.name.as_str() {
-                    "schedule" => {
-                        slash::missions::schedule_autocomplete(&ctx, &autocomplete).await;
-                    }
                     "certifications" => {
-                        slash::certifications::autocomplete(&ctx, &autocomplete).await;
+                        slash::certifications::autocomplete(&ctx, &autocomplete).await
                     }
                     "garage" => {
-                        slash::garage::auto_complete::autocomplete(&ctx, &autocomplete).await;
+                        slash::garage::auto_complete::autocomplete(&ctx, &autocomplete).await
                     }
-                    _ => {}
+                    "missions" => slash::missions::autocomplete(&ctx, &autocomplete).await,
+                    "schedule" => slash::schedule::autocomplete(&ctx, &autocomplete).await,
+                    _ => Ok(()),
                 }
             }
             Interaction::MessageComponent(component) => {
@@ -76,12 +80,14 @@ impl EventHandler for Handler {
                 );
                 match component.data.custom_id.as_str() {
                     "rsvp_yes" | "rsvp_maybe" | "rsvp_no" => {
-                        slash::missions::rsvp_button(&ctx, &component).await;
+                        slash::schedule::rsvp_button(&ctx, &component).await
                     }
-                    _ => {}
+                    _ => Ok(()),
                 }
             }
-            _ => (),
+            _ => Ok(()),
+        } {
+            error!("Cannot handle interaction: {}", e);
         }
     }
 
@@ -90,7 +96,7 @@ impl EventHandler for Handler {
             return;
         }
         if new_member.guild_id == synixe_meta::discord::GUILD {
-            synixe_meta::discord::channel::LOBBY
+            if let Err(e) = synixe_meta::discord::channel::LOBBY
                 .send_message(&_ctx, |m| {
                     m.content(&format!(
                         "Welcome <@{}>! Please follow the steps in <#{}> to get prepared to jump in game with us. If you have any questions, feel free to ask here!",
@@ -98,8 +104,9 @@ impl EventHandler for Handler {
                         synixe_meta::discord::channel::ONBOARDING,
                     ))
                 })
-                .await
-                .unwrap();
+                .await {
+                error!("Cannot send welcome message: {}", e);
+            }
         }
     }
 
@@ -114,7 +121,7 @@ impl EventHandler for Handler {
             return;
         }
         if guild_id == synixe_meta::discord::GUILD {
-            synixe_meta::discord::channel::LOG
+            if let Err(e) = synixe_meta::discord::channel::LOG
                 .send_message(&ctx, |m| {
                     m.content(&format!(
                         "{}#{} ({}) has left, <@{}>",
@@ -122,7 +129,9 @@ impl EventHandler for Handler {
                     ))
                 })
                 .await
-                .unwrap();
+            {
+                error!("Cannot send leave message: {}", e);
+            }
         }
     }
 
@@ -136,14 +145,16 @@ impl EventHandler for Handler {
             return;
         }
         if new.guild_id == synixe_meta::discord::GUILD {
-            publish!(
+            if let Err(e) = publish!(
                 bootstrap::NC::get().await,
                 Publish::MemberUpdate {
                     member: new.clone(),
                 }
             )
             .await
-            .unwrap();
+            {
+                error!("Cannot publish member update: {}", e);
+            }
         }
         if new.roles.contains(&synixe_meta::discord::role::RECRUIT) {
             let Ok(Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _))) = events_request!(
@@ -182,7 +193,7 @@ impl EventHandler for Handler {
             return;
         }
         if guild_id == synixe_meta::discord::GUILD {
-            synixe_meta::discord::channel::LOG
+            if let Err(e) = synixe_meta::discord::channel::LOG
                 .send_message(&ctx, |m| {
                     m.content(&format!(
                         "{}#{} ({}) was banned, <@{}>",
@@ -190,7 +201,43 @@ impl EventHandler for Handler {
                     ))
                 })
                 .await
-                .unwrap();
+            {
+                error!("Cannot send ban message: {}", e);
+            }
+        }
+    }
+
+    async fn message(&self, ctx: Context, message: Message) {
+        if message.channel_id == FINANCIALS {
+            missions::validate_aar(&ctx, message).await;
+        }
+    }
+
+    async fn message_update(
+        &self,
+        ctx: Context,
+        _old_if_available: Option<Message>,
+        new: Option<Message>,
+        event: MessageUpdateEvent,
+    ) {
+        if event.channel_id == FINANCIALS {
+            #[allow(clippy::single_match_else)]
+            let message = match new {
+                Some(message) => message,
+                None => {
+                    if let Some(content) = event.content {
+                        if !(content.starts_with("```") || content.ends_with("```")) {
+                            return;
+                        }
+                    }
+                    let Ok(message) = event.channel_id.message(&ctx.http, event.id).await else {
+                        warn!("Cannot get message {}", event.id);
+                        return;
+                    };
+                    message
+                }
+            };
+            missions::validate_aar(&ctx, message).await;
         }
     }
 }

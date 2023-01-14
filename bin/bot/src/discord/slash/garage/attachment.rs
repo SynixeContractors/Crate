@@ -5,93 +5,76 @@ use serenity::{
 use serenity::model::application::interaction::application_command::CommandDataOption;
 use synixe_events::garage::db::Response;
 use synixe_proc::events_request;
+use uuid::Uuid;
 
 use crate::discord::{self, interaction::Interaction};
+use crate::get_option;
 
 pub async fn attach(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction =
         Interaction::new(ctx, discord::interaction::Generic::Application(command));
-    interaction.reply("This is the garage attach command").await;
 
-    let plate = options
-        .iter()
-        .find(|option| option.name == "vehicle")
-        .unwrap()
-        .value
-        .as_ref()
-        .unwrap()
-        .as_str()
-        .unwrap()
-        .to_string();
+    let Some(plate) = get_option!(options, "vehicle", String) else {
+        return interaction
+            .reply("Required option not provided: vehicle")
+            .await;
+    };
 
-    let addon = options
-        .iter()
-        .find(|option| option.name == "addon")
-        .unwrap()
-        .value
-        .as_ref()
-        .unwrap()
-        .as_str()
-        .unwrap()
-        .to_string()
-        .parse()
-        .unwrap();
+    let Some(addon) = get_option!(options, "addon", String) else {
+        return interaction
+            .reply("Required option not provided: addon")
+            .await;
+    };
+    let Ok(addon) = Uuid::parse_str(addon.as_str()) else {
+        return interaction.reply("Invalid addon UUID").await;
+    };
 
     let Ok(Ok((Response::AttachAddon(Ok(())), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         AttachAddon {
-            plate,
+            plate: plate.clone(),
             addon,
-            member: command.member.as_ref().unwrap().user.id
+            member: command.member.as_ref().expect("member should always exist on guild commands").user.id
         }
     )
     .await
     else {
-        interaction.reply("Error attaching addon").await;
-        return;
+        return interaction.reply("Error attaching addon").await;
     };
 
-    interaction.reply("**Addon Attached**\n\n").await;
+    interaction.reply("**Addon Attached**\n\n").await
 }
 
 pub async fn detach(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction =
         Interaction::new(ctx, discord::interaction::Generic::Application(command));
-    interaction.reply("This is the garage detach command").await;
 
-    let plate = options
-        .iter()
-        .find(|option| option.name == "vehicle")
-        .unwrap()
-        .value
-        .as_ref()
-        .unwrap()
-        .as_str()
-        .unwrap()
-        .to_string();
+    let Some(plate) = get_option!(options, "vehicle", String) else {
+        return interaction
+            .reply("Required option not provided: vehicle")
+            .await;
+    };
 
     let Ok(Ok((Response::DetachAddon(Ok(())), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         DetachAddon {
-            plate,
-            member: command.member.as_ref().unwrap().user.id
+            plate: plate.clone(),
+            member: command.member.as_ref().expect("member should always exist on guild commands").user.id
         }
     )
     .await
     else {
-        interaction.reply("Error detaching addon").await;
-        return;
+        return interaction.reply("Error detaching addon").await;
     };
-
-    interaction.reply("**Addon Detached**\n\n").await;
+    interaction.reply("**Addon Detached**\n\n").await
 }

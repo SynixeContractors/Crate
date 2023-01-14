@@ -1,7 +1,8 @@
 use async_trait::async_trait;
+use sqlx::types::time::Time;
 use synixe_events::missions::db::{Request, Response};
 use synixe_meta::missions::MISSION_LIST;
-use synixe_model::missions::{Mission, MissionType, Rsvp};
+use synixe_model::missions::{Listing, MissionType, Rsvp, ScheduledMission};
 
 use super::Handler;
 
@@ -56,9 +57,73 @@ impl Handler for Request {
                     cx,
                     Response::SetScheduledMesssage,
                     "UPDATE missions_schedule SET schedule_message_id = $1 WHERE id = $2",
-                    message_id,
+                    message_id.to_string(),
                     scheduled,
                 )
+            }
+            Self::FetchScheduledMessage { message } => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FetchScheduledMessage,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE schedule_message_id = $1",
+                    message.to_string(),
+                )?;
+                Ok(())
+            }
+            Self::SetScheduledAar {
+                scheduled,
+                message_id,
+            } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::SetScheduledAar,
+                    "UPDATE missions_schedule SET aar_message_id = $1 WHERE id = $2",
+                    message_id.to_string(),
+                    scheduled,
+                )
+            }
+            Self::FetchScheduledAar { message } => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FetchScheduledAar,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE aar_message_id = $1",
+                    message.to_string(),
+                )?;
+                Ok(())
             }
             Self::UpcomingSchedule {} => {
                 fetch_as_and_respond!(
@@ -67,9 +132,109 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::ScheduledMission,
                     Response::UpcomingSchedule,
-                    "SELECT * FROM missions_schedule WHERE start + '2 minutes'::Interval > NOW() ORDER BY start ASC",
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE
+                        start + '2 minutes'::Interval > NOW() ORDER BY start ASC",
                 )?;
                 Ok(())
+            }
+            Self::FindScheduledDate { mission, date } => {
+                let date = date
+                    .with_time(Time::from_hms(0, 0, 0).unwrap())
+                    .assume_utc();
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FindScheduledDate,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE
+                        LOWER(m.name) = LOWER($1) AND
+                        (start > $2 and start < $2 + '2 Day'::INTERVAL)",
+                    mission,
+                    date,
+                )?;
+                Ok(())
+            }
+            Self::PayMission {
+                scheduled,
+                contractors,
+                contractor_amount,
+                group_amount,
+            } => {
+                let mut tx = db.begin().await?;
+                let scheduled: ScheduledMission = sqlx::query_as!(
+                    ScheduledMission,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE
+                        s.id = $1",
+                    scheduled,
+                )
+                .fetch_one(&mut tx)
+                .await?;
+                let end = scheduled.start + time::Duration::hours(2);
+                for contractor in contractors {
+                    sqlx::query!(
+                        "INSERT INTO gear_bank_deposits (member, amount, reason, id, created) VALUES ($1, $2, $3, $4, $5)",
+                        contractor.to_string(),
+                        contractor_amount,
+                        format!("{}: {}", scheduled.typ.to_string(), scheduled.name),
+                        scheduled.id,
+                        end,
+                    )
+                    .execute(&mut tx)
+                    .await?;
+                }
+                sqlx::query!(
+                    "INSERT INTO gear_bank_deposits (member, amount, reason, id, created) VALUES ('0', $1, $2, $3, $4)",
+                    group_amount,
+                    format!("{}: {}", scheduled.typ.to_string(), scheduled.name),
+                    scheduled.id,
+                    end,
+                )
+                .execute(&mut tx)
+                .await?;
+                tx.commit().await?;
+                synixe_events::respond!(msg, Response::PayMission(Ok(())))
+                    .await
+                    .map_err(std::convert::Into::into)
             }
             Self::UpdateMissionList {} => {
                 let Ok(response) = reqwest::get(MISSION_LIST).await else {
@@ -85,9 +250,12 @@ impl Handler for Request {
                 sqlx::query!("UPDATE missions SET archived = true")
                     .execute(&*db)
                     .await?;
-                match response.json::<Vec<Mission>>().await {
-                    Ok(missions) => {
-                        for mission in missions {
+                sqlx::query!("UPDATE missions_maps SET archived = true")
+                    .execute(&*db)
+                    .await?;
+                match response.json::<Listing>().await {
+                    Ok(listing) => {
+                        for mission in listing.missions() {
                             let query = sqlx::query!(
                                 r#"INSERT INTO missions (id, name, summary, description, type, archived)
                                     VALUES ($1, $2, $3, $4, $5, false)
@@ -102,6 +270,23 @@ impl Handler for Request {
                                 mission.summary,
                                 mission.description,
                                 mission.typ as MissionType,
+                            );
+                            if let Err(e) = query.execute(&*db).await {
+                                error!("{:?}", e);
+                                synixe_events::respond!(
+                                    msg,
+                                    Response::UpdateMissionList(Err(e.to_string()))
+                                )
+                                .await?;
+                            }
+                        }
+                        for map in listing.maps() {
+                            let query = sqlx::query!(
+                                r#"INSERT INTO missions_maps (map, archived)
+                                    VALUES ($1, false)
+                                    ON CONFLICT (map) DO UPDATE SET
+                                        archived = false"#,
+                                map
                             );
                             if let Err(e) = query.execute(&*db).await {
                                 error!("{:?}", e);
@@ -152,18 +337,6 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::FetchScheduledMission { message } => {
-                fetch_one_as_and_respond!(
-                    msg,
-                    *db,
-                    cx,
-                    synixe_model::missions::ScheduledMission,
-                    Response::FetchScheduledMission,
-                    "SELECT * FROM missions_schedule WHERE schedule_message_id = $1",
-                    message.to_string(),
-                )?;
-                Ok(())
-            }
             Self::FetchMissionRsvps { scheduled } => {
                 fetch_as_and_respond!(
                     msg,
@@ -193,6 +366,34 @@ impl Handler for Request {
                     *rsvp as Rsvp,
                     details.as_ref(),
                 )
+            }
+            Self::FetchCurrentMission {} => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FetchCurrentMission,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE
+                        s.start <= NOW() AND s.start + INTERVAL '150 minutes' >= NOW()
+                    ORDER BY
+                        s.start ASC
+                    LIMIT 1",
+                )?;
+                Ok(())
             }
         }
     }

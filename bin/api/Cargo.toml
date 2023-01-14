@@ -1,0 +1,15 @@
+[package]
+name = "synixe-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-proc = { path = "../../lib/proc" }
+
+axum = "0.6.1"
+nats = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+serenity = { workspace = true, features = ["builder"] }

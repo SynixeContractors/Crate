@@ -111,41 +111,44 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         })
 }
 
-pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
-    let subcommand = command.data.options.first().unwrap();
+pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+    let Some(subcommand) = command.data.options.first() else {
+        return Ok(());
+    };
     if subcommand.kind == CommandOptionType::SubCommand {
-        match Command::from_str(subcommand.name.as_str()).unwrap() {
+        let Some(name) = Command::from_str(subcommand.name.as_str()) else {
+            return Ok(());
+        };
+        return match name {
             Command::View => view(ctx, command, &subcommand.options).await,
             Command::PurchaseVehicle | Command::PurchaseAddon => {
-                purchase::purchase(ctx, command, &subcommand.options).await;
+                purchase::purchase(ctx, command, &subcommand.options).await
             }
             Command::Attach => attachment::attach(ctx, command, &subcommand.options).await,
             Command::Detach => attachment::detach(ctx, command, &subcommand.options).await,
-        }
+        };
     }
+    Ok(())
 }
 
 async fn view(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     _options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction =
         Interaction::new(ctx, discord::interaction::Generic::Application(command));
-    interaction.reply("This is the garage view command").await;
 
     let Ok(Ok((Response::FetchStoredVehicles(Ok(vehicles)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchStoredVehicles{ stored: None, plate: None }
     ).await else {
-        interaction.reply("Error fetching vehicle assests").await;
-        return;
+        return interaction.reply("Error fetching vehicle assests").await;
     };
 
     if vehicles.is_empty() {
-        interaction.reply("No vehicle assests found").await;
-        return;
+        return interaction.reply("No vehicle assests found").await;
     }
 
     let mut content = "**Vehicle Assests**\n\n".to_string();
@@ -155,5 +158,5 @@ async fn view(
             vehicle.plate, vehicle.stored
         ));
     }
-    interaction.reply(content).await;
+    interaction.reply(content).await
 }

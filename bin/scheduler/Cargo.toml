@@ -10,6 +10,7 @@ synixe-meta = { path = "../../lib/meta" }
 synixe-proc = { path = "../../lib/proc" }
 
 nats = { workspace = true }
+time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tokio-simple-scheduler = "0.1.2"
 tracing = { workspace = true }

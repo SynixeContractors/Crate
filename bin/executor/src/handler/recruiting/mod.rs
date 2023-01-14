@@ -72,7 +72,7 @@ pub async fn has_seen(url: String) -> bool {
             }
         }
     }
-    false
+    true
 }
 
 pub async fn seen(url: String) {

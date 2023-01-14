@@ -1,9 +1,11 @@
-[project]
 name = "crate-server"
-version = "0.10.1"
+prefix = "crate_server"
 files = [
     "crate_server_x64.dll"
 ]
+
+[version]
+git_hash = 0
 
 [hemtt.signing]
 authority = "synixe_crate"

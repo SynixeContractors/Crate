@@ -4,7 +4,7 @@ use synixe_events::certifications::{db::Response, publish::Publish};
 use synixe_meta::discord::GUILD;
 use synixe_proc::events_request;
 
-use crate::cache_http::Bot;
+use crate::cache_http::CacheAndHttp;
 
 use super::Listener;
 
@@ -22,30 +22,40 @@ impl Listener for Publish {
                     if let Ok(Ok((Response::List(Ok(certs)), _))) =
                         events_request!(nats, synixe_events::certifications::db, List {}).await
                     {
-                        let cert = certs
+                        let Some(cert) = certs
                             .iter()
-                            .find(|cert| cert.id == trial.certification)
-                            .unwrap();
+                            .find(|cert| cert.id == trial.certification) else {
+                                warn!("Certification not found: {}", trial.certification);
+                            return Ok(());
+                        };
                         let mut member = GUILD
-                            .member(Bot::get(), trial.trainee.parse::<UserId>()?)
+                            .member(CacheAndHttp::get(), trial.trainee.parse::<UserId>()?)
                             .await?;
                         for role in &cert.roles_granted {
                             member
-                                .add_role(&Bot::get().http, role.parse::<RoleId>()?)
+                                .add_role(&CacheAndHttp::get().http, role.parse::<RoleId>()?)
                                 .await?;
                         }
-                        synixe_meta::discord::channel::TRAINING
-                            .send_message(&*Bot::get(), |m| {
+                        if let Err(e) = synixe_meta::discord::channel::TRAINING
+                            .send_message(&*CacheAndHttp::get(), |m| {
                                 m.content(format!(
                                     "<@{}> has certified <@{}> in {}",
                                     trial.instructor, trial.trainee, cert.name
                                 ))
                             })
                             .await
-                            .unwrap();
+                        {
+                            error!("Failed to send message: {}", e);
+                        }
                     }
                 } else {
-                    trial.trainee.parse::<UserId>().unwrap().create_dm_channel(Bot::get()).await.unwrap().say(&*Bot::get(), format!("You failed your certification trial. Here are the notes from your instructor: \n > {}", trial.notes)).await.unwrap();
+                    let Ok(dm) = trial.trainee.parse::<UserId>().expect("Failed to parse user id").create_dm_channel(CacheAndHttp::get()).await else {
+                        warn!("Failed to create DM channel for {}", trial.trainee);
+                        return Ok(());
+                    };
+                    if let Err(e) = dm.say(&*CacheAndHttp::get(), format!("You failed your certification trial. Here are the notes from your instructor: \n > {}", trial.notes)).await {
+                        error!("Failed to send message: {}", e);
+                    }
                 }
                 Ok(())
             }
@@ -53,17 +63,19 @@ impl Listener for Publish {
                 if let Ok(Ok((Response::List(Ok(certs)), _))) =
                     events_request!(nats, synixe_events::certifications::db, List {}).await
                 {
+                    let Some(cert) = certs
+                        .iter()
+                        .find(|cert| cert.id == trial.certification) else {
+                            warn!("Certification not found: {}", trial.certification);
+                            return Ok(());
+                    };
                     let message = if *days == 0 {
-                        let cert = certs
-                            .iter()
-                            .find(|cert| cert.id == trial.certification)
-                            .unwrap();
                         let mut member = GUILD
-                            .member(Bot::get(), trial.trainee.parse::<UserId>()?)
+                            .member(CacheAndHttp::get(), trial.trainee.parse::<UserId>()?)
                             .await?;
                         for role in &cert.roles_granted {
                             member
-                                .remove_role(&Bot::get().http, role.parse::<RoleId>()?)
+                                .remove_role(&CacheAndHttp::get().http, role.parse::<RoleId>()?)
                                 .await?;
                         }
                         format!(
@@ -73,24 +85,22 @@ impl Listener for Publish {
                     } else {
                         format!(
                             "Your cert for {} expires in {} days. Please contact an instructor to schedule a re-certification.",
-                            certs
-                                .iter()
-                                .find(|cert| cert.id == trial.certification)
-                                .unwrap()
-                                .name,
+                            cert.name,
                             days,
                         )
                     };
-                    trial
+                    let Ok(dm) = trial
                         .trainee
                         .parse::<UserId>()
-                        .unwrap()
-                        .create_dm_channel(Bot::get())
-                        .await
-                        .unwrap()
-                        .say(&*Bot::get(), message)
-                        .await
-                        .unwrap();
+                        .expect("Failed to parse user id")
+                        .create_dm_channel(CacheAndHttp::get())
+                        .await else {
+                            error!("Failed to create dm channel");
+                            return Ok(());
+                        };
+                    if let Err(e) = dm.say(&*CacheAndHttp::get(), message).await {
+                        error!("Failed to send message: {}", e);
+                    }
                 }
                 Ok(())
             }

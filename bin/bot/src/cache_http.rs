@@ -1,23 +1,21 @@
 use std::{mem::MaybeUninit, sync::Arc};
 
-use serenity::CacheAndHttp;
+pub struct CacheAndHttp();
 
-pub struct Bot();
+static mut SINGLETON: MaybeUninit<Arc<serenity::CacheAndHttp>> = MaybeUninit::uninit();
 
-static mut SINGLETON: MaybeUninit<Arc<CacheAndHttp>> = MaybeUninit::uninit();
-
-impl Bot {
+impl CacheAndHttp {
     /// Gets a reference to the Bot cache and http
     ///
     /// # Panics
     ///
     /// Panics if the bot does not exists
-    pub fn get() -> Arc<CacheAndHttp> {
+    pub fn get() -> Arc<serenity::CacheAndHttp> {
         unsafe { SINGLETON.assume_init_ref().clone() }
     }
 
     /// Initializes the Bot cache and http
-    pub fn init(bot: Arc<CacheAndHttp>) {
+    pub fn init(bot: Arc<serenity::CacheAndHttp>) {
         unsafe {
             SINGLETON = MaybeUninit::new(bot);
         }

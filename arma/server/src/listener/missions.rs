@@ -23,11 +23,7 @@ impl Listener for Publish {
             return Ok(());
         };
         match &self {
-            Self::StartingSoon {
-                mission,
-                scheduled: _,
-                minutes,
-            } => {
+            Self::StartingSoon { scheduled, minutes } => {
                 match minutes {
                     4..=6 | 9..=11 | 14..=16 | 29..=31 | 59..=61 | 89..=91 | 119..=121 => {
                         context.callback_data(
@@ -35,7 +31,7 @@ impl Listener for Publish {
                             "global_message",
                             vec![arma_rs::Value::String(format!(
                                 "[Mission] {} starts in {minutes} minutes!",
-                                mission.name
+                                scheduled.name
                             ))],
                         );
                     }
@@ -45,7 +41,7 @@ impl Listener for Publish {
                             "global_message",
                             vec![arma_rs::Value::String(format!(
                                 "[Mission] {} starting now!",
-                                mission.name
+                                scheduled.name
                             ))],
                         );
                     }
@@ -90,8 +86,8 @@ impl Listener for Publish {
                     .to_string();
                 let mut file = File::create("./configs/main.cfg")?;
                 file.write_all(new_config.as_bytes())?;
-                // time for a gamer move
-                panic!("mission change");
+                context.callback_null("crate:restart", "restart");
+                Ok(())
             }
             Self::WarnChangeMission {
                 id,

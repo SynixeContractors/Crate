@@ -15,7 +15,10 @@ use synixe_events::certifications::db::Response;
 use synixe_meta::discord::role::{JUNIOR, MEMBER};
 use synixe_proc::events_request;
 
-use crate::discord::interaction::{Generic, Interaction};
+use crate::{
+    discord::interaction::{Generic, Interaction},
+    get_option, get_option_user,
+};
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -85,101 +88,89 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         })
 }
 
-pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
-    let subcommand = command.data.options.first().unwrap();
+pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+    let Some(subcommand) = command.data.options.first() else {
+        warn!("No subcommand for bank provided");
+        return Ok(());
+    };
     if subcommand.kind == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
-            "trial" => trial(ctx, command, &subcommand.options).await,
-            "view" => view(ctx, command, &subcommand.options).await,
-            "list" => list(ctx, command, &subcommand.options, false).await,
-            "available" => list(ctx, command, &subcommand.options, true).await,
+            "trial" => trial(ctx, command, &subcommand.options).await?,
+            "view" => view(ctx, command, &subcommand.options).await?,
+            "list" => list(ctx, command, &subcommand.options, false).await?,
+            "available" => list(ctx, command, &subcommand.options, true).await?,
             _ => unreachable!(),
         }
     }
+    Ok(())
 }
 
-pub async fn autocomplete(ctx: &Context, autocomplete: &AutocompleteInteraction) {
-    let subcommand = autocomplete.data.options.first().unwrap();
+pub async fn autocomplete(
+    ctx: &Context,
+    autocomplete: &AutocompleteInteraction,
+) -> serenity::Result<()> {
+    let Some(subcommand) = autocomplete.data.options.first() else {
+        warn!("No subcommand for bank provided");
+        return Ok(());
+    };
     if subcommand.kind == CommandOptionType::SubCommand && subcommand.name.as_str() == "trial" {
-        trial_autocomplete(ctx, autocomplete, &subcommand.options).await;
+        trial_autocomplete(ctx, autocomplete, &subcommand.options).await?;
     }
+    Ok(())
 }
 
 async fn trial(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
-    interaction.reply("Fetching certifications...").await;
+    interaction.reply("Fetching certifications...").await?;
     let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         ListInstructor {
-            member: command.member.as_ref().unwrap().user.id
+            member: command.member.as_ref().expect("member should always exist on guild commands").user.id
         }
     )
     .await else {
-        interaction.reply("Failed to fetch certifications").await;
-        return;
+        return interaction.reply("Failed to fetch certifications").await;
     };
     if certs.is_empty() {
-        interaction
+        return interaction
             .reply("You are not an instructor for any certifications")
             .await;
-        return;
     }
-    let cert = options
-        .iter()
-        .find(|option| option.name == "certification")
-        .unwrap()
-        .value
-        .as_ref()
-        .unwrap()
-        .as_str()
-        .unwrap();
-    let Some(cert) = certs.iter().find(|c| c.id.to_string() == cert) else {
-        interaction.reply("Invalid certification").await;
-        return;
+    let Some(cert) = get_option!(options, "certification", String) else {
+        return interaction.reply("Invalid certification").await;
     };
-    let passed = options
-        .iter()
-        .find(|option| option.name == "passed")
-        .unwrap()
-        .value
-        .as_ref()
-        .unwrap()
-        .as_bool()
-        .unwrap();
-    let CommandDataOptionValue::User(trainee, _member) = options
-        .iter()
-        .find(|option| option.name == "trainee")
-        .unwrap()
-        .resolved
-        .as_ref()
-        .unwrap() else {
-        panic!("Invalid trainee");
+    let Some(cert) = certs.iter().find(|c| &c.id.to_string() == cert) else {
+        return interaction.reply("Invalid certification").await;
     };
-    let notes = options
-        .iter()
-        .find(|option| option.name == "notes")
-        .unwrap()
-        .value
-        .as_ref()
-        .unwrap()
-        .as_str()
-        .unwrap()
-        .to_string();
-    interaction.reply("Submitting trial...").await;
+    let Some(passed) = get_option!(options, "passed", Boolean) else {
+        return interaction.reply("Invalid passed").await;
+    };
+    let Some(trainee) = get_option_user!(options, "trainee") else {
+        return interaction.reply("Invalid trainee").await;
+    };
+    let Some(notes) = get_option!(options, "notes", String) else {
+        return interaction.reply("Invalid notes").await;
+    };
+    interaction.reply("Submitting trial...").await?;
     match events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         Certify {
-            instructor: command.member.as_ref().unwrap().user.id,
+            instructor: command
+                .member
+                .as_ref()
+                .expect("member should always exist on guild commands")
+                .user
+                .id,
             trainee: trainee.id,
             certification: cert.id,
             notes: notes.clone(),
-            passed,
+            passed: *passed,
         }
     )
     .await
@@ -187,31 +178,32 @@ async fn trial(
         Err(e) | Ok(Ok((Response::Certify(Err(e)), _))) => {
             interaction
                 .reply(format!("Failed to submit trial: {e}"))
-                .await;
+                .await?;
         }
         Ok(_) => {
-            if passed {
-                interaction.reply("Submitted trial").await;
+            if *passed {
+                interaction.reply("Submitted trial").await?;
             } else {
                 interaction
                     .reply("Submitted trial, the notes have been sent to the trainee")
-                    .await;
+                    .await?;
             }
         }
     };
+    Ok(())
 }
 
 async fn trial_autocomplete(
     ctx: &Context,
     autocomplete: &AutocompleteInteraction,
     options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let focus = options.iter().find(|o| o.focused);
     let Some(focus) = focus else {
-        return;
+        return Ok(());
     };
     if focus.name != "certification" {
-        return;
+        return Ok(());
     }
     let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request!(
         bootstrap::NC::get().await,
@@ -222,7 +214,7 @@ async fn trial_autocomplete(
     )
     .await else {
         error!("Failed to fetch certifications");
-        return;
+        return Ok(());
     };
     let mut certs: Vec<_> = certs
         .into_iter()
@@ -231,10 +223,9 @@ async fn trial_autocomplete(
                 &focus
                     .value
                     .as_ref()
-                    .unwrap()
+                    .expect("focused option should always have a value")
                     .as_str()
-                    .unwrap()
-                    .to_string()
+                    .expect("value should always be a string")
                     .to_lowercase(),
             )
         })
@@ -253,23 +244,18 @@ async fn trial_autocomplete(
     {
         error!("failed to create autocomplete response: {}", e);
     }
+    Ok(())
 }
 
 async fn view(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
-) {
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
-    interaction.reply("Fetching certifications...").await;
-    let CommandDataOptionValue::User(user, _member) = options
-        .iter()
-        .find(|option| option.name == "member")
-        .unwrap()
-        .resolved
-        .as_ref()
-        .unwrap() else {
-        panic!("Invalid member");
+    interaction.reply("Fetching certifications...").await?;
+    let Some(user) = get_option_user!(options, "member") else {
+        return interaction.reply("Invalid member").await;
     };
     let Ok(Ok((Response::Active(Ok(certs)), _))) = events_request!(
         bootstrap::NC::get().await,
@@ -278,14 +264,12 @@ async fn view(
     )
     .await
     else {
-        interaction.reply("Failed to fetch certifications").await;
-        return;
+        return interaction.reply("Failed to fetch certifications").await;
     };
     if certs.is_empty() {
-        interaction
+        return interaction
             .reply(format!("<@{}> has no certifications", user.id))
             .await;
-        return;
     }
     let mut content = format!("**<@{}> Certifications**\n\n", user.id);
     for cert in certs {
@@ -305,7 +289,9 @@ async fn view(
                 if let Some(valid_for) = cert.valid_for {
                     format!(
                         "Until: <t:{}:D> ({} days)",
-                        cert.valid_until.unwrap().unix_timestamp(),
+                        cert.valid_until
+                            .expect("should have been generated by postgres")
+                            .unix_timestamp(),
                         valid_for
                     )
                 } else {
@@ -314,7 +300,7 @@ async fn view(
             ));
         }
     }
-    interaction.reply(content).await;
+    interaction.reply(content).await
 }
 
 async fn list(
@@ -322,20 +308,24 @@ async fn list(
     command: &ApplicationCommandInteraction,
     _options: &[CommandDataOption],
     available: bool,
-) {
+) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command));
-    interaction.reply("Fetching certifications...").await;
+    interaction.reply("Fetching certifications...").await?;
     let Ok(Ok((Response::List(Ok(mut certs)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         List {}
     )
     .await else {
-        interaction.reply("Failed to fetch certifications").await;
-        return;
+        return interaction.reply("Failed to fetch certifications").await;
     };
     if available {
-        let mut member_roles = command.member.as_ref().unwrap().roles.clone();
+        let mut member_roles = command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles
+            .clone();
         if member_roles.contains(&MEMBER) {
             member_roles.push(JUNIOR);
         }
@@ -357,8 +347,7 @@ async fn list(
         });
     }
     if certs.is_empty() {
-        interaction.reply("There are no certifications").await;
-        return;
+        return interaction.reply("There are no certifications").await;
     }
     let mut content = "**Certifications**\n\n".to_string();
     for cert in certs {
@@ -385,5 +374,5 @@ async fn list(
             )
         ));
     }
-    interaction.reply(content).await;
+    interaction.reply(content).await
 }

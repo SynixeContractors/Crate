@@ -6,6 +6,10 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
 
+pub mod aar;
+mod listing;
+pub use listing::Listing;
+
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 /// A mission object
@@ -72,10 +76,25 @@ impl ToString for MissionType {
     fn to_string(&self) -> String {
         match self {
             Self::Contract => "Contract".to_string(),
-            Self::SubContract => "SubContract".to_string(),
+            Self::SubContract => "Subcontract".to_string(),
             Self::Training => "Training".to_string(),
             Self::Special => "Special".to_string(),
             Self::Other => "Other".to_string(),
+        }
+    }
+}
+
+impl std::str::FromStr for MissionType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "contract" => Ok(Self::Contract),
+            "subcontract" => Ok(Self::SubContract),
+            "training" => Ok(Self::Training),
+            "special" => Ok(Self::Special),
+            "other" => Ok(Self::Other),
+            _ => Err(format!("Invalid mission type: {s}")),
         }
     }
 }
@@ -93,6 +112,15 @@ pub struct ScheduledMission {
     pub schedule_message_id: Option<String>,
     /// Start datetime
     pub start: OffsetDateTime,
+    /// Mission name
+    pub name: String,
+    /// Mission summary
+    pub summary: String,
+    /// Mission description
+    pub description: String,
+    /// Mission type
+    #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
+    pub typ: MissionType,
 }
 
 #[cfg(feature = "mission-schedule")]

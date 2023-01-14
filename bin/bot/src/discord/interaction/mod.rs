@@ -88,54 +88,53 @@ impl<'a> Interaction<'a> {
         }
     }
 
-    async fn initial(&mut self) {
+    async fn initial(&mut self) -> serenity::Result<()> {
         if !self.initial_response {
             self.interaction
                 .create_interaction_response(self.ctx, |r| {
                     r.kind(InteractionResponseType::DeferredChannelMessageWithSource)
                         .interaction_response_data(|d| d.ephemeral(true))
                 })
-                .await
-                .unwrap();
+                .await?;
             self.initial_response = true;
         }
+        Ok(())
     }
 
-    pub async fn reply(&mut self, content: impl Display + Send) {
-        self.initial().await;
+    pub async fn reply(&mut self, content: impl Display + Send) -> serenity::Result<()> {
+        self.initial().await?;
         debug!("replying to interaction: {}", content);
         if let Some(message) = self.message.as_ref() {
             self.interaction
                 .edit_followup_message(self.ctx, message.id, |m| {
                     m.content(content).components(|c| c)
                 })
-                .await
-                .unwrap();
+                .await?;
         } else {
             self.message = Some(
                 self.interaction
                     .create_followup_message(self.ctx, |m| m.content(content).components(|c| c))
-                    .await
-                    .unwrap(),
+                    .await?,
             );
         }
+        Ok(())
     }
 
     pub async fn choice<T: ToString + Display + Sync>(
         &mut self,
         prompt: &str,
         choices: &Vec<(String, T)>,
-    ) -> Option<String> {
-        self.initial().await;
+    ) -> serenity::Result<Option<String>> {
+        self.initial().await?;
         debug!("prompting for choice: {}", prompt);
-        if let Some(message) = self.message.as_ref() {
+        let message = if let Some(message) = self.message.as_ref() {
             self.interaction
                 .edit_followup_message(&self.ctx, message.id, |r| {
                     Self::_choice(prompt, choices, r);
                     r
                 })
-                .await
-                .unwrap();
+                .await?;
+            message
         } else {
             self.message = Some(
                 self.interaction
@@ -143,41 +142,42 @@ impl<'a> Interaction<'a> {
                         Self::_choice(prompt, choices, r);
                         r
                     })
-                    .await
-                    .unwrap(),
+                    .await?,
             );
-        }
-        let Some(interaction) = self.message.as_ref().unwrap()
+            self.message
+                .as_ref()
+                .expect("message should be set literally lines above")
+        };
+        let Some(interaction) = message
             .await_component_interaction(self.ctx)
             .timeout(Duration::from_secs(60 * 3))
             .collect_limit(1)
             .await
         else {
-            self.interaction.edit_followup_message(&self.ctx, self.message.as_ref().unwrap().id, |r| {
+            self.interaction.edit_followup_message(&self.ctx, message.id, |r| {
                 r.content("Didn't receive a response").components(|c| c)
-            }).await.unwrap();
-            return None;
+            }).await?;
+            return Ok(None);
         };
         interaction
             .create_interaction_response(&self.ctx, |r| {
                 r.kind(InteractionResponseType::DeferredUpdateMessage)
             })
-            .await
-            .unwrap();
-        interaction.data.values.get(0).cloned()
+            .await?;
+        Ok(interaction.data.values.get(0).cloned())
     }
 
-    pub async fn confirm(&mut self, prompt: &str) -> Confirmation {
-        self.initial().await;
+    pub async fn confirm(&mut self, prompt: &str) -> serenity::Result<Confirmation> {
+        self.initial().await?;
         debug!("prompting for confirmation: {}", prompt);
-        if let Some(message) = self.message.as_ref() {
+        let message = if let Some(message) = self.message.as_ref() {
             self.interaction
                 .edit_followup_message(&self.ctx, message.id, |r| {
                     Self::_confirm(prompt, r);
                     r
                 })
-                .await
-                .unwrap();
+                .await?;
+            message
         } else {
             self.message = Some(
                 self.interaction
@@ -185,32 +185,33 @@ impl<'a> Interaction<'a> {
                         Self::_confirm(prompt, r);
                         r
                     })
-                    .await
-                    .unwrap(),
+                    .await?,
             );
-        }
-        let Some(interaction) = self.message.as_ref().unwrap()
+            self.message
+                .as_ref()
+                .expect("message should be set literally lines above")
+        };
+        let Some(interaction) = message
             .await_component_interaction(self.ctx)
             .timeout(Duration::from_secs(60 * 3))
             .collect_limit(1)
             .await
         else {
-            self.interaction.edit_followup_message(&self.ctx, self.message.as_ref().unwrap().id, |r| {
+            self.interaction.edit_followup_message(&self.ctx, message.id, |r| {
                 r.content("Didn't receive a response").components(|c| c)
-            }).await.unwrap();
-            return Confirmation::Timeout;
+            }).await?;
+            return Ok(Confirmation::Timeout);
         };
         interaction
             .create_interaction_response(&self.ctx, |r| {
                 r.kind(InteractionResponseType::DeferredUpdateMessage)
             })
-            .await
-            .unwrap();
-        if interaction.data.custom_id == "yes" {
+            .await?;
+        Ok(if interaction.data.custom_id == "yes" {
             Confirmation::Yes
         } else {
             Confirmation::No
-        }
+        })
     }
 }
 

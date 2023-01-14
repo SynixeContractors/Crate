@@ -2,47 +2,63 @@ use serenity::{model::prelude::autocomplete::AutocompleteInteraction, prelude::C
 
 use synixe_events::garage::db::Response;
 use synixe_proc::events_request;
+use uuid::Uuid;
 
-use crate::discord::slash::garage::enums::{AssetFilter, Command};
+use crate::{
+    discord::slash::garage::enums::{AssetFilter, Command},
+    get_option,
+};
 
-pub async fn autocomplete(ctx: &Context, autocomplete: &AutocompleteInteraction) {
-    let subcommand = autocomplete.data.options.first().unwrap();
+pub async fn autocomplete(
+    ctx: &Context,
+    autocomplete: &AutocompleteInteraction,
+) -> serenity::Result<()> {
+    let Some(subcommand) = autocomplete.data.options.first() else {
+        return Ok(());
+    };
     let Some(command) = Command::from_str(subcommand.name.as_str()) else {
-        return;
+        return Ok(());
     };
     let focus = subcommand.options.iter().find(|o| o.focused);
     let Some(focus) = focus else {
-        return;
+        return Ok(());
     };
-    let focus_value = focus.value.as_ref().unwrap().as_str().unwrap().to_string();
+    let Some(focus_option) = focus.value.as_ref() else {
+        return Ok(());
+    };
+    let Some(focus_value) = focus_option.as_str() else {
+        return Ok(());
+    };
+    let focus_value = focus_value.to_string();
     match command {
         Command::PurchaseVehicle => {
-            autocomplete_shop(ctx, autocomplete, AssetFilter::Vehicle(Some(focus_value))).await;
+            autocomplete_shop(ctx, autocomplete, AssetFilter::Vehicle(Some(focus_value))).await
         }
         Command::PurchaseAddon => {
             match focus.name.as_str() {
                 "vehicle" => autocomplete_shop(ctx, autocomplete, AssetFilter::Vehicle(Some(focus_value))).await,
                 "addon" => autocomplete_shop(ctx, autocomplete, AssetFilter::Addon(Some(focus_value))).await,
-                _ => (),
+                _ => Ok(()),
             }
         }
         Command::Attach | Command::Detach => {
             match focus.name.as_str() {
                 "vehicle" => autocomplete_vehicle(ctx, autocomplete, command, focus_value).await,
                 "addon" => autocomplete_addon(ctx, autocomplete, {
-                    let Some(vehicle) = subcommand.options.iter().find(|o| o.name == "vehicle") else {
-                        return;
+                    let Some(vehicle) = get_option!(&autocomplete.data.options, "vehicle", String) else {
+                        error!("Missing vehicle option");
+                        return Ok(());
                     };
-                    info!("vehicle: {:?}", vehicle);
-                    let Ok(uuid) = vehicle.value.as_ref().unwrap().as_str().unwrap().to_string().parse() else {
-                        return;
+                    let Ok(vehicle) = Uuid::parse_str(vehicle.as_str()) else {
+                        error!("Invalid vehicle UUID");
+                        return Ok(());
                     };
-                    uuid
+                    vehicle.to_string()
                 }).await,
-                _ => (),
+                _ => Ok(()),
             }
         }
-        Command::View => {}
+        Command::View => Ok(()),
     }
 }
 
@@ -51,14 +67,14 @@ async fn autocomplete_vehicle(
     autocomplete: &AutocompleteInteraction,
     command: Command,
     filter: String,
-) {
+) -> serenity::Result<()> {
     let Ok(Ok((Response::FetchStoredVehicles(Ok(mut vehicles)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchStoredVehicles { stored: Some(true), plate: Some(filter) }
     ).await else {
         error!("Failed to fetch vehicles");
-        return;
+        return Ok(());
     };
 
     match command {
@@ -84,16 +100,21 @@ async fn autocomplete_vehicle(
     {
         error!("failed to create autocomplete response: {}", e);
     }
+    Ok(())
 }
 
-async fn autocomplete_addon(ctx: &Context, autocomplete: &AutocompleteInteraction, plate: String) {
+async fn autocomplete_addon(
+    ctx: &Context,
+    autocomplete: &AutocompleteInteraction,
+    plate: String,
+) -> serenity::Result<()> {
     let Ok(Ok((Response::FetchStoredAddons(Ok(mut addons)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchStoredAddons { plate }
     ).await else {
         error!("Failed to fetch addons");
-        return;
+        return Ok(());
     };
 
     if addons.len() > 25 {
@@ -110,20 +131,21 @@ async fn autocomplete_addon(ctx: &Context, autocomplete: &AutocompleteInteractio
     {
         error!("failed to create autocomplete response: {}", e);
     }
+    Ok(())
 }
 
 async fn autocomplete_shop(
     ctx: &Context,
     autocomplete: &AutocompleteInteraction,
     filter: AssetFilter,
-) {
+) -> serenity::Result<()> {
     let Ok(Ok((Response::FetchShopAssets(Ok(assets)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchShopAssets { search: filter.search() }
     ).await else {
         error!("Failed to fetch all shop assests");
-        return;
+        return Ok(());
     };
 
     let mut assets: Vec<_> = match filter {
@@ -145,4 +167,5 @@ async fn autocomplete_shop(
     {
         error!("failed to create autocomplete response: {}", e);
     }
+    Ok(())
 }

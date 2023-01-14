@@ -13,14 +13,29 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         .description("I will look for a hot reddit meme")
 }
 
-pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
+pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+    let mut retry = 2;
     let meme = loop {
-        let meme: MemeResponse = reqwest::get("https://meme-api.herokuapp.com/gimme")
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
+        if retry == 0 {
+            error!("Cannot get meme");
+            break MemeResponse {
+                nsfw: false,
+                url: "https://media.discordapp.net/attachments/736790994833506414/975213152709013514/unknown.png".to_string(),
+            };
+        }
+        retry -= 1;
+        let meme: MemeResponse = {
+            let Ok(res) = reqwest::get("https://meme-api.com/gimme/memes+dankmemes+armamemes")
+                .await else {
+                    error!("Cannot get meme");
+                    continue;
+                };
+            let Ok(json) = res.json().await else {
+                error!("Cannot parse meme");
+                continue;
+            };
+            json
+        };
         if meme.nsfw {
             continue;
         }
@@ -37,6 +52,7 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) {
     {
         error!("Cannot respond to slash command: {}", why);
     }
+    Ok(())
 }
 
 #[derive(Deserialize)]
