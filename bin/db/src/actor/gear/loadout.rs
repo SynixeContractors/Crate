@@ -54,7 +54,9 @@ where
         .iter()
         .map(|row| {
             #[allow(clippy::cast_possible_wrap)]
-            loadout.get(&row.class).map(|quantity| row.cost * *quantity as i32)
+            loadout
+                .get(&row.class)
+                .map(|quantity| row.cost * *quantity as i32)
         })
         .sum::<Option<i32>>();
 
