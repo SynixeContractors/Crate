@@ -167,7 +167,7 @@ pub async fn rsvp_button(
             }
         }
         "rsvp_maybe" => {
-            let mut interaction = Interaction::new(ctx, Generic::Message(component));
+            let mut interaction = Interaction::new(ctx, Generic::Message(component), &[]);
             let Some(reason) = interaction
                 .choice("Please provide a reason, this helps us make informed decision to improve Synixe!",
                 &vec![
@@ -200,7 +200,7 @@ pub async fn rsvp_button(
             interaction.reply("Thank you for your RSVP!").await?;
         }
         "rsvp_no" => {
-            let mut interaction = Interaction::new(ctx, Generic::Message(component));
+            let mut interaction = Interaction::new(ctx, Generic::Message(component), &[]);
             let Some(reason) = interaction
                 .choice("Please provide a reason, this helps us make informed decision to improve Synixe!",
                     &vec![
@@ -268,7 +268,7 @@ async fn new(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     let date = super::get_datetime(options);
     super::requires_role(
         MISSION_REVIEWER,
@@ -405,9 +405,9 @@ async fn new_autocomplete(
 async fn upcoming(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    _options: &[CommandDataOption],
+    options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     match events_request!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
@@ -447,9 +447,9 @@ async fn upcoming(
 pub async fn remove(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    _options: &[CommandDataOption],
+    options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     super::requires_role(
         MISSION_REVIEWER,
         &command
@@ -568,9 +568,9 @@ pub async fn remove(
 async fn post(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    _options: &[CommandDataOption],
+    options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     super::requires_role(
         MISSION_REVIEWER,
         &command

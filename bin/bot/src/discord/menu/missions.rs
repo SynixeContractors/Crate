@@ -24,7 +24,7 @@ pub async fn run_aar_ids(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), &[]);
     let Ok(msg) = command.channel_id
         .message(&ctx.http, MessageId::from(command.data.target_id.expect("Should only be possible to run this command on a message")))
         .await
@@ -63,7 +63,7 @@ pub async fn run_aar_pay(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), &[]);
     let Some(member) = command.member.as_ref() else {
         return interaction
             .reply("Failed to get member")

@@ -1,6 +1,10 @@
-use serenity::model::prelude::{
-    application_command::{CommandDataOption, CommandDataOptionValue},
-    RoleId,
+use serenity::{
+    builder::CreateApplicationCommandOption,
+    model::prelude::{
+        application_command::{CommandDataOption, CommandDataOptionValue},
+        command::CommandOptionType,
+        RoleId,
+    },
 };
 use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt, PrimitiveDateTimeExt};
@@ -95,5 +99,21 @@ pub fn get_datetime(options: &[CommandDataOption]) -> OffsetDateTime {
         } else {
             possible
         }
+    }
+}
+
+pub trait AllowPublic {
+    fn allow_public(&mut self) -> &mut Self;
+}
+
+impl AllowPublic for CreateApplicationCommandOption {
+    fn allow_public(&mut self) -> &mut Self {
+        self.create_sub_option(|option| {
+            option
+                .name("public")
+                .description("Post the response publicly")
+                .kind(CommandOptionType::Boolean)
+                .required(false)
+        })
     }
 }

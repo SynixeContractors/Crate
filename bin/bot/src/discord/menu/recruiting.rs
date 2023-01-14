@@ -23,7 +23,7 @@ pub async fn run_reply(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), &[]);
     let Ok(msg) = RECRUITING
         .message(&ctx.http, MessageId::from(command.data.target_id.expect("Should only be possible to run this command on a message")))
         .await

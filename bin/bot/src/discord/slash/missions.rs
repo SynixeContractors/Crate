@@ -70,7 +70,7 @@ async fn load(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     super::requires_role(
         MISSION_REVIEWER,
         &command

@@ -16,6 +16,8 @@ use crate::{
     get_option, get_option_user,
 };
 
+use super::AllowPublic;
+
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
         .name("bank")
@@ -32,6 +34,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .kind(CommandOptionType::User)
                         .required(true)
                 })
+                .allow_public()
         })
         .create_option(|option| {
             option
@@ -84,7 +87,7 @@ async fn balance(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Fetching balance...").await?;
     let CommandDataOptionValue::User(user, _member) = options
         .iter()
@@ -144,7 +147,7 @@ async fn transfer(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Transferring money...").await?;
     let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
