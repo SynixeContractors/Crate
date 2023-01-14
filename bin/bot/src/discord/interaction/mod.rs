@@ -89,7 +89,7 @@ impl<'a> Interaction<'a> {
             interaction,
             ctx,
             initial_response: false,
-            ephemeral: *get_option!(options, "public", Boolean).unwrap_or(&false),
+            ephemeral: !get_option!(options, "public", Boolean).unwrap_or(&false),
         }
     }
 
