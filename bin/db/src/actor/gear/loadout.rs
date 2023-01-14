@@ -53,10 +53,8 @@ where
     let balance = res
         .iter()
         .map(|row| {
-            let class: &String = &row.class;
-            let cost: &i32 = &row.cost;
             #[allow(clippy::cast_possible_wrap)]
-            loadout.get(class).map(|quantity| cost * *quantity as i32)
+            loadout.get(&row.class).map(|quantity| row.cost * *quantity as i32)
         })
         .sum::<Option<i32>>();
 
