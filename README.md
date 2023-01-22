@@ -29,7 +29,7 @@ You are welcome to read, not copy directly, the source code for inspiration for 
 
 - Loadout Tracking
     - Loadouts are persistent across missions
-    - ACE earplugs
+    - CBA Extended Loadouts (ACE Earplugs, GRAD Sling Helmet)
 - Bank System
     - Players earn money for completing missions
     - Players can buy gear from the shop
