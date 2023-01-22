@@ -13,12 +13,12 @@ pub mod db {
         /// List all certifications that a member is certified to instruct
         struct ListInstructor {
             /// The member to list certifications for
-            member: UserId
+            member: UserId,
         } => (Result<Vec<Certification>, String>)
         /// Get the name of a certification
         struct Name {
             /// The certification to get the name of
-            certification: Uuid
+            certification: Uuid,
         } => (Result<Option<String>, String>)
         /// Certify a member
         struct Certify {

@@ -1,28 +1,18 @@
 [package]
-name = "synixe-arma-server"
+name = "synixe-docker"
 version = "0.1.0"
 edition = "2021"
-
-[lib]
-name = "crate_server"
-crate-type = ["cdylib"]
 
 [dependencies]
 bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
 synixe-events = { path = "../../lib/events" }
 synixe-proc = { path = "../../lib/proc" }
-synixe-model = { path = "../../lib/model", features = ["gear", "arma-rs"] }
+synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 anyhow = { workspace = true }
-arma-rs = { workspace = true }
 async-trait = { workspace = true }
-lazy_static = "1.4.0"
-log = "0.4.17"
+bollard = "0.14.0"
 nats = { workspace = true }
-serenity = { workspace = true }
+regex = "1.7.1"
 tokio = { workspace = true, features = ["full"] }
-uuid = { workspace = true }
-
-[dev-dependencies]
-nats = { workspace = true }
-rand = "0.8.5"
+tracing = { workspace = true }
