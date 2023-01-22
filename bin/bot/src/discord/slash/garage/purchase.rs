@@ -18,7 +18,7 @@ pub async fn purchase(
     let mut interaction =
         Interaction::new(ctx, discord::interaction::Generic::Application(command));
 
-    let plate = get_option!(options, "vehicle", String);
+    let plate = get_option!(options, "plate", String);
 
     let kind = options
         .iter()

@@ -70,6 +70,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .name("plate")
                         .description("Custom plate for the vehicle")
                         .kind(CommandOptionType::String)
+                        .max_length(10)
                         .required(true)
                 })
         })
@@ -153,9 +154,15 @@ async fn view(
 
     let mut content = "**Vehicle Assests**\n\n".to_string();
     for vehicle in vehicles {
+        let stored = if vehicle.stored {
+            "In garage"
+        } else {
+            "Out in the field"
+        };
+        #[allow(clippy::uninlined_format_args)]
         content.push_str(&format!(
-            "**{} - stored: {}**\n",
-            vehicle.plate, vehicle.stored
+            "**{}**\nPlate: {}\n{}\n\n",
+            vehicle.name, vehicle.plate, stored
         ));
     }
     interaction.reply(content).await

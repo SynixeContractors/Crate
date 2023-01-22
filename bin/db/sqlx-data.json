@@ -289,6 +289,64 @@
     },
     "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        start + '2 minutes'::Interval > NOW() ORDER BY start ASC"
   },
+  "2a77e134f22a5c6688db21b577ad23333b907c2a9980e8f9d4985b29867bc6c1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "plate",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "addon",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "stored",
+          "ordinal": 3,
+          "type_info": "Bool"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "class",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "addons",
+          "ordinal": 6,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Bool",
+          "Bool"
+        ]
+      }
+    },
+    "query": "\n                    SELECT \n                        v.plate,\n                        v.id,\n                        v.addon,\n                        v.stored,\n                        s.name,\n                        s.class,\n                        (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons\n                    FROM \n                        garage_vehicles v \n                    INNER JOIN \n                        garage_shop s \n                    ON\n                        s.id = v.id \n                    WHERE \n                        plate LIKE $1\n                        AND ($2 OR stored = $3)\n                    "
+  },
   "3bb77da35adb64b25c4f0d1d9232bfca9633b231468f94d9371ae1fc7a7f42a5": {
     "describe": {
       "columns": [
@@ -652,6 +710,62 @@
     },
     "query": "INSERT into garage_log (plate, action, member, data) VALUES ($1, 'attach', $2, $3)"
   },
+  "6c2d18756a8ce3b8a22d0b785351496d32bc98a5eaf5d4493580bfdee22483ae": {
+    "describe": {
+      "columns": [
+        {
+          "name": "plate",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "addon",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "stored",
+          "ordinal": 3,
+          "type_info": "Bool"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "class",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "addons",
+          "ordinal": 6,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                    SELECT \n                        v.plate, \n                        v.id,\n                        v.addon,\n                        v.stored, \n                        s.name,\n                        s.class,\n                        (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons\n                    FROM \n                        garage_vehicles v \n                    INNER JOIN \n                        garage_shop s \n                    ON\n                        s.id = v.id\n                    WHERE plate = $1"
+  },
   "6cc6995e52aae1b6cb67db83edd8da57a70a3a2f2aa79deb29f44fd6fc3b620c": {
     "describe": {
       "columns": [
@@ -816,58 +930,6 @@
       }
     },
     "query": "INSERT INTO missions_schedule_rsvp (scheduled, member, state, details) VALUES ($1, $2, $3, $4) ON CONFLICT (scheduled, member) DO UPDATE SET state = $3, details = $4"
-  },
-  "8f3c383aa70efa5154dd730b091360b32f7e66ec2dfcf8b443c19fe3f129b2ae": {
-    "describe": {
-      "columns": [
-        {
-          "name": "plate",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "addon",
-          "ordinal": 2,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "stored",
-          "ordinal": 3,
-          "type_info": "Bool"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "class",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Bool",
-          "Bool"
-        ]
-      }
-    },
-    "query": "\n                    SELECT \n                        v.plate,\n                        v.id,\n                        v.addon,\n                        v.stored,\n                        s.name,\n                        s.class\n                    FROM \n                        garage_vehicles v \n                    INNER JOIN \n                        garage_shop s \n                    ON\n                        s.id = v.id \n                    WHERE \n                        plate LIKE $1\n                        AND ($2 OR stored = $3)\n                    "
   },
   "8f58acc714f280ed531e62dd5b77fe9afa6c3404f2e1b56c07c53185e415bd0b": {
     "describe": {
@@ -1534,56 +1596,6 @@
       }
     },
     "query": "\n                        SELECT\n                            EXISTS(\n                                SELECT\n                                    1\n                                FROM\n                                    certifications_instructors\n                                WHERE\n                                    member = $1\n                                    AND certification = $2\n                            ) AS \"instructor_certified!\""
-  },
-  "de303519bd789ef4fca828e2d1b0cf85803490dee26bf214a37d819aad2139a6": {
-    "describe": {
-      "columns": [
-        {
-          "name": "plate",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "addon",
-          "ordinal": 2,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "stored",
-          "ordinal": 3,
-          "type_info": "Bool"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "class",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "\n                    SELECT \n                        v.plate, \n                        v.id,\n                        v.addon,\n                        v.stored, \n                        s.name,\n                        s.class\n                    FROM \n                        garage_vehicles v \n                    INNER JOIN \n                        garage_shop s \n                    ON\n                        s.id = v.id\n                    WHERE plate = $1"
   },
   "e44bf77aa7feb47efc20fa54fa81fe1caa7295b3e2c632ea9af9d9a9cbab5e58": {
     "describe": {

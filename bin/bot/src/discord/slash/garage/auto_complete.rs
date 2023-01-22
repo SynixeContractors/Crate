@@ -2,7 +2,6 @@ use serenity::{model::prelude::autocomplete::AutocompleteInteraction, prelude::C
 
 use synixe_events::garage::db::Response;
 use synixe_proc::events_request;
-use uuid::Uuid;
 
 use crate::{
     discord::slash::garage::enums::{AssetFilter, Command},
@@ -34,27 +33,24 @@ pub async fn autocomplete(
         Command::PurchaseVehicle => {
             autocomplete_shop(ctx, autocomplete, AssetFilter::Vehicle(Some(focus_value))).await
         }
-        Command::PurchaseAddon => {
-            match focus.name.as_str() {
-                "vehicle" => autocomplete_shop(ctx, autocomplete, AssetFilter::Vehicle(Some(focus_value))).await,
-                "addon" => autocomplete_shop(ctx, autocomplete, AssetFilter::Addon(Some(focus_value))).await,
-                _ => Ok(()),
+        Command::PurchaseAddon => match focus.name.as_str() {
+            "vehicle" => autocomplete_vehicle(ctx, autocomplete, command, focus_value).await,
+            "addon" => {
+                autocomplete_shop(ctx, autocomplete, AssetFilter::Addon(Some(focus_value))).await
             }
-        }
+            _ => Ok(()),
+        },
         Command::Attach | Command::Detach => {
             match focus.name.as_str() {
                 "vehicle" => autocomplete_vehicle(ctx, autocomplete, command, focus_value).await,
                 "addon" => autocomplete_addon(ctx, autocomplete, {
-                    let Some(vehicle) = get_option!(&autocomplete.data.options, "vehicle", String) else {
+                    let Some(vehicle) = get_option!(&subcommand.options, "vehicle", String) else {
                         error!("Missing vehicle option");
                         return Ok(());
                     };
-                    let Ok(vehicle) = Uuid::parse_str(vehicle.as_str()) else {
-                        error!("Invalid vehicle UUID");
-                        return Ok(());
-                    };
                     vehicle.to_string()
-                }).await,
+                })
+                .await,
                 _ => Ok(()),
             }
         }
@@ -78,8 +74,11 @@ async fn autocomplete_vehicle(
     };
 
     match command {
-        Command::Attach => vehicles.retain(|v| v.addon.is_none()),
+        Command::Attach => {
+            vehicles.retain(|v| v.addon.is_none() && v.addons.unwrap_or_default() > 0);
+        }
         Command::Detach => vehicles.retain(|v| v.addon.is_some()),
+        Command::PurchaseAddon => vehicles.retain(|v| v.addons.unwrap_or_default() > 0),
         _ => {}
     }
 
@@ -108,6 +107,7 @@ async fn autocomplete_addon(
     autocomplete: &AutocompleteInteraction,
     plate: String,
 ) -> serenity::Result<()> {
+    debug!("Autocompleting addons for {}", plate);
     let Ok(Ok((Response::FetchStoredAddons(Ok(mut addons)), _))) = events_request!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
@@ -159,7 +159,14 @@ async fn autocomplete_shop(
     if let Err(e) = autocomplete
         .create_autocomplete_response(&ctx.http, |f| {
             for assets in assets {
-                f.add_string_choice(format!("{} - ${}", assets.name, assets.cost), assets.id);
+                f.add_string_choice(
+                    format!(
+                        "{} - ${}",
+                        assets.name,
+                        bootstrap::format::money(assets.cost)
+                    ),
+                    assets.id,
+                );
             }
             f
         })

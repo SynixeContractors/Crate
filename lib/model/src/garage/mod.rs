@@ -18,6 +18,8 @@ pub struct VehicleAsset {
     pub stored: bool,
     /// The class of the vehicle
     pub class: String,
+    /// The count of addons available for the vehicle
+    pub addons: Option<i64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

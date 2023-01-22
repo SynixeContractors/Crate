@@ -28,7 +28,8 @@ impl Handler for Request {
                         v.addon,
                         v.stored,
                         s.name,
-                        s.class
+                        s.class,
+                        (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons
                     FROM 
                         garage_vehicles v 
                     INNER JOIN 
@@ -59,7 +60,8 @@ impl Handler for Request {
                         v.addon,
                         v.stored, 
                         s.name,
-                        s.class
+                        s.class,
+                        (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons
                     FROM 
                         garage_vehicles v 
                     INNER JOIN 
