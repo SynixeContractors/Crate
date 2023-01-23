@@ -26,6 +26,10 @@ pub fn seniority_pass(role: RoleId, bar: RoleId) -> bool {
     }
 }
 
+// Special Access
+/// Ability to use /docker
+pub const DOCKER: RoleId = RoleId(1_066_950_087_441_399_919);
+
 // Activity
 /// Member is active, recently played
 pub const ACTIVE: RoleId = RoleId(782_509_207_328_260_096);

@@ -9,7 +9,7 @@ use serenity::{
 };
 use strum::IntoEnumIterator;
 use synixe_meta::{
-    discord::role::{MISSION_REVIEWER, STAFF},
+    discord::role::{MISSION_REVIEWER, STAFF, DOCKER},
     docker::Container,
 };
 use synixe_proc::events_request_30;
@@ -116,7 +116,7 @@ async fn restart(
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Restarting container...").await?;
     super::requires_roles(
-        &[MISSION_REVIEWER, STAFF],
+        &[MISSION_REVIEWER, STAFF, DOCKER],
         &command
             .member
             .as_ref()

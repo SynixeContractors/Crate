@@ -10,7 +10,7 @@ use serenity::{
 use synixe_events::{missions::db::Response, publish};
 use synixe_meta::discord::{
     channel::LOG,
-    role::{MISSION_REVIEWER, STAFF},
+    role::{MISSION_REVIEWER, STAFF, DOCKER},
 };
 use synixe_proc::events_request;
 
@@ -75,7 +75,7 @@ async fn load(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     super::requires_roles(
-        &[MISSION_REVIEWER, STAFF],
+        &[MISSION_REVIEWER, STAFF, DOCKER],
         &command
             .member
             .as_ref()
