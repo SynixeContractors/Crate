@@ -62,17 +62,13 @@ impl Listener for Publish {
                 context.callback_data(
                     "crate",
                     "global_message",
-                    vec![arma_rs::Value::String(format!(
-                        "[Mission] You will be disconnected. Server is changing mission: {id}"
-                    ))],
+                    format!("[Mission] You will be disconnected. Server is changing mission: {id}"),
                 );
                 context.callback_data(
                     "crate",
                     "global_message",
-                    vec![arma_rs::Value::String(
-                        "[Mission] You have 30 seconds to save any gear and leave the shop."
-                            .to_string(),
-                    )],
+                    "[Mission] You have 30 seconds to save any gear and leave the shop."
+                        .to_string(),
                 );
                 Ok(())
             }
