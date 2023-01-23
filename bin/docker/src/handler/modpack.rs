@@ -28,7 +28,7 @@ impl Handler for Request {
             .arg("--delete-after")
             .arg("moddownload@192.168.1.241:/")
             .arg(".")
-            .current_dir("/arma/main/mpmissions")
+            .current_dir("/arma/main/mods")
             .status()
             .await?;
         if !command.success() {
