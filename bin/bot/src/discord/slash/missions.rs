@@ -8,7 +8,10 @@ use serenity::{
     prelude::Context,
 };
 use synixe_events::{missions::db::Response, publish};
-use synixe_meta::discord::{role::{MISSION_REVIEWER, STAFF}, channel::LOG};
+use synixe_meta::discord::{
+    channel::LOG,
+    role::{MISSION_REVIEWER, STAFF},
+};
 use synixe_proc::events_request;
 
 use crate::{
@@ -119,7 +122,9 @@ async fn load(
         error!("failed to publish mission change: {}", e);
         return interaction.reply("Failed to publish mission change").await;
     }
-    interaction.reply(format!("Mission change requested. Check <#{LOG}>")).await?;
+    interaction
+        .reply(format!("Mission change requested. Check <#{LOG}>"))
+        .await?;
     Ok(())
 }
 

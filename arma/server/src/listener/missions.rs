@@ -54,11 +54,13 @@ impl Listener for Publish {
                 match mission_type {
                     MissionType::Contract | MissionType::SubContract | MissionType::Special => {
                         if *SERVER_ID != "arma-main" {
+                            info!("Ignoring mission change event for non-main server");
                             return Ok(());
                         }
                     }
                     _ => return Ok(()),
                 }
+                info!("Changing main server mission to `{id}`");
                 context.callback_data(
                     "crate",
                     "global_message",
