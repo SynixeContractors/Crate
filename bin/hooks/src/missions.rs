@@ -6,6 +6,15 @@ pub async fn list_updated() -> StatusCode {
     if let Err(e) = events_request!(nats, synixe_events::missions::db, UpdateMissionList {}).await {
         error!("Failed to send UpdateMissionList event: {}", e);
         StatusCode::INTERNAL_SERVER_ERROR
+    } else if let Err(e) = events_request!(
+        nats,
+        synixe_events::containers::missions,
+        UpdateMissionList {}
+    )
+    .await
+    {
+        error!("Failed to send UpdateMissionList event: {}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
     } else {
         StatusCode::OK
     }

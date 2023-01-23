@@ -43,18 +43,18 @@ impl Listener for Publish {
             {
                 return Ok(());
             }
-            let current_config = std::fs::read_to_string("/configs/arma-main/main.cfg")?;
+            let current_config = std::fs::read_to_string("/arma/main/configs/main.cfg")?;
             let new_config = regex
                 .replace_all(&current_config, format!("template = {id};"))
                 .to_string();
-            let mut file = File::create("/configs/arma-main/main.cfg")?;
+            let mut file = File::create("/arma/main/configs/main.cfg")?;
             file.write_all(new_config.as_bytes())?;
             if let Err(e) = events_request!(
                 nats,
                 synixe_events::discord::write,
                 Audit {
                     message: DiscordMessage {
-                        content: DiscordContent::Text(format!("Main server mission changed to `{id}`, will load on next restart. Reason: {reason}")),
+                        content: DiscordContent::Text(format!("Main server mission changed to `{id}`, will restart in 60 seconds. ({reason})")),
                         reactions: vec![],
                     }
                 }
@@ -69,7 +69,7 @@ impl Listener for Publish {
                 synixe_events::containers::docker,
                 Restart {
                     container: Adolph::Arma3Main.into(),
-                    reason: format!("mission change: {id}"),
+                    reason: format!("Mission changed to `{id}`"),
                 }
             )
             .await

@@ -29,3 +29,23 @@ pub mod docker {
         } => (Result<(), String>)
     });
 }
+
+/// Events for the Swfity modpack
+pub mod modpack {
+    use synixe_proc::events_requests;
+
+    events_requests!(docker.modpack {
+        /// Updated the modpack
+        struct Updated {} => (Result<(), String>)
+    });
+}
+
+/// Events for Missions
+pub mod missions {
+    use synixe_proc::events_requests;
+
+    events_requests!(docker.missions {
+        /// Updated the mission list
+        struct UpdateMissionList {} => (Result<(), String>)
+    });
+}
