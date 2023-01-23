@@ -77,7 +77,7 @@ async fn container_autocomplete(
         return Ok(());
     };
     let name = name.to_lowercase();
-    let mut containers = synixe_meta::docker::Adolph::iter()
+    let mut containers = synixe_meta::docker::Primary::iter()
         .map(std::convert::Into::into)
         .collect::<Vec<Container>>();
     // containers.append(&mut synixe_meta::docker::Reynold::iter().map(|c| c.into()).collect::<Vec<Container>>());

@@ -4,5 +4,5 @@ The DB service is responsible for all communication with PostgreSQL.
 
 ## Connections
 
-NATS  
-PostgreSQL
+- NATS
+- PostgreSQL

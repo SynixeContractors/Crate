@@ -48,7 +48,7 @@ impl Container {
 
 #[derive(Debug, Serialize, Deserialize, Display, EnumString, IntoStaticStr, EnumIter)]
 /// Adoplh server, Canada DC
-pub enum Adolph {
+pub enum Primary {
     /// Arma 3 - Main
     /// Used for all contracts, subcontracts, and specials
     #[strum(serialize = "Arma 3 - Contract")]
@@ -59,7 +59,7 @@ pub enum Adolph {
     Arma3Training,
 }
 
-impl Adolph {
+impl Primary {
     #[must_use]
     /// Get the container ID
     pub fn id(&self) -> String {
@@ -70,11 +70,11 @@ impl Adolph {
     }
 }
 
-impl From<Adolph> for Container {
-    fn from(container: Adolph) -> Self {
+impl From<Primary> for Container {
+    fn from(container: Primary) -> Self {
         Self {
             id: container.id(),
-            dc: String::from("adolph"),
+            dc: String::from("primary"),
             name: Some(container.to_string()),
         }
     }

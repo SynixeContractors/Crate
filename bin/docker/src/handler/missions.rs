@@ -16,8 +16,8 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        // All arma servers are on adolph
-        if *DOCKER_SERVER != "adolph" {
+        // All arma servers are on worker-primary
+        if *DOCKER_SERVER != "primary" {
             return Ok(());
         }
         respond!(msg, Response::UpdateMissionList(Ok(()))).await?;

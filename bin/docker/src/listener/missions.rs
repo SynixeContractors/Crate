@@ -6,7 +6,7 @@ use synixe_events::{
     discord::write::{DiscordContent, DiscordMessage},
     missions::publish::Publish,
 };
-use synixe_meta::docker::Adolph;
+use synixe_meta::docker::Primary;
 use synixe_model::missions::MissionType;
 use synixe_proc::events_request;
 
@@ -27,7 +27,7 @@ impl Listener for Publish {
             reason,
         } = &self
         {
-            if *DOCKER_SERVER != "adolph" {
+            if *DOCKER_SERVER != "primary" {
                 return Ok(());
             }
             let Ok(regex) = Regex::new(r"(?m)template = ([^;]+);") else {
@@ -68,7 +68,7 @@ impl Listener for Publish {
                 nats,
                 synixe_events::containers::docker,
                 Restart {
-                    container: Adolph::Arma3Main.into(),
+                    container: Primary::Arma3Main.into(),
                     reason: format!("Mission changed to `{id}`"),
                 }
             )

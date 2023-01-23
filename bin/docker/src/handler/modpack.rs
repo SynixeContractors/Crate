@@ -3,7 +3,7 @@ use synixe_events::{
     containers::modpack::{Request, Response},
     respond,
 };
-use synixe_meta::docker::Adolph;
+use synixe_meta::docker::Primary;
 use synixe_proc::events_request;
 use tokio::process::Command;
 
@@ -18,8 +18,8 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        // All arma servers are on adolph
-        if *DOCKER_SERVER != "adolph" {
+        // All arma servers are on worker-primary
+        if *DOCKER_SERVER != "primary" {
             return Ok(());
         }
         respond!(msg, Response::Updated(Ok(()))).await?;
@@ -40,7 +40,7 @@ impl Handler for Request {
             nats,
             synixe_events::containers::docker,
             Restart {
-                container: Adolph::Arma3Main.into(),
+                container: Primary::Arma3Main.into(),
                 reason: "modpack updated".to_string(),
             }
         )
@@ -53,7 +53,7 @@ impl Handler for Request {
             nats,
             synixe_events::containers::docker,
             Restart {
-                container: Adolph::Arma3Training.into(),
+                container: Primary::Arma3Training.into(),
                 reason: "modpack updated".to_string(),
             }
         )
