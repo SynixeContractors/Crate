@@ -35,7 +35,6 @@ impl Handler for Request {
             error!("Failed to update mission list");
             return Err(anyhow::anyhow!("Failed to update mission list"));
         }
-        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
         if let Err(e) = events_request!(
             nats,
             synixe_events::containers::docker,

@@ -71,7 +71,7 @@ async fn handle(
         );
         return Ok(());
     }
-    info!("{} container {} ({})", action, container.key(), reason);
+    info!("{action} container {} ({reason})", container.key());
     let res = match action {
         Action::Restart => docker.restart_container(container.id(), None).await,
         Action::Start => docker.start_container::<String>(container.id(), None).await,
@@ -79,11 +79,11 @@ async fn handle(
     };
     let audit = match res {
         Ok(_) => {
-            format!("container {}: {} ({})", action, container.key(), reason)
+            format!("container {action}: {} ({reason})", container.key())
         }
         Err(e) => {
-            error!("failed to {} container {}: {}", action, container.key(), e);
-            format!("failed to {} container {}: {}", action, container.key(), e)
+            error!("failed to {action} container {}: {e}", container.key());
+            format!("failed to {action} container {}: {e}", container.key())
         }
     };
     if let Err(e) = events_request!(
