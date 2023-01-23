@@ -12,7 +12,7 @@ use synixe_meta::{
     discord::role::{MISSION_REVIEWER, STAFF},
     docker::Container,
 };
-use synixe_proc::events_request;
+use synixe_proc::events_request_30;
 
 use crate::{
     discord::interaction::{Generic, Interaction},
@@ -131,7 +131,7 @@ async fn restart(
         return Ok(());
     };
     let (dc, id) = container.split_once(':').expect("Invalid container");
-    if let Err(e) = events_request!(
+    if let Err(e) = events_request_30!(
         bootstrap::NC::get().await,
         synixe_events::containers::docker,
         Restart {

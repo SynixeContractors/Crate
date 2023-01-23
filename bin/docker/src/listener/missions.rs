@@ -21,7 +21,7 @@ impl Listener for Publish {
         _msg: nats::asynk::Message,
         nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        if let Publish::ChangeMission {
+        if let Self::ChangeMission {
             id,
             mission_type,
             reason,

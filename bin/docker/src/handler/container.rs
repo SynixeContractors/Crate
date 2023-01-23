@@ -24,9 +24,9 @@ pub enum Action {
 impl Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Action::Restart => write!(f, "restart"),
-            Action::Start => write!(f, "start"),
-            Action::Stop => write!(f, "stop"),
+            Self::Restart => write!(f, "restart"),
+            Self::Start => write!(f, "start"),
+            Self::Stop => write!(f, "stop"),
         }
     }
 }
@@ -40,15 +40,15 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         // TODO could use a macro for these 3 to reduce some code, but not really worth it
         match self {
-            Request::Restart { container, reason } => {
+            Self::Restart { container, reason } => {
                 respond!(msg, Response::Restart(Ok(()))).await?;
                 handle(nats, container, Action::Restart, reason).await
             }
-            Request::Start { container, reason } => {
+            Self::Start { container, reason } => {
                 respond!(msg, Response::Start(Ok(()))).await?;
                 handle(nats, container, Action::Start, reason).await
             }
-            Request::Stop { container, reason } => {
+            Self::Stop { container, reason } => {
                 respond!(msg, Response::Stop(Ok(()))).await?;
                 handle(nats, container, Action::Stop, reason).await
             }

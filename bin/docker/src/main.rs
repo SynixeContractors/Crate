@@ -1,3 +1,6 @@
+#![deny(clippy::pedantic)]
+#![warn(clippy::nursery, clippy::all)]
+
 #[macro_use]
 extern crate tracing;
 
