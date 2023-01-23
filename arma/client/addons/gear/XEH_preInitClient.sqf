@@ -1,8 +1,9 @@
 #include "script_component.hpp"
 
+if !(hasInterface) exitWith {};
 if !(isMultiplayer) exitWith {};
 
-// ============= Loadout 
+// ============= Loadout
 
 GVAR(loadout_tracking) = false;
 
