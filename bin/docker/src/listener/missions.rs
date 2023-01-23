@@ -34,7 +34,7 @@ impl Listener for Publish {
                 error!("failed to compile regex");
                 return Ok(());
             };
-            if [
+            if ![
                 MissionType::Contract,
                 MissionType::SubContract,
                 MissionType::Special,

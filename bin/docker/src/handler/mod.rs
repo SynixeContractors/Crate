@@ -1,3 +1,5 @@
+use crate::DOCKER_SERVER;
+
 include!("../../../../lib/common/handler.rs");
 
 mod container;
@@ -8,7 +10,10 @@ pub async fn start() {
     let nats = bootstrap::NC::get().await;
 
     let sub = nats
-        .queue_subscribe("synixe.docker.>", "synixe-docker")
+        .queue_subscribe(
+            "synixe.docker.>",
+            &format!("synixe-docker-{}", *DOCKER_SERVER),
+        )
         .await
         .unwrap();
     while let Some(msg) = sub.next().await {

@@ -4,13 +4,7 @@ prefix = "crate_server"
 [files]
 include = [
     "crate_server_x64.dll",
-    "test.txt",
 ]
 
 [version]
 git_hash = 0
-
-[asc]
-exclude = [
-    "\\XEH_preInit.sqf",
-]
