@@ -1,7 +1,7 @@
 //! Docker containers
 
 use serde::{Deserialize, Serialize};
-use strum::{Display, EnumString, IntoStaticStr};
+use strum::{Display, EnumIter, EnumString, IntoStaticStr};
 
 #[derive(Debug, Serialize, Deserialize)]
 /// A container somewhere in the Synixe infrastructure
@@ -10,9 +10,17 @@ pub struct Container {
     id: String,
     /// Datacenter
     dc: String,
+    /// Pretty name
+    name: Option<String>,
 }
 
 impl Container {
+    #[must_use]
+    /// Create a new container
+    pub const fn new(id: String, dc: String, name: Option<String>) -> Self {
+        Self { id, dc, name }
+    }
+
     #[must_use]
     /// Get the container ID
     pub fn id(&self) -> &str {
@@ -24,15 +32,24 @@ impl Container {
     pub fn dc(&self) -> &str {
         &self.dc
     }
+
+    #[must_use]
+    /// Get the pretty name
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_deref()
+    }
 }
 
-#[derive(Debug, Serialize, Deserialize, Display, EnumString, IntoStaticStr)]
+#[derive(Debug, Serialize, Deserialize, Display, EnumString, IntoStaticStr, EnumIter)]
 /// Adoplh server, Canada DC
 pub enum Adolph {
     /// Arma 3 - Main
     /// Used for all contracts, subcontracts, and specials
+    #[strum(serialize = "Arma 3 - Contract")]
     Arma3Main,
     /// Arma 3 - Training
+    /// Used for training
+    #[strum(serialize = "Arma 3 - Training")]
     Arma3Training,
 }
 
@@ -52,14 +69,17 @@ impl From<Adolph> for Container {
         Self {
             id: container.id(),
             dc: String::from("adolph"),
+            name: Some(container.to_string()),
         }
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Display, EnumString, IntoStaticStr)]
+#[derive(Debug, Serialize, Deserialize, Display, EnumString, IntoStaticStr, EnumIter)]
 /// Reynold Server, DO New York
 pub enum Reynold {
     /// TeamSpeak 3
+    /// Used for voice chat
+    #[strum(serialize = "TeamSpeak 3")]
     TeamSpeak,
 }
 
@@ -78,6 +98,7 @@ impl From<Reynold> for Container {
         Self {
             id: container.id(),
             dc: String::from("reynold"),
+            name: Some(container.to_string()),
         }
     }
 }

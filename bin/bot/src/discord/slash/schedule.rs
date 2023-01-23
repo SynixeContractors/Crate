@@ -14,7 +14,10 @@ use serenity::{
     prelude::*,
 };
 use synixe_events::missions::db::Response;
-use synixe_meta::discord::{channel::SCHEDULE, role::MISSION_REVIEWER};
+use synixe_meta::discord::{
+    channel::SCHEDULE,
+    role::{MISSION_REVIEWER, STAFF},
+};
 use synixe_model::missions::{MissionRsvp, Rsvp, ScheduledMission};
 use synixe_proc::events_request;
 use time::format_description;
@@ -270,8 +273,8 @@ async fn new(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     let date = super::get_datetime(options);
-    super::requires_role(
-        MISSION_REVIEWER,
+    super::requires_roles(
+        &[MISSION_REVIEWER, STAFF],
         &command
             .member
             .as_ref()
@@ -450,8 +453,8 @@ pub async fn remove(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
-    super::requires_role(
-        MISSION_REVIEWER,
+    super::requires_roles(
+        &[MISSION_REVIEWER, STAFF],
         &command
             .member
             .as_ref()
@@ -571,8 +574,8 @@ async fn post(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
-    super::requires_role(
-        MISSION_REVIEWER,
+    super::requires_roles(
+        &[MISSION_REVIEWER, STAFF],
         &command
             .member
             .as_ref()

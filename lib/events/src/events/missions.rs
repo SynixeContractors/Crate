@@ -138,6 +138,8 @@ pub mod publish {
             id: String,
             /// Type of mission
             mission_type: MissionType,
+            /// Reason for the mission change
+            reason: String,
         }
         /// Warn that the mission is about to change
         struct WarnChangeMission {

@@ -13,16 +13,17 @@ use super::interaction::Interaction;
 
 pub mod bank;
 pub mod certifications;
+pub mod docker;
 pub mod meme;
 pub mod missions;
 pub mod schedule;
 
-pub async fn requires_role(
-    needle: RoleId,
+pub async fn requires_roles(
+    needle: &[RoleId],
     haystack: &[RoleId],
     interaction: &mut Interaction<'_>,
 ) -> serenity::Result<()> {
-    if !haystack.iter().any(|role| *role == needle) {
+    if !haystack.iter().any(|role| needle.contains(role)) {
         interaction
             .reply("You do not have permission to use this command.")
             .await?;

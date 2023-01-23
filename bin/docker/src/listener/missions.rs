@@ -2,10 +2,15 @@ use std::{fs::File, io::Write, time::Duration};
 
 use async_trait::async_trait;
 use regex::Regex;
-use synixe_events::missions::publish::Publish;
+use synixe_events::{
+    discord::write::{DiscordContent, DiscordMessage},
+    missions::publish::Publish,
+};
 use synixe_meta::docker::Adolph;
 use synixe_model::missions::MissionType;
 use synixe_proc::events_request;
+
+use crate::DOCKER_SERVER;
 
 use super::Listener;
 
@@ -16,7 +21,15 @@ impl Listener for Publish {
         _msg: nats::asynk::Message,
         nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        if let Publish::ChangeMission { id, mission_type } = &self {
+        if let Publish::ChangeMission {
+            id,
+            mission_type,
+            reason,
+        } = &self
+        {
+            if *DOCKER_SERVER != "adolph" {
+                return Ok(());
+            }
             let Ok(regex) = Regex::new(r"(?m)template = ([^;]+);") else {
                 error!("failed to compile regex");
                 return Ok(());
@@ -36,6 +49,20 @@ impl Listener for Publish {
                 .to_string();
             let mut file = File::create("/configs/arma-main/main.cfg")?;
             file.write_all(new_config.as_bytes())?;
+            if let Err(e) = events_request!(
+                nats,
+                synixe_events::discord::write,
+                Audit {
+                    message: DiscordMessage {
+                        content: DiscordContent::Text(format!("Main server mission changed to `{id}`, will load on next restart. Reason: {reason}")),
+                        reactions: vec![],
+                    }
+                }
+            )
+            .await
+            {
+                error!("failed to send audit message: {}", e);
+            }
             tokio::time::sleep(Duration::from_secs(60)).await;
             if let Err(e) = events_request!(
                 nats,

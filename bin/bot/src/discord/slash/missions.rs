@@ -8,7 +8,7 @@ use serenity::{
     prelude::Context,
 };
 use synixe_events::{missions::db::Response, publish};
-use synixe_meta::discord::role::MISSION_REVIEWER;
+use synixe_meta::discord::role::{MISSION_REVIEWER, STAFF};
 use synixe_proc::events_request;
 
 use crate::{
@@ -71,8 +71,8 @@ async fn load(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
-    super::requires_role(
-        MISSION_REVIEWER,
+    super::requires_roles(
+        &[MISSION_REVIEWER, STAFF],
         &command
             .member
             .as_ref()
@@ -111,6 +111,7 @@ async fn load(
         synixe_events::missions::publish::Publish::ChangeMission {
             id: missions[0].id.clone(),
             mission_type: missions[0].typ,
+            reason: format!("Loaded by <@{}>", command.user.id),
         }
     )
     .await

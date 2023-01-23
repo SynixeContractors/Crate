@@ -91,6 +91,7 @@ impl Handler for Request {
                                     Some(synixe_events::missions::publish::Publish::ChangeMission {
                                         id: scheduled.mission.clone(),
                                         mission_type: scheduled.typ,
+                                        reason: "Scheduled".to_string(),
                                     })
                                 }
                                 _ => None,

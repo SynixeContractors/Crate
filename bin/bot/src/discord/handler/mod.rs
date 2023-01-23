@@ -24,6 +24,7 @@ impl EventHandler for Handler {
                 commands
                     .create_application_command(|command| slash::bank::register(command))
                     .create_application_command(|command| slash::certifications::register(command))
+                    .create_application_command(|command| slash::docker::register(command))
                     .create_application_command(|command| slash::meme::register(command))
                     .create_application_command(|command| slash::missions::register(command))
                     .create_application_command(|command| slash::schedule::register(command))
@@ -45,6 +46,7 @@ impl EventHandler for Handler {
                 match command.data.name.as_str() {
                     "bank" => slash::bank::run(&ctx, &command).await,
                     "certifications" => slash::certifications::run(&ctx, &command).await,
+                    "docker" => slash::docker::run(&ctx, &command).await,
                     "meme" => slash::meme::run(&ctx, &command).await,
                     "missions" => slash::missions::run(&ctx, &command).await,
                     "schedule" => slash::schedule::run(&ctx, &command).await,
@@ -63,6 +65,7 @@ impl EventHandler for Handler {
                     "certifications" => {
                         slash::certifications::autocomplete(&ctx, &autocomplete).await
                     }
+                    "docker" => slash::docker::autocomplete(&ctx, &autocomplete).await,
                     "missions" => slash::missions::autocomplete(&ctx, &autocomplete).await,
                     "schedule" => slash::schedule::autocomplete(&ctx, &autocomplete).await,
                     _ => Ok(()),

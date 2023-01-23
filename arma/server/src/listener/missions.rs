@@ -46,7 +46,11 @@ impl Listener for Publish {
                 }
                 Ok(())
             }
-            Self::ChangeMission { id, mission_type } => {
+            Self::ChangeMission {
+                id,
+                mission_type,
+                reason: _,
+            } => {
                 match mission_type {
                     MissionType::Contract | MissionType::SubContract | MissionType::Special => {
                         if *SERVER_ID != "arma-main" {
