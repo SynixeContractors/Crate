@@ -7,4 +7,5 @@
 
 pub mod arma;
 pub mod discord;
+pub mod docker;
 pub mod missions;

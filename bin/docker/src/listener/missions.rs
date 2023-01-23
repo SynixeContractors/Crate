@@ -3,6 +3,7 @@ use std::{fs::File, io::Write, time::Duration};
 use async_trait::async_trait;
 use regex::Regex;
 use synixe_events::missions::publish::Publish;
+use synixe_meta::docker::Adolph;
 use synixe_model::missions::MissionType;
 use synixe_proc::events_request;
 
@@ -40,7 +41,7 @@ impl Listener for Publish {
                 nats,
                 synixe_events::containers::docker,
                 Restart {
-                    id: "arma-main".to_string(),
+                    container: Adolph::Arma3Main.into(),
                     reason: format!("mission change: {id}"),
                 }
             )

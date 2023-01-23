@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use async_trait::async_trait;
 use bollard::Docker;
 use synixe_events::{
@@ -5,9 +7,29 @@ use synixe_events::{
     discord::write::{DiscordContent, DiscordMessage},
     respond,
 };
+use synixe_meta::docker::Container;
 use synixe_proc::events_request;
 
+use crate::DOCKER_SERVER;
+
 use super::Handler;
+
+#[derive(Debug)]
+pub enum Action {
+    Restart,
+    Start,
+    Stop,
+}
+
+impl Display for Action {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Action::Restart => write!(f, "restart"),
+            Action::Start => write!(f, "start"),
+            Action::Stop => write!(f, "stop"),
+        }
+    }
+}
 
 #[async_trait]
 impl Handler for Request {
@@ -16,77 +38,81 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        let docker = Docker::connect_with_socket_defaults().unwrap();
-        let audit = match self {
-            Request::Restart { id, reason } => {
-                if docker.restart_container(id, None).await.is_ok() {
-                    if let Err(e) = respond!(msg, Response::Restart(Ok(()))).await {
-                        error!("failed to respond to restart request: {}", e);
-                    }
-                    format!("Restarted container {id}: {reason}")
-                } else {
-                    if let Err(e) = respond!(
-                        msg,
-                        Response::Restart(Err("Failed to restart container".to_string()))
-                    )
-                    .await
-                    {
-                        error!("failed to respond to restart request: {}", e);
-                    }
-                    format!("Failed to restart container {id}: {reason}")
+        // TODO could use a macro for these 3 to reduce some code, but not really worth it
+        match self {
+            Request::Restart { container, reason } => {
+                let ret = handle(nats, container, Action::Restart, reason).await;
+                if let Err(e) = ret {
+                    respond!(msg, Response::Restart(Err(e.clone()))).await?;
+                    return Err(anyhow::anyhow!(e));
                 }
+                respond!(msg, Response::Restart(Ok(()))).await?;
+                Ok(())
             }
-            Request::Start { id, reason } => {
-                if docker.start_container::<String>(id, None).await.is_ok() {
-                    if let Err(e) = respond!(msg, Response::Start(Ok(()))).await {
-                        error!("failed to respond to start request: {}", e);
-                    }
-                    format!("Started container {id}: {reason}")
-                } else {
-                    if let Err(e) = respond!(
-                        msg,
-                        Response::Start(Err("Failed to start container".to_string()))
-                    )
-                    .await
-                    {
-                        error!("failed to respond to start request: {}", e);
-                    }
-                    format!("Failed to start container {id}: {reason}")
+            Request::Start { container, reason } => {
+                let ret = handle(nats, container, Action::Start, reason).await;
+                if let Err(e) = ret {
+                    respond!(msg, Response::Start(Err(e.clone()))).await?;
+                    return Err(anyhow::anyhow!(e));
                 }
+                respond!(msg, Response::Start(Ok(()))).await?;
+                Ok(())
             }
-            Request::Stop { id, reason } => {
-                if docker.stop_container(id, None).await.is_ok() {
-                    if let Err(e) = respond!(msg, Response::Stop(Ok(()))).await {
-                        error!("failed to respond to start request: {}", e);
-                    }
-                    format!("Stopped container {id}: {reason}")
-                } else {
-                    if let Err(e) = respond!(
-                        msg,
-                        Response::Stop(Err("Failed to stop container".to_string()))
-                    )
-                    .await
-                    {
-                        error!("failed to respond to start request: {}", e);
-                    }
-                    format!("Failed to stop container {id}: {reason}")
+            Request::Stop { container, reason } => {
+                let ret = handle(nats, container, Action::Stop, reason).await;
+                if let Err(e) = ret {
+                    respond!(msg, Response::Stop(Err(e.clone()))).await?;
+                    return Err(anyhow::anyhow!(e));
                 }
+                respond!(msg, Response::Stop(Ok(()))).await?;
+                Ok(())
             }
-        };
-        if let Err(e) = events_request!(
-            nats,
-            synixe_events::discord::write,
-            Audit {
-                message: DiscordMessage {
-                    content: DiscordContent::Text(audit),
-                    reactions: vec![],
-                }
-            }
-        )
-        .await
-        {
-            error!("failed to send audit message: {}", e);
         }
-        Ok(())
     }
+}
+
+async fn handle(
+    nats: std::sync::Arc<nats::asynk::Connection>,
+    container: &Container,
+    action: Action,
+    reason: &str,
+) -> Result<Option<String>, String> {
+    let docker = Docker::connect_with_socket_defaults().unwrap();
+    if container.dc() != *DOCKER_SERVER {
+        debug!(
+            "ignoring container {} on {}",
+            container.id(),
+            container.dc()
+        );
+        return Ok(None);
+    }
+    info!("{} container {} ({})", action, container.id(), reason);
+    let res = match action {
+        Action::Restart => docker.restart_container(container.id(), None).await,
+        Action::Start => docker.start_container::<String>(container.id(), None).await,
+        Action::Stop => docker.stop_container(container.id(), None).await,
+    };
+    let audit = match res {
+        Ok(_) => {
+            format!("container {}: {} ({})", action, container.id(), reason)
+        }
+        Err(e) => {
+            format!("failed to {} container {}: {}", action, container.id(), e)
+        }
+    };
+    if let Err(e) = events_request!(
+        nats,
+        synixe_events::discord::write,
+        Audit {
+            message: DiscordMessage {
+                content: DiscordContent::Text(audit.clone()),
+                reactions: vec![],
+            }
+        }
+    )
+    .await
+    {
+        error!("failed to send audit message: {}", e);
+    }
+    Ok(Some(audit))
 }
