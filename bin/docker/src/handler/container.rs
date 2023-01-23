@@ -41,31 +41,16 @@ impl Handler for Request {
         // TODO could use a macro for these 3 to reduce some code, but not really worth it
         match self {
             Request::Restart { container, reason } => {
-                let ret = handle(nats, container, Action::Restart, reason).await;
-                if let Err(e) = ret {
-                    respond!(msg, Response::Restart(Err(e.clone()))).await?;
-                    return Err(anyhow::anyhow!(e));
-                }
                 respond!(msg, Response::Restart(Ok(()))).await?;
-                Ok(())
+                handle(nats, container, Action::Restart, reason).await
             }
             Request::Start { container, reason } => {
-                let ret = handle(nats, container, Action::Start, reason).await;
-                if let Err(e) = ret {
-                    respond!(msg, Response::Start(Err(e.clone()))).await?;
-                    return Err(anyhow::anyhow!(e));
-                }
                 respond!(msg, Response::Start(Ok(()))).await?;
-                Ok(())
+                handle(nats, container, Action::Start, reason).await
             }
             Request::Stop { container, reason } => {
-                let ret = handle(nats, container, Action::Stop, reason).await;
-                if let Err(e) = ret {
-                    respond!(msg, Response::Stop(Err(e.clone()))).await?;
-                    return Err(anyhow::anyhow!(e));
-                }
                 respond!(msg, Response::Stop(Ok(()))).await?;
-                Ok(())
+                handle(nats, container, Action::Stop, reason).await
             }
         }
     }
@@ -76,7 +61,7 @@ async fn handle(
     container: &Container,
     action: Action,
     reason: &str,
-) -> Result<Option<String>, String> {
+) -> Result<(), anyhow::Error> {
     let docker = Docker::connect_with_socket_defaults().unwrap();
     if container.dc() != *DOCKER_SERVER {
         debug!(
@@ -84,9 +69,9 @@ async fn handle(
             container.id(),
             container.dc()
         );
-        return Ok(None);
+        return Ok(());
     }
-    info!("{} container {} ({})", action, container.id(), reason);
+    info!("{} container {} ({})", action, container.key(), reason);
     let res = match action {
         Action::Restart => docker.restart_container(container.id(), None).await,
         Action::Start => docker.start_container::<String>(container.id(), None).await,
@@ -94,10 +79,11 @@ async fn handle(
     };
     let audit = match res {
         Ok(_) => {
-            format!("container {}: {} ({})", action, container.id(), reason)
+            format!("container {}: {} ({})", action, container.key(), reason)
         }
         Err(e) => {
-            format!("failed to {} container {}: {}", action, container.id(), e)
+            error!("failed to {} container {}: {}", action, container.key(), e);
+            format!("failed to {} container {}: {}", action, container.key(), e)
         }
     };
     if let Err(e) = events_request!(
@@ -105,7 +91,7 @@ async fn handle(
         synixe_events::discord::write,
         Audit {
             message: DiscordMessage {
-                content: DiscordContent::Text(audit.clone()),
+                content: DiscordContent::Text(audit),
                 reactions: vec![],
             }
         }
@@ -114,5 +100,5 @@ async fn handle(
     {
         error!("failed to send audit message: {}", e);
     }
-    Ok(Some(audit))
+    Ok(())
 }

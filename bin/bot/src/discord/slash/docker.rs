@@ -96,7 +96,7 @@ async fn container_autocomplete(
             for container in containers {
                 f.add_string_choice(
                     container.name().unwrap_or_else(|| container.id()),
-                    format!("{}:{}", container.dc(), container.id()),
+                    container.key(),
                 );
             }
             f
@@ -114,6 +114,7 @@ async fn restart(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    interaction.reply("Restarting container...").await?;
     super::requires_roles(
         &[MISSION_REVIEWER, STAFF],
         &command
@@ -135,7 +136,7 @@ async fn restart(
         synixe_events::containers::docker,
         Restart {
             container: Container::new(id.to_string(), dc.to_string(), None,),
-            reason: format!("Restarted by {}", command.user.name),
+            reason: format!("Restarted by <@{}>", command.user.id),
         }
     )
     .await

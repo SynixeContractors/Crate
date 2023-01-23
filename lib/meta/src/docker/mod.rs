@@ -38,6 +38,12 @@ impl Container {
     pub fn name(&self) -> Option<&str> {
         self.name.as_deref()
     }
+
+    #[must_use]
+    /// Get the key
+    pub fn key(&self) -> String {
+        format!("{}:{}", self.dc, self.id)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Display, EnumString, IntoStaticStr, EnumIter)]
