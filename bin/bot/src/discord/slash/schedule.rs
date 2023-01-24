@@ -93,6 +93,13 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 .name("post")
                 .description("Post the upcoming mission")
                 .kind(CommandOptionType::SubCommand)
+                .create_sub_option(|option| {
+                    option
+                        .name("channel")
+                        .description("Channel to post the upcoming mission")
+                        .kind(CommandOptionType::Channel)
+                        .required(false)
+                })
         })
 }
 
@@ -132,12 +139,13 @@ pub async fn rsvp_button(
     ctx: &Context,
     component: &MessageComponentInteraction,
 ) -> serenity::Result<()> {
+    let channel = component.channel_id;
     let message = component.message.id;
     let Ok(Ok((Response::FetchScheduledMessage(Ok(Some(scheduled))), _))) =
         events_request!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
-            FetchScheduledMessage { message }
+            FetchScheduledMessage { channel, message }
         )
         .await else {
             error!("Failed to fetch scheduled mission for component");
@@ -280,6 +288,7 @@ async fn new(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
+        false,
         &mut interaction,
     )
     .await?;
@@ -460,6 +469,7 @@ pub async fn remove(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
+        false,
         &mut interaction,
     )
     .await?;
@@ -581,6 +591,7 @@ async fn post(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
+        false,
         &mut interaction,
     )
     .await?;
@@ -626,7 +637,9 @@ async fn post(
             else {
                 return interaction.reply("Failed to fetch rsvps").await;
             };
-            let Ok(sched) = SCHEDULE
+            let channel =
+                get_option!(options, "channel", Channel).map_or_else(|| SCHEDULE, |c| c.id);
+            let Ok(sched) = channel
                 .send_message(&ctx, |s| {
                     s.embed(|f| {
                         make_post_embed(f, scheduled, &rsvps);
@@ -656,7 +669,7 @@ async fn post(
                     return interaction.reply("Failed to post mission").await;
                 };
             tokio::time::sleep(Duration::from_millis(500)).await;
-            let Ok(sched_thread) = SCHEDULE
+            let Ok(sched_thread) = channel
                 .create_public_thread(&ctx, sched.id, |t| t.name(&scheduled.name))
                 .await else {
                     return interaction.reply("Failed to create thread").await;
@@ -685,7 +698,8 @@ async fn post(
                 synixe_events::missions::db,
                 SetScheduledMesssage {
                     scheduled: scheduled.id,
-                    message_id: sched.id,
+                    channel,
+                    message: sched.id,
                 }
             )
             .await

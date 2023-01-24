@@ -12,7 +12,7 @@ synixe-proc = { path = "../../lib/proc" }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 nats = { workspace = true }
-reqwest = { version = "0.11.13" }
+reqwest = { version = "0.11.14" }
 serenity = { workspace = true, features = ["builder"] }
 time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }

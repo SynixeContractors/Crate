@@ -21,12 +21,16 @@ pub mod schedule;
 pub async fn requires_roles(
     needle: &[RoleId],
     haystack: &[RoleId],
+    ask: bool,
     interaction: &mut Interaction<'_>,
 ) -> serenity::Result<()> {
     if !haystack.iter().any(|role| needle.contains(role)) {
-        interaction
-            .reply("You do not have permission to use this command.")
-            .await?;
+        if ask {
+        } else {
+            interaction
+                .reply("You do not have permission to use this command.")
+                .await?;
+        }
     }
     Ok(())
 }

@@ -51,7 +51,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
             synixe_events::missions::db,
             SetScheduledAar {
                 scheduled: scheduled.id,
-                message_id: message.id,
+                message: message.id,
             }
         )
         .await

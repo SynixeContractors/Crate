@@ -4,7 +4,7 @@
 
 /// Interact with the database.
 pub mod db {
-    use serenity::model::prelude::{MessageId, UserId};
+    use serenity::model::prelude::{ChannelId, MessageId, UserId};
     use synixe_model::missions::{Mission, MissionRsvp, Rsvp, ScheduledMission};
     use synixe_proc::events_requests;
     use time::{Date, OffsetDateTime};
@@ -32,11 +32,15 @@ pub mod db {
         struct SetScheduledMesssage {
             /// The scheduled mission to update.
             scheduled: Uuid,
+            /// Channel id
+            channel: ChannelId,
             /// The message in #schedule
-            message_id: MessageId,
+            message: MessageId,
         } => (Result<(), String>)
         /// Fetch a single scheduled mission by it's message id
         struct FetchScheduledMessage {
+            /// Channel id to fetch from.
+            channel: ChannelId,
             /// The message id to fetch.
             message: MessageId,
         } => (Result<Option<ScheduledMission>, String>)
@@ -45,7 +49,7 @@ pub mod db {
             /// The scheduled mission to update.
             scheduled: Uuid,
             /// The message in #aar
-            message_id: MessageId,
+            message: MessageId,
         } => (Result<(), String>)
         /// Fetch a single scheduled mission by it's AAR message id
         struct FetchScheduledAar {

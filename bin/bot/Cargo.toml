@@ -13,7 +13,7 @@ synixe-model = { path = "../../lib/model", features = ["missions"] }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 nats = { workspace = true }
-reqwest = { version = "0.11.13", features = ["json"] }
+reqwest = { version = "0.11.14", features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = "1.0.91"
 serenity = { workspace = true, features = ["builder", "cache", "client", "collector", "gateway", "http", "model", "utils", "rustls_backend"] }

@@ -9,7 +9,7 @@ use serenity::{
 };
 use strum::IntoEnumIterator;
 use synixe_meta::{
-    discord::role::{MISSION_REVIEWER, STAFF, DOCKER},
+    discord::role::{DOCKER, MISSION_REVIEWER, STAFF},
     docker::Container,
 };
 use synixe_proc::events_request_30;
@@ -122,6 +122,7 @@ async fn restart(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
+        false,
         &mut interaction,
     )
     .await?;

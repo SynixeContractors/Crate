@@ -10,7 +10,7 @@ use serenity::{
 use synixe_events::{missions::db::Response, publish};
 use synixe_meta::discord::{
     channel::LOG,
-    role::{MISSION_REVIEWER, STAFF, DOCKER},
+    role::{DOCKER, MISSION_REVIEWER, STAFF},
 };
 use synixe_proc::events_request;
 
@@ -81,6 +81,7 @@ async fn load(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
+        true,
         &mut interaction,
     )
     .await?;

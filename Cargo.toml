@@ -20,8 +20,9 @@ members = [
 
 [workspace.dependencies]
 anyhow = "1.0.68"
-arma-rs = "1.9.1"
+arma-rs = "1.9.3"
 async-trait = "0.1.63"
+axum = "0.6.4"
 nats = { version = "0.23.1" }
 serde = { version = "1.0.152", features = ["derive"] }
 serenity = { git = "https://github.com/serenity-rs/serenity", rev = "fc9c420a034b110e427a65f3b72cc1a55bc33d44", default-features = false }
