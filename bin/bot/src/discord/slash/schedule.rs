@@ -7,8 +7,7 @@ use serenity::{
         prelude::{
             application_command::CommandDataOption, autocomplete::AutocompleteInteraction,
             command::CommandOptionType, component::ButtonStyle,
-            message_component::MessageComponentInteraction, InteractionResponseType, MessageId,
-            ReactionType,
+            message_component::MessageComponentInteraction, InteractionResponseType, ReactionType,
         },
     },
     prelude::*,
@@ -535,12 +534,8 @@ pub async fn remove(
             )
             .await
             {
-                if let Some(mid) = &scheduled.schedule_message_id {
-                    let Ok(mid) = mid.parse::<u64>() else {
-                        error!("failed to parse schedule message id");
-                        return Ok(());
-                    };
-                    if let Err(e) = SCHEDULE.delete_message(&ctx, MessageId(mid)).await {
+                if let Some((channel, message)) = &scheduled.message() {
+                    if let Err(e) = channel.delete_message(&ctx, message).await {
                         error!("failed to delete schedule message: {}", e);
                     }
                 }

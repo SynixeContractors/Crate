@@ -1,7 +1,6 @@
 use async_trait::async_trait;
-use serenity::model::prelude::{Activity, MessageId};
+use serenity::model::prelude::Activity;
 use synixe_events::missions::{db::Response, publish::Publish};
-use synixe_meta::discord::channel::SCHEDULE;
 use synixe_proc::events_request;
 
 use crate::{bot::Bot, cache_http::CacheAndHttp};
@@ -17,21 +16,20 @@ impl Listener for Publish {
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::StartingSoon { scheduled, minutes } => {
-                let Some(ref message) = scheduled.schedule_message_id else { return Ok(()) };
-                let Ok(message_id) = message.parse::<u64>() else {
-                    error!("Failed to parse message id");
-                    return Ok(());
-                };
+                let Some((channel, message)) = scheduled.message() else { return Ok(()) };
                 if (-1..=1).contains(minutes) {
-                    if let Err(e) = SCHEDULE
-                        .edit_message(&CacheAndHttp::get().http, MessageId(message_id), |m| {
-                            m.components(|f| f);
-                            m
-                        })
+                    if let Err(e) = channel
+                        .edit_message(&CacheAndHttp::get().http, message, |m| m.components(|f| f))
                         .await
                     {
                         error!("Failed to edit message: {}", e);
                     }
+                    let Some(thread) = channel.message(&CacheAndHttp::get().http, message).await?.thread else {
+                        return Ok(());
+                    };
+                    thread
+                        .edit_thread(&CacheAndHttp::get().http, |t| t.locked(true).archived(true))
+                        .await?;
                 }
                 Ok(())
             }
