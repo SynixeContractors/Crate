@@ -12,7 +12,6 @@ pub fn group() -> Group {
 }
 
 /// Fetches a user's discord id and roles
-#[allow(clippy::manual_let_else)]
 fn command_get(steam: String, name: String) {
     if steam == "_SP_PLAYER_" {
         return;

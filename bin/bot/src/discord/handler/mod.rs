@@ -211,7 +211,6 @@ impl EventHandler for Handler {
         }
     }
 
-    #[allow(clippy::manual_let_else)]
     async fn message_update(
         &self,
         ctx: Context,
