@@ -22,15 +22,16 @@ impl EventHandler for Handler {
         if let Err(e) =
             GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {
                 commands
+                    .create_application_command(|command| menu::missions::aar_ids(command))
+                    .create_application_command(|command| menu::missions::aar_pay(command))
+                    .create_application_command(|command| menu::recruiting::reply(command))
                     .create_application_command(|command| slash::bank::register(command))
                     .create_application_command(|command| slash::certifications::register(command))
+                    .create_application_command(|command| slash::garage::register(command))
                     .create_application_command(|command| slash::docker::register(command))
                     .create_application_command(|command| slash::meme::register(command))
                     .create_application_command(|command| slash::missions::register(command))
                     .create_application_command(|command| slash::schedule::register(command))
-                    .create_application_command(|command| menu::recruiting::reply(command))
-                    .create_application_command(|command| menu::missions::aar_ids(command))
-                    .create_application_command(|command| menu::missions::aar_pay(command))
             })
             .await
         {
@@ -44,15 +45,16 @@ impl EventHandler for Handler {
             Interaction::ApplicationCommand(command) => {
                 debug!("matching command: {:?}", command.data.name.as_str());
                 match command.data.name.as_str() {
+                    "AAR - Get IDs" => menu::missions::run_aar_ids(&ctx, &command).await,
+                    "AAR - Pay" => menu::missions::run_aar_pay(&ctx, &command).await,
                     "bank" => slash::bank::run(&ctx, &command).await,
                     "certifications" => slash::certifications::run(&ctx, &command).await,
+                    "garage" => slash::garage::run(&ctx, &command).await,
                     "docker" => slash::docker::run(&ctx, &command).await,
                     "meme" => slash::meme::run(&ctx, &command).await,
                     "missions" => slash::missions::run(&ctx, &command).await,
-                    "schedule" => slash::schedule::run(&ctx, &command).await,
                     "Recruiting - Reply" => menu::recruiting::run_reply(&ctx, &command).await,
-                    "AAR - Get IDs" => menu::missions::run_aar_ids(&ctx, &command).await,
-                    "AAR - Pay" => menu::missions::run_aar_pay(&ctx, &command).await,
+                    "schedule" => slash::schedule::run(&ctx, &command).await,
                     _ => Ok(()),
                 }
             }
@@ -64,6 +66,9 @@ impl EventHandler for Handler {
                 match autocomplete.data.name.as_str() {
                     "certifications" => {
                         slash::certifications::autocomplete(&ctx, &autocomplete).await
+                    }
+                    "garage" => {
+                        slash::garage::auto_complete::autocomplete(&ctx, &autocomplete).await
                     }
                     "docker" => slash::docker::autocomplete(&ctx, &autocomplete).await,
                     "missions" => slash::missions::autocomplete(&ctx, &autocomplete).await,

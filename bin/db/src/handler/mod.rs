@@ -1,5 +1,6 @@
 mod certifications;
 mod discord;
+mod garage;
 mod gear;
 mod missions;
 mod recruiting;
@@ -25,6 +26,7 @@ pub async fn start() {
             synixe_events::gear::db::Request,
             synixe_events::missions::db::Request,
             synixe_events::recruiting::db::Request,
+            synixe_events::garage::db::Request,
         );
     }
 }

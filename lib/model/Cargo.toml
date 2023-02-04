@@ -11,7 +11,7 @@ time = { workspace = true, optional = true, features = ["serde-well-known", "mac
 regex = { version = "1.7.1", optional = true }
 serde = { workspace = true, features = ["derive"] }
 sqlx = { workspace = true, optional = true }
-uuid = { workspace = true, optional = true, features = ["serde"] }
+uuid = { workspace = true, optional = true, features = ["serde", "v4"] }
 serenity = { workspace = true, features = ["utils", "builder"], optional = true }
 
 [features]
@@ -19,9 +19,12 @@ default = [
     "missions",
     "roles",
     "gear",
+    "garage",
 ]
 certifications = ["uuid", "roles", "time"]
 mission-schedule = ["missions", "time", "uuid"]
 missions = ["uuid", "time", "regex"]
 roles = ["serenity"]
 gear = ["time"]
+garage = []
+
