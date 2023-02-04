@@ -8,7 +8,10 @@ use serenity::{
     prelude::Context,
 };
 use synixe_events::{missions::db::Response, publish};
-use synixe_meta::discord::role::MISSION_REVIEWER;
+use synixe_meta::discord::{
+    channel::LOG,
+    role::{DOCKER, MISSION_REVIEWER, STAFF},
+};
 use synixe_proc::events_request;
 
 use crate::{
@@ -70,14 +73,15 @@ async fn load(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
-    super::requires_role(
-        MISSION_REVIEWER,
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    super::requires_roles(
+        &[MISSION_REVIEWER, STAFF, DOCKER],
         &command
             .member
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
+        true,
         &mut interaction,
     )
     .await?;
@@ -111,6 +115,7 @@ async fn load(
         synixe_events::missions::publish::Publish::ChangeMission {
             id: missions[0].id.clone(),
             mission_type: missions[0].typ,
+            reason: format!("Loaded by <@{}>", command.user.id),
         }
     )
     .await
@@ -118,7 +123,9 @@ async fn load(
         error!("failed to publish mission change: {}", e);
         return interaction.reply("Failed to publish mission change").await;
     }
-    interaction.reply("Mission changed").await?;
+    interaction
+        .reply(format!("Mission change requested. Check <#{LOG}>"))
+        .await?;
     Ok(())
 }
 

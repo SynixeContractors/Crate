@@ -9,10 +9,11 @@ synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-model = { path = "../../lib/model", features = ["sqlx", "gear", "mission-schedule", "garage"] }
 anyhow = { workspace = true }
+arma-rs = { workspace = true }
 async-trait = { workspace = true }
 nats = { workspace = true }
-reqwest = { version = "0.11.13", features = ["json"] }
-serenity = { workspace = true, features = [ "builder" ] }
+reqwest = { version = "0.11.14", features = ["json"] }
+serenity = { workspace = true, features = ["builder"] }
 serde_json = "1"
 sqlx = { workspace = true, features = ["postgres", "runtime-tokio-native-tls", "offline", "time", "uuid", "json"] }
 time = { workspace = true }

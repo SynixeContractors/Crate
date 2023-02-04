@@ -4,5 +4,5 @@ Exposes a simple webhooks API.
 
 ## Connections
 
-Internet
-NATS
+- NATS
+- Traefik on /hooks

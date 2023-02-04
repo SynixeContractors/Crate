@@ -3,6 +3,7 @@
 #![allow(clippy::use_self)] // serde false positive
 
 use serde::{Deserialize, Serialize};
+use serenity::model::prelude::{ChannelId, MessageId};
 use time::OffsetDateTime;
 use uuid::Uuid;
 
@@ -121,6 +122,23 @@ pub struct ScheduledMission {
     /// Mission type
     #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
     pub typ: MissionType,
+}
+
+impl ScheduledMission {
+    #[must_use]
+    /// Get the channel and message id for the schedule message
+    pub fn message(&self) -> Option<(ChannelId, MessageId)> {
+        if let Some(msg) = &self.schedule_message_id {
+            let Some((channel, message)) = msg.split_once(':') else {
+                return None;
+            };
+            let channel = ChannelId::from(channel.parse::<u64>().ok()?);
+            let message = MessageId::from(message.parse::<u64>().ok()?);
+            Some((channel, message))
+        } else {
+            None
+        }
+    }
 }
 
 #[cfg(feature = "mission-schedule")]

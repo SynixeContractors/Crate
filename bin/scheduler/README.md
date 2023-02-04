@@ -4,4 +4,4 @@ The scheduler is a service that is responsible for sending out events on a fixed
 
 ## Connections
 
-NATS  
+- NATS

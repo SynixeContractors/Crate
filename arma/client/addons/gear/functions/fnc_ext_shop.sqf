@@ -16,7 +16,7 @@ switch (_func) do {
         INFO_1("Published shop items: %1", count GVAR(shop_items));
     };
     case "items:err": {
-        ERROR_1("Error importing shop items");
+        ERROR("Error importing shop items");
     };
 
     case "enter:ok": {

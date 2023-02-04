@@ -6,8 +6,8 @@ use std::net::SocketAddr;
 use axum::{
     http::{Request, StatusCode},
     middleware::{self, Next},
-    response::{IntoResponse, Response},
-    routing::{get, post},
+    response::Response,
+    routing::post,
     Router, Server,
 };
 
@@ -15,6 +15,7 @@ use axum::{
 extern crate tracing;
 
 mod missions;
+mod modpack;
 
 #[tokio::main]
 async fn main() {
@@ -23,9 +24,8 @@ async fn main() {
     let app = Router::new().nest(
         "/hooks",
         Router::new()
-            .route("/health", get(health_check))
-            .route("/health_auth", get(auth_check))
             .route("/missions/list_updated", post(missions::list_updated))
+            .route("/modpack/updated", post(modpack::updated))
             .route_layer(middleware::from_fn(check_token)),
     );
 
@@ -35,16 +35,6 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
-}
-
-#[allow(clippy::unused_async)]
-async fn health_check() -> impl IntoResponse {
-    "OK"
-}
-
-#[allow(clippy::unused_async)]
-async fn auth_check() -> impl IntoResponse {
-    "OK"
 }
 
 async fn check_token<B: Send>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {

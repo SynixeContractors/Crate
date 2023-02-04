@@ -1,0 +1,10 @@
+name = "crate-server"
+prefix = "crate_server"
+
+[files]
+include = [
+    "crate_server_x64.dll",
+]
+
+[version]
+git_hash = 0

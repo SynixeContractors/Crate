@@ -16,6 +16,8 @@ use crate::{
     get_option, get_option_user,
 };
 
+use super::AllowPublic;
+
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
         .name("bank")
@@ -32,6 +34,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .kind(CommandOptionType::User)
                         .required(true)
                 })
+                .allow_public()
         })
         .create_option(|option| {
             option
@@ -84,15 +87,9 @@ async fn balance(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Fetching balance...").await?;
-    let CommandDataOptionValue::User(user, _member) = options
-        .iter()
-        .find(|option| option.name == "member")
-        .expect("Required option not provided: member")
-        .resolved
-        .as_ref()
-        .expect("required member type should be resolved") else {
+    let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
     };
     let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request!(
@@ -105,11 +102,35 @@ async fn balance(
     .await else {
         return interaction.reply("Failed to fetch balance").await;
     };
+
+    let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        LockerBalance {
+            member: user.id,
+        }
+    )
+    .await else {
+        return interaction.reply("Failed to fetch locker balance").await;
+    };
+    let  Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        LoadoutBalance {
+            member: user.id,
+        }
+    )
+    .await else {
+        return interaction.reply("Failed to fetch loudout balance").await;
+    };
     interaction
         .reply(format!(
-            "<@{}> has ${}",
+            "<@{}> has:\n```Cash:      ${}\nLocker:    ${}\nLoadout:   ${}\nNet Worth: ${}```",
             user.id,
-            bootstrap::format::money(balance)
+            bootstrap::format::money(balance),
+            bootstrap::format::money(locker_balance),
+            bootstrap::format::money(loadout_balance),
+            bootstrap::format::money(balance + locker_balance + loadout_balance)
         ))
         .await
 }
@@ -120,7 +141,7 @@ async fn transfer(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Transferring money...").await?;
     let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;

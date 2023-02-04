@@ -1,0 +1,20 @@
+[package]
+name = "synixe-docker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-meta = { path = "../../lib/meta" }
+synixe-model = { path = "../../lib/model", features = ["missions"] }
+synixe-proc = { path = "../../lib/proc" }
+
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+bollard = "0.14.0"
+lazy_static = "1.4.0"
+nats = { workspace = true }
+regex = "1.7.1"
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }

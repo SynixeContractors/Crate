@@ -208,23 +208,24 @@ impl Handler for Request {
                     synixe_model::certifications::CertificationTrial,
                     Response::Active,
                     r#"
-                        SELECT
-                            id,
-                            instructor,
-                            trainee,
-                            certification,
-                            notes,
-                            passed,
-                            valid_for,
-                            valid_until,
-                            created
-                        FROM
-                            certifications_trials
-                        WHERE
-                            trainee = $1
-                            AND passed IS TRUE
-                            AND (valid_until > NOW() OR valid_until IS NULL)
-                        GROUP BY id ORDER BY created DESC"#,
+                    SELECT
+                        DISTINCT ON (certification)
+                        certification,
+                        id,
+                        instructor,
+                        trainee,
+                        notes,
+                        passed,
+                        valid_for,
+                        valid_until,
+                        created
+                    FROM
+                        certifications_trials
+                    WHERE
+                        trainee = $1
+                        AND passed IS TRUE
+                        AND (valid_until > NOW() OR valid_until IS NULL)
+                    ORDER BY certification, created DESC"#,
                     member.0.to_string(),
                 )?;
                 Ok(())
@@ -277,11 +278,15 @@ impl Handler for Request {
                             valid_until,
                             created
                         FROM
-                            certifications_trials
+                            certifications_trials as ct
                         WHERE
                             passed IS TRUE
                             AND (valid_until > NOW())
                             AND valid_until < NOW() + $1 * INTERVAL '1 day'
+                            AND NOT EXISTS (SELECT 1 FROM certifications_trials as ict WHERE
+                                ct.certification = ict.certification
+                                AND ct.trainee = ict.trainee
+                                AND valid_until > NOW() + $1 * INTERVAL '1 day')
                         ORDER BY trainee, certification, created DESC"#,
                     f64::from(*days),
                 )?;

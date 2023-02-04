@@ -1,7 +1,4 @@
-use std::{fs::File, io::Write};
-
 use async_trait::async_trait;
-use regex::Regex;
 use synixe_events::missions::publish::Publish;
 use synixe_model::missions::MissionType;
 
@@ -49,19 +46,21 @@ impl Listener for Publish {
                 }
                 Ok(())
             }
-            Self::ChangeMission { id, mission_type } => {
-                let Ok(regex) = Regex::new(r"(?m)template = ([^;]+);") else {
-                    error!("failed to compile regex");
-                    return Ok(());
-                };
+            Self::ChangeMission {
+                id,
+                mission_type,
+                reason: _,
+            } => {
                 match mission_type {
                     MissionType::Contract | MissionType::SubContract | MissionType::Special => {
-                        if *SERVER_ID != "primary-contracts" {
+                        if *SERVER_ID != "arma-main" {
+                            info!("Ignoring mission change event for non-main server");
                             return Ok(());
                         }
                     }
                     _ => return Ok(()),
                 }
+                info!("Changing main server mission to `{id}`");
                 context.callback_data(
                     "crate",
                     "global_message",
@@ -77,16 +76,6 @@ impl Listener for Publish {
                             .to_string(),
                     )],
                 );
-                tokio::time::sleep(std::time::Duration::from_secs(30)).await;
-                context.callback_null("crate", "restart");
-                tokio::time::sleep(std::time::Duration::from_secs(30)).await;
-                let current_config = std::fs::read_to_string("./configs/main.cfg")?;
-                let new_config = regex
-                    .replace_all(&current_config, format!("template = {id};"))
-                    .to_string();
-                let mut file = File::create("./configs/main.cfg")?;
-                file.write_all(new_config.as_bytes())?;
-                context.callback_null("crate:restart", "restart");
                 Ok(())
             }
             Self::WarnChangeMission {

@@ -49,19 +49,24 @@ impl Handler for Request {
             }
             Self::SetScheduledMesssage {
                 scheduled,
-                message_id,
+                channel,
+                message,
             } => {
+                let channel = channel.to_string();
+                let message = message.to_string();
                 execute_and_respond!(
                     msg,
                     *db,
                     cx,
                     Response::SetScheduledMesssage,
                     "UPDATE missions_schedule SET schedule_message_id = $1 WHERE id = $2",
-                    message_id.to_string(),
+                    format!("{channel}:{message}"),
                     scheduled,
                 )
             }
-            Self::FetchScheduledMessage { message } => {
+            Self::FetchScheduledMessage { channel, message } => {
+                let channel = channel.to_string();
+                let message = message.to_string();
                 fetch_one_as_and_respond!(
                     msg,
                     *db,
@@ -82,21 +87,18 @@ impl Handler for Request {
                     INNER JOIN
                         missions m ON m.id = s.mission
                     WHERE schedule_message_id = $1",
-                    message.to_string(),
+                    format!("{channel}:{message}"),
                 )?;
                 Ok(())
             }
-            Self::SetScheduledAar {
-                scheduled,
-                message_id,
-            } => {
+            Self::SetScheduledAar { scheduled, message } => {
                 execute_and_respond!(
                     msg,
                     *db,
                     cx,
                     Response::SetScheduledAar,
                     "UPDATE missions_schedule SET aar_message_id = $1 WHERE id = $2",
-                    message_id.to_string(),
+                    message.to_string(),
                     scheduled,
                 )
             }

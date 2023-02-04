@@ -4,15 +4,18 @@ use serenity::{
     builder::{CreateInteractionResponse, CreateInteractionResponseFollowup},
     http::Http,
     model::prelude::{
-        application_command::ApplicationCommandInteraction, component::ButtonStyle,
-        message_component::MessageComponentInteraction, InteractionResponseType, Message,
-        MessageId,
+        application_command::{ApplicationCommandInteraction, CommandDataOption},
+        component::ButtonStyle,
+        message_component::MessageComponentInteraction,
+        InteractionResponseType, Message, MessageId,
     },
     prelude::Context,
 };
 
 mod confirm;
 pub use confirm::Confirmation;
+
+use crate::get_option;
 
 pub enum Generic<'a> {
     Application(&'a ApplicationCommandInteraction),
@@ -76,15 +79,17 @@ pub struct Interaction<'a> {
     interaction: Generic<'a>,
     ctx: &'a Context,
     initial_response: bool,
+    ephemeral: bool,
 }
 
 impl<'a> Interaction<'a> {
-    pub const fn new(ctx: &'a Context, interaction: Generic<'a>) -> Self {
+    pub fn new(ctx: &'a Context, interaction: Generic<'a>, options: &[CommandDataOption]) -> Self {
         Self {
             message: None,
             interaction,
             ctx,
             initial_response: false,
+            ephemeral: !get_option!(options, "public", Boolean).unwrap_or(&false),
         }
     }
 
@@ -93,7 +98,7 @@ impl<'a> Interaction<'a> {
             self.interaction
                 .create_interaction_response(self.ctx, |r| {
                     r.kind(InteractionResponseType::DeferredChannelMessageWithSource)
-                        .interaction_response_data(|d| d.ephemeral(true))
+                        .interaction_response_data(|d| d.ephemeral(self.ephemeral))
                 })
                 .await?;
             self.initial_response = true;

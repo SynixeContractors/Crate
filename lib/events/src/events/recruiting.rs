@@ -8,22 +8,22 @@ pub mod db {
         /// Mark a post as seen
         struct Seen {
             /// The post url
-            url: String
+            url: String,
         } => (Result<(), String>)
         /// Check if a post has been seen
         struct HasSeen {
             /// The post url
-            url: String
+            url: String,
         } => (Result<Option<Option<bool>>, String>)
         /// Mark a post as replied to
         struct Replied {
             /// The post url
-            url: String
+            url: String,
         } => (Result<(), String>)
         /// Check if a post has been replied to
         struct HasReplied {
             /// The post url
-            url: String
+            url: String,
         } => (Result<Option<Option<bool>>, String>)
     });
 }

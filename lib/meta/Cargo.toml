@@ -5,3 +5,5 @@ edition = "2021"
 
 [dependencies]
 serenity = { workspace = true }
+strum = { workspace = true, features = ["derive"] }
+serde = { workspace = true }

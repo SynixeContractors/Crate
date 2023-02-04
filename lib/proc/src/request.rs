@@ -5,7 +5,8 @@ use syn::{
     Expr, ExprStruct, Path, Result, Token,
 };
 
-pub fn request(item: TokenStream) -> TokenStream {
+/// Request a response from a service
+pub fn request(item: TokenStream, timeout: u64) -> TokenStream {
     let event = syn::parse_macro_input!(item as Request);
     let path = event.path;
     let nats = event.nats;
@@ -20,7 +21,7 @@ pub fn request(item: TokenStream) -> TokenStream {
             let response = #nats.request_timeout(
                 path,
                 synixe_events::serde_json::to_vec(&trace_body).unwrap(),
-                std::time::Duration::from_secs(5),
+                std::time::Duration::from_secs(#timeout),
             ).await;
             match response {
                 Ok(response) => {

@@ -26,7 +26,7 @@ switch (_func) do {
     case "store:err": {
         (parseSimpleArray _data) params ["_steam"];
         private _player = [_steam] call EFUNC(common,playerFromSteam);
-        ERROR_2("Loadout store error for %1",_steam);
+        ERROR_1("Loadout store error for %1",_steam);
         [QGVAR(loadout_store_err), [], [_player]] call CBA_fnc_targetEvent;
     };
 };

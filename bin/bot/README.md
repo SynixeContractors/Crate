@@ -8,5 +8,5 @@ The bot service is responsible for all communication with Discord. It has two in
 
 ## Connections
 
-NATS  
-Discord
+- NATS
+- Discord

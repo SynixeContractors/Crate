@@ -8,7 +8,9 @@ addMissionEventHandler ["ExtensionCallback", {
     switch (_func) do {
         case "global_message": {
             GVAR(brodskyChat) radioChannelAdd allPlayers;
-            [QGVAR(brodskySay), _data] call CBA_fnc_globalEvent;
+            [{
+                [QGVAR(brodskySay), parseSimpleArray _this] call CBA_fnc_globalEvent;
+            }, _data, 1] call CBA_fnc_waitAndExecute;
         };
     };
 }];

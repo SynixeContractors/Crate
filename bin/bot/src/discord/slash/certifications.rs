@@ -124,7 +124,7 @@ async fn trial(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Fetching certifications...").await?;
     let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request!(
         bootstrap::NC::get().await,
@@ -252,7 +252,7 @@ async fn view(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Fetching certifications...").await?;
     let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
@@ -306,10 +306,10 @@ async fn view(
 async fn list(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    _options: &[CommandDataOption],
+    options: &[CommandDataOption],
     available: bool,
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Fetching certifications...").await?;
     let Ok(Ok((Response::List(Ok(mut certs)), _))) = events_request!(
         bootstrap::NC::get().await,

@@ -24,7 +24,7 @@ pub async fn run_aar_ids(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), &[]);
     let Ok(msg) = command.channel_id
         .message(&ctx.http, MessageId::from(command.data.target_id.expect("Should only be possible to run this command on a message")))
         .await
@@ -33,7 +33,7 @@ pub async fn run_aar_ids(
             .reply("Failed to find message")
             .await;
     };
-    let Some(data) = msg.content.lines().into_iter().find(|l| l.starts_with("Contractors: ")) else {
+    let Some(data) = msg.content.lines().find(|l| l.starts_with("Contractors: ")) else {
         return interaction
             .reply("Failed to find contractors list")
             .await;
@@ -43,7 +43,7 @@ pub async fn run_aar_ids(
         .split(", ")
         .map(std::string::ToString::to_string)
         .collect::<Vec<_>>();
-    return match find_members(ctx, &names).await {
+    match find_members(ctx, &names).await {
         Ok(ids) => {
             let ids = ids.into_iter().map(|id| id.to_string()).collect::<Vec<_>>();
             interaction
@@ -51,7 +51,7 @@ pub async fn run_aar_ids(
                 .await
         }
         Err(e) => interaction.reply(e).await,
-    };
+    }
 }
 
 pub fn aar_pay(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
@@ -63,7 +63,7 @@ pub async fn run_aar_pay(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command));
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), &[]);
     let Some(member) = command.member.as_ref() else {
         return interaction
             .reply("Failed to get member")

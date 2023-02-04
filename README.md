@@ -18,18 +18,20 @@ You are welcome to read, not copy directly, the source code for inspiration for 
 - Generate `.pbo` files for missions
     - For regular missions
     - Gernerate missions for multiple maps from a single mission file
+    - Automatically loaded onto all servers
 - Schedule missions
-- Provide an iCal for Google Calendar and other calendar apps
+- Provide an up-to-date iCal for Google Calendar and other calendar apps
 - Post in a #schedule channel and track RSVPs
 - Start the mission on the appropriate server before it starts
 - Track attendance
 - After action reports are validated
+- Load missions and restart servers with Discord slash commands
 
 ### Persistent Gear
 
 - Loadout Tracking
     - Loadouts are persistent across missions
-    - ACE earplugs
+    - CBA Extended Loadouts (ACE Earplugs, GRAD Sling Helmet)
 - Bank System
     - Players earn money for completing missions
     - Players can buy gear from the shop
