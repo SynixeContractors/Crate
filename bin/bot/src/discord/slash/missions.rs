@@ -19,6 +19,8 @@ use crate::{
     get_option,
 };
 
+use super::ShouldAsk;
+
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
         .name("missions")
@@ -81,7 +83,7 @@ async fn load(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
-        true,
+        ShouldAsk::Yes,
         &mut interaction,
     )
     .await?;

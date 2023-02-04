@@ -13,7 +13,6 @@ use synixe_proc::events_request;
 use crate::discord::{self, interaction::Interaction};
 
 use self::enums::Command;
-// use super::enums::{GarageCommands, GarageSubCommands};
 
 mod attachment;
 pub mod auto_complete;
@@ -135,10 +134,13 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
 async fn view(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
-    _options: &[CommandDataOption],
+    options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction =
-        Interaction::new(ctx, discord::interaction::Generic::Application(command));
+    let mut interaction = Interaction::new(
+        ctx,
+        discord::interaction::Generic::Application(command),
+        options,
+    );
 
     let Ok(Ok((Response::FetchStoredVehicles(Ok(vehicles)), _))) = events_request!(
         bootstrap::NC::get().await,

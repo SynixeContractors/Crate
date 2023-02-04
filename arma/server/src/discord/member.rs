@@ -11,6 +11,7 @@ pub fn group() -> Group {
         .command("save_dlc", command_save_dlc)
 }
 
+#[allow(clippy::manual_let_else)]
 /// Fetches a user's discord id and roles
 fn command_get(steam: String, name: String) {
     if steam == "_SP_PLAYER_" {

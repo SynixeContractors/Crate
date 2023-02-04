@@ -15,8 +15,11 @@ pub async fn purchase(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction =
-        Interaction::new(ctx, discord::interaction::Generic::Application(command));
+    let mut interaction = Interaction::new(
+        ctx,
+        discord::interaction::Generic::Application(command),
+        options,
+    );
 
     let plate = get_option!(options, "plate", String);
 

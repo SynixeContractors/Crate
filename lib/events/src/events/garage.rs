@@ -62,3 +62,52 @@ pub mod db {
         } => (Result<(), String>)
     });
 }
+
+/// Interact with the Arma Server
+pub mod arma {
+    use std::collections::HashMap;
+
+    use serde::{Deserialize, Serialize};
+    use synixe_proc::events_requests;
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+    /// Can a vehicle be spawned?
+    pub enum CanSpawn {
+        /// Yes, the vehicle can be spawned
+        Yes,
+        /// There is no spawn area for this vehicle type
+        NoSpawnArea,
+        /// The spawn area is blocked
+        AreaBlocked,
+        /// There are no players in the server
+        NoPlayers,
+        /// There is no player near the spawn area
+        NoPlayersNear,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+    /// The type of vehicle
+    pub enum VehicleType {
+        /// Car, Tank, etc
+        Land,
+        /// Helicopter, Plane, etc
+        Air,
+        /// Boat, Submarine, etc
+        Water,
+    }
+
+    events_requests!(arma.garage {
+        /// Check if a vehicle can be spawned
+        struct CanSpawn {
+            /// The type of vehicle to spawn
+            typ: VehicleType,
+        } => (Result<CanSpawn, String>)
+        /// Spawn a vehicle
+        struct Spawn {
+            /// The class to spawn
+            class: String,
+            /// The state of the vehicle
+            state: HashMap<String, serde_json::Value>,
+        } => (Result<(), String>)
+    });
+}

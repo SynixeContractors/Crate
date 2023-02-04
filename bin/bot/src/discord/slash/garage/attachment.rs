@@ -15,8 +15,11 @@ pub async fn attach(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction =
-        Interaction::new(ctx, discord::interaction::Generic::Application(command));
+    let mut interaction = Interaction::new(
+        ctx,
+        discord::interaction::Generic::Application(command),
+        options,
+    );
 
     let Some(plate) = get_option!(options, "vehicle", String) else {
         return interaction
@@ -55,8 +58,11 @@ pub async fn detach(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction =
-        Interaction::new(ctx, discord::interaction::Generic::Application(command));
+    let mut interaction = Interaction::new(
+        ctx,
+        discord::interaction::Generic::Application(command),
+        options,
+    );
 
     let Some(plate) = get_option!(options, "vehicle", String) else {
         return interaction

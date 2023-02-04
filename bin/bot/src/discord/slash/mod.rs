@@ -13,20 +13,28 @@ use super::interaction::Interaction;
 
 pub mod bank;
 pub mod certifications;
-pub mod garage;
 pub mod docker;
+pub mod garage;
 pub mod meme;
 pub mod missions;
 pub mod schedule;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ShouldAsk {
+    /// Ask the #log channel for permission
+    Yes,
+    /// Do not ask the #log channel for permission, deny the command
+    Deny,
+}
+
 pub async fn requires_roles(
     needle: &[RoleId],
     haystack: &[RoleId],
-    ask: bool,
+    ask: ShouldAsk,
     interaction: &mut Interaction<'_>,
 ) -> serenity::Result<()> {
     if !haystack.iter().any(|role| needle.contains(role)) {
-        if ask {
+        if ask == ShouldAsk::Yes {
         } else {
             interaction
                 .reply("You do not have permission to use this command.")

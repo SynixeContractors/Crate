@@ -27,6 +27,8 @@ use crate::{
     get_option,
 };
 
+use super::ShouldAsk;
+
 const TIME_FORMAT: &str =
     "[year]-[month]-[day] [hour]:[minute] [offset_hour sign:mandatory]:[offset_minute]";
 
@@ -287,7 +289,7 @@ async fn new(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
-        false,
+        ShouldAsk::Deny,
         &mut interaction,
     )
     .await?;
@@ -468,7 +470,7 @@ pub async fn remove(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
-        false,
+        ShouldAsk::Deny,
         &mut interaction,
     )
     .await?;
@@ -586,7 +588,7 @@ async fn post(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
-        false,
+        ShouldAsk::Deny,
         &mut interaction,
     )
     .await?;
