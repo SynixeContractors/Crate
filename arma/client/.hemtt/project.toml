@@ -1,5 +1,6 @@
 name = "crate-client"
 prefix = "crate_client"
+mainprefix = "synixe"
 
 [version]
 git_hash = 0

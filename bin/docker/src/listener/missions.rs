@@ -8,7 +8,7 @@ use synixe_events::{
 };
 use synixe_meta::docker::Primary;
 use synixe_model::missions::MissionType;
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use crate::DOCKER_SERVER;
 
@@ -50,7 +50,7 @@ impl Listener for Publish {
                 .to_string();
             let mut file = File::create("/arma/main/configs/main.cfg")?;
             file.write_all(new_config.as_bytes())?;
-            if let Err(e) = events_request!(
+            if let Err(e) = events_request_5!(
                 nats,
                 synixe_events::discord::write,
                 Audit {
@@ -65,7 +65,7 @@ impl Listener for Publish {
                 error!("failed to send audit message: {}", e);
             }
             tokio::time::sleep(Duration::from_secs(60)).await;
-            if let Err(e) = events_request!(
+            if let Err(e) = events_request_5!(
                 nats,
                 synixe_events::containers::docker,
                 Restart {

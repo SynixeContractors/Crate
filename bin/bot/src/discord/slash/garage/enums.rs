@@ -5,6 +5,7 @@ pub enum Command {
     PurchaseAddon,
     Attach,
     Detach,
+    Spawn,
 }
 
 impl Command {
@@ -15,6 +16,7 @@ impl Command {
             "purchase_addon" => Some(Self::PurchaseAddon),
             "attach" => Some(Self::Attach),
             "detach" => Some(Self::Detach),
+            "spawn" => Some(Self::Spawn),
             _ => None,
         }
     }

@@ -20,11 +20,13 @@ members = [
 
 [workspace.dependencies]
 anyhow = "1.0.68"
-arma-rs = "1.9.3"
+# arma-rs = "1.9.3"
+arma-rs = { git = "https://github.com/brettmayson/arma-rs", features = ["uuid", "serde_json"] }
 async-trait = "0.1.64"
 axum = "0.6.4"
 nats = { version = "0.23.1" }
 serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.91"
 serenity = { git = "https://github.com/serenity-rs/serenity", rev = "a07410392915a6279c1b61e6a3f25c7d3fc37588", default-features = false }
 sqlx = { version = "0.6.2", features = ["offline"] }
 strum = "0.24.1"

@@ -4,7 +4,7 @@ use axum::{response::IntoResponse, routing::get, Router, Server};
 use chrono::{Duration, NaiveDateTime};
 use icalendar::{Calendar, Component, Event, EventLike};
 use synixe_events::missions::db::Response;
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 #[macro_use]
 extern crate tracing;
@@ -24,7 +24,7 @@ async fn main() {
 }
 
 async fn calendar() -> impl IntoResponse {
-    let Ok(Ok((Response::UpcomingSchedule(Ok(schedule)), _))) = events_request!(
+    let Ok(Ok((Response::UpcomingSchedule(Ok(schedule)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         UpcomingSchedule {}

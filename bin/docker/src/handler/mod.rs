@@ -8,7 +8,6 @@ mod modpack;
 
 #[allow(clippy::cognitive_complexity)]
 pub async fn start() {
-    // Init NATS connection
     let nats = bootstrap::NC::get().await;
 
     let sub = nats

@@ -10,6 +10,9 @@
     #define PREP(fncName) [QPATHTOF(functions\DOUBLES(fnc,fncName).sqf), QFUNC(fncName)] call CBA_fnc_compileFunction
 #endif
 
+#define CLASS(var1) DOUBLES(PREFIX,var1)
+#define QCLASS(var1) QUOTE(DOUBLES(PREFIX,var1))
+
 // GUI
 #define SIZEX ((safeZoneW / safeZoneH) min 1.2)
 #define SIZEY (SIZEX / 1.2)

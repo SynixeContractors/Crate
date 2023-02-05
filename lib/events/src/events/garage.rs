@@ -2,10 +2,43 @@
 
 /// Interact with the database
 pub mod db {
+    use serde::{Deserialize, Serialize};
     use serenity::model::prelude::UserId;
-    use synixe_model::garage::{ShopAsset, VehicleAsset};
+    use synixe_model::garage::{ShopAsset, VehicleAsset, VehicleColor};
     use synixe_proc::events_requests;
     use uuid::Uuid;
+
+    #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+    /// An order to purchase an asset
+    pub enum ShopOrder {
+        /// Purchase a vehicle
+        Vehicle {
+            /// The asset to purchase
+            id: Uuid,
+            /// The color of the asset
+            color: Option<String>,
+            /// name/plate of the asset
+            plate: Option<String>,
+            /// The member purchasing the asset
+            member: UserId,
+        },
+        /// Purchase an addon
+        Addon {
+            /// The asset to purchase
+            id: Uuid,
+            /// The member purchasing the asset
+            member: UserId,
+        },
+    }
+
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    /// Information about a vehicle for spawning
+    pub struct SpawnInfo {
+        /// The vehicle to spawn
+        pub class: Option<String>,
+        /// The state of the vehicle
+        pub state: Option<serde_json::Value>,
+    }
 
     events_requests!(db.garage {
         /// Get all vehicles in the garage
@@ -35,14 +68,20 @@ pub mod db {
             /// The asset to fetch
             asset: String
         } => (Result<Option<ShopAsset>, String>)
+        /// Fetch the color options for a vehicle
+        struct FetchVehicleColors {
+            /// The vehicle to fetch colors for
+            id: Uuid,
+        } => (Result<Vec<VehicleColor>, String>)
+        /// Fetch vehicle information for spawning
+        struct FetchVehicleInfo {
+            /// The vehicle to fetch information for
+            plate: String,
+        } => (Result<Option<SpawnInfo>, String>)
         /// Purchase a Vehicle asset
         struct PurchaseShopAsset {
             /// The asset to purchase
-            id: Uuid,
-            /// name/plate of the asset
-            plate: Option<String>,
-            /// The member purchasing the asset
-            member: UserId,
+            order: ShopOrder,
         } => (Result<(), String>)
         /// Attach an addon to a vehicle
         struct AttachAddon {
@@ -60,19 +99,36 @@ pub mod db {
             /// The member detaching the addon
             member: UserId,
         } => (Result<(), String>)
+
+        /// Retrieve a vehicle from the garage
+        struct RetrieveVehicle {
+            /// The vehicle to retrieve
+            plate: String,
+            /// The member retrieving the vehicle
+            member: UserId,
+        } => (Result<(), String>)
+        /// Store a vehicle in the garage
+        struct StoreVehicle {
+            /// The vehicle to store
+            plate: String,
+            /// The state of the vehicle
+            state: serde_json::Value,
+            /// The member storing the vehicle
+            member: UserId,
+        } => (Result<(), String>)
     });
 }
 
 /// Interact with the Arma Server
 pub mod arma {
-    use std::collections::HashMap;
+    use std::str::FromStr;
 
     use serde::{Deserialize, Serialize};
     use synixe_proc::events_requests;
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
     /// Can a vehicle be spawned?
-    pub enum CanSpawn {
+    pub enum SpawnResult {
         /// Yes, the vehicle can be spawned
         Yes,
         /// There is no spawn area for this vehicle type
@@ -84,30 +140,30 @@ pub mod arma {
         /// There is no player near the spawn area
         NoPlayersNear,
     }
+    impl FromStr for SpawnResult {
+        type Err = String;
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-    /// The type of vehicle
-    pub enum VehicleType {
-        /// Car, Tank, etc
-        Land,
-        /// Helicopter, Plane, etc
-        Air,
-        /// Boat, Submarine, etc
-        Water,
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            match s {
+                "Yes" => Ok(Self::Yes),
+                "NoSpawnArea" => Ok(Self::NoSpawnArea),
+                "AreaBlocked" => Ok(Self::AreaBlocked),
+                "NoPlayers" => Ok(Self::NoPlayers),
+                "NoPlayersNear" => Ok(Self::NoPlayersNear),
+                _ => Err(format!("Unknown CanSpawn: {s}")),
+            }
+        }
     }
 
     events_requests!(arma.garage {
-        /// Check if a vehicle can be spawned
-        struct CanSpawn {
-            /// The type of vehicle to spawn
-            typ: VehicleType,
-        } => (Result<CanSpawn, String>)
         /// Spawn a vehicle
         struct Spawn {
             /// The class to spawn
             class: String,
+            /// The plate of the vehicle
+            plate: String,
             /// The state of the vehicle
-            state: HashMap<String, serde_json::Value>,
-        } => (Result<(), String>)
+            state: serde_json::Value,
+        } => (Result<SpawnResult, String>)
     });
 }

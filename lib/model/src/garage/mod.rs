@@ -36,3 +36,14 @@ pub struct ShopAsset {
     /// if the asset can be attached
     pub base: Option<Uuid>,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+/// Vehicle color options
+pub struct VehicleColor {
+    /// The id of the asset
+    pub id: Uuid,
+    /// The name of the color
+    pub name: String,
+    /// The textures for the color
+    pub textures: Vec<String>,
+}

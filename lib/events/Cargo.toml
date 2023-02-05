@@ -12,7 +12,7 @@ anyhow = { workspace = true }
 async-trait = { workspace = true }
 nats = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-serde_json = "1.0.91"
+serde_json = { workspace = true }
 serenity = { workspace = true, features = ["utils", "builder"] }
 time = { workspace = true, features = ["serde-well-known"] }
 uuid = { workspace = true, features = ["serde"] }

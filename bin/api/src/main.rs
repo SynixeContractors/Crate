@@ -2,7 +2,7 @@ use std::net::SocketAddr;
 
 use axum::{extract::Path, response::IntoResponse, routing::get, Router, Server};
 use synixe_events::gear::db::Response;
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 #[macro_use]
 extern crate tracing;
@@ -22,7 +22,7 @@ async fn main() {
 }
 
 async fn balance(Path(id): Path<u64>) -> impl IntoResponse {
-    let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request!(
+    let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankBalance {

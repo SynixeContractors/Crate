@@ -8,7 +8,7 @@ use synixe_events::{
     respond,
 };
 use synixe_meta::docker::Container;
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use crate::DOCKER_SERVER;
 
@@ -86,7 +86,7 @@ async fn handle(
             format!("failed to {action} container {}: {e}", container.key())
         }
     };
-    if let Err(e) = events_request!(
+    if let Err(e) = events_request_5!(
         nats,
         synixe_events::discord::write,
         Audit {

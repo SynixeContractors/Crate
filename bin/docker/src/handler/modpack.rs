@@ -4,7 +4,7 @@ use synixe_events::{
     respond,
 };
 use synixe_meta::docker::Primary;
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 use tokio::process::Command;
 
 use crate::DOCKER_SERVER;
@@ -35,7 +35,7 @@ impl Handler for Request {
             error!("Failed to update mission list");
             return Err(anyhow::anyhow!("Failed to update mission list"));
         }
-        if let Err(e) = events_request!(
+        if let Err(e) = events_request_5!(
             nats,
             synixe_events::containers::docker,
             Restart {
@@ -48,7 +48,7 @@ impl Handler for Request {
             error!("failed to send restart event for main: {e}");
         }
         tokio::time::sleep(std::time::Duration::from_secs(60)).await;
-        if let Err(e) = events_request!(
+        if let Err(e) = events_request_5!(
             nats,
             synixe_events::containers::docker,
             Restart {

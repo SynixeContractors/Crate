@@ -77,7 +77,90 @@
     },
     "query": "\n                        SELECT\n                            valid_for\n                        FROM\n                            certifications\n                        WHERE\n                            id = $1"
   },
-  "11b6474eae00e595c67b5e79532cb2b74d4e56ee3eb78171a66e53b5dbcd5440": {
+  "1295389d95ec074d6bfdebb383be142d5449a8c52e731ccac26077c1436c7747": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO missions_maps (map, archived)\n                                    VALUES ($1, false)\n                                    ON CONFLICT (map) DO UPDATE SET\n                                        archived = false"
+  },
+  "1ce18fd17a5b1363ea677cd2d140ecf22f56a8c6d394f7f25af6ffabe92ae07b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "plate",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "addon",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "stored",
+          "ordinal": 3,
+          "type_info": "Bool"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "class",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "addons",
+          "ordinal": 6,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                    SELECT\n                        v.plate,\n                        v.id,\n                        v.addon,\n                        v.stored,\n                        s.name,\n                        s.class,\n                        (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons\n                    FROM\n                        garage_vehicles v\n                    INNER JOIN\n                        garage_shop s\n                    ON\n                        s.id = v.id\n                    WHERE plate = $1"
+  },
+  "1de41f7aead3bb3e5e5923d1d88ea092d9b9faf91ddc4e451095148128a0b84f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Int4",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO gear_bank_transfers (source, target, amount, reason) VALUES ($1, $2, $3, $4)"
+  },
+  "2379f1c0d3f5185fd909bc3f9c407e47fa7da19e77453cd686655d59ec676aa3": {
     "describe": {
       "columns": [
         {
@@ -119,34 +202,7 @@
         ]
       }
     },
-    "query": "SELECT \n                        *\n                    FROM \n                        garage_shop \n                    WHERE \n                        name Like $1"
-  },
-  "1295389d95ec074d6bfdebb383be142d5449a8c52e731ccac26077c1436c7747": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar"
-        ]
-      }
-    },
-    "query": "INSERT INTO missions_maps (map, archived)\n                                    VALUES ($1, false)\n                                    ON CONFLICT (map) DO UPDATE SET\n                                        archived = false"
-  },
-  "1de41f7aead3bb3e5e5923d1d88ea092d9b9faf91ddc4e451095148128a0b84f": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Varchar",
-          "Int4",
-          "Varchar"
-        ]
-      }
-    },
-    "query": "INSERT INTO gear_bank_transfers (source, target, amount, reason) VALUES ($1, $2, $3, $4)"
+    "query": "SELECT\n                        *\n                    FROM\n                        garage_shop\n                    WHERE\n                        name Like $1"
   },
   "23c0931c22545ccd5a45119553f7270ed4aa92852833900ab475bb22a665ea33": {
     "describe": {
@@ -221,63 +277,44 @@
     },
     "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        start + '2 minutes'::Interval > NOW() ORDER BY start ASC"
   },
-  "2a77e134f22a5c6688db21b577ad23333b907c2a9980e8f9d4985b29867bc6c1": {
+  "26b3ef600e47a97ac4ad2a7c344ea130d2c5d4a6a01fcbc04e92bb0824c5e936": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT into garage_log (plate, action, member) VALUES ($1, 'retrieve', $2)"
+  },
+  "32c2dd476f4e3ec8d7dcecea6fab01004bd6f9a1e5cee67b4efdf2d6032fa3e0": {
     "describe": {
       "columns": [
         {
-          "name": "plate",
+          "name": "class",
           "ordinal": 0,
           "type_info": "Varchar"
         },
         {
-          "name": "id",
+          "name": "state",
           "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "addon",
-          "ordinal": 2,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "stored",
-          "ordinal": 3,
-          "type_info": "Bool"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "class",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "addons",
-          "ordinal": 6,
-          "type_info": "Int8"
+          "type_info": "Jsonb"
         }
       ],
       "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        null
+        null,
+        true
       ],
       "parameters": {
         "Left": [
-          "Text",
-          "Bool",
-          "Bool"
+          "Text"
         ]
       }
     },
-    "query": "\n                    SELECT \n                        v.plate,\n                        v.id,\n                        v.addon,\n                        v.stored,\n                        s.name,\n                        s.class,\n                        (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons\n                    FROM \n                        garage_vehicles v \n                    INNER JOIN \n                        garage_shop s \n                    ON\n                        s.id = v.id \n                    WHERE \n                        plate LIKE $1\n                        AND ($2 OR stored = $3)\n                    "
+    "query": "SELECT\n                        (\n                            SELECT\n                                class\n                            FROM\n                                garage_shop s\n                            WHERE\n                                s.id = COALESCE(v.addon, v.id)\n                        ) as class,\n                        state\n                    FROM\n                        garage_vehicles v\n                    WHERE\n                        v.plate = $1"
   },
   "35cf5825744cc4ef07d1d869d5d1c0241fb25a8c9733163212b199e08f4b5fb4": {
     "describe": {
@@ -365,6 +402,19 @@
       }
     },
     "query": "\n                        INSERT INTO\n                            members_dlc (member, dlc)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT (member)\n                        DO UPDATE\n                            SET dlc = $2"
+  },
+  "4bd640e6d20551257f19a85172845e8316c211110bb632071e0977c676472ed1": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO garage_purchases (id, member) VALUES ($1, $2)"
   },
   "4edfe285b237cf058a908d498caf1c5c7122a5247d98faf063a09fe51bfd2e86": {
     "describe": {
@@ -504,19 +554,19 @@
     },
     "query": "INSERT INTO recruitment_seen (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created = NOW()"
   },
-  "5b0f02202068896b45ce60b35b7463d3f854b1b59c76f53627fad8859c77e8b0": {
+  "5bddd827b5fdd5119a125f49c7b96334e86ba37b8117a95526f23cd6d5f9f6ce": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
         "Left": [
-          "Uuid",
           "Varchar",
-          "Varchar"
+          "Varchar",
+          "Jsonb"
         ]
       }
     },
-    "query": "INSERT INTO garage_purchases (id, plate, member) VALUES ($1, $2, $3)"
+    "query": "INSERT into garage_log (plate, action, member, data) VALUES ($1, 'store', $2, $3)"
   },
   "5c15a2c4fcf938e63fd5f83d38c83e7a72e4d6e4d73cc27251a05e648a1f9f6a": {
     "describe": {
@@ -574,6 +624,64 @@
       }
     },
     "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE id = $1"
+  },
+  "5e9eeb66a761ef42c35cadb55d03396bbcfa3a6435ec168503d8d9abc85db2c3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "plate",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "addon",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "stored",
+          "ordinal": 3,
+          "type_info": "Bool"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "class",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "addons",
+          "ordinal": 6,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Bool",
+          "Bool"
+        ]
+      }
+    },
+    "query": "\n                    SELECT\n                        v.plate,\n                        v.id,\n                        v.addon,\n                        v.stored,\n                        s.name,\n                        s.class,\n                        (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons\n                    FROM\n                        garage_vehicles v\n                    INNER JOIN\n                        garage_shop s\n                    ON\n                        s.id = v.id\n                    WHERE\n                        LOWER(plate) LIKE LOWER($1)\n                        AND ($2 OR stored = $3)\n                    "
   },
   "615bd943426fba715272731444c3f65c1c4819677f14285768369e23c5fccc5a": {
     "describe": {
@@ -803,62 +911,6 @@
       }
     },
     "query": "INSERT into garage_log (plate, action, member, data) VALUES ($1, 'attach', $2, $3)"
-  },
-  "6c2d18756a8ce3b8a22d0b785351496d32bc98a5eaf5d4493580bfdee22483ae": {
-    "describe": {
-      "columns": [
-        {
-          "name": "plate",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "addon",
-          "ordinal": 2,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "stored",
-          "ordinal": 3,
-          "type_info": "Bool"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "class",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "addons",
-          "ordinal": 6,
-          "type_info": "Int8"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        null
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "\n                    SELECT \n                        v.plate, \n                        v.id,\n                        v.addon,\n                        v.stored, \n                        s.name,\n                        s.class,\n                        (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons\n                    FROM \n                        garage_vehicles v \n                    INNER JOIN \n                        garage_shop s \n                    ON\n                        s.id = v.id\n                    WHERE plate = $1"
   },
   "6cc6995e52aae1b6cb67db83edd8da57a70a3a2f2aa79deb29f44fd6fc3b620c": {
     "describe": {
@@ -1201,50 +1253,6 @@
     },
     "query": "SELECT member, amount, reason, id, created FROM gear_bank_deposits WHERE member = $1"
   },
-  "a4889972863cfa10b958e8048a6d8cdf46a240bbd7945f2c3e997bf976d2ecf4": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "base",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "class",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "name",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "cost",
-          "ordinal": 4,
-          "type_info": "Int4"
-        }
-      ],
-      "nullable": [
-        false,
-        true,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT \n                        *\n                    FROM \n                        garage_shop \n                    WHERE \n                        name LIKE $1"
-  },
   "a492865c0f8c52b770613822d17d029c4b8925a16a7a283ac0f65ba43831add3": {
     "describe": {
       "columns": [
@@ -1264,6 +1272,21 @@
       }
     },
     "query": "SELECT EXISTS(SELECT 1 FROM recruitment_seen WHERE link = $1) AS value"
+  },
+  "a59a85237f391016adf9b9966f3b7da2d7ecb827428d71666c5dfc9449a372ff": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Varchar",
+          "Varchar",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "INSERT INTO garage_purchases (id, plate, color, member) VALUES ($1, $2, $3, $4)"
   },
   "a80cd694ff0906d3d1e9f3ba97a307232d766bfbea9158f13727b68666226564": {
     "describe": {
@@ -1330,6 +1353,50 @@
       }
     },
     "query": "\n                        SELECT\n                            DISTINCT ON (trainee, certification)\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW() OR valid_until IS NULL)\n                        ORDER BY trainee, certification, created DESC"
+  },
+  "ac18f515bc1da9fcbc5e9dfd53eda2f2d4620fb1f3a1c25fe0be8bd90ad181b7": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "base",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "class",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "cost",
+          "ordinal": 4,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT\n                        *\n                    FROM\n                        garage_shop\n                    WHERE\n                        name LIKE $1"
   },
   "aca9efceaf3f1b2d4b026dbae5fe7fb903acb8daefe4443051640c26ec1114aa": {
     "describe": {
@@ -1563,6 +1630,38 @@
       }
     },
     "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        s.id = $1"
+  },
+  "c7ec02d0d5945ed152fa44d4fc37b724347d169e5286d008278ce03d7d6802f3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "textures",
+          "ordinal": 2,
+          "type_info": "TextArray"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT\n                        *\n                    FROM\n                        garage_colors\n                    WHERE\n                        id = $1"
   },
   "cc56249e54fdbc70d7821b669133f9aa8bca7582c719e14a003c877b53b53efd": {
     "describe": {

@@ -19,6 +19,21 @@ pub fn events_publish(item: TokenStream) -> TokenStream {
 
 #[proc_macro]
 /// Request a response from a service
+/// Timeout: 2 seconds
+pub fn events_request_2(item: TokenStream) -> TokenStream {
+    request::request(item, 2)
+}
+
+#[proc_macro]
+/// Request a response from a service
+/// Timeout: 5 seconds
+pub fn events_request_5(item: TokenStream) -> TokenStream {
+    request::request(item, 5)
+}
+
+#[proc_macro]
+#[deprecated = "Use events_request_2 instead (or 5 when needed)"]
+/// Request a response from a service
 /// Timeout: 5 seconds
 pub fn events_request(item: TokenStream) -> TokenStream {
     request::request(item, 5)

@@ -12,3 +12,5 @@
 #endif
 
 #include "\synixe\crate_client\addons\main\script_macros.hpp"
+
+#define SPAWN_SIZE 4

@@ -2,6 +2,8 @@
 
 params ["_vehicle", "_state"];
 
+private _state = createHashMapFromArray _state;
+
 private _fnc_addCargoForContainer = {
     params ["_container", "_cargo"];
 
@@ -27,6 +29,7 @@ private _fnc_addCargoForContainer = {
     } forEach ((_standard select 2) select 0);
 
     // Nested Cargo
+    clearBackpackCargoGlobal _container;
     {
         _x params ["_class", "_items"];
         _container addBackpackCargoGlobal [_class, 1];
@@ -67,20 +70,37 @@ private _fnc_addCargoForContainer = {
             _vehicle setFuelCargo _y;
         };
         case "ammoCargo": {
-            _obj setAmmoCargo _value;
+            _vehicle setAmmoCargo _y;
         };
         case "repairCargo": {
-            _obj setRepairCargo _value;
+            _vehicle setRepairCargo _y;
         };
         case "inventory": {
-            [_obj, _value] call _fnc_addCargoForContainer;
+            [_vehicle, _y] call _fnc_addCargoForContainer;
         };
         case "turret": {
+            {
+                _x params ["_mag", "_pos"];
+                _vehicle removeMagazineTurret [_mag, _pos];
+            } forEach magazinesAllTurrets _vehicle;
             {
                 _vehicle addMagazineTurret _x;
             } forEach _y;
         };
         case "cargo": {
+            // Clear automatic cargo
+            private _loaded = _vehicle getVariable ["ace_cargo_loaded", []];
+            if (_loaded isNotEqualTo []) then {
+                {
+                    if (_x isEqualType objNull) then {
+                        detach _x;
+                        deleteVehicle _x;
+                    };
+                } forEach _loaded;
+            };
+            _vehicle setVariable ["ace_cargo_loaded", [], true];
+            [_vehicle] call ace_cargo_fnc_validateCargoSpace;
+            // Add cargo
             {
                 _x params ["_type", "_data"];
                 switch (_type) do {

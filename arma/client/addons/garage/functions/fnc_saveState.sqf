@@ -68,7 +68,7 @@ if (_ammo isNotEqualTo []) then {
 };
 
 // Turret Ammo
-private _turretAmmo = magazinesAllTurrents _vehicle;
+private _turretAmmo = magazinesAllTurrets _vehicle;
 if (_turretAmmo isNotEqualTo []) then {
     _state set ["turret", _turretAmmo];
 };

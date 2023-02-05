@@ -3,7 +3,7 @@ use serenity::{
 };
 
 use serenity::model::application::interaction::application_command::CommandDataOption;
-use synixe_events::garage::db::Response;
+use synixe_events::garage::db::{Response, ShopOrder};
 use synixe_proc::events_request;
 use uuid::Uuid;
 
@@ -39,17 +39,43 @@ pub async fn purchase(
         return interaction.reply("Invalid vehicle or addon UUID").await;
     };
 
-    let Ok(Ok((Response::PurchaseShopAsset(Ok(())), _))) = events_request!(
-        bootstrap::NC::get().await,
-        synixe_events::garage::db,
-        PurchaseShopAsset {
-            id,
-            plate: plate.cloned(),
-            member: command.member.as_ref().expect("member should always exist on guild commands").user.id
+    match kind.name.as_str() {
+        "vehicle" => {
+            let Ok(Ok((Response::PurchaseShopAsset(Ok(())), _))) = events_request!(
+                bootstrap::NC::get().await,
+                synixe_events::garage::db,
+                PurchaseShopAsset {
+                    order: ShopOrder::Vehicle {
+                        id,
+                        plate: plate.cloned(),
+                        color: get_option!(options, "color", String).cloned(),
+                        member: command.member.as_ref().expect("member should always exist on guild commands").user.id
+                    }
+                }
+            ).await else {
+                return interaction.reply("Error purchasing vehicle").await;
+            };
+            interaction.reply("**Vehicle Purchased**\n\n").await
         }
-    ).await else {
-        return interaction.reply("Error purchasing asset").await;
-    };
-
-    interaction.reply("**Asset Purchase**\n\n").await
+        "addon" => {
+            let Ok(Ok((Response::PurchaseShopAsset(Ok(())), _))) = events_request!(
+                bootstrap::NC::get().await,
+                synixe_events::garage::db,
+                PurchaseShopAsset {
+                    order: ShopOrder::Addon {
+                        id,
+                        member: command.member.as_ref().expect("member should always exist on guild commands").user.id
+                    }
+                }
+            ).await else {
+                return interaction.reply("Error purchasing addon").await;
+            };
+            interaction.reply("**Addon Purchased**\n\n").await
+        }
+        _ => {
+            interaction
+                .reply("Invalid option provided: vehicle or addon")
+                .await
+        }
+    }
 }

@@ -22,7 +22,7 @@ impl Handler for Request {
                     synixe_model::garage::VehicleAsset,
                     Response::FetchStoredVehicles,
                     r#"
-                    SELECT 
+                    SELECT
                         v.plate,
                         v.id,
                         v.addon,
@@ -30,14 +30,14 @@ impl Handler for Request {
                         s.name,
                         s.class,
                         (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons
-                    FROM 
-                        garage_vehicles v 
-                    INNER JOIN 
-                        garage_shop s 
+                    FROM
+                        garage_vehicles v
+                    INNER JOIN
+                        garage_shop s
                     ON
-                        s.id = v.id 
-                    WHERE 
-                        plate LIKE $1
+                        s.id = v.id
+                    WHERE
+                        LOWER(plate) LIKE LOWER($1)
                         AND ($2 OR stored = $3)
                     "#,
                     format!("%{plate}%"),
@@ -54,18 +54,18 @@ impl Handler for Request {
                     synixe_model::garage::VehicleAsset,
                     Response::FetchStoredVehicle,
                     r#"
-                    SELECT 
-                        v.plate, 
+                    SELECT
+                        v.plate,
                         v.id,
                         v.addon,
-                        v.stored, 
+                        v.stored,
                         s.name,
                         s.class,
                         (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons
-                    FROM 
-                        garage_vehicles v 
-                    INNER JOIN 
-                        garage_shop s 
+                    FROM
+                        garage_vehicles v
+                    INNER JOIN
+                        garage_shop s
                     ON
                         s.id = v.id
                     WHERE plate = $1"#,
@@ -108,11 +108,11 @@ impl Handler for Request {
                     cx,
                     synixe_model::garage::ShopAsset,
                     Response::FetchShopAssets,
-                    "SELECT 
+                    "SELECT
                         *
-                    FROM 
-                        garage_shop 
-                    WHERE 
+                    FROM
+                        garage_shop
+                    WHERE
                         name LIKE $1",
                     format!("%{search}%"),
                 )?;
@@ -125,27 +125,88 @@ impl Handler for Request {
                     cx,
                     synixe_model::garage::ShopAsset,
                     Response::FetchShopAsset,
-                    "SELECT 
+                    "SELECT
                         *
-                    FROM 
-                        garage_shop 
-                    WHERE 
+                    FROM
+                        garage_shop
+                    WHERE
                         name Like $1",
                     format!("%{asset}%"),
                 )?;
                 Ok(())
             }
-            Self::PurchaseShopAsset { plate, id, member } => {
-                execute_and_respond!(
+            Self::FetchVehicleColors { id } => {
+                fetch_as_and_respond!(
                     msg,
                     *db,
                     cx,
-                    Response::PurchaseShopAsset,
-                    "INSERT INTO garage_purchases (id, plate, member) VALUES ($1, $2, $3)",
+                    synixe_model::garage::VehicleColor,
+                    Response::FetchVehicleColors,
+                    "SELECT
+                        *
+                    FROM
+                        garage_colors
+                    WHERE
+                        id = $1",
                     id,
-                    plate.as_ref(),
-                    member.to_string(),
-                )
+                )?;
+                Ok(())
+            }
+            Self::PurchaseShopAsset { order } => match order {
+                synixe_events::garage::db::ShopOrder::Vehicle {
+                    id,
+                    color,
+                    plate,
+                    member,
+                } => {
+                    execute_and_respond!(
+                            msg,
+                            *db,
+                            cx,
+                            Response::PurchaseShopAsset,
+                            "INSERT INTO garage_purchases (id, plate, color, member) VALUES ($1, $2, $3, $4)",
+                            id,
+                            plate.as_ref(),
+                            color.as_ref(),
+                            member.to_string(),
+                        )
+                }
+                synixe_events::garage::db::ShopOrder::Addon { id, member } => {
+                    execute_and_respond!(
+                        msg,
+                        *db,
+                        cx,
+                        Response::PurchaseShopAsset,
+                        "INSERT INTO garage_purchases (id, member) VALUES ($1, $2)",
+                        id,
+                        member.to_string(),
+                    )
+                }
+            },
+            Self::FetchVehicleInfo { plate } => {
+                fetch_one_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_events::garage::db::SpawnInfo,
+                    Response::FetchVehicleInfo,
+                    "SELECT
+                        (
+                            SELECT
+                                class
+                            FROM
+                                garage_shop s
+                            WHERE
+                                s.id = COALESCE(v.addon, v.id)
+                        ) as class,
+                        state
+                    FROM
+                        garage_vehicles v
+                    WHERE
+                        v.plate = $1",
+                    plate,
+                )?;
+                Ok(())
             }
             Self::AttachAddon {
                 plate,
@@ -172,6 +233,34 @@ impl Handler for Request {
                     "INSERT into garage_log (plate, action, member) VALUES ($1, 'detach', $2)",
                     plate,
                     member.to_string(),
+                )
+            }
+
+            Self::RetrieveVehicle { plate, member } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::RetrieveVehicle,
+                    "INSERT into garage_log (plate, action, member) VALUES ($1, 'retrieve', $2)",
+                    plate,
+                    member.to_string(),
+                )
+            }
+            Self::StoreVehicle {
+                plate,
+                state,
+                member,
+            } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::StoreVehicle,
+                    "INSERT into garage_log (plate, action, member, data) VALUES ($1, 'store', $2, $3)",
+                    plate,
+                    member.to_string(),
+                    state,
                 )
             }
         }

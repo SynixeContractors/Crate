@@ -17,7 +17,6 @@ async fn main() {
 
     let mut sched = Scheduler::default();
 
-    // Init NATS connection
     bootstrap::NC::get().await;
 
     // Global

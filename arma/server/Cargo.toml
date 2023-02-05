@@ -19,6 +19,7 @@ async-trait = { workspace = true }
 lazy_static = "1.4.0"
 log = "0.4.17"
 nats = { workspace = true }
+serde_json = { workspace = true }
 serenity = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 uuid = { workspace = true }

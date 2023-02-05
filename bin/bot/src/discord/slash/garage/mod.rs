@@ -10,7 +10,7 @@ use serenity::model::application::interaction::application_command::CommandDataO
 use synixe_events::garage::db::Response;
 use synixe_proc::events_request;
 
-use crate::discord::{self, interaction::Interaction};
+use crate::discord::interaction::{Generic, Interaction};
 
 use self::enums::Command;
 
@@ -18,7 +18,9 @@ mod attachment;
 pub mod auto_complete;
 mod enums;
 mod purchase;
+mod spawn;
 
+#[allow(clippy::too_many_lines)]
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
         .name("garage")
@@ -60,6 +62,14 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                     option
                         .name("vehicle")
                         .description("The asset to purchase")
+                        .kind(CommandOptionType::String)
+                        .set_autocomplete(true)
+                        .required(true)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("color")
+                        .description("The color of the vehicle")
                         .kind(CommandOptionType::String)
                         .set_autocomplete(true)
                         .required(true)
@@ -109,6 +119,20 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .required(true)
                 })
         })
+        .create_option(|option| {
+            option
+                .name("spawn")
+                .description("Spawn a vehicle")
+                .kind(CommandOptionType::SubCommand)
+                .create_sub_option(|option| {
+                    option
+                        .name("vehicle")
+                        .description("The vehicle to spawn")
+                        .kind(CommandOptionType::String)
+                        .set_autocomplete(true)
+                        .required(true)
+                })
+        })
 }
 
 pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
@@ -126,6 +150,7 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
             }
             Command::Attach => attachment::attach(ctx, command, &subcommand.options).await,
             Command::Detach => attachment::detach(ctx, command, &subcommand.options).await,
+            Command::Spawn => spawn::spawn(ctx, command, &subcommand.options).await,
         };
     }
     Ok(())
@@ -136,11 +161,7 @@ async fn view(
     command: &ApplicationCommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(
-        ctx,
-        discord::interaction::Generic::Application(command),
-        options,
-    );
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
 
     let Ok(Ok((Response::FetchStoredVehicles(Ok(vehicles)), _))) = events_request!(
         bootstrap::NC::get().await,

@@ -15,5 +15,5 @@ lazy_static::lazy_static! {
 async fn main() {
     bootstrap::logger::init();
     info!("Starting docker server {}", *DOCKER_SERVER);
-    tokio::join!(listener::start(), handler::start(),);
+    tokio::join!(listener::start(), handler::start());
 }
