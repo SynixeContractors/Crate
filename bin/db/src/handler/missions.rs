@@ -240,6 +240,7 @@ impl Handler for Request {
             }
             Self::UpdateMissionList {} => {
                 let Ok(response) = reqwest::get(MISSION_LIST).await else {
+                    error!("Failed to fetch mission list");
                     return synixe_events::respond!(
                         msg,
                         Response::UpdateMissionList(
@@ -274,7 +275,7 @@ impl Handler for Request {
                                 mission.typ as MissionType,
                             );
                             if let Err(e) = query.execute(&*db).await {
-                                error!("{:?}", e);
+                                error!("failed to upsert mission `{}`: {:?}", mission.id, e);
                                 synixe_events::respond!(
                                     msg,
                                     Response::UpdateMissionList(Err(e.to_string()))
@@ -299,6 +300,7 @@ impl Handler for Request {
                                 .await?;
                             }
                         }
+                        info!("Updated mission list");
                         synixe_events::respond!(msg, Response::UpdateMissionList(Ok(())))
                             .await
                             .map_err(std::convert::Into::into)

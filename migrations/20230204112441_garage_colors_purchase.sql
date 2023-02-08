@@ -8,8 +8,8 @@ BEGIN
     SELECT base INTO purchasedBase FROM garage_shop WHERE id = NEW.id;
     IF purchasedBase IS NULL THEN
         SELECT json_build_object(
-            'tex', (SELECT to_jsonb(textures) FROM garage_colors where
-            id = NEW.id AND name = NEW.color LIMIT 1)
+            'tex', (SELECT to_jsonb(textures) FROM garage_colors where = NEW.id AND name = NEW.color LIMIT 1),
+            
         ) INTO state;
         INSERT INTO garage_vehicles (plate, id, stored, state) VALUES (NEW.plate, NEW.id, TRUE, state);
     ELSE
