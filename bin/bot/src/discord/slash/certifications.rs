@@ -13,7 +13,7 @@ use serenity::{
 };
 use synixe_events::certifications::db::Response;
 use synixe_meta::discord::role::{JUNIOR, MEMBER};
-use synixe_proc::events_request;
+use synixe_proc::events_request_2;
 
 use crate::{
     discord::interaction::{Generic, Interaction},
@@ -126,7 +126,7 @@ async fn trial(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Fetching certifications...").await?;
-    let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request!(
+    let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         ListInstructor {
@@ -157,7 +157,7 @@ async fn trial(
         return interaction.reply("Invalid notes").await;
     };
     interaction.reply("Submitting trial...").await?;
-    match events_request!(
+    match events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         Certify {
@@ -205,7 +205,7 @@ async fn trial_autocomplete(
     if focus.name != "certification" {
         return Ok(());
     }
-    let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request!(
+    let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         ListInstructor {
@@ -257,7 +257,7 @@ async fn view(
     let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
     };
-    let Ok(Ok((Response::Active(Ok(certs)), _))) = events_request!(
+    let Ok(Ok((Response::Active(Ok(certs)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         Active { member: user.id }
@@ -273,7 +273,7 @@ async fn view(
     }
     let mut content = format!("**<@{}> Certifications**\n\n", user.id);
     for cert in certs {
-        if let Ok(Ok((Response::Name(Ok(Some(name))), _))) = events_request!(
+        if let Ok(Ok((Response::Name(Ok(Some(name))), _))) = events_request_2!(
             bootstrap::NC::get().await,
             synixe_events::certifications::db,
             Name {
@@ -311,7 +311,7 @@ async fn list(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Fetching certifications...").await?;
-    let Ok(Ok((Response::List(Ok(mut certs)), _))) = events_request!(
+    let Ok(Ok((Response::List(Ok(mut certs)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         List {}

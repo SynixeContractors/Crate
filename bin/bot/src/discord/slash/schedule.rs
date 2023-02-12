@@ -18,7 +18,7 @@ use synixe_meta::discord::{
     role::{MISSION_REVIEWER, STAFF},
 };
 use synixe_model::missions::{MissionRsvp, Rsvp, ScheduledMission};
-use synixe_proc::events_request;
+use synixe_proc::events_request_2;
 use time::format_description;
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
 
@@ -143,7 +143,7 @@ pub async fn rsvp_button(
     let channel = component.channel_id;
     let message = component.message.id;
     let Ok(Ok((Response::FetchScheduledMessage(Ok(Some(scheduled))), _))) =
-        events_request!(
+        events_request_2!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
             FetchScheduledMessage { channel, message }
@@ -155,7 +155,7 @@ pub async fn rsvp_button(
     match component.data.custom_id.as_str() {
         "rsvp_yes" => {
             let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
-                events_request!(
+                events_request_2!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     AddMissionRsvp {
@@ -195,7 +195,7 @@ pub async fn rsvp_button(
                 return Ok(());
             };
             let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
-                events_request!(
+                events_request_2!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     AddMissionRsvp {
@@ -228,7 +228,7 @@ pub async fn rsvp_button(
                 return Ok(());
             };
             let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
-                events_request!(
+                events_request_2!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     AddMissionRsvp {
@@ -249,7 +249,7 @@ pub async fn rsvp_button(
         }
     }
     let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) =
-            events_request!(
+            events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 FetchMissionRsvps { scheduled: scheduled.id }
@@ -283,6 +283,7 @@ async fn new(
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     let date = super::get_datetime(options);
     super::requires_roles(
+        command.user.id,
         &[MISSION_REVIEWER, STAFF],
         &command
             .member
@@ -294,7 +295,7 @@ async fn new(
     )
     .await?;
     if let Ok(Ok((Response::IsScheduled(Ok(Some(Some(false) | None) | None)), _))) =
-        events_request!(
+        events_request_2!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
             IsScheduled { date }
@@ -315,7 +316,7 @@ async fn new(
             .reply("Required option not provided: mission")
             .await;
     };
-    let Ok(Ok((Response::FetchMissionList(Ok(missions)), _))) = events_request!(
+    let Ok(Ok((Response::FetchMissionList(Ok(missions)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
@@ -344,7 +345,7 @@ async fn new(
         .await?;
     match confirm {
         Confirmation::Yes => {
-            if let Err(e) = events_request!(
+            if let Err(e) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 Schedule {
@@ -387,7 +388,7 @@ async fn new_autocomplete(
     if focus.name != "mission" {
         return Ok(());
     }
-    let Ok(Ok((Response::FetchMissionList(Ok(mut missions)), _))) = events_request!(
+    let Ok(Ok((Response::FetchMissionList(Ok(mut missions)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
@@ -421,7 +422,7 @@ async fn upcoming(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
-    match events_request!(
+    match events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         UpcomingSchedule {}
@@ -464,6 +465,7 @@ pub async fn remove(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     super::requires_roles(
+        command.user.id,
         &[MISSION_REVIEWER, STAFF],
         &command
             .member
@@ -478,7 +480,7 @@ pub async fn remove(
         format_description::parse(TIME_FORMAT).expect("Time format should have been valid");
     debug!("fetching missions");
     interaction.reply("Fetching missions...").await?;
-    let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request!(
+    let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         UpcomingSchedule {}
@@ -527,7 +529,7 @@ pub async fn remove(
         .await?;
     match confirm {
         Confirmation::Yes => {
-            if let Ok(Ok((Response::Unschedule(Ok(())), _))) = events_request!(
+            if let Ok(Ok((Response::Unschedule(Ok(())), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 Unschedule {
@@ -582,6 +584,7 @@ async fn post(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     super::requires_roles(
+        command.user.id,
         &[MISSION_REVIEWER, STAFF],
         &command
             .member
@@ -594,7 +597,7 @@ async fn post(
     .await?;
     debug!("fetching missions");
     interaction.reply("Fetching missions...").await?;
-    let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request!(
+    let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         UpcomingSchedule {}
@@ -625,7 +628,7 @@ async fn post(
     match confirm {
         Confirmation::Yes => {
             let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) =
-                events_request!(
+                events_request_2!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     FetchMissionRsvps { scheduled: scheduled.id }
@@ -691,7 +694,7 @@ async fn post(
             {
                 error!("Failed to post mission description: {}", e);
             }
-            if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request!(
+            if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 SetScheduledMesssage {

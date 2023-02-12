@@ -6,11 +6,14 @@ use synixe_events::garage::{
     arma::{Response, SpawnResult},
     db,
 };
-use synixe_meta::discord::channel::LOG;
+use synixe_meta::discord::{channel::LOG, role::LEADERSHIP};
 use synixe_proc::{events_request_2, events_request_5};
 
 use crate::{
-    discord::interaction::{Generic, Interaction},
+    discord::{
+        interaction::{Generic, Interaction},
+        slash::ShouldAsk,
+    },
     get_option,
 };
 
@@ -20,6 +23,19 @@ pub async fn spawn(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    super::super::requires_roles(
+        command.user.id,
+        &[LEADERSHIP],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Yes(("garage spawn", options)),
+        &mut interaction,
+    )
+    .await?;
+
     let plate = get_option!(options, "vehicle", String);
     let Some(plate) = plate else {
         return interaction.reply("Required option not provided: vehicle").await;
@@ -44,7 +60,7 @@ pub async fn spawn(
     let Some(state) = info.state else {
         return interaction.reply("Vehicle state not found").await;
     };
-    let Ok(Ok((Response::Spawn(Ok(response)), _))) = events_request_2!(
+    let Ok(Ok((Response::Spawn(Ok(response)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::arma,
         Spawn {
@@ -60,7 +76,7 @@ pub async fn spawn(
     match response {
         SpawnResult::Yes => {
             std::mem::drop(interaction.reply("Vehicle spawning").await);
-            if let Err(e) = events_request_5!(
+            if let Err(e) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 RetrieveVehicle {

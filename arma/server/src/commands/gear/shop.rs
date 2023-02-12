@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use arma_rs::{Group, IntoArma};
 use serenity::model::prelude::UserId;
 use synixe_events::gear::db;
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use crate::{CONTEXT, RUNTIME};
 
@@ -24,7 +24,7 @@ fn command_items() {
             error!("command received before context was initialized");
             return;
         };
-        let Ok(Ok((db::Response::ShopGetAll(Ok(items)), _))) = events_request!(
+        let Ok(Ok((db::Response::ShopGetAll(Ok(items)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopGetAll {}
@@ -64,7 +64,7 @@ fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>
             return;
         };
         debug!("entering shop for {} with {:?} items", discord, items.len());
-        let Ok(Ok((db::Response::ShopEnter(Ok((locker, balance))), _))) = events_request!(
+        let Ok(Ok((db::Response::ShopEnter(Ok((locker, balance))), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopEnter {
@@ -102,7 +102,7 @@ fn command_leave(discord: String, steam: String, loadout: String, mut items: Has
             return;
         };
         debug!("leaving shop for {} with {:?} items", discord, items.len());
-        let Ok(Ok((db::Response::ShopLeave(Ok(())), _))) = events_request!(
+        let Ok(Ok((db::Response::ShopLeave(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopLeave {
@@ -138,7 +138,7 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
             return;
         };
         debug!("purchasing for {}: {:?}", discord, items);
-        let Ok(Ok((db::Response::ShopPurchase(Ok((locker, balance))), _))) = events_request!(
+        let Ok(Ok((db::Response::ShopPurchase(Ok((locker, balance))), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopPurchase {

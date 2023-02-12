@@ -4,9 +4,11 @@ use serenity::{
 
 use serenity::model::application::interaction::application_command::CommandDataOption;
 use synixe_events::garage::db::Response;
+use synixe_meta::discord::role::LEADERSHIP;
 use synixe_proc::events_request_2;
 use uuid::Uuid;
 
+use crate::discord::slash::ShouldAsk;
 use crate::discord::{self, interaction::Interaction};
 use crate::get_option;
 
@@ -20,6 +22,18 @@ pub async fn attach(
         discord::interaction::Generic::Application(command),
         options,
     );
+    super::super::requires_roles(
+        command.user.id,
+        &[LEADERSHIP],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Yes(("garage attach", options)),
+        &mut interaction,
+    )
+    .await?;
 
     let Some(plate) = get_option!(options, "vehicle", String) else {
         return interaction
@@ -63,6 +77,18 @@ pub async fn detach(
         discord::interaction::Generic::Application(command),
         options,
     );
+    super::super::requires_roles(
+        command.user.id,
+        &[LEADERSHIP],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Yes(("garage detach", options)),
+        &mut interaction,
+    )
+    .await?;
 
     let Some(plate) = get_option!(options, "vehicle", String) else {
         return interaction

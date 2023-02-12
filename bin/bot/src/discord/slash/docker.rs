@@ -118,13 +118,14 @@ async fn restart(
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     interaction.reply("Restarting container...").await?;
     super::requires_roles(
+        command.user.id,
         &[MISSION_REVIEWER, STAFF, DOCKER],
         &command
             .member
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
-        ShouldAsk::Yes,
+        ShouldAsk::Yes(("docker restart", options)),
         &mut interaction,
     )
     .await?;

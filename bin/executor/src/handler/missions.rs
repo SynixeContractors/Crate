@@ -8,7 +8,7 @@ use synixe_events::{
     publish, respond,
 };
 use synixe_meta::discord::channel::ONTOPIC;
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use super::Handler;
 
@@ -23,7 +23,7 @@ impl Handler for Request {
         match &self {
             Self::PostUpcomingMissions {} => {
                 respond!(msg, Response::PostUpcomingMissions(Ok(()))).await?;
-                match events_request!(
+                match events_request_5!(
                     bootstrap::NC::get().await,
                     synixe_events::missions::db,
                     UpcomingSchedule {}
@@ -59,7 +59,7 @@ impl Handler for Request {
                         }
                         for (text, scheduled, minutes) in posts {
                             if let Some(text) = text {
-                                if let Err(e) = events_request!(
+                                if let Err(e) = events_request_5!(
                                     bootstrap::NC::get().await,
                                     synixe_events::discord::write,
                                     ChannelMessage {

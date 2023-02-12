@@ -9,7 +9,7 @@ use serenity::{
 use synixe_events::missions::db::Response;
 use synixe_meta::discord::role::STAFF;
 use synixe_model::missions::aar::{Aar, PaymentType};
-use synixe_proc::events_request;
+use synixe_proc::events_request_2;
 
 use crate::discord::{
     interaction::{Confirmation, Generic, Interaction},
@@ -90,7 +90,7 @@ pub async fn run_aar_pay(
     };
     match find_members(ctx, aar.contractors()).await {
         Ok(ids) => {
-            if let Ok(Ok((Response::FindScheduledDate(Ok(scheduled)), _))) = events_request!(
+            if let Ok(Ok((Response::FindScheduledDate(Ok(scheduled)), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 FindScheduledDate {
@@ -120,7 +120,7 @@ pub async fn run_aar_pay(
                     .await?
                     == Confirmation::Yes
                 {
-                    if let Ok(Ok((Response::PayMission(Ok(_)), _))) = events_request!(
+                    if let Ok(Ok((Response::PayMission(Ok(_)), _))) = events_request_2!(
                         bootstrap::NC::get().await,
                         synixe_events::missions::db,
                         PayMission {

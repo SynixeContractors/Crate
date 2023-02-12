@@ -1,6 +1,6 @@
 use scraper::{Html, Selector};
 use synixe_events::discord::write::{DiscordContent, DiscordMessage};
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use super::{
     candidate::{Candidate, Source},
@@ -80,7 +80,7 @@ pub async fn check_steam_forums() {
         candidates
     };
     for candidate in candidates {
-        if let Err(e) = events_request!(
+        if let Err(e) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::discord::write,
             ChannelMessage {

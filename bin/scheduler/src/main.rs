@@ -2,7 +2,6 @@
 #![warn(clippy::nursery, clippy::all)]
 
 use synixe_events::global::Publish;
-use synixe_proc::events_request;
 use tokio_simple_scheduler::{Job, Scheduler};
 
 #[macro_use]

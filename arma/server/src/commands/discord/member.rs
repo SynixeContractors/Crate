@@ -1,7 +1,7 @@
 use arma_rs::Group;
 use serenity::model::prelude::UserId;
 use synixe_events::discord::{self, db, info};
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use crate::{audit, CONTEXT, RUNTIME, STEAM_CACHE};
 
@@ -23,7 +23,7 @@ fn command_get(steam: String, name: String) {
             error!("command received before context was initialized");
             return;
         };
-        let Ok(Ok((db::Response::FromSteam(resp), _))) = events_request!(
+        let Ok(Ok((db::Response::FromSteam(resp), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::discord::db,
             FromSteam {
@@ -37,7 +37,7 @@ fn command_get(steam: String, name: String) {
             return;
         };
         let discord_id = if let Ok(Some(discord_id)) = resp { discord_id } else {
-            let Ok(Ok((discord::info::Response::MemberByName(Ok(Some(discord_id))), _))) = events_request!(
+            let Ok(Ok((discord::info::Response::MemberByName(Ok(Some(discord_id))), _))) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::info,
                 MemberByName {
@@ -49,7 +49,7 @@ fn command_get(steam: String, name: String) {
                 context.callback_data("crate:discord", "member:get:needs_link", vec![steam.clone()]);
                 return;
             };
-            let Ok(Ok((db::Response::SaveSteam(Ok(())), _))) = events_request!(
+            let Ok(Ok((db::Response::SaveSteam(Ok(())), _))) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::db,
                 SaveSteam {
@@ -73,7 +73,7 @@ fn command_get(steam: String, name: String) {
             ]);
             return;
         };
-        let Ok(Ok((info::Response::MemberRoles(resp), _))) = events_request!(
+        let Ok(Ok((info::Response::MemberRoles(resp), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::discord::info,
             MemberRoles {
@@ -114,7 +114,7 @@ fn command_save_dlc(discord: String, dlc: Vec<u32>) {
         return;
     };
     RUNTIME.spawn(async move {
-        let Ok(Ok((db::Response::SaveDLC(Ok(())), _))) = events_request!(
+        let Ok(Ok((db::Response::SaveDLC(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::discord::db,
             SaveDLC {

@@ -4,9 +4,9 @@ if !(isMultiplayer) exitWith {};
 
 addMissionEventHandler ["ExtensionCallback", {
     params ["_name", "_func", "_data"];
-    if (_name != "crate") exitWith {};
+    if (_name != "crate:global") exitWith {};
     switch (_func) do {
-        case "global_message": {
+        case "brodsky_say": {
             GVAR(brodskyChat) radioChannelAdd allPlayers;
             [{
                 [QGVAR(brodskySay), parseSimpleArray _this] call CBA_fnc_globalEvent;

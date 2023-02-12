@@ -9,7 +9,7 @@ use serenity::{
     prelude::*,
 };
 use synixe_meta::discord::channel::RECRUITING;
-use synixe_proc::events_request;
+use synixe_proc::events_request_2;
 
 use crate::discord::interaction::{Generic, Interaction};
 
@@ -36,7 +36,7 @@ pub async fn run_reply(
         debug!("embeded url {:?}", embed.url);
         if let Some(url) = &embed.url {
             if url.starts_with("https://reddit.com") {
-                let resp = if (events_request!(
+                let resp = if (events_request_2!(
                     bootstrap::NC::get().await,
                     synixe_events::recruiting::executions,
                     ReplyReddit {

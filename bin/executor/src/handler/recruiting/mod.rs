@@ -6,7 +6,7 @@ use synixe_events::{
     },
     respond,
 };
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use super::Handler;
 
@@ -59,7 +59,7 @@ impl Handler for Request {
 
 #[allow(clippy::collapsible_match)]
 pub async fn has_seen(url: String) -> bool {
-    let req = events_request!(
+    let req = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::recruiting::db,
         HasSeen { url }
@@ -76,7 +76,7 @@ pub async fn has_seen(url: String) -> bool {
 }
 
 pub async fn seen(url: String) {
-    if let Err(e) = events_request!(
+    if let Err(e) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::recruiting::db,
         Seen { url }

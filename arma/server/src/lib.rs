@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use arma_rs::{arma, Context, Extension};
 use synixe_events::discord::write::{DiscordContent, DiscordMessage};
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 use tokio::sync::RwLock;
 
 #[macro_use]
@@ -28,7 +28,7 @@ lazy_static::lazy_static! {
 }
 
 async fn audit(message: String) {
-    if let Err(e) = events_request!(
+    if let Err(e) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::discord::write,
         Audit {

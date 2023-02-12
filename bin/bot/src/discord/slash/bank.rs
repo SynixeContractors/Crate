@@ -9,7 +9,7 @@ use serenity::{
     prelude::Context,
 };
 use synixe_events::gear::db::Response;
-use synixe_proc::events_request;
+use synixe_proc::events_request_2;
 
 use crate::{
     discord::interaction::{Generic, Interaction},
@@ -92,7 +92,7 @@ async fn balance(
     let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
     };
-    let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request!(
+    let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankBalance {
@@ -103,7 +103,7 @@ async fn balance(
         return interaction.reply("Failed to fetch balance").await;
     };
 
-    let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request!(
+    let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         LockerBalance {
@@ -113,7 +113,7 @@ async fn balance(
     .await else {
         return interaction.reply("Failed to fetch locker balance").await;
     };
-    let  Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request!(
+    let  Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         LoadoutBalance {
@@ -155,7 +155,7 @@ async fn transfer(
     let Some(reason) = get_option!(options, "reason", String) else {
         return interaction.reply("Invalid reason").await;
     };
-    let Ok(Ok((Response::BankTransferNew(Ok(_)), _))) = events_request!(
+    let Ok(Ok((Response::BankTransferNew(Ok(_)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankTransferNew {

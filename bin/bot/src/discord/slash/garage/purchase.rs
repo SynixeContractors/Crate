@@ -4,9 +4,11 @@ use serenity::{
 
 use serenity::model::application::interaction::application_command::CommandDataOption;
 use synixe_events::garage::db::{Response, ShopOrder};
-use synixe_proc::events_request;
+use synixe_meta::discord::role::LEADERSHIP;
+use synixe_proc::events_request_2;
 use uuid::Uuid;
 
+use crate::discord::slash::ShouldAsk;
 use crate::discord::{self, interaction::Interaction};
 use crate::get_option;
 
@@ -20,6 +22,18 @@ pub async fn purchase(
         discord::interaction::Generic::Application(command),
         options,
     );
+    super::super::requires_roles(
+        command.user.id,
+        &[LEADERSHIP],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Yes(("garage purchase", options)),
+        &mut interaction,
+    )
+    .await?;
 
     let plate = get_option!(options, "plate", String);
 
@@ -41,7 +55,7 @@ pub async fn purchase(
 
     match kind.name.as_str() {
         "vehicle" => {
-            let Ok(Ok((Response::PurchaseShopAsset(Ok(())), _))) = events_request!(
+            let Ok(Ok((Response::PurchaseShopAsset(Ok(())), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 PurchaseShopAsset {
@@ -58,7 +72,7 @@ pub async fn purchase(
             interaction.reply("**Vehicle Purchased**\n\n").await
         }
         "addon" => {
-            let Ok(Ok((Response::PurchaseShopAsset(Ok(())), _))) = events_request!(
+            let Ok(Ok((Response::PurchaseShopAsset(Ok(())), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 PurchaseShopAsset {

@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use serenity::model::prelude::Activity;
 use synixe_events::missions::{db::Response, publish::Publish};
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use crate::{bot::Bot, cache_http::CacheAndHttp};
 
@@ -40,7 +40,7 @@ impl Listener for Publish {
 
 pub async fn tick(nats: std::sync::Arc<nats::asynk::Connection>) {
     if let Ok(Ok((Response::FetchCurrentMission(Ok(Some(mission))), _))) =
-        events_request!(nats, synixe_events::missions::db, FetchCurrentMission {}).await
+        events_request_5!(nats, synixe_events::missions::db, FetchCurrentMission {}).await
     {
         Bot::get().set_activity(Some(Activity::playing(mission.name)));
     } else {

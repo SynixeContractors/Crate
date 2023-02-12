@@ -4,8 +4,12 @@ macro_rules! job {
             Job::new($name, $cron, || {
                 Box::pin(async {
                     info!("job `{}`", $name);
-                    if let Err(e) =
-                        events_request!(bootstrap::NC::get().await, $group, $event {}).await
+                    if let Err(e) = synixe_proc::events_request_5!(
+                        bootstrap::NC::get().await,
+                        $group,
+                        $event {}
+                    )
+                    .await
                     {
                         error!("error during `{}`: {:?}", $name, e);
                     }

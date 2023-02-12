@@ -1,7 +1,7 @@
 use serenity::{model::prelude::Message, prelude::Context};
 use synixe_events::missions::db::Response;
 use synixe_model::missions::{aar::Aar, MissionType};
-use synixe_proc::events_request;
+use synixe_proc::events_request_2;
 
 use crate::discord::utils::find_members;
 
@@ -18,7 +18,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
         };
         return;
     };
-    if let Ok(Ok((Response::FindScheduledDate(Ok(scheduled)), _))) = events_request!(
+    if let Ok(Ok((Response::FindScheduledDate(Ok(scheduled)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FindScheduledDate {
@@ -46,7 +46,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
         {
             error!("Error replying to message: {}", e);
         };
-        if let Ok(Ok((Response::SetScheduledAar(Ok(())), _))) = events_request!(
+        if let Ok(Ok((Response::SetScheduledAar(Ok(())), _))) = events_request_2!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
             SetScheduledAar {

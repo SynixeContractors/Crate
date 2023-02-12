@@ -1,7 +1,7 @@
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
 use synixe_meta::discord::channel::FINANCIALS;
-use synixe_proc::events_request;
+use synixe_proc::events_request_2;
 use uuid::Uuid;
 
 use crate::bot::Bot;
@@ -160,7 +160,7 @@ impl EventHandler for Handler {
             }
         }
         if new.roles.contains(&synixe_meta::discord::role::RECRUIT) {
-            let Ok(Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _))) = events_request!(
+            let Ok(Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
                 BankDepositSearch {
@@ -175,7 +175,7 @@ impl EventHandler for Handler {
             if !deposits.is_empty() {
                 return;
             }
-            let Ok(Ok((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _))) = events_request!(
+            let Ok(Ok((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
                 BankDepositNew {

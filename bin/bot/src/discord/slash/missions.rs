@@ -12,7 +12,7 @@ use synixe_meta::discord::{
     channel::LOG,
     role::{DOCKER, MISSION_REVIEWER, STAFF},
 };
-use synixe_proc::events_request;
+use synixe_proc::events_request_2;
 
 use crate::{
     discord::interaction::{Generic, Interaction},
@@ -77,13 +77,14 @@ async fn load(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
     super::requires_roles(
+        command.user.id,
         &[MISSION_REVIEWER, STAFF, DOCKER],
         &command
             .member
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
-        ShouldAsk::Yes,
+        ShouldAsk::Yes(("missions load", options)),
         &mut interaction,
     )
     .await?;
@@ -92,7 +93,7 @@ async fn load(
             .reply("Required option not provided: mission")
             .await;
     };
-    let Ok(Ok((Response::FetchMissionList(Ok(missions)), _))) = events_request!(
+    let Ok(Ok((Response::FetchMissionList(Ok(missions)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
@@ -142,7 +143,7 @@ async fn load_autocomplete(
     if focus.name != "mission" {
         return Ok(());
     }
-    let Ok(Ok((Response::FetchMissionList(Ok(mut missions)), _))) = events_request!(
+    let Ok(Ok((Response::FetchMissionList(Ok(mut missions)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {

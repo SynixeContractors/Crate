@@ -21,11 +21,19 @@ impl Listener for Publish {
         };
         match &self {
             Self::StartingSoon { scheduled, minutes } => {
+                if *SERVER_ID == "arma-main" {
+                    #[allow(clippy::cast_precision_loss)]
+                    context.callback_data(
+                        "crate:missions",
+                        "set_date",
+                        vec![arma_rs::Value::Number(*minutes as f64)],
+                    );
+                }
                 match minutes {
                     4..=6 | 9..=11 | 14..=16 | 29..=31 | 59..=61 | 89..=91 | 119..=121 => {
                         context.callback_data(
-                            "crate",
-                            "global_message",
+                            "crate:global",
+                            "brodsky_say",
                             vec![arma_rs::Value::String(format!(
                                 "[Mission] {} starts in {minutes} minutes!",
                                 scheduled.name
@@ -34,13 +42,17 @@ impl Listener for Publish {
                     }
                     -1..=1 => {
                         context.callback_data(
-                            "crate",
-                            "global_message",
+                            "crate:global",
+                            "brodsky_say",
                             vec![arma_rs::Value::String(format!(
                                 "[Mission] {} starting now!",
                                 scheduled.name
                             ))],
                         );
+                        if *SERVER_ID == "arma-main" {
+                            #[allow(clippy::cast_precision_loss)]
+                            context.callback_null("crate:missions", "intro_text");
+                        }
                     }
                     _ => {}
                 }
@@ -62,15 +74,15 @@ impl Listener for Publish {
                 }
                 info!("Changing main server mission to `{id}`");
                 context.callback_data(
-                    "crate",
-                    "global_message",
+                    "crate:global",
+                    "brodsky_say",
                     vec![arma_rs::Value::String(format!(
                         "[Mission] You will be disconnected. Server is changing mission: {id}"
                     ))],
                 );
                 context.callback_data(
-                    "crate",
-                    "global_message",
+                    "crate:global",
+                    "brodsky_say",
                     vec![arma_rs::Value::String(
                         "[Mission] You have 30 seconds to save any gear and leave the shop."
                             .to_string(),
@@ -83,8 +95,8 @@ impl Listener for Publish {
                 mission_type: _,
             } => {
                 context.callback_data(
-                    "crate",
-                    "global_message",
+                    "crate:global",
+                    "brodsky_say",
                     vec![arma_rs::Value::String(format!(
                         "[Mission] Restart in 10 minutes! Mission Starting: {id}"
                     ))],

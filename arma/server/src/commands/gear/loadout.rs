@@ -1,7 +1,7 @@
 use arma_rs::Group;
 use serenity::model::prelude::UserId;
 use synixe_events::gear::db;
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use crate::{CONTEXT, RUNTIME};
 
@@ -23,7 +23,7 @@ fn command_get(discord: String, steam: String) {
             return;
         };
         debug!("fetching loadout for {}", discord);
-        let Ok(Ok((db::Response::LoadoutGet(Ok(loadout)), _))) = events_request!(
+        let Ok(Ok((db::Response::LoadoutGet(Ok(loadout)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             LoadoutGet {
@@ -59,7 +59,7 @@ fn command_store(discord: String, steam: String, loadout: String) {
             error!("command received before context was initialized");
             return;
         };
-        let Ok(Ok((db::Response::LoadoutStore(Ok(())), _))) = events_request!(
+        let Ok(Ok((db::Response::LoadoutStore(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             LoadoutStore {

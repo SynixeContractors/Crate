@@ -8,7 +8,7 @@ use synixe_events::{
     recruiting::executions::Response,
     respond,
 };
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use super::{
     candidate::{Candidate, Source},
@@ -93,7 +93,7 @@ pub async fn check_reddit_findaunit() {
         candidates
     };
     for candidate in candidates {
-        if let Err(e) = events_request!(
+        if let Err(e) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::discord::write,
             ChannelMessage {
@@ -140,7 +140,7 @@ pub async fn post_reddit_findaunit() {
                 error!("Error getting reddit submissions: {:?}", submitted);
                 String::new()
             };
-            if let Err(e) = events_request!(
+            if let Err(e) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::write,
                 ChannelMessage

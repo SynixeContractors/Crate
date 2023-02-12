@@ -1,15 +1,21 @@
+use std::time::Duration;
+
 use serenity::{
     builder::CreateApplicationCommandOption,
     model::prelude::{
         application_command::{CommandDataOption, CommandDataOptionValue},
         command::CommandOptionType,
-        RoleId,
+        component::ButtonStyle,
+        InteractionResponseType, RoleId, UserId,
     },
 };
+use synixe_meta::discord::channel::LOG;
 use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt, PrimitiveDateTimeExt};
 
-use super::interaction::Interaction;
+use crate::{bot::Bot, cache_http::CacheAndHttp};
+
+use super::interaction::{Confirmation, Interaction};
 
 pub mod bank;
 pub mod certifications;
@@ -19,29 +25,88 @@ pub mod meme;
 pub mod missions;
 pub mod schedule;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum ShouldAsk {
+#[derive(Debug, Clone)]
+pub enum ShouldAsk<'a> {
     /// Ask the #log channel for permission
-    Yes,
+    Yes((&'static str, &'a [CommandDataOption])),
     /// Do not ask the #log channel for permission, deny the command
     Deny,
 }
 
-pub async fn requires_roles(
+pub async fn requires_roles<'a>(
+    user: UserId,
     needle: &[RoleId],
     haystack: &[RoleId],
-    ask: ShouldAsk,
+    ask: ShouldAsk<'a>,
     interaction: &mut Interaction<'_>,
-) -> serenity::Result<()> {
+) -> serenity::Result<bool> {
     if !haystack.iter().any(|role| needle.contains(role)) {
-        if ask == ShouldAsk::Yes {
+        if let ShouldAsk::Yes((name, options)) = ask {
+            let command = format!(
+                "{} {}",
+                name,
+                options
+                    .iter()
+                    .map(|option| format!(
+                        "{}: `{}`",
+                        option.name.clone(),
+                        option.value.as_ref().expect("value")
+                    ))
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            );
+            if interaction.confirm(
+                "You do not have permission to use this command. Would you like to request permission?"
+            ).await? == Confirmation::Yes {
+                let Ok(message) = LOG.send_message(&*CacheAndHttp::get(), |f| {
+                    f.content(format!("<@{user}> is requesting permission to use {command}"))
+                    .components(|c| {
+                        c.create_action_row(|r| {
+                            r.create_button(|b| {
+                                b.style(ButtonStyle::Danger)
+                                .label("Approve")
+                                .custom_id("approve")
+                            })
+                            .create_button(|b| {
+                                b.style(ButtonStyle::Secondary)
+                                .label("Deny")
+                                .custom_id("deny")
+                            })
+                        })
+                    })
+                }).await else {
+                    interaction.reply("Failed to send request message.").await?;
+                    return Ok(false);
+                };
+                interaction.reply("Requesting permission... Staff have 5 minutes to approve your request.").await?;
+                let Some(confirm_interaction) = message
+                    .await_component_interaction(&*Bot::get())
+                    .timeout(Duration::from_secs(60 * 5))
+                    .collect_limit(1)
+                    .await
+                else {
+                    interaction.reply("Didn't receive a response").await?;
+                    return Ok(true);
+                };
+                confirm_interaction
+                    .create_interaction_response(&*CacheAndHttp::get(), |r| {
+                        r.kind(InteractionResponseType::DeferredUpdateMessage)
+                    })
+                    .await?;
+                if confirm_interaction.data.custom_id == "approve" {
+                    return Ok(true);
+                }
+                interaction.reply("Denied").await?;
+                return Ok(false);
+            };
         } else {
             interaction
                 .reply("You do not have permission to use this command.")
                 .await?;
+            return Ok(false);
         }
     }
-    Ok(())
+    Ok(true)
 }
 
 pub fn _get_option<'a>(

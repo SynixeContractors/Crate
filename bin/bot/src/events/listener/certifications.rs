@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use serenity::model::prelude::{RoleId, UserId};
 use synixe_events::certifications::{db::Response, publish::Publish};
 use synixe_meta::discord::GUILD;
-use synixe_proc::events_request;
+use synixe_proc::events_request_5;
 
 use crate::cache_http::CacheAndHttp;
 
@@ -21,7 +21,7 @@ impl Listener for Publish {
                 info!("Trial submitted: {:?}", trial);
                 if trial.passed {
                     if let Ok(Ok((Response::List(Ok(certs)), _))) =
-                        events_request!(nats, synixe_events::certifications::db, List {}).await
+                        events_request_5!(nats, synixe_events::certifications::db, List {}).await
                     {
                         let Some(cert) = certs
                             .iter()
@@ -62,7 +62,7 @@ impl Listener for Publish {
             }
             Self::TrialExpiring { trial, days } => {
                 if let Ok(Ok((Response::List(Ok(certs)), _))) =
-                    events_request!(nats, synixe_events::certifications::db, List {}).await
+                    events_request_5!(nats, synixe_events::certifications::db, List {}).await
                 {
                     let Some(cert) = certs
                         .iter()

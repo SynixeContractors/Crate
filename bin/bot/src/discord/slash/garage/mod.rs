@@ -8,7 +8,7 @@ use serenity::{
 
 use serenity::model::application::interaction::application_command::CommandDataOption;
 use synixe_events::garage::db::Response;
-use synixe_proc::events_request;
+use synixe_proc::events_request_2;
 
 use crate::discord::interaction::{Generic, Interaction};
 
@@ -163,7 +163,7 @@ async fn view(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
 
-    let Ok(Ok((Response::FetchStoredVehicles(Ok(vehicles)), _))) = events_request!(
+    let Ok(Ok((Response::FetchStoredVehicles(Ok(vehicles)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchStoredVehicles{ stored: None, plate: None }
