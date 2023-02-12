@@ -17,25 +17,28 @@ private _type = switch (true) do {
 };
 deleteVehicle _vehicle;
 
-private _spawn = getMarkerPos (switch (_type) do {
+private _spawn = switch (_type) do {
     case "sea": { "spawn_sea" };
     case "heli": { "spawn_heli" };
     case "plane": { "spawn_plane" };
     case "thing": { "spawn_thing" };
     default { "spawn_land" };
-});
+};
+private _spawnPos = markerPos _spawn;
+private _spawnDir = markerDir _spawn;
 
 if (_spawn isEqualTo [0,0,0]) exitWith {
     EXTCALL("garage:spawn",[ARR_2(_id,"NoSpawnArea")]);
 };
 
 // Check for any obstruction in the spawn area
-if (count nearestObjects [_spawn, ["Land", "Air", "Ship", "Thing"], SPAWN_SIZE] > 0) exitWith {
+if (count nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], SPAWN_SIZE] > 0) exitWith {
     EXTCALL("garage:spawn",[ARR_2(_id,"AreaBlocked")]);
 };
 
 // Spawn the vehicle
-private _vehicle = _class createVehicle _spawn;
+private _vehicle = _class createVehicle _spawnPos;
+_vehicle setDir _spawnDir;
 _vehicle setVariable [QUOTE(ADDON), true, true];
 _vehicle setPlateNumber _plate;
 [{
