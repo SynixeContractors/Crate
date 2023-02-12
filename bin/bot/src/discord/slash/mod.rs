@@ -39,7 +39,7 @@ pub async fn requires_roles<'a>(
     haystack: &[RoleId],
     ask: ShouldAsk<'a>,
     interaction: &mut Interaction<'_>,
-) -> serenity::Result<bool> {
+) -> serenity::Result<()> {
     if !haystack.iter().any(|role| needle.contains(role)) {
         if let ShouldAsk::Yes((name, options)) = ask {
             let command = format!(
@@ -76,7 +76,7 @@ pub async fn requires_roles<'a>(
                     })
                 }).await else {
                     interaction.reply("Failed to send request message.").await?;
-                    return Ok(false);
+                    return Err(serenity::Error::Other("Failed to send request message"));
                 };
                 interaction.reply("Requesting permission... Staff have 5 minutes to approve your request.").await?;
                 let Some(confirm_interaction) = message
@@ -86,7 +86,7 @@ pub async fn requires_roles<'a>(
                     .await
                 else {
                     interaction.reply("Didn't receive a response").await?;
-                    return Ok(true);
+                    return Err(serenity::Error::Other("Didn't receive a response"));
                 };
                 confirm_interaction
                     .create_interaction_response(&*CacheAndHttp::get(), |r| {
@@ -94,19 +94,19 @@ pub async fn requires_roles<'a>(
                     })
                     .await?;
                 if confirm_interaction.data.custom_id == "approve" {
-                    return Ok(true);
+                    return Ok(());
                 }
                 interaction.reply("Denied").await?;
-                return Ok(false);
+                return Err(serenity::Error::Other("Denied"));
             };
         } else {
             interaction
                 .reply("You do not have permission to use this command.")
                 .await?;
-            return Ok(false);
+            return Err(serenity::Error::Other("Denied"));
         }
     }
-    Ok(true)
+    Ok(())
 }
 
 pub fn _get_option<'a>(
