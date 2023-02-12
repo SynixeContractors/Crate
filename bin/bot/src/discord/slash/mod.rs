@@ -43,8 +43,7 @@ pub async fn requires_roles<'a>(
     if !haystack.iter().any(|role| needle.contains(role)) {
         if let ShouldAsk::Yes((name, options)) = ask {
             let command = format!(
-                "{} {}",
-                name,
+                "{name} {}",
                 options
                     .iter()
                     .map(|option| format!(
@@ -58,7 +57,7 @@ pub async fn requires_roles<'a>(
             if interaction.confirm(
                 "You do not have permission to use this command. Would you like to request permission?"
             ).await? == Confirmation::Yes {
-                let Ok(message) = LOG.send_message(&*CacheAndHttp::get(), |f| {
+                let Ok(mut message) = LOG.send_message(&*CacheAndHttp::get(), |f| {
                     f.content(format!("<@{user}> is requesting permission to use {command}"))
                     .components(|c| {
                         c.create_action_row(|r| {
@@ -93,9 +92,16 @@ pub async fn requires_roles<'a>(
                         r.kind(InteractionResponseType::DeferredUpdateMessage)
                     })
                     .await?;
+                message.edit(&*CacheAndHttp::get(), |f| {
+                    f.components(|c| {
+                        c
+                    })
+                }).await?;
                 if confirm_interaction.data.custom_id == "approve" {
+                    message.reply(&*CacheAndHttp::get(), format!("Approved by <@{}>", confirm_interaction.user.id)).await?;
                     return Ok(());
                 }
+                message.reply(&*CacheAndHttp::get(), format!("Denied by <@{}>", confirm_interaction.user.id)).await?;
                 interaction.reply("Denied").await?;
                 return Err(serenity::Error::Other("Denied"));
             };
