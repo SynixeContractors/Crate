@@ -14,8 +14,9 @@ members = [
     "bin/executor",
     "bin/hooks",
     "bin/scheduler",
+    "bin/web",
 
-    "arma/server",
+    "arma/server"
 ]
 
 [workspace.dependencies]
