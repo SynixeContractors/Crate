@@ -9,3 +9,4 @@ releases/
 # Web
 node_modules/
 @template/
+tailwind.css
