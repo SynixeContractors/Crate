@@ -2,7 +2,7 @@
 
 params ["_player", "_vehicle"];
 
-if !(_vehicle getVariable [QUOTE(ADDON), false]) exitWith {
+if ((_vehicle getVariable [QGVAR(plate), ""]) == "") exitWith {
     false
 };
 private _discord = _player getVariable [QEGVAR(discord,id), ""];

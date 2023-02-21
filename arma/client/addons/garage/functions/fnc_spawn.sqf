@@ -27,7 +27,7 @@ private _spawn = switch (_type) do {
 private _spawnPos = markerPos _spawn;
 private _spawnDir = markerDir _spawn;
 
-if (_spawn isEqualTo [0,0,0]) exitWith {
+if (_spawnPos isEqualTo [0,0,0]) exitWith {
     EXTCALL("garage:spawn",[ARR_2(_id,"NoSpawnArea")]);
 };
 
@@ -39,7 +39,7 @@ if (count nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], SPAWN_SIZ
 // Spawn the vehicle
 private _vehicle = _class createVehicle _spawnPos;
 _vehicle setDir _spawnDir;
-_vehicle setVariable [QUOTE(ADDON), true, true];
+_vehicle setVariable [QGVAR(plate), _plate, true];
 _vehicle setPlateNumber _plate;
 [{
     params ["_vehicle", "_state"];
