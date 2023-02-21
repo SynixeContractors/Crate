@@ -1,5 +1,11 @@
 Cargo.lock
 target/
 .vscode/settings.json
+
+# Arma 3
 .hemttout
 releases/
+
+# Web
+node_modules/
+@template/

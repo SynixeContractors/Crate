@@ -1,0 +1,18 @@
+[package]
+name = "web"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-proc = { path = "../../lib/proc" }
+
+axum = { workspace = true }
+nats = { workspace = true }
+serenity = { workspace = true, features = ["builder"] }
+tera = "1.17.1"
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+tower = { version = "0.4", features = ["util"] }
+tower-http = { version = "0.3.0", features = ["fs", "trace"] }

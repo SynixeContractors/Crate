@@ -1,0 +1,9 @@
+{
+  "name": "web",
+  "version": "1.0.0",
+  "description": "",
+  "devDependencies": {
+    "tailwindcss": "^3.2.7",
+    "@tailwindcss/forms": "^0.4.0"
+  }
+}
