@@ -14,5 +14,5 @@ serenity = { workspace = true, features = ["builder"] }
 tera = "1.17.1"
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
-tower = { version = "0.4", features = ["util"] }
-tower-http = { version = "0.3.0", features = ["fs", "trace"] }
+tower = { version = "0.4.13", features = ["util"] }
+tower-http = { version = "0.3.5", features = ["fs", "trace"] }
