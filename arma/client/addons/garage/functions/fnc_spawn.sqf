@@ -42,30 +42,7 @@ _vehicle setDir _spawnDir;
 _vehicle setVariable [QGVAR(plate), _plate, true];
 _vehicle setPlateNumber _plate;
 [{
-    params ["_vehicle", "_state"];
-    // Clear Inventory
-    clearMagazineCargoGlobal _vehicle;
-    clearWeaponCargoGlobal _vehicle;
-    clearitemCargoGlobal _vehicle;
-    clearBackpackCargoGlobal _vehicle;
-    // Clear Magazines
-    {
-        _x params ["_mag", "_pos"];
-        _vehicle removeMagazineTurret [_mag, _pos];
-    } forEach magazinesAllTurrets _vehicle;
-    // Clear ACE Cargo
-    private _loaded = _vehicle getVariable ["ace_cargo_loaded", []];
-    if (_loaded isNotEqualTo []) then {
-        {
-            if (_x isEqualType objNull) then {
-                detach _x;
-                deleteVehicle _x;
-            };
-        } forEach _loaded;
-    };
-    _vehicle setVariable ["ace_cargo_loaded", [], true];
-    [_vehicle] call ace_cargo_fnc_validateCargoSpace;
-    [_vehicle, _state] call FUNC(loadState);
+    _this call EFUNC(common,objectState_load);
 }, [_vehicle, _state]] call CBA_fnc_execNextFrame;
 
 EXTCALL("garage:spawn",[ARR_2(_id,"Yes")]);

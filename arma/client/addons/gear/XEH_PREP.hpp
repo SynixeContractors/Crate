@@ -1,5 +1,5 @@
-PREP(ext_loadout);
-PREP(ext_shop);
+PREP(loadout_ext);
+PREP(shop_ext);
 
 PREP(loadout_clean);
 PREP(loadout_items);

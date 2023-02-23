@@ -356,36 +356,6 @@
     },
     "query": "SELECT gc.class, gc.cost \n        FROM gear_cost gc\n        INNER JOIN gear_items gi on gi.class = gc.class\n        WHERE gc.class=ANY($1) AND gi.global = false;"
   },
-  "3b5a4f65802b00097605be8287577788df21892756fbd6a49ad2e062acf24477": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "campaign",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "data",
-          "ordinal": 2,
-          "type_info": "Jsonb"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "\n                        SELECT\n                            id,\n                            campaign,\n                            data\n                        FROM\n                            campaigns_groups"
-  },
   "3bb77da35adb64b25c4f0d1d9232bfca9633b231468f94d9371ae1fc7a7f42a5": {
     "describe": {
       "columns": [
@@ -446,42 +416,6 @@
       }
     },
     "query": "\n                        INSERT INTO\n                            members_dlc (member, dlc)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT (member)\n                        DO UPDATE\n                            SET dlc = $2"
-  },
-  "44c711ba490394473fc21b4d3d5c06b8cfd1b9902cd2013a4463871b9c0c9951": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "campaign",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "class",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "data",
-          "ordinal": 3,
-          "type_info": "Jsonb"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "\n                        SELECT\n                            id,\n                            campaign,\n                            class,\n                            data\n                        FROM\n                            campaigns_objects"
   },
   "490af2f702d424ed0ea69043afd2be5bc8a6c968f7cd0a16bdd6e5a4e1af51fd": {
     "describe": {
@@ -1349,13 +1283,13 @@
     },
     "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        LOWER(m.name) = LOWER($1) AND\n                        (start > $2 and start < $2 + '2 Day'::INTERVAL)"
   },
-  "9484795a1030d56c3447669c6923808c09d8f46116bedd1efeff7b517dfe5ab2": {
+  "96b44a8e96b45162ee26ebd715b45cbbf39a9f0b1ed3fd9924d69c58580738cc": {
     "describe": {
       "columns": [
         {
-          "name": "id",
+          "name": "name",
           "ordinal": 0,
-          "type_info": "Uuid"
+          "type_info": "Varchar"
         },
         {
           "name": "campaign",
@@ -1363,33 +1297,23 @@
           "type_info": "Uuid"
         },
         {
-          "name": "class",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "group",
-          "ordinal": 3,
-          "type_info": "Uuid"
-        },
-        {
           "name": "data",
-          "ordinal": 4,
+          "ordinal": 2,
           "type_info": "Jsonb"
         }
       ],
       "nullable": [
         false,
         false,
-        false,
-        false,
         false
       ],
       "parameters": {
-        "Left": []
+        "Left": [
+          "Uuid"
+        ]
       }
     },
-    "query": "\n                        SELECT\n                            id,\n                            campaign,\n                            class,\n                            \"group\",\n                            data\n                        FROM\n                            campaigns_units"
+    "query": "\n                        SELECT\n                            name,\n                            campaign,\n                            data\n                        FROM\n                            campaigns_markers\n                        WHERE\n                            campaign = $1"
   },
   "9710594c233f7ed7960a122bcec5394465e054e8a57c2f6ed72e584050c4dea8": {
     "describe": {
@@ -1469,6 +1393,38 @@
       }
     },
     "query": "INSERT INTO garage_purchases (id, plate, color, member) VALUES ($1, $2, $3, $4)"
+  },
+  "a784632e280ba7473224fe786f938a2eaea5270d021b9265b254bb1e8d2a2f7f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "campaign",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "data",
+          "ordinal": 2,
+          "type_info": "Jsonb"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            id,\n                            campaign,\n                            data\n                        FROM\n                            campaigns_groups\n                        WHERE\n                            campaign = $1"
   },
   "a80cd694ff0906d3d1e9f3ba97a307232d766bfbea9158f13727b68666226564": {
     "describe": {
@@ -1633,6 +1589,44 @@
     },
     "query": "\n                    SELECT\n                        name AS value\n                    FROM\n                        certifications\n                    WHERE\n                        id = $1"
   },
+  "afee1e9c46b4bb1ffa6605fd4c74c35792492238aaee6d97d17bb6971c1e8bd3": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "campaign",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "class",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "data",
+          "ordinal": 3,
+          "type_info": "Jsonb"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            id,\n                            campaign,\n                            class,\n                            data\n                        FROM\n                            campaigns_objects\n                        WHERE\n                            campaign = $1"
+  },
   "b8a25dc33c0644eb158bf10e82cf3ce3f63e143926bc2389ba2d7d30af726872": {
     "describe": {
       "columns": [],
@@ -1642,6 +1636,50 @@
       }
     },
     "query": "UPDATE missions SET archived = true"
+  },
+  "bdfd73f9f754494838a5b0523f52b83ac7bbfd355897e7963f2000e6ac9f71e9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "campaign",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "class",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "group",
+          "ordinal": 3,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "data",
+          "ordinal": 4,
+          "type_info": "Jsonb"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            id,\n                            campaign,\n                            class,\n                            \"group\",\n                            data\n                        FROM\n                            campaigns_units\n                        WHERE\n                            campaign = $1"
   },
   "be6579136d8b77653da9b6f36b992dfc70004b10b92736f2e4ed7030f2913090": {
     "describe": {
@@ -2320,35 +2358,5 @@
       }
     },
     "query": "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), (SELECT cost FROM gear_item_current_cost($2)))"
-  },
-  "fd4a7ebed7ec05250a826713fdbb206a664a279cc88310f9665e721a48b08c10": {
-    "describe": {
-      "columns": [
-        {
-          "name": "name",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "campaign",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "data",
-          "ordinal": 2,
-          "type_info": "Jsonb"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "\n                        SELECT\n                            name,\n                            campaign,\n                            data\n                        FROM\n                            campaigns_markers"
   }
 }

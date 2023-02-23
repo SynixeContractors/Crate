@@ -2,7 +2,7 @@
 
 if !(isMultiplayer) exitWith {};
 
-// ============= Loadout 
+// ============= Loadout
 
 [QGVAR(loadout_get), {
     params [
@@ -82,10 +82,10 @@ addMissionEventHandler ["ExtensionCallback", {
     params ["_name", "_func", "_data"];
     switch (_name) do {
         case "crate:gear:loadout": {
-            [_func, _data] call FUNC(ext_loadout);
+            [_func, _data] call FUNC(loadout_ext);
         };
         case "crate:gear:shop": {
-            [_func, _data] call FUNC(ext_shop);
+            [_func, _data] call FUNC(shop_ext);
         };
     };
 }];

@@ -8,6 +8,7 @@ use arma_rs::{arma, Context, Extension};
 use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_proc::events_request_5;
 use tokio::sync::RwLock;
+use uuid::Uuid;
 
 #[macro_use]
 extern crate log;
@@ -49,9 +50,11 @@ fn init() -> Extension {
     info!("Initializing for server `{}`", *SERVER_ID);
     let ext = Extension::build()
         .command("id", command_id)
-        .group("gear", commands::gear::group())
+        .command("uuid", command_uuid)
+        .group("campaign", commands::campaign::group())
         .group("discord", commands::discord::group())
         .group("garage", commands::garage::group())
+        .group("gear", commands::gear::group())
         .group("log", commands::log::group())
         .state(commands::garage::PendingSpawn::default())
         .finish();
@@ -68,4 +71,8 @@ fn init() -> Extension {
 
 fn command_id() -> String {
     SERVER_ID.clone()
+}
+
+fn command_uuid() -> Uuid {
+    Uuid::new_v4()
 }

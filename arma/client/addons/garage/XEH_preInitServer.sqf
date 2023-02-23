@@ -30,7 +30,7 @@ addMissionEventHandler ["ExtensionCallback", {
     if (_discord == "") exitWith {};
 
     private _plate = _vehicle getVariable [QGVAR(plate), ""];
-    private _state = [_vehicle] call FUNC(saveState);
+    private _state = [_vehicle] call EFUNC(common,objectState_save);
 
     EXTCALL("garage:store",[ARR_3(_plate, _state, _discord)]);
 }] call CBA_fnc_addEventHandler;

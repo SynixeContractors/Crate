@@ -9,7 +9,7 @@ impl Handler for Request {
     async fn handle(
         &self,
         msg: nats::asynk::Message,
-        nats: std::sync::Arc<nats::asynk::Connection>,
+        _nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
@@ -27,7 +27,10 @@ impl Handler for Request {
                             class,
                             data
                         FROM
-                            campaigns_objects"#,
+                            campaigns_objects
+                        WHERE
+                            campaign = $1"#,
+                    campaign,
                 )?;
                 Ok(())
             }
@@ -44,7 +47,10 @@ impl Handler for Request {
                             campaign,
                             data
                         FROM
-                            campaigns_groups"#,
+                            campaigns_groups
+                        WHERE
+                            campaign = $1"#,
+                    campaign,
                 )?;
                 Ok(())
             }
@@ -63,7 +69,10 @@ impl Handler for Request {
                             "group",
                             data
                         FROM
-                            campaigns_units"#,
+                            campaigns_units
+                        WHERE
+                            campaign = $1"#,
+                    campaign,
                 )?;
                 Ok(())
             }
@@ -80,7 +89,10 @@ impl Handler for Request {
                             campaign,
                             data
                         FROM
-                            campaigns_markers"#,
+                            campaigns_markers
+                        WHERE
+                            campaign = $1"#,
+                    campaign,
                 )?;
                 Ok(())
             }
