@@ -124,6 +124,7 @@ pub struct ScheduledMission {
     pub typ: MissionType,
 }
 
+#[cfg(feature = "mission-schedule")]
 impl ScheduledMission {
     #[must_use]
     /// Get the channel and message id for the schedule message
