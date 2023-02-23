@@ -22,6 +22,7 @@ pub async fn start() {
         synixe_events::handler!(
             msg,
             nats,
+            synixe_events::campaigns::db::Request,
             synixe_events::certifications::db::Request,
             synixe_events::discord::db::Request,
             synixe_events::gear::db::Request,
