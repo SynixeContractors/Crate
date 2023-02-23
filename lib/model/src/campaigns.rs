@@ -37,6 +37,10 @@ pub struct Unit {
     pub campaign: Uuid,
     /// Unit id
     pub id: Uuid,
+    /// Unit class
+    pub class: String,
+    /// Unit group
+    pub group: Uuid,
     /// Unit data
     pub data: serde_json::Value,
 }

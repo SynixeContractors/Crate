@@ -53,6 +53,10 @@ pub mod db {
             campaign: Uuid,
             /// Unit id
             id: Uuid,
+            /// Unit class
+            class: String,
+            /// Unit group
+            group: Uuid,
             /// Unit data
             data: serde_json::Value,
         } => (Result<(), String>)

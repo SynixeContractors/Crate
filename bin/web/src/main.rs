@@ -14,6 +14,7 @@ use tower_http::services::ServeDir;
 extern crate tracing;
 
 mod members;
+mod missions;
 mod template;
 
 async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
@@ -29,6 +30,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(dashboard))
         .nest("/members", members::router())
+        .nest("/missions", missions::router())
         .route(
             "/tailwind.css",
             get(|| async {
