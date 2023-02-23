@@ -52,6 +52,7 @@ fn init() -> Extension {
         .group("gear", commands::gear::group())
         .group("discord", commands::discord::group())
         .group("garage", commands::garage::group())
+        .group("log", commands::log::group())
         .state(commands::garage::PendingSpawn::default())
         .finish();
     let ctx_tokio = ext.context();

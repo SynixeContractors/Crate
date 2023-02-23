@@ -1077,6 +1077,21 @@
     },
     "query": "INSERT INTO missions_schedule_rsvp (scheduled, member, state, details) VALUES ($1, $2, $3, $4) ON CONFLICT (scheduled, member) DO UPDATE SET state = $3, details = $4"
   },
+  "8f0ad93b45658324cb5e11a8680509c9db04648c80e91c46c5e01d6e49e4e60f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO servers_log (server, steam, action, data) VALUES ($1, $2, $3, $4)"
+  },
   "8f58acc714f280ed531e62dd5b77fe9afa6c3404f2e1b56c07c53185e415bd0b": {
     "describe": {
       "columns": [
