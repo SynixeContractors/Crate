@@ -51,7 +51,7 @@ fn init() -> Extension {
     let ext = Extension::build()
         .command("id", command_id)
         .command("uuid", command_uuid)
-        .group("campaign", commands::campaign::group())
+        .group("campaigns", commands::campaigns::group())
         .group("discord", commands::discord::group())
         .group("garage", commands::garage::group())
         .group("gear", commands::gear::group())

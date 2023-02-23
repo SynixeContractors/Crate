@@ -6,7 +6,7 @@ pub mod db {
     use synixe_proc::events_requests;
     use uuid::Uuid;
 
-    events_requests!(db.certifications {
+    events_requests!(db.campaigns {
         /// Retrieve all objects for a campaign
         struct Objects {
             /// The campaign to get objects for

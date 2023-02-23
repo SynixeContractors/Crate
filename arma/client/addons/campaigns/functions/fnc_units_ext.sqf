@@ -13,6 +13,6 @@ switch (_func) do {
             _x enableSimulationGlobal true;
         } forEach (allUnits - allPlayers);
         GVAR(units_ready) = true;
-        EXTFUNC("campaigns:markers:load");
+        EXTCALL("campaigns:markers:load", [GVAR(key)]);
     };
 };

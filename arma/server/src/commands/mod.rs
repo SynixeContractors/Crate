@@ -1,6 +1,6 @@
 //! Extension command modules
 
-pub mod campaign;
+pub mod campaigns;
 pub mod discord;
 pub mod garage;
 pub mod gear;

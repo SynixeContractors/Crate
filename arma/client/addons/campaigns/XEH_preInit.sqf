@@ -17,7 +17,7 @@ ADDON = true;
 [
     QGVAR(key),
     "EDITBOX",
-    ["Enabled", "Campaign Key"],
+    ["Key", "Campaign Key"],
     "Crate - Persistent Campaign",
     "",
     true,

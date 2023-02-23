@@ -41,6 +41,6 @@ switch (_func) do {
             [_object] call ace_cargo_fnc_validateCargoSpace;
         } forEach (allMissionObjects "All" - allUnits)
         GVAR(objects_ready) = true;
-        EXTFUNC("campaigns:groups:load");
+        EXTCALL("campaigns:groups:load", [GVAR(key)]);
     };
 };
