@@ -5,6 +5,7 @@ macro_rules! handler {
         use synixe_events::Evokable;
         let subject = $msg.subject.clone();
         let sub = subject.as_str();
+        info!("seen event: {}", sub);
         $(
             if sub == <$events>::path() {
                 let Ok((ev, _)) = synixe_events::parse_data!($msg, $events) else {
@@ -12,6 +13,7 @@ macro_rules! handler {
                     continue
                 };
                 debug!("Handling event: {}", ev.name());
+                info!("Handling event: {}", ev.name());
                 if let Err(e) = ev.handle($msg, $nats).await {
                     error!("Error in handler {}: {}", sub, e);
                 }
