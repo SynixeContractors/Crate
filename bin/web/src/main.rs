@@ -1,14 +1,11 @@
 use std::net::SocketAddr;
 
 use axum::{
-    extract::Path,
     http::{self, StatusCode},
     response::{Html, IntoResponse},
     routing::{get, get_service},
     Router, Server,
 };
-use synixe_events::gear::db::Response;
-use synixe_proc::events_request_5;
 use template::Template;
 use tera::Context;
 use tower_http::services::ServeDir;
@@ -53,7 +50,17 @@ async fn main() {
                 response
             }),
         )
-        .nest_service("/assets", serve_dir.clone());
+        .nest_service("/assets", serve_dir.clone())
+        .fallback(|| async {
+            Html(
+                Template::get()
+                    .render("error/404.html", &Context::new())
+                    .unwrap_or_else(|e| {
+                        error!("Error rendering template: {}", e);
+                        "Error".to_string()
+                    }),
+            )
+        });
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     debug!("Listening on {}", addr);
@@ -67,29 +74,6 @@ async fn dashboard() -> Html<String> {
     Html(
         Template::get()
             .render("dashboard.html", &Context::new())
-            .unwrap_or_else(|e| {
-                error!("Error rendering template: {}", e);
-                "Error".to_string()
-            }),
-    )
-}
-
-async fn balance(Path(id): Path<u64>) -> Html<String> {
-    let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::gear::db,
-        BankBalance {
-            member: serenity::model::prelude::UserId(id),
-        }
-    )
-    .await else {
-        return Html("Error".to_string());
-    };
-    let mut context = Context::new();
-    context.insert("balance", &balance);
-    Html(
-        Template::get()
-            .render("pages/profile.html", &context)
             .unwrap_or_else(|e| {
                 error!("Error rendering template: {}", e);
                 "Error".to_string()

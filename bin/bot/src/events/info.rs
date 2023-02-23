@@ -3,6 +3,7 @@ use synixe_events::{discord::info, respond};
 
 use crate::ArcCacheAndHttp;
 
+#[allow(clippy::too_many_lines)]
 pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
     let Ok((ev, _)) = synixe_events::parse_data!(msg, info::Request) else {
         return;
@@ -76,6 +77,34 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
                 Err(e) => {
                     if let Err(e) =
                         respond!(msg, info::Response::MemberByName(Err(e.to_string()))).await
+                    {
+                        error!("Failed to respond to NATS: {}", e);
+                    }
+                }
+            }
+        }
+        info::Request::MembersByRole { role } => {
+            match synixe_meta::discord::GUILD
+                .members(&client.http, None, None)
+                .await
+            {
+                Ok(members) => {
+                    if let Err(e) = respond!(
+                        msg,
+                        info::Response::MembersByRole(Ok(members
+                            .iter()
+                            .filter(|m| m.roles.contains(&role))
+                            .cloned()
+                            .collect()))
+                    )
+                    .await
+                    {
+                        error!("Failed to respond to NATS: {}", e);
+                    }
+                }
+                Err(e) => {
+                    if let Err(e) =
+                        respond!(msg, info::Response::MembersByRole(Err(e.to_string()))).await
                     {
                         error!("Failed to respond to NATS: {}", e);
                     }

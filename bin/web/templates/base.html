@@ -1,206 +1,94 @@
-<!--
-
-=========================================================
-* Notus Tailwind JS - v1.1.0 based on Tailwind Starter Kit by Creative Tim
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/notus-js
-* Copyright 2021 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/notus-js/blob/main/LICENSE.md)
-
-* Tailwind Starter Kit Page: https://www.creative-tim.com/learning-lab/tailwind-starter-kit/presentation
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
--->
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-full bg-gray-100">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <link rel="shortcut icon" href="../../assets/img/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="76x76" href="../../assets/img/apple-icon.png" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css" />
-  <link rel="stylesheet" href="../../assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" />
-  <link rel="stylesheet" href="/tailwind.css" />
-  {% block head %}{% endblock head %}
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{% endblock title %} | Synixe Contractors</title>
+  <link rel="stylesheet" href="/tailwind.css" />
+  <script defer src="/assets/js/menu.js" type="text/javascript"></script>
 </head>
 
-<body class="text-slate-700 antialiased bg-slate-50">
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root">
-    <nav
-      class="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-52 z-10 py-4 px-6">
-      <div
-        class="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center justify-between w-full mx-auto">
-        <button
-          class="cursor-pointer text-black opacity-50 md:hidden px-3 py-1 text-xl leading-none bg-transparent rounded border border-solid border-transparent"
-          type="button" onclick="toggleNavbar('example-collapse-sidebar')">
-          <i class="fas fa-bars"></i>
-        </button>
-        <a class="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0 items-center"
-          href="/">
-          Synixe Contractors
-        </a>
-        <div
-          class="md:flex md:flex-col md:items-stretch md:opacity-100 md:relative md:mt-4 md:shadow-none shadow absolute top-0 left-0 right-0 z-40 overflow-y-auto overflow-x-hidden h-auto items-center flex-1 rounded hidden"
-          id="example-collapse-sidebar">
-          <div class="md:min-w-full md:hidden block pb-4 mb-4 border-b border-solid border-slate-200">
-            <div class="flex flex-wrap">
-              <div class="w-6/12">
-                <a class="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
-                  href="/">
-                  Synixe Contractors
-                </a>
-              </div>
-              <div class="w-6/12 flex justify-end">
-                <button type="button"
-                  class="cursor-pointer text-black opacity-50 md:hidden px-3 py-1 text-xl leading-none bg-transparent rounded border border-solid border-transparent"
-                  onclick="toggleNavbar('example-collapse-sidebar')">
-                  <i class="fas fa-times"></i>
-                </button>
+<body class="h-full">
+  <div class="min-h-full">
+    <nav class="bg-gray-800">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 items-center justify-between">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <img class="h-8 w-8" src="https://synixe.contractors/assets/img/logo-white.webp" alt="Your Company">
+            </div>
+            <div class="hidden md:block">
+              <div class="menu-links ml-10 flex items-baseline space-x-4">
+                <a href="/" class="px-3 py-2 rounded-md text-sm font-medium"
+                  aria-current="page">Overview</a>
+
+                <a href="/members"
+                  class="px-3 py-2 rounded-md text-sm font-medium">Members</a>
+
+                <a href="/garage"
+                  class="px-3 py-2 rounded-md text-sm font-medium">Garage</a>
+
+                <a href="/missions"
+                  class="px-3 py-2 rounded-md text-sm font-medium">Missions</a>
+
+                <a href="/certifications"
+                  class="px-3 py-2 rounded-md text-sm font-medium">Certifications</a>
               </div>
             </div>
           </div>
-          <ul class="md:flex-col md:min-w-full flex flex-col list-none" id="sidebar-links">
-            <li class="items-center">
-              <a href="/" class="text-xs uppercase py-3 font-bold block text-slate-700 hover:text-slate-500">
-                <i class="w-6 fas fa-chart-bar mr-2 text-sm"></i>
-                Overview
-              </a>
-            </li>
 
-            <li class="items-center">
-              <a href="/members" class="text-xs uppercase py-3 font-bold block text-slate-700 hover:text-slate-500">
-                <i class="w-6 fas fa-users mr-2 text-sm"></i>
-                Members
-              </a>
-            </li>
-
-            <li class="items-center">
-              <a href="/garage" class="text-xs uppercase py-3 font-bold block text-slate-700 hover:text-slate-500">
-                <i class="w-6 fas fa-warehouse mr-2 text-sm"></i>
-                Garage
-              </a>
-            </li>
-
-            <li class="items-center">
-              <a href="/missions" class="text-xs uppercase py-3 font-bold block text-slate-700 hover:text-slate-500">
-                <i class="w-6 fas fa-bullseye mr-2 text-sm"></i>
-                Missions
-              </a>
-            </li>
-
-            <li class="items-center">
-              <a href="/certifications"
-                class="text-xs uppercase py-3 font-bold block text-slate-700 hover:text-slate-500">
-                <i class="w-6 fas fa-clipboard-list mr-2 text-sm"></i>
-                Certifications
-              </a>
-            </li>
-          </ul>
+          <div class="-mr-2 flex md:hidden">
+            <button type="button" id="mobile-menu-button"
+              class="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+              aria-controls="mobile-menu" aria-expanded="false">
+              <span class="sr-only">Open main menu</span>
+              <svg id="mobile-menu-hamburger" class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+              <svg id="mobile-menu-close" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
+      </div>
+
+      <div class="hidden md:hidden" id="mobile-menu">
+        <div class="menu-links space-y-1 px-2 pt-2 pb-3 sm:px-3">
+          <a href="/" class="block px-3 py-2 rounded-md text-base font-medium"
+            aria-current="page">Overview</a>
+
+          <a href="/members"
+            class="block px-3 py-2 rounded-md text-base font-medium">Members</a>
+
+          <a href="/garage"
+            class="block px-3 py-2 rounded-md text-base font-medium">Garage</a>
+
+          <a href="/missions"
+            class="block px-3 py-2 rounded-md text-base font-medium">Missions</a>
+
+          <a href="/certifications"
+            class="block px-3 py-2 rounded-md text-base font-medium">Certifications</a>
+        </div>
+
       </div>
     </nav>
-    <div class="relative md:ml-52 bg-slate-50">
-      <div class="relative bg-synixe-50 md:pt-16 pb-32 pt-4">
-        <div class="px-4 md:px-10 mx-auto w-full">
-          <div>
-            <div class="flex flex-wrap">
-              {% block header %}{% endblock header %}
-            </div>
-          </div>
-        </div>
+
+    <header class="bg-white shadow">
+      <div class="mx-auto max-w-7xl py-6 px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900">{% block header %}{% endblock header %}</h1>
       </div>
-      <div class="px-4 md:px-10 mx-auto w-full -mt-24">
+    </header>
+    <main>
+      <div class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
         {% block content %}{% endblock content %}
       </div>
-      <footer class="block py-4">
-        <div class="container mx-auto">
-          <hr class="mb-4 border-b-1 border-slate-200" />
-          <div
-            class="flex flex-wrap items-center md:justify-between justify-center"
-          >
-            <div class="w-full md:w-4/12 px-4">
-              <div
-                class="text-sm text-slate-500 font-semibold py-1 text-center md:text-left"
-              >
-                Copyright © <span id="get-current-year"></span>
-                <a
-                  href="https://synixe.contractors
-                  class="text-slate-500 hover:text-slate-700 text-sm font-semibold py-1"
-                >
-                  Synixe Contractors
-                </a>
-              </div>
-            </div>
-            <div class="w-full md:w-8/12 px-4">
-              <ul
-                class="flex flex-wrap list-none md:justify-end justify-center"
-              >
-                <li>
-                  <a
-                    href="https://www.creative-tim.com?ref=njs-dashboard"
-                    class="text-slate-600 hover:text-slate-800 text-sm font-semibold block py-1 px-3"
-                  >
-                    Template By Creative Tim
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
-
+    </main>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js" charset="utf-8"></script>
-  <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.js"></script>
-  <script type="text/javascript">
-    /* Make dynamic date appear */
-    (function () {
-      if (document.getElementById("get-current-year")) {
-        document.getElementById("get-current-year").innerHTML =
-          new Date().getFullYear();
-      }
-      // apply active state on menu element
-      let current = location.pathname;
-      let nav = document.getElementById("sidebar-links");
-      let items = nav.getElementsByTagName("a");
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].getAttribute("href") === current) {
-          items[i].classList.add("text-synixe-50");
-        }
-      }
-    })();
-    /* Sidebar - Side navigation menu on mobile/responsive mode */
-    function toggleNavbar(collapseID) {
-      document.getElementById(collapseID).classList.toggle("hidden");
-      document.getElementById(collapseID).classList.toggle("bg-white");
-      document.getElementById(collapseID).classList.toggle("m-2");
-      document.getElementById(collapseID).classList.toggle("py-3");
-      document.getElementById(collapseID).classList.toggle("px-6");
-    }
-    /* Function for dropdowns */
-    function openDropdown(event, dropdownID) {
-      let element = event.target;
-      while (element.nodeName !== "A") {
-        element = element.parentNode;
-      }
-      Popper.createPopper(element, document.getElementById(dropdownID), {
-        placement: "bottom-start"
-      });
-      document.getElementById(dropdownID).classList.toggle("hidden");
-      document.getElementById(dropdownID).classList.toggle("block");
-    }
-  </script>
 </body>
 
 </html>

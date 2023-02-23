@@ -103,7 +103,10 @@ pub mod write {
 /// Get information from Discord
 pub mod info {
     use serde::{Deserialize, Serialize};
-    use serenity::model::prelude::{RoleId, UserId};
+    use serenity::model::{
+        prelude::{Member, RoleId, UserId},
+        user::User,
+    };
     use synixe_proc::events_requests;
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -133,6 +136,11 @@ pub mod info {
             /// The name of the user to get
             name: String,
         } => (Result<Option<UserId>, String>)
+        /// Get members by role
+        struct MembersByRole {
+            /// The role to get the members for
+            role: RoleId,
+        } => (Result<Vec<Member>, String>)
     });
 }
 

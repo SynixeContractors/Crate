@@ -2,7 +2,7 @@ const plugin = require("tailwindcss/plugin");
 const colors = require("tailwindcss/colors");
 
 module.exports = {
-  content: ["./**/*.html", "./*.html"],
+  content: ["./**/*.{html,js}", "./*.html"],
   theme: {
     colors: {
       ...colors,

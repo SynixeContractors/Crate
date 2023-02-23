@@ -21,5 +21,12 @@ async fn members() -> Html<String> {
 }
 
 async fn member(Path(id): Path<u64>) -> Html<String> {
-    Html(String::from("Member"))
+    Html(
+        Template::get()
+            .render("members/member.html", &Context::new())
+            .unwrap_or_else(|e| {
+                error!("Error rendering template: {}", e);
+                "Error".to_string()
+            }),
+    )
 }
