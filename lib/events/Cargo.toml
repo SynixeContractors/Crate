@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-synixe-model = { path = "../model", features = ["mission-schedule", "certifications", "gear", "garage"] }
+synixe-model = { path = "../model", features = ["campaigns", "certifications", "gear", "garage", "mission-schedule"] }
 synixe-meta = { path = "../meta" }
 synixe-proc = { path = "../proc" }
 

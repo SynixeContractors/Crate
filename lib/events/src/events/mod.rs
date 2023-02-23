@@ -1,5 +1,6 @@
 //! Event Definitions
 
+pub mod campaigns;
 pub mod certifications;
 pub mod containers;
 pub mod discord;

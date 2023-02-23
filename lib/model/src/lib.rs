@@ -4,6 +4,8 @@
 
 //! Internal library for model definitions.
 
+#[cfg(feature = "campaigns")]
+pub mod campaigns;
 #[cfg(feature = "missions")]
 pub mod missions;
 

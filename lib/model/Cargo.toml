@@ -10,6 +10,7 @@ arma-rs = { workspace = true, optional = true }
 time = { workspace = true, optional = true, features = ["serde-well-known", "macros"] }
 regex = { version = "1.7.1", optional = true }
 serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true, optional = true }
 sqlx = { workspace = true, optional = true }
 uuid = { workspace = true, optional = true, features = ["serde", "v4"] }
 serenity = { workspace = true, features = ["utils", "builder"], optional = true }
@@ -21,10 +22,10 @@ default = [
     "gear",
     "garage",
 ]
+campaigns = ["uuid", "serde_json"]
 certifications = ["uuid", "roles", "time"]
 mission-schedule = ["missions", "time", "uuid"]
-missions = ["uuid", "time", "regex"]
+missions = ["uuid", "time", "regex", "serenity"]
 roles = ["serenity"]
 gear = ["time"]
 garage = []
-

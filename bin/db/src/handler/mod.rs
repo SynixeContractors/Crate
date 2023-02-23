@@ -1,3 +1,4 @@
+mod campaigns;
 mod certifications;
 mod discord;
 mod garage;

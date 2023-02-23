@@ -1,21 +1,35 @@
 #[cfg(not(target_os = "windows"))]
-const COMMAND: &str = "tailwindcss";
+const NPM_COMMAND: &str = "npm";
+#[cfg(not(target_os = "windows"))]
+const NPX_COMMAND: &str = "npx";
 
 #[cfg(target_os = "windows")]
-const COMMAND: &str = "tailwindcss.cmd";
+const NPM_COMMAND: &str = "npm.cmd";
+#[cfg(target_os = "windows")]
+const NPX_COMMAND: &str = "npx.cmd";
 
 fn main() {
-    let mut cmd = std::process::Command::new(COMMAND);
-    cmd.arg("-i")
+    let mut cmd = std::process::Command::new(NPM_COMMAND);
+    cmd.arg("install");
+    let output = cmd.output().expect("Failed to run npm");
+    if !output.status.success() {
+        panic!(
+            "Failed to run npm: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+    let mut cmd = std::process::Command::new(NPX_COMMAND);
+    cmd.arg("tailwindcss")
+        .arg("-i")
         .arg("templates/index.css")
         .arg("-c")
         .arg("tailwind.config.js")
         .arg("-o")
         .arg("tailwind.css");
-    let output = cmd.output().expect("Failed to run tailwindcss");
+    let output = cmd.output().expect("Failed to run npx tailwind");
     if !output.status.success() {
         panic!(
-            "Failed to run tailwindcss: {}",
+            "Failed to run npx tailwind: {}",
             String::from_utf8_lossy(&output.stderr)
         );
     }

@@ -45,7 +45,19 @@ You are welcome to read, not copy directly, the source code for inspiration for 
         - Fuel
         - Damage
         - Ammo
-        - Cargo
+        - ACE Cargo
+
+## Persistent Campaign Maps
+
+- Tracks all objects
+    - Damage
+    - Inventory
+    - ACE Cargo
+- Tracks all groups
+    - Waypoints
+- Tracks all units
+    - Damage
+    - Inventory
 
 ### Certifications
 

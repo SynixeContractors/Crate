@@ -103,10 +103,7 @@ pub mod write {
 /// Get information from Discord
 pub mod info {
     use serde::{Deserialize, Serialize};
-    use serenity::model::{
-        prelude::{Member, RoleId, UserId},
-        user::User,
-    };
+    use serenity::model::prelude::{Member, RoleId, UserId};
     use synixe_proc::events_requests;
 
     #[derive(Debug, Serialize, Deserialize)]
