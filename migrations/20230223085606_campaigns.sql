@@ -11,7 +11,7 @@ CREATE TABLE campaigns_objects (
     class VARCHAR NOT NULL,
     data JSONB NOT NULL,
     PRIMARY KEY (campaign, id),
-    FOREIGN KEY (campaign) REFERENCES campaigns(id)
+    FOREIGN KEY (campaign) REFERENCES campaigns(id) ON DELETE CASCADE
 );
 
 CREATE TABLE campaigns_groups (
@@ -19,7 +19,7 @@ CREATE TABLE campaigns_groups (
     campaign UUID NOT NULL,
     data JSONB NOT NULL,
     PRIMARY KEY (campaign, id),
-    FOREIGN KEY (campaign) REFERENCES campaigns(id)
+    FOREIGN KEY (campaign) REFERENCES campaigns(id) ON DELETE CASCADE
 );
 
 CREATE TABLE campaigns_units (
@@ -29,8 +29,7 @@ CREATE TABLE campaigns_units (
     "group" UUID NOT NULL,
     data JSONB NOT NULL,
     PRIMARY KEY (campaign, id),
-    FOREIGN KEY (campaign) REFERENCES campaigns(id),
-    FOREIGN KEY (campaign, "group") REFERENCES campaigns_groups(campaign, id)
+    FOREIGN KEY (campaign) REFERENCES campaigns(id) ON DELETE CASCADE
 );
 
 CREATE TABLE campaigns_markers (
@@ -38,5 +37,5 @@ CREATE TABLE campaigns_markers (
     campaign UUID NOT NULL,
     data JSONB NOT NULL,
     PRIMARY KEY (campaign, name),
-    FOREIGN KEY (campaign) REFERENCES campaigns(id)
+    FOREIGN KEY (campaign) REFERENCES campaigns(id) ON DELETE CASCADE
 );
