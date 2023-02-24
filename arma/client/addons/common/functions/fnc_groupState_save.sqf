@@ -5,9 +5,9 @@ params ["_group"];
 private _state = createHashMap;
 
 _state set ["id", groupId _group];
-_state set ["leader", (leader _group) getVariable [QGVAR(id), -1]];
+// _state set ["leader", (leader _group) getVariable [QGVAR(id), -1]];
 _state set ["behaviour", combatBehaviour _group];
-_state set ["side", side _group];
+_state set ["side", str side _group];
 
 private _speedMode = speedMode _group;
 if (_speedMode != "NORMAL") then {

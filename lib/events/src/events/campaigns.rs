@@ -69,5 +69,33 @@ pub mod db {
             /// Marker data
             data: serde_json::Value,
         } => (Result<(), String>)
+        /// Delete an object
+        struct DeleteObject {
+            /// The campaign to delete the object for
+            campaign: Uuid,
+            /// Object id
+            id: Uuid,
+        } => (Result<(), String>)
+        /// Delete a group
+        struct DeleteGroup {
+            /// The campaign to delete the group for
+            campaign: Uuid,
+            /// Group id
+            id: Uuid,
+        } => (Result<(), String>)
+        /// Delete a unit
+        struct DeleteUnit {
+            /// The campaign to delete the unit for
+            campaign: Uuid,
+            /// Unit id
+            id: Uuid,
+        } => (Result<(), String>)
+        /// Delete a marker
+        struct DeleteMarker {
+            /// The campaign to delete the marker for
+            campaign: Uuid,
+            /// Marker name
+            name: String,
+        } => (Result<(), String>)
     });
 }

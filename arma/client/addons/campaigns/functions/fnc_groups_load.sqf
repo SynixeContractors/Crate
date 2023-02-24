@@ -15,7 +15,7 @@ private _group = createGroup call {
         case "guer";
         case "resistence";
         case "independent": { independent };
-        case "civilian": { civilian };
+        default { civilian };
     }
 };
 

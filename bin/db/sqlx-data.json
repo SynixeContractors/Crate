@@ -587,6 +587,19 @@
     },
     "query": "INSERT INTO recruitment_seen (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created = NOW()"
   },
+  "5ae720ad242323892b40b666cb97ad2f79caf0f7d9620c9832794bef54e1522f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM campaigns_markers WHERE name = $1 AND campaign = $2"
+  },
   "5bddd827b5fdd5119a125f49c7b96334e86ba37b8117a95526f23cd6d5f9f6ce": {
     "describe": {
       "columns": [],
@@ -657,6 +670,19 @@
       }
     },
     "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE id = $1"
+  },
+  "5e7dca5489a3d50dabf827460981d6ca582a0a0f138ebc8018c0c40828dc8d7e": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM campaigns_objects WHERE id = $1 AND campaign = $2"
   },
   "5e9eeb66a761ef42c35cadb55d03396bbcfa3a6435ec168503d8d9abc85db2c3": {
     "describe": {
@@ -1030,6 +1056,19 @@
       }
     },
     "query": "INSERT INTO gear_locker_log (member, class, quantity) VALUES ($1, $2, $3)"
+  },
+  "744281993e0cfe5498a2f72d60f6b4e828198c164ad6d1f638bbaa4a43f836e3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM campaigns_groups WHERE id = $1 AND campaign = $2"
   },
   "76bd2f79cbddd70d7f6ba099f538122f733492f7ffd98eae404a11ebf776d8bd": {
     "describe": {
@@ -1775,6 +1814,19 @@
       }
     },
     "query": "SELECT balance FROM gear_bank_balance_cache WHERE member = $1 LIMIT 1"
+  },
+  "c7468f0894e9b6281ac901bd039ad1e8320f892bcc96b88c988939a302ee8843": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM campaigns_units WHERE id = $1 AND campaign = $2"
   },
   "c7ac84e9fb411548ea042be20ceb11d01634e16a2613ba08ab49218f43794ecc": {
     "describe": {

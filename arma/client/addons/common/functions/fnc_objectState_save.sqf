@@ -63,9 +63,9 @@ if (_hits isNotEqualTo []) then {
 };
 
 // Inventory
-private _tree = ;
+private _tree = [_object] call FUNC(getInventory);
 if (_tree isNotEqualTo [[[[],[]],[],[[],[]]],[]]) then {
-    _state set ["inventory", [_object] call FUNC(getInventory)];
+    _state set ["inventory", _tree];
 };
 
 // ACE Rearm

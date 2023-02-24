@@ -41,7 +41,7 @@ params ["_unit", "_state"];
             _unit setUnitCombatMode _y;
         };
         case "behaviour": {
-            _unit setUnitBehaviour _y;
+            _unit setCombatBehaviour _y;
         };
         case "vehicle": {
             _y params ["_vid", "_seat"];

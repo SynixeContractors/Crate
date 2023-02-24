@@ -6,7 +6,10 @@ class CfgPatches {
         units[] = {};
         weapons[] = {};
         requiredVersion = REQUIRED_VERSION;
-        requiredAddons[] = {"crate_client_main"};
+        requiredAddons[] = {
+            "crate_client_main",
+            "zen_area_markers"
+        };
         author = "AUTHOR";
         VERSION_CONFIG;
     };

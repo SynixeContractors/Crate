@@ -8,7 +8,10 @@ use uuid::Uuid;
 use crate::{CONTEXT, RUNTIME};
 
 pub fn group() -> Group {
-    Group::new().command("save", save).command("load", load)
+    Group::new()
+        .command("save", save)
+        .command("load", load)
+        .command("delete", delete)
 }
 
 fn save(campaign: Uuid, id: Uuid, class: String, group: Uuid, data: HashMap<String, Value>) {
@@ -29,7 +32,7 @@ fn save(campaign: Uuid, id: Uuid, class: String, group: Uuid, data: HashMap<Stri
                 ),
             }
         ).await else {
-            error!("failed to save group");
+            error!("failed to save unit");
             return;
         };
     });
@@ -52,6 +55,7 @@ fn load(campaign: Uuid) {
             error!("failed to load units");
             return;
         };
+        debug!("loading {} units", units.len());
         for unit in units {
             context.callback_data(
                 "crate:campaigns:units",
@@ -65,5 +69,21 @@ fn load(campaign: Uuid) {
             );
         }
         context.callback_null("crate:campaigns:units", "done");
+    });
+}
+
+fn delete(campaign: Uuid, id: Uuid) {
+    RUNTIME.spawn(async move {
+        let Ok(Ok((Response::DeleteUnit(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::campaigns::db,
+            DeleteUnit {
+                campaign,
+                id,
+            }
+        ).await else {
+            error!("failed to delete unit");
+            return;
+        };
     });
 }

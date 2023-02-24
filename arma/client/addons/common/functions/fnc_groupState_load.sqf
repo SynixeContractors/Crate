@@ -5,7 +5,7 @@ params ["_group", "_state"];
 {
     switch (_x) do {
         case "id": {
-            _group setGroupIdGlobal _y;
+            _group setGroupIdGlobal [_y];
         };
         case "combat": {
             _group setCombatMode _y;
@@ -72,7 +72,7 @@ params ["_group", "_state"];
             } forEach _y;
         };
         case "current_wp": {
-            _group setCurrentWaypoint _y;
+            _group setCurrentWaypoint [_group, _y];
         };
     };
 } forEach _state;

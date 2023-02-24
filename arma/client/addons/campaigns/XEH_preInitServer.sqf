@@ -5,18 +5,22 @@ if !(isMultiplayer) exitWith {};
 GVAR(objects_ready) = false;
 GVAR(objects_stack) = [];
 GVAR(objects_ids) = [];
+GVAR(objects_notSeen) = [];
 
 GVAR(groups_ready) = false;
 GVAR(groups_stack) = [];
 GVAR(groups_ids) = [];
+GVAR(groups_notSeen) = [];
 
 GVAR(units_ready) = false;
 GVAR(units_stack) = [];
 GVAR(units_ids) = [];
+GVAR(units_notSeen) = [];
 
 GVAR(markers_ready) = false;
 GVAR(markers_stack) = [];
 GVAR(markers_ids) = [];
+GVAR(markers_notSeen) = [];
 
 addMissionEventHandler ["ExtensionCallback", {
     params ["_name", "_func", "_data"];

@@ -8,10 +8,16 @@ use uuid::Uuid;
 use crate::{CONTEXT, RUNTIME};
 
 pub fn group() -> Group {
-    Group::new().command("save", save).command("load", load)
+    Group::new()
+        .command("save", save)
+        .command("load", load)
+        .command("delete", delete)
 }
 
 fn save(campaign: Uuid, id: Uuid, class: String, data: HashMap<String, Value>) {
+    if class.is_empty() {
+        return;
+    }
     RUNTIME.spawn(async move {
         let Ok(Ok((Response::StoreObject(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
@@ -28,7 +34,7 @@ fn save(campaign: Uuid, id: Uuid, class: String, data: HashMap<String, Value>) {
                 ),
             }
         ).await else {
-            error!("failed to save group");
+            error!("failed to save object");
             return;
         };
     });
@@ -51,6 +57,7 @@ fn load(campaign: Uuid) {
             error!("failed to load objects");
             return;
         };
+        debug!("loading {} objects", objects.len());
         for object in objects {
             context.callback_data(
                 "crate:campaigns:objects",
@@ -63,5 +70,21 @@ fn load(campaign: Uuid) {
             );
         }
         context.callback_null("crate:campaigns:objects", "done");
+    });
+}
+
+fn delete(campaign: Uuid, id: Uuid) {
+    RUNTIME.spawn(async move {
+        let Ok(Ok((Response::DeleteObject(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::campaigns::db,
+            DeleteObject {
+                campaign,
+                id,
+            }
+        ).await else {
+            error!("failed to delete object");
+            return;
+        };
     });
 }

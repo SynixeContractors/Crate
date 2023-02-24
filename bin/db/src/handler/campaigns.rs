@@ -107,7 +107,13 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::StoreObject,
-                    "INSERT INTO campaigns_objects (id, campaign, class, data) VALUES ($1, $2, $3, $4)",
+                    "INSERT INTO
+                        campaigns_objects (id, campaign, class, data)
+                    VALUES
+                        ($1, $2, $3, $4)
+                    ON CONFLICT (id, campaign) DO UPDATE SET
+                        class = $3,
+                        data = $4",
                     id,
                     campaign,
                     class,
@@ -120,7 +126,12 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::StoreGroup,
-                    "INSERT INTO campaigns_groups (id, campaign, data) VALUES ($1, $2, $3)",
+                    "INSERT INTO
+                        campaigns_groups (id, campaign, data)
+                    VALUES
+                        ($1, $2, $3)
+                    ON CONFLICT (id, campaign) DO UPDATE SET
+                        data = $3",
                     id,
                     campaign,
                     data,
@@ -138,7 +149,14 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::StoreUnit,
-                    r#"INSERT INTO campaigns_units (id, campaign, class, "group", data) VALUES ($1, $2, $3, $4, $5)"#,
+                    r#"INSERT INTO
+                        campaigns_units (id, campaign, class, "group", data)
+                    VALUES
+                        ($1, $2, $3, $4, $5)
+                    ON CONFLICT (id, campaign) DO UPDATE SET
+                        class = $3,
+                        "group" = $4,
+                        data = $5"#,
                     id,
                     campaign,
                     class,
@@ -156,10 +174,59 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::StoreMarker,
-                    "INSERT INTO campaigns_markers (name, campaign, data) VALUES ($1, $2, $3)",
+                    "INSERT INTO
+                        campaigns_markers (name, campaign, data)
+                    VALUES
+                        ($1, $2, $3)
+                        ON CONFLICT (name, campaign) DO UPDATE SET
+                        data = $3",
                     name,
                     campaign,
                     data,
+                )
+            }
+            Self::DeleteObject { campaign, id } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::DeleteObject,
+                    "DELETE FROM campaigns_objects WHERE id = $1 AND campaign = $2",
+                    id,
+                    campaign,
+                )
+            }
+            Self::DeleteGroup { campaign, id } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::DeleteGroup,
+                    "DELETE FROM campaigns_groups WHERE id = $1 AND campaign = $2",
+                    id,
+                    campaign,
+                )
+            }
+            Self::DeleteUnit { campaign, id } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::DeleteUnit,
+                    "DELETE FROM campaigns_units WHERE id = $1 AND campaign = $2",
+                    id,
+                    campaign,
+                )
+            }
+            Self::DeleteMarker { campaign, name } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::DeleteMarker,
+                    "DELETE FROM campaigns_markers WHERE name = $1 AND campaign = $2",
+                    name,
+                    campaign,
                 )
             }
         }

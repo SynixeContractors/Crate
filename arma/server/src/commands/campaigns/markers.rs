@@ -8,7 +8,10 @@ use uuid::Uuid;
 use crate::{CONTEXT, RUNTIME};
 
 pub fn group() -> Group {
-    Group::new().command("save", save).command("load", load)
+    Group::new()
+        .command("save", save)
+        .command("load", load)
+        .command("delete", delete)
 }
 
 fn save(campaign: Uuid, name: String, data: HashMap<String, Value>) {
@@ -27,7 +30,7 @@ fn save(campaign: Uuid, name: String, data: HashMap<String, Value>) {
                 ),
             }
         ).await else {
-            error!("failed to save group");
+            error!("failed to save marker");
             return;
         };
     });
@@ -50,6 +53,7 @@ fn load(campaign: Uuid) {
             error!("failed to load markers");
             return;
         };
+        debug!("loading {} markers", markers.len());
         for marker in markers {
             context.callback_data(
                 "crate:campaigns:markers",
@@ -58,5 +62,21 @@ fn load(campaign: Uuid) {
             );
         }
         context.callback_null("crate:campaigns:markers", "done");
+    });
+}
+
+fn delete(campaign: Uuid, name: String) {
+    RUNTIME.spawn(async move {
+        let Ok(Ok((Response::DeleteMarker(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::campaigns::db,
+            DeleteMarker {
+                campaign,
+                name,
+            }
+        ).await else {
+            error!("failed to delete marker");
+            return;
+        };
     });
 }

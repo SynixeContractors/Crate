@@ -41,6 +41,7 @@ private _vehicle = _class createVehicle _spawnPos;
 _vehicle setDir _spawnDir;
 _vehicle setVariable [QGVAR(plate), _plate, true];
 _vehicle setPlateNumber _plate;
+private _state = createHashMapFromArray _state;
 [{
     _this call EFUNC(common,objectState_load);
 }, [_vehicle, _state]] call CBA_fnc_execNextFrame;

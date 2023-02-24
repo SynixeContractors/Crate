@@ -26,8 +26,6 @@ if (_loaded isNotEqualTo []) then {
 _object setVariable ["ace_cargo_loaded", [], true];
 [_object] call ace_cargo_fnc_validateCargoSpace;
 
-private _state = createHashMapFromArray _state;
-
 private _fnc_addCargoForContainer = {
     params ["_container", "_cargo"];
 
