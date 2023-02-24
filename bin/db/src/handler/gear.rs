@@ -37,8 +37,10 @@ impl Handler for Request {
                 match_with_return!(actor::gear::locker::get(member, &*db), LockerGet, msg, cx)
             }
             Self::LoadoutBalance { member } => {
-                let l = actor::gear::loadout::get(member, &*db).await?;
-                let loadout_items = Loadout::from_arma(l.unwrap()).unwrap().classes();
+                let Ok(Some(l)) = actor::gear::loadout::get(member, &*db).await else {
+                    return respond!(msg, Response::LoadoutBalance(Ok(0))).await.map_err(Into::into);
+                };
+                let loadout_items = Loadout::from_arma(l).unwrap().classes();
                 match_with_return!(
                     actor::gear::loadout::balance(loadout_items, &*db),
                     LoadoutBalance,

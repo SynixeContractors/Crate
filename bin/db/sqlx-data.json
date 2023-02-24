@@ -330,32 +330,6 @@
     },
     "query": "SELECT\n                        (\n                            SELECT\n                                class\n                            FROM\n                                garage_shop s\n                            WHERE\n                                s.id = COALESCE(v.addon, v.id)\n                        ) as class,\n                        state\n                    FROM\n                        garage_vehicles v\n                    WHERE\n                        v.plate = $1"
   },
-  "35cf5825744cc4ef07d1d869d5d1c0241fb25a8c9733163212b199e08f4b5fb4": {
-    "describe": {
-      "columns": [
-        {
-          "name": "class",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "cost",
-          "ordinal": 1,
-          "type_info": "Int4"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "TextArray"
-        ]
-      }
-    },
-    "query": "SELECT gc.class, gc.cost \n        FROM gear_cost gc\n        INNER JOIN gear_items gi on gi.class = gc.class\n        WHERE gc.class=ANY($1) AND gi.global = false;"
-  },
   "3bb77da35adb64b25c4f0d1d9232bfca9633b231468f94d9371ae1fc7a7f42a5": {
     "describe": {
       "columns": [
@@ -1135,6 +1109,32 @@
       }
     },
     "query": "INSERT INTO missions_schedule_rsvp (scheduled, member, state, details) VALUES ($1, $2, $3, $4) ON CONFLICT (scheduled, member) DO UPDATE SET state = $3, details = $4"
+  },
+  "89eb47b799b12ca853238b2ee85a5d60ff7f122826dff2b240c7fa888396b21c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "class",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "cost",
+          "ordinal": 1,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray"
+        ]
+      }
+    },
+    "query": "SELECT gc.class, gc.cost\n        FROM gear_cost gc\n        INNER JOIN gear_items gi on gi.class = gc.class\n        WHERE gc.class=ANY($1) AND gi.global = false;"
   },
   "8f0ad93b45658324cb5e11a8680509c9db04648c80e91c46c5e01d6e49e4e60f": {
     "describe": {
