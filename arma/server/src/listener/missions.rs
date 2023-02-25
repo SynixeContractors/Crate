@@ -21,7 +21,7 @@ impl Listener for Publish {
         };
         match &self {
             Self::StartingSoon { scheduled, minutes } => {
-                if *SERVER_ID == "arma-main" {
+                if *SERVER_ID == "primary-main" {
                     #[allow(clippy::cast_precision_loss)]
                     context.callback_data(
                         "crate:missions",
@@ -49,7 +49,7 @@ impl Listener for Publish {
                                 scheduled.name
                             ))],
                         );
-                        if *SERVER_ID == "arma-main" {
+                        if *SERVER_ID == "primary-main" {
                             #[allow(clippy::cast_precision_loss)]
                             context.callback_null("crate:missions", "intro_text");
                         }
@@ -65,7 +65,7 @@ impl Listener for Publish {
             } => {
                 match mission_type {
                     MissionType::Contract | MissionType::SubContract | MissionType::Special => {
-                        if *SERVER_ID != "arma-main" {
+                        if *SERVER_ID != "primary-main" {
                             info!("Ignoring mission change event for non-main server");
                             return Ok(());
                         }

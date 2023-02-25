@@ -64,7 +64,7 @@ impl Primary {
     /// Get the container ID
     pub fn id(&self) -> String {
         match self {
-            Self::Arma3Main => "arma-main".to_string(),
+            Self::Arma3Main => "primary-main".to_string(),
             Self::Arma3Training => "arma-training".to_string(),
         }
     }
