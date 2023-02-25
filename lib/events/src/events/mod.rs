@@ -8,6 +8,7 @@ pub mod garage;
 pub mod gear;
 pub mod missions;
 pub mod recruiting;
+pub mod reset;
 pub mod servers;
 
 /// Global events

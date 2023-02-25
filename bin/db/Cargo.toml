@@ -7,7 +7,7 @@ edition = "2021"
 bootstrap = { path = "../../lib/bootstrap", features = ["nats", "sqlx"] }
 synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
-synixe-model = { path = "../../lib/model", features = ["sqlx", "gear", "mission-schedule", "garage"] }
+synixe-model = { path = "../../lib/model", features = ["sqlx", "gear", "mission-schedule", "garage", "reset"] }
 anyhow = { workspace = true }
 arma-rs = { workspace = true }
 async-trait = { workspace = true }

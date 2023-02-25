@@ -17,3 +17,6 @@ pub mod gear;
 
 #[cfg(feature = "garage")]
 pub mod garage;
+
+#[cfg(feature = "reset")]
+pub mod reset;

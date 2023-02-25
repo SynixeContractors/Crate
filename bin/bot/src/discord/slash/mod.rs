@@ -23,6 +23,7 @@ pub mod docker;
 pub mod garage;
 pub mod meme;
 pub mod missions;
+pub mod reset;
 pub mod schedule;
 
 #[derive(Debug, Clone)]
