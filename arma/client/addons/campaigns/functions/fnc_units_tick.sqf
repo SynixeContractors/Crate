@@ -13,6 +13,7 @@ if (GVAR(units_stack) isEqualTo []) then {
 if (GVAR(units_stack) isEqualTo []) exitWith {};
 
 private _unit = GVAR(units_stack) deleteAt 0;
+if (_object isKindOf "Logic") exitWith {};
 
 private _id = _unit getVariable [QGVAR(id), ""];
 if (_id == "") then {
@@ -34,6 +35,7 @@ private _state = [_unit] call EFUNC(common,unitState_save);
 
 _state set ["pos", getPosASL _unit];
 _state set ["rot", [vectorDir _unit, vectorUp _unit]];
+_state set ["dir", direction _unit];
 
 if (_state isEqualTo (_unit getVariable [QGVAR(last), createHashMap])) exitWith {};
 

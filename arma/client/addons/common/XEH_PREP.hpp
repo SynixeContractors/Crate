@@ -7,4 +7,5 @@ PREP(objectState_save);
 PREP(unitState_load);
 PREP(unitState_save);
 
+PREP(getInventory);
 PREP(playerFromSteam);

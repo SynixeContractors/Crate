@@ -27,7 +27,7 @@ params ["_marker", "_state"];
         };
         case "polyline": {
             _marker setMarkerShapeLocal "POLYLINE";
-            _marker setMarkerPosLocal _y;
+            _marker setMarkerPolylineLocal _y;
         };
         case "shadow": {
             _marker setMarkerShadowLocal _y;

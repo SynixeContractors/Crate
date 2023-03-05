@@ -5,22 +5,22 @@ params ["_unit", "_state"];
 {
     switch (_x) do {
         case "name": {
-            _unit setName _y;
+            [_unit, _y] remoteExec ["setName", 0, _unit];
         };
         case "loadout": {
             [_unit, _y] call CBA_fnc_setLoadout;
         };
         case "face": {
-            _unit setFace _y;
+            [_unit, _y] remoteExec ["setFace", 0, _unit];
         };
         case "speaker": {
-            _unit setSpeaker _y;
+            [_unit, _y] remoteExec ["setSpeaker", 0, _unit];
         };
         case "rank": {
             _unit setRank _y;
         };
         case "pitch": {
-            _unit setPitch _y;
+            [_unit, _y] remoteExec ["setPitch", 0, _unit];
         };
         case "alive": {
             if !(_y) then {
@@ -46,7 +46,7 @@ params ["_unit", "_state"];
         case "vehicle": {
             _y params ["_vid", "_seat"];
             private _objects = allMissionObjects "All";
-            private _vehicle = _objects select (_objects findIf { (_x getVariable [QGVAR(id), "-"]) isEqualTo _vid });
+            private _vehicle = _objects select (_objects findIf { (_x getVariable [QEGVAR(campaigns,id), "-"]) isEqualTo _vid });
             switch (_seat) do {
                 case "driver": {
                     _unit moveInDriver _vehicle;

@@ -55,6 +55,6 @@ addMissionEventHandler ["BuildingChanged", {
         vectorDir _tag,
         vectorUp _tag
     ]];
-    _state set ["tex", _texture];
+    _state set ["tex", [_texture]];
     EXTCALL("campaigns:objects:save", [ARR_4(GVAR(key), _id, typeOf _tag, _state)]);
 }] call CBA_fnc_addEventHandler;

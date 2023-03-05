@@ -50,16 +50,18 @@ if (_tex isNotEqualTo []) then {
 };
 
 // Damage
-private _hits = [];
-private _data = (getAllHitPointsDamage _object);
-{
-    private _damage = _data select 2 select _forEachIndex;
-    if (_damage != 0) then {
-        _hits pushBack [_x, _damage];
+if (alive _object) then {
+    private _hits = [];
+    private _data = (getAllHitPointsDamage _object);
+    {
+        private _damage = _data select 2 select _forEachIndex;
+        if (_damage != 0) then {
+            _hits pushBack [_x, _damage];
+        };
+    } forEach (_data select 0);
+    if (_hits isNotEqualTo []) then {
+        _state set ["hits", _hits];
     };
-} forEach (_data select 0);
-if (_hits isNotEqualTo []) then {
-    _state set ["hits", _hits];
 };
 
 // Inventory
