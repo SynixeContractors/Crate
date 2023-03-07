@@ -1,0 +1,13 @@
+concurrency: 400
+base: 'https://cluster.synixe.contractors'
+iterations: 5000
+rampup: 2
+
+plan:
+  - name: 'Get Balance'
+    request:
+      url: /api/bank/balance/301877267196411904
+
+  - name: 'Get Calendar'
+    request:
+      url: /calendar
