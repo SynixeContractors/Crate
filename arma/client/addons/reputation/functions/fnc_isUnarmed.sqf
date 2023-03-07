@@ -2,6 +2,7 @@
 
 params ["_unit"];
 
+if (vehicle _unit != _unit) exitWith {false};
 if (primaryWeapon _unit != "") exitWith {false};
 if (secondaryWeapon _unit != "") exitWith {false};
 if (handgunWeapon _unit != "") exitWith {false};

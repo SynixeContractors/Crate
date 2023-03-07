@@ -4,7 +4,13 @@ use synixe_meta::discord::channel::FINANCIALS;
 use synixe_proc::events_request_2;
 use uuid::Uuid;
 
-use crate::bot::Bot;
+use crate::{
+    bot::Bot,
+    discord::menu::{
+        missions::{MENU_AAR_IDS, MENU_AAR_PAY},
+        recruiting::MENU_RECRUITING_REPLY,
+    },
+};
 
 use super::{menu, slash};
 
@@ -27,10 +33,11 @@ impl EventHandler for Handler {
                     .create_application_command(|command| menu::recruiting::reply(command))
                     .create_application_command(|command| slash::bank::register(command))
                     .create_application_command(|command| slash::certifications::register(command))
-                    .create_application_command(|command| slash::garage::register(command))
                     .create_application_command(|command| slash::docker::register(command))
+                    .create_application_command(|command| slash::garage::register(command))
                     .create_application_command(|command| slash::meme::register(command))
                     .create_application_command(|command| slash::missions::register(command))
+                    .create_application_command(|command| slash::reputation::register(command))
                     .create_application_command(|command| slash::reset::register(command))
                     .create_application_command(|command| slash::schedule::register(command))
             })
@@ -46,17 +53,18 @@ impl EventHandler for Handler {
             Interaction::ApplicationCommand(command) => {
                 debug!("matching command: {:?}", command.data.name.as_str());
                 match command.data.name.as_str() {
-                    "AAR - Get IDs" => menu::missions::run_aar_ids(&ctx, &command).await,
-                    "AAR - Pay" => menu::missions::run_aar_pay(&ctx, &command).await,
                     "bank" => slash::bank::run(&ctx, &command).await,
                     "certifications" => slash::certifications::run(&ctx, &command).await,
-                    "garage" => slash::garage::run(&ctx, &command).await,
                     "docker" => slash::docker::run(&ctx, &command).await,
+                    "garage" => slash::garage::run(&ctx, &command).await,
                     "meme" => slash::meme::run(&ctx, &command).await,
                     "missions" => slash::missions::run(&ctx, &command).await,
-                    "Recruiting - Reply" => menu::recruiting::run_reply(&ctx, &command).await,
+                    "reputation" => slash::reputation::run(&ctx, &command).await,
                     "reset" => slash::reset::run(&ctx, &command).await,
                     "schedule" => slash::schedule::run(&ctx, &command).await,
+                    MENU_AAR_IDS => menu::missions::run_aar_ids(&ctx, &command).await,
+                    MENU_AAR_PAY => menu::missions::run_aar_pay(&ctx, &command).await,
+                    MENU_RECRUITING_REPLY => menu::recruiting::run_reply(&ctx, &command).await,
                     _ => Ok(()),
                 }
             }

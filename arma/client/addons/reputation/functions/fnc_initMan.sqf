@@ -4,35 +4,36 @@ params ["_unit"];
 
 _unit addEventHandler ["Hit", {
     params ["_unit", "_source", "_damage", "_instigator"];
+    if (_unit isEqualTo _instigator) exitWith {};
     if !(isPlayer _instigator) exitWith {};
 
     private _discord = _instigator getVariable [QEGVAR(discord,id), ""];
     if (_discord isEqualTo "") exitWith {};
 
-    private _weapon = currentWeapon _instigator;
+    private _weapon = [_instigator] call FUNC(getWeapon);
 
     if (side group _unit isEqualTo side group _instigator) then {
         [QGVAR(friendly_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
     };
 
-    private _isUnarmed = [_unit] call FUNC(isUnarmed);
-    if (_isUnarmed) then {
+    if ([_unit] call FUNC(isUnarmed)) then {
         [QGVAR(unarmed_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
     };
 
-    private _isSurrendering = _unit getVariable ["ace_captives_isSurrendering", false];
-    if (_isSurrendering) then {
+    if (_unit getVariable ["ace_captives_isSurrendering", false]) then {
         [QGVAR(surrendering_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
     };
 
-    private _isCaptive = _unit getVariable ["ace_captives_isHandcuffed", false];
-    if (_isCaptive) then {
+    if (_unit getVariable ["ace_captives_isHandcuffed", false]) then {
         [QGVAR(captive_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
     };
 
-    private _isUnconscious = _unit getVariable ["ACE_isUnconscious", false];
-    if (_isUnconscious) then {
-        [QGVAR(unconscious_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
+    if (_unit getVariable ["ACE_isUnconscious", false]) then {
+        if (_unit getVariable [QGVAR(wasUnconscious), false]) then {
+            [QGVAR(unconscious_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
+        } else {
+            _unit setVariable [QGVAR(wasUnconscious), true];
+        };
     };
 
     if (side group _unit == civilian) then {

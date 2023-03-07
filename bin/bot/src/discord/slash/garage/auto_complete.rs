@@ -264,9 +264,9 @@ async fn autocomplete_shop(
             for assets in assets {
                 f.add_string_choice(
                     format!(
-                        "{} - ${}",
+                        "{} - {}",
                         assets.name,
-                        bootstrap::format::money(assets.cost)
+                        bootstrap::format::money(assets.cost, false)
                     ),
                     assets.id,
                 );

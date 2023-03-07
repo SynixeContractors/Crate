@@ -10,6 +10,10 @@ use synixe_events::{missions::db::Response, reputation};
 use synixe_meta::discord::role::STAFF;
 use synixe_model::missions::aar::{Aar, PaymentType};
 use synixe_proc::events_request_2;
+use time::macros::offset;
+
+pub const MENU_AAR_PAY: &str = "AAR - Pay";
+pub const MENU_AAR_IDS: &str = "AAR - Get IDs";
 
 use crate::discord::{
     interaction::{Confirmation, Generic, Interaction},
@@ -17,7 +21,7 @@ use crate::discord::{
 };
 
 pub fn aar_ids(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command.name("AAR - Get IDs").kind(CommandType::Message)
+    command.name(MENU_AAR_IDS).kind(CommandType::Message)
 }
 
 pub async fn run_aar_ids(
@@ -55,7 +59,7 @@ pub async fn run_aar_ids(
 }
 
 pub fn aar_pay(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command.name("AAR - Pay").kind(CommandType::Message)
+    command.name(MENU_AAR_PAY).kind(CommandType::Message)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -82,35 +86,40 @@ pub async fn run_aar_pay(
             .reply("Failed to find message")
             .await;
     };
+    let aar = match Aar::from_message(&message.content) {
+        Ok(aar) => aar,
+        Err(e) => {
+            return interaction.reply(format!(":confused: I couldn't parse that AAR. Please make sure you're using the template. Error: {e}")).await;
+        }
+    };
     let Ok(Ok((reputation::db::Response::CurrentReputation(Ok(Some(Some(current_rep)))), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::reputation::db,
-        CurrentReputation {}
+        CurrentReputation {
+            at: aar.date().with_time(time::Time::from_hms(0, 0, 0).expect("Will always be valid date")).assume_offset(offset!(UTC)),
+        }
     )
     .await else {
-        return interaction.reply("Failed to transfer money").await;
+        return interaction.reply("Failed to get get reputation").await;
     };
+    #[allow(clippy::cast_possible_truncation)]
+    let current_rep = current_rep as f32;
     let Some(reputation) = interaction.choice(&format!("The current reputation is {current_rep:.0}. Select the reputation you want to use for this mission."), &vec![
-        ("Extremely Postive", 3000),
-        ("Very Positive", 2000),
-        ("Positive", 1000),
+        ("Extremely Postive", 150),
+        ("Very Positive", 80),
+        ("Positive", 30),
+        ("Slightly Positive", 10),
         ("Neutral", 0),
-        ("Negative", -1000),
-        ("Very Negative", -2000),
-        ("Extremely Negative", -3000),
+        ("Slightly Negative", -10),
+        ("Negative", -50),
+        ("Very Negative", -100),
+        ("Extremely Negative", -200),
     ].into_iter().map(
         |(name, rep)| (format!("{name} ({rep})"), rep)
     ).collect::<Vec<_>>()).await? else {
         return interaction
             .reply("Failed to get reputation")
             .await;
-    };
-    #[allow(clippy::cast_possible_truncation)]
-    let aar = match Aar::from_message(&message.content, current_rep as f32) {
-        Ok(aar) => aar,
-        Err(e) => {
-            return interaction.reply(format!(":confused: I couldn't parse that AAR. Please make sure you're using the template. Error: {e}")).await;
-        }
     };
     match find_members(ctx, aar.contractors()).await {
         Ok(ids) => {
@@ -143,7 +152,7 @@ pub async fn run_aar_pay(
                     .await;
             };
             if interaction
-                .confirm(&format!("```{}```", &aar.show_math(payment)))
+                .confirm(&format!("```{}```", &aar.show_math(payment, current_rep)))
                 .await?
                 == Confirmation::Yes
             {
@@ -153,8 +162,8 @@ pub async fn run_aar_pay(
                     PayMission {
                         scheduled: scheduled.id,
                         contractors: ids,
-                        contractor_amount: aar.contractor_payment(payment),
-                        group_amount: aar.employer_payment(payment),
+                        contractor_amount: aar.contractor_payment(payment, current_rep),
+                        group_amount: aar.employer_payment(payment, current_rep),
                     }
                 )
                 .await
@@ -164,7 +173,7 @@ pub async fn run_aar_pay(
                             &ctx.http,
                             format!(
                                 ":white_check_mark: **Paid**\n```{}```",
-                                aar.show_math(payment)
+                                aar.show_math(payment, current_rep)
                             ),
                         )
                         .await

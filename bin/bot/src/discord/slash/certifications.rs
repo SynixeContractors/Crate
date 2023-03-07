@@ -3,9 +3,7 @@ use std::collections::HashSet;
 use serenity::{
     builder::CreateApplicationCommand,
     model::prelude::{
-        application_command::{
-            ApplicationCommandInteraction, CommandDataOption, CommandDataOptionValue,
-        },
+        application_command::{ApplicationCommandInteraction, CommandDataOption},
         autocomplete::AutocompleteInteraction,
         command::CommandOptionType,
     },

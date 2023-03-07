@@ -6,7 +6,7 @@ if (vehicle _unit == _unit) exitWith {
 
 private _role = assignedVehicleRole _unit;
 
-if (_role != "turret") exitWith {
+if (_role#0 != "turret") exitWith {
     typeOf (vehicle _unit)
 };
 

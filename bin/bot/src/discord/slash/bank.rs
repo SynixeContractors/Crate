@@ -1,9 +1,7 @@
 use serenity::{
     builder::CreateApplicationCommand,
     model::prelude::{
-        application_command::{
-            ApplicationCommandInteraction, CommandDataOption, CommandDataOptionValue,
-        },
+        application_command::{ApplicationCommandInteraction, CommandDataOption},
         command::CommandOptionType,
     },
     prelude::Context,
@@ -125,12 +123,12 @@ async fn balance(
     };
     interaction
         .reply(format!(
-            "<@{}> has:\n```Cash:      ${}\nLocker:    ${}\nLoadout:   ${}\nNet Worth: ${}```",
+            "<@{}> has:\n```Cash:      {}\nLocker:    {}\nLoadout:   {}\nNet Worth: {}```",
             user.id,
-            bootstrap::format::money(balance),
-            bootstrap::format::money(locker_balance),
-            bootstrap::format::money(loadout_balance),
-            bootstrap::format::money(balance + locker_balance + loadout_balance)
+            bootstrap::format::money(balance, false),
+            bootstrap::format::money(locker_balance, false),
+            bootstrap::format::money(loadout_balance, false),
+            bootstrap::format::money(balance + locker_balance + loadout_balance, false)
         ))
         .await
 }
@@ -170,8 +168,8 @@ async fn transfer(
         return interaction.reply("Failed to transfer money").await;
     };
     let reply = format!(
-        "Transferred ${} to <@{}>",
-        bootstrap::format::money(*amount as i32),
+        "Transferred {} to <@{}>",
+        bootstrap::format::money(*amount as i32, false),
         user.id
     );
     interaction.reply(&reply).await?;
@@ -185,14 +183,14 @@ async fn transfer(
         .say(
             &ctx.http,
             format!(
-                "<@{}> transferred you ${}\n> {}",
+                "<@{}> transferred you {}\n> {}",
                 command
                     .member
                     .as_ref()
                     .expect("member should always exist on guild commands")
                     .user
                     .id,
-                bootstrap::format::money(*amount as i32),
+                bootstrap::format::money(*amount as i32, false),
                 reason.clone(),
             ),
         )

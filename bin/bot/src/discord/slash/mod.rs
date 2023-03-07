@@ -23,6 +23,7 @@ pub mod docker;
 pub mod garage;
 pub mod meme;
 pub mod missions;
+pub mod reputation;
 pub mod reset;
 pub mod schedule;
 
@@ -140,7 +141,10 @@ macro_rules! get_option {
 macro_rules! get_option_user {
     ($options:expr, $name:expr) => {
         match $crate::discord::slash::_get_option($options, $name) {
-            Some(CommandDataOptionValue::User(user, _member)) => Some(user),
+            Some(serenity::model::prelude::application_command::CommandDataOptionValue::User(
+                user,
+                _member,
+            )) => Some(user),
             _ => None,
         }
     };

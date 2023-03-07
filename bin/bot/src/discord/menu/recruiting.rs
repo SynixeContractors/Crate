@@ -13,9 +13,11 @@ use synixe_proc::events_request_2;
 
 use crate::discord::interaction::{Generic, Interaction};
 
+pub const MENU_RECRUITING_REPLY: &str = "Recruiting - Reply";
+
 pub fn reply(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
-        .name("Recruiting - Reply")
+        .name(MENU_RECRUITING_REPLY)
         .kind(CommandType::Message)
 }
 
