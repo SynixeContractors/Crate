@@ -213,13 +213,14 @@ impl Handler for Request {
                     }),
                 )
             }
-            Self::CurrentReputation {} => {
+            Self::CurrentReputation { at } => {
                 fetch_one_and_respond!(
                     msg,
                     *db,
                     cx,
                     Response::CurrentReputation,
-                    "SELECT reputation() as value",
+                    "SELECT reputation($1) as value",
+                    at,
                 )
             }
         }

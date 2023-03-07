@@ -29,7 +29,7 @@ impl Aar {
     /// # Errors
     ///
     /// Returns an error if the message is not a valid AAR.
-    pub fn from_message(content: &str) -> Result<Self, String> {
+    pub fn from_message(content: &str, reputation: f32) -> Result<Self, String> {
         let content = content.trim_matches('`');
         let lower = content.to_lowercase();
         let Ok(regex) = Regex::new(r"(?m)(\d+)(?:.+?)(no|light|medium|heavy)") else {
@@ -73,7 +73,10 @@ impl Aar {
         };
 
         let result = regex.captures_iter(&lower);
-        let mut payment = Payment::default();
+        let mut payment = Payment {
+            reputation,
+            ..Default::default()
+        };
         for mat in result {
             let Some(mat1) = mat.get(1) else { return Err("Could not find payment amount.".to_string()) };
             let Ok(amount) = mat1.as_str().parse::<i32>() else {
@@ -160,6 +163,7 @@ impl Aar {
         payment += self.payment.light_combat as f32 / 60f32 * payment_type.light_combat() as f32;
         payment += self.payment.medium_combat as f32 / 60f32 * payment_type.medium_combat() as f32;
         payment += self.payment.heavy_combat as f32 / 60f32 * payment_type.heavy_combat() as f32;
+        payment += self.payment.reputation_bonus() / 10f32 / 120f32 * self.payment.total() as f32;
         payment *= self.outcome.contractor_multiplier();
         payment as i32
     }
@@ -170,6 +174,7 @@ impl Aar {
     pub fn employer_payment(&self, payment_type: PaymentType) -> i32 {
         let mut payment = 0f32;
         payment += self.payment.total() as f32 / 60f32 * payment_type.employer() as f32;
+        payment += self.payment.reputation_bonus() * 10f32 / 120f32 * self.payment.total() as f32;
         payment *= self.outcome.employer_multiplier();
         (payment as i32).max(20_000)
     }
@@ -179,48 +184,68 @@ impl Aar {
     /// Show the math for the payments
     /// Example:
     /// ```
-    /// No Combat  | 420/h x 60 = 420
-    /// Light      | 490/h x 30 = 245
-    /// Heavy      | 700/h x 30 = 350
-    /// Partial    | x0.8       = 812
+    /// No Combat  | 420/h x 60  = $420
+    /// Light      | 490/h x 30  = $245
+    /// Heavy      | 700/h x 30  = $350
+    /// Reputation | 099/h x 120 = $181
+    /// Partial    | x0.8        = $956
     ///
-    /// Group      | 59800/h x 120 = 119600
-    /// Partial    | x0.5       = 59800
+    /// Group      | 59800/h x 120 = $119,600
+    /// Reputation | 09945/h x 120 = $19,890
+    /// Partial    | x0.5          = $69,745
     /// ```
     pub fn show_math(&self, payment_type: PaymentType) -> String {
         let mut math = String::new();
         if self.payment.no_combat > 0 {
             math.push_str(&format!(
-                "No Combat  | {:03}/h x {:02} = {:.0}\n",
+                "No Combat  | {:03}/h x {:03} = {:.0}\n",
                 payment_type.no_combat(),
                 self.payment.no_combat,
-                self.payment.no_combat as f32 / 60f32 * payment_type.no_combat() as f32
+                bootstrap::format::money(
+                    (self.payment.no_combat as f32 / 60f32 * payment_type.no_combat() as f32).ceil()
+                        as i32
+                )
             ));
         }
         if self.payment.light_combat > 0 {
             math.push_str(&format!(
-                "Light      | {:03}/h x {:02} = {:.0}\n",
+                "Light      | {:03}/h x {:03} = {:.0}\n",
                 payment_type.light_combat(),
                 self.payment.light_combat,
-                self.payment.light_combat as f32 / 60f32 * payment_type.light_combat() as f32
+                bootstrap::format::money(
+                    (self.payment.light_combat as f32 / 60f32 * payment_type.light_combat() as f32)
+                        .ceil() as i32
+                )
             ));
         }
         if self.payment.medium_combat > 0 {
             math.push_str(&format!(
-                "Medium     | {:03}/h x {:02} = {:.0}\n",
+                "Medium     | {:03}/h x {:03} = {:.0}\n",
                 payment_type.medium_combat(),
                 self.payment.medium_combat,
-                self.payment.medium_combat as f32 / 60f32 * payment_type.medium_combat() as f32
+                bootstrap::format::money(
+                    (self.payment.medium_combat as f32 / 60f32
+                        * payment_type.medium_combat() as f32)
+                        .ceil() as i32
+                )
             ));
         }
         if self.payment.heavy_combat > 0 {
             math.push_str(&format!(
-                "Heavy      | {:03}/h x {:02} = {:.0}\n",
+                "Heavy      | {:03}/h x {:03} = {:}\n",
                 payment_type.heavy_combat(),
                 self.payment.heavy_combat,
-                self.payment.heavy_combat as f32 / 60f32 * payment_type.heavy_combat() as f32
+                bootstrap::format::money(
+                    (self.payment.heavy_combat as f32 / 60f32 * payment_type.heavy_combat() as f32)
+                        .ceil() as i32
+                )
             ));
         }
+        math.push_str(&format!(
+            "Reputation | {:04}       = ${}\n",
+            self.payment.reputation,
+            bootstrap::format::money(self.payment.reputation as i32 / 10)
+        ));
         math.push_str(&format!(
             "{}    | x{:.1}       = ${}\n",
             self.outcome,
@@ -229,10 +254,22 @@ impl Aar {
         ));
         math.push('\n');
         math.push_str(&format!(
-            "Group      | {}/h x {:03} = {:.0}\n",
+            "Group      | {:05}/h x {:03} = {:.0}\n",
             payment_type.employer(),
             self.payment.total(),
-            self.payment.total() as f32 / 60f32 * payment_type.employer() as f32
+            bootstrap::format::money(
+                (self.payment.total() as f32 / 60f32 * payment_type.employer() as f32).ceil()
+                    as i32
+            )
+        ));
+        math.push_str(&format!(
+            "Reputation | {:04}/h x {:03} = ${}\n",
+            self.payment.reputation as i32 * 10 / 2,
+            self.payment.total(),
+            bootstrap::format::money(
+                (self.payment.total() as f32 / 60f32 * self.payment.reputation * 10f32 / 2f32)
+                    .ceil() as i32
+            )
         ));
         math.push_str(&format!(
             "{}    | x{:.1}          = ${}\n",
@@ -298,13 +335,21 @@ pub struct Payment {
     medium_combat: i32,
     /// The duration in minutes of heavy combat.
     heavy_combat: i32,
+    /// Reputation at payment time.
+    reputation: f32,
 }
 
 impl Payment {
     #[must_use]
-    /// Returns the total payment for the mission.
+    /// Returns the total time for the mission.
     pub const fn total(&self) -> i32 {
         self.no_combat + self.light_combat + self.medium_combat + self.heavy_combat
+    }
+
+    #[must_use]
+    /// Get the bonus / fine based on the reputation.
+    pub fn reputation_bonus(&self) -> f32 {
+        self.reputation.clamp(-2000f32, 2000f32)
     }
 }
 
@@ -480,6 +525,7 @@ AAR: Contractors were tasked with destroying Cartel Assets on the island nation 
 Operation Successful.
 
 Payment request: 60 No Combat 30 Light Combat 45 Medium Combat 15 Heavy Combat```"#,
+            0f32,
         );
         assert!(aar.is_ok());
         println!("{}", aar.unwrap().show_math(PaymentType::Defensive));

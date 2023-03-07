@@ -358,24 +358,6 @@
     },
     "query": "SELECT\n                        (\n                            SELECT\n                                class\n                            FROM\n                                garage_shop s\n                            WHERE\n                                s.id = COALESCE(v.addon, v.id)\n                        ) as class,\n                        state\n                    FROM\n                        garage_vehicles v\n                    WHERE\n                        v.plate = $1"
   },
-  "3b798e1abfe2873ac6fa360f5c970f7c56801ca8d6d177078254a4b92090a893": {
-    "describe": {
-      "columns": [
-        {
-          "name": "value",
-          "ordinal": 0,
-          "type_info": "Float8"
-        }
-      ],
-      "nullable": [
-        null
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "SELECT reputation() as value"
-  },
   "3bb77da35adb64b25c4f0d1d9232bfca9633b231468f94d9371ae1fc7a7f42a5": {
     "describe": {
       "columns": [
@@ -2456,6 +2438,26 @@
       }
     },
     "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'mission_completed', $2, $3)"
+  },
+  "f4e87e320d4a802b7389fe25c093f4a028468691e8f6fd39993a359bb5c62ce7": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Float8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Timestamptz"
+        ]
+      }
+    },
+    "query": "SELECT reputation($1) as value"
   },
   "f667b03c67b42ae2f957d73340685fe9255b8147b9c0935f1fb458132c9b89ba": {
     "describe": {

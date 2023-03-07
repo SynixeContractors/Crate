@@ -12,7 +12,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
     if message.author.bot {
         return;
     }
-    let Ok(aar) = Aar::from_message(&message.content) else {
+    let Ok(aar) = Aar::from_message(&message.content, 0f32) else {
         if let Err(e) = message.reply(&ctx.http, ":confused: I couldn't parse that AAR. Please make sure you're using the template.").await {
             error!("Error replying to message: {}", e);
         };

@@ -6,7 +6,7 @@ use serenity::{
     },
     prelude::Context,
 };
-use synixe_events::missions::db::Response;
+use synixe_events::{missions::db::Response, reputation};
 use synixe_meta::discord::role::STAFF;
 use synixe_model::missions::aar::{Aar, PaymentType};
 use synixe_proc::events_request_2;
@@ -82,7 +82,31 @@ pub async fn run_aar_pay(
             .reply("Failed to find message")
             .await;
     };
-    let aar = match Aar::from_message(&message.content) {
+    let Ok(Ok((reputation::db::Response::CurrentReputation(Ok(Some(Some(current_rep)))), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::reputation::db,
+        CurrentReputation {}
+    )
+    .await else {
+        return interaction.reply("Failed to transfer money").await;
+    };
+    let Some(reputation) = interaction.choice(&format!("The current reputation is {current_rep:.0}. Select the reputation you want to use for this mission."), &vec![
+        ("Extremely Postive", 3000),
+        ("Very Positive", 2000),
+        ("Positive", 1000),
+        ("Neutral", 0),
+        ("Negative", -1000),
+        ("Very Negative", -2000),
+        ("Extremely Negative", -3000),
+    ].into_iter().map(
+        |(name, rep)| (format!("{name} ({rep})"), rep)
+    ).collect::<Vec<_>>()).await? else {
+        return interaction
+            .reply("Failed to get reputation")
+            .await;
+    };
+    #[allow(clippy::cast_possible_truncation)]
+    let aar = match Aar::from_message(&message.content, current_rep as f32) {
         Ok(aar) => aar,
         Err(e) => {
             return interaction.reply(format!(":confused: I couldn't parse that AAR. Please make sure you're using the template. Error: {e}")).await;
@@ -90,7 +114,7 @@ pub async fn run_aar_pay(
     };
     match find_members(ctx, aar.contractors()).await {
         Ok(ids) => {
-            if let Ok(Ok((Response::FindScheduledDate(Ok(scheduled)), _))) = events_request_2!(
+            let Ok(Ok((Response::FindScheduledDate(Ok(Some(scheduled))), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 FindScheduledDate {
@@ -98,67 +122,67 @@ pub async fn run_aar_pay(
                     date: aar.date(),
                 }
             )
-            .await
+            .await else {
+                return interaction.reply("Failed to find scheduled date").await;
+            };
+            let Ok(Ok((reputation::db::Response::MissionCompleted(Ok(_)), _))) = events_request_2!(
+                bootstrap::NC::get().await,
+                synixe_events::reputation::db,
+                MissionCompleted { member: member.user.id, mission: scheduled.id.to_string(), reputation: reputation.parse().expect("Should only receive the number values from the reputation choices") }
+            ).await else {
+                return interaction.reply("Failed to set reputation").await;
+            };
+            let Some(payment) = interaction.choice("Select Payment Type", &PaymentType::as_choices()).await? else {
+                return interaction
+                    .reply("Failed to get payment type")
+                    .await;
+            };
+            let Some(payment) = PaymentType::from_i32(payment.parse().expect("Should only receive the number values from the payment type choices")) else {
+                return interaction
+                    .reply("Failed to get payment type")
+                    .await;
+            };
+            if interaction
+                .confirm(&format!("```{}```", &aar.show_math(payment)))
+                .await?
+                == Confirmation::Yes
             {
-                let Some(scheduled) = scheduled else {
-                    return interaction
-                        .reply("Failed to find scheduled date")
-                        .await;
-                };
-                let Some(payment) = interaction.choice("Select Payment Type", &PaymentType::as_choices()).await? else {
-                    return interaction
-                        .reply("Failed to get payment type")
-                        .await;
-                };
-                let Some(payment) = PaymentType::from_i32(payment.parse().expect("Should only receive the number values from the payment type choices")) else {
-                    return interaction
-                        .reply("Failed to get payment type")
-                        .await;
-                };
-                if interaction
-                    .confirm(&format!("```{}```", &aar.show_math(payment)))
-                    .await?
-                    == Confirmation::Yes
+                if let Ok(Ok((Response::PayMission(Ok(_)), _))) = events_request_2!(
+                    bootstrap::NC::get().await,
+                    synixe_events::missions::db,
+                    PayMission {
+                        scheduled: scheduled.id,
+                        contractors: ids,
+                        contractor_amount: aar.contractor_payment(payment),
+                        group_amount: aar.employer_payment(payment),
+                    }
+                )
+                .await
                 {
-                    if let Ok(Ok((Response::PayMission(Ok(_)), _))) = events_request_2!(
-                        bootstrap::NC::get().await,
-                        synixe_events::missions::db,
-                        PayMission {
-                            scheduled: scheduled.id,
-                            contractors: ids,
-                            contractor_amount: aar.contractor_payment(payment),
-                            group_amount: aar.employer_payment(payment),
-                        }
-                    )
-                    .await
+                    if let Err(e) = message
+                        .reply(
+                            &ctx.http,
+                            format!(
+                                ":white_check_mark: **Paid**\n```{}```",
+                                aar.show_math(payment)
+                            ),
+                        )
+                        .await
                     {
-                        if let Err(e) = message
-                            .reply(
-                                &ctx.http,
-                                format!(
-                                    ":white_check_mark: **Paid**\n```{}```",
-                                    aar.show_math(payment)
-                                ),
-                            )
-                            .await
-                        {
-                            error!("Error replying to message: {}", e);
-                        }
-                        interaction.reply("Mission Paid").await?;
-                        if let Err(e) = message
-                            .react(&ctx.http, ReactionType::Unicode("✅".to_string()))
-                            .await
-                        {
-                            error!("Error reacting to message: {}", e);
-                        }
-                    } else {
-                        interaction.reply("Failed to pay mission").await?;
+                        error!("Error replying to message: {}", e);
+                    }
+                    interaction.reply("Mission Paid").await?;
+                    if let Err(e) = message
+                        .react(&ctx.http, ReactionType::Unicode("✅".to_string()))
+                        .await
+                    {
+                        error!("Error reacting to message: {}", e);
                     }
                 } else {
-                    interaction.reply("Mission not paid").await?;
+                    interaction.reply("Failed to pay mission").await?;
                 }
             } else {
-                interaction.reply("Failed to find scheduled date").await?;
+                interaction.reply("Mission not paid").await?;
             }
         }
         Err(e) => {

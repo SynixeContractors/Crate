@@ -4,6 +4,7 @@
 pub mod db {
     use serenity::model::prelude::UserId;
     use synixe_proc::events_requests;
+    use time::OffsetDateTime;
 
     events_requests!(db.reputation {
         // Negative reputation events
@@ -98,10 +99,13 @@ pub mod db {
             /// The mission that was completed
             mission: String,
             /// Reputation change
-            reputation: i8,
+            reputation: i32,
         } => (Result<(), String>)
         /// Get the current reputation of the group
         /// This function should never return None
-        struct CurrentReputation {} => (Result<Option<Option<f64>>, String>)
+        struct CurrentReputation {
+            /// The time to get the reputation for
+            at: OffsetDateTime,
+        } => (Result<Option<Option<f64>>, String>)
     });
 }
