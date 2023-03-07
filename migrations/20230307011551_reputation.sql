@@ -15,7 +15,7 @@ CREATE INDEX reputation_events_created_idx ON reputation_events (created);
 
 -- A function that calculates the current reputation of the community
 -- Recent events are weighted more heavily than older events
-CREATE OR REPLACE FUNCTION reputation() RETURNS TABLE (reputation NUMERIC) AS $$
+CREATE OR REPLACE FUNCTION reputation() RETURNS NUMERIC AS $$
 DECLARE
     -- The number of days to consider when calculating reputation
     days NUMERIC := 60;
@@ -48,7 +48,11 @@ BEGIN
         -- Increment the number of events that have been considered
         count := count + 1;
     END LOOP;
+    IF count = 0 THEN
+        -- If there are no events to consider, return 0
+        RETURN 0;
+    END IF;
     -- Return the average reputation of the community
-    RETURN QUERY SELECT total / count;
+    RETURN total / count;
 END;
 $$ LANGUAGE plpgsql;
