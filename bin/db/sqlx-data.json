@@ -345,6 +345,24 @@
     },
     "query": "SELECT\n                        (\n                            SELECT\n                                class\n                            FROM\n                                garage_shop s\n                            WHERE\n                                s.id = COALESCE(v.addon, v.id)\n                        ) as class,\n                        state\n                    FROM\n                        garage_vehicles v\n                    WHERE\n                        v.plate = $1"
   },
+  "3b798e1abfe2873ac6fa360f5c970f7c56801ca8d6d177078254a4b92090a893": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "SELECT reputation() as value"
+  },
   "3bb77da35adb64b25c4f0d1d9232bfca9633b231468f94d9371ae1fc7a7f42a5": {
     "describe": {
       "columns": [
@@ -970,6 +988,19 @@
     },
     "query": "INSERT into garage_log (plate, action, member, data) VALUES ($1, 'attach', $2, $3)"
   },
+  "69f8618f704da1a210bf7cebeec2dd23e219d3945a52e418e609c8338b373b2d": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'unarmed_shot', -2, $2)"
+  },
   "6cc6995e52aae1b6cb67db83edd8da57a70a3a2f2aa79deb29f44fd6fc3b620c": {
     "describe": {
       "columns": [
@@ -1113,6 +1144,32 @@
       }
     },
     "query": "UPDATE missions_schedule SET aar_message_id = $1 WHERE id = $2"
+  },
+  "7d5d0b39a9970af063037c5991c7e2c36986c75341ecde25e16f378b2e655511": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'surrendering_shot', -2, $2)"
+  },
+  "7ff6a7dc7090de994c05695139f058d27cda1c98139c4683d5bc9a62dd4ed123": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'civilian_healed', 1, $2)"
   },
   "815617522fc3f0a9a5f494efd0416f0c840495523152f95ccad384167fbc22ec": {
     "describe": {
@@ -1570,6 +1627,19 @@
     },
     "query": "\n                        SELECT\n                            DISTINCT ON (trainee, certification)\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW() OR valid_until IS NULL)\n                        ORDER BY trainee, certification, created DESC"
   },
+  "a9766a6623056980e393a178806d1b230819a7429b2c8ef5472afda0e8e05d81": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'civilian_shot', -2, $2)"
+  },
   "ac18f515bc1da9fcbc5e9dfd53eda2f2d4620fb1f3a1c25fe0be8bd90ad181b7": {
     "describe": {
       "columns": [
@@ -1854,6 +1924,32 @@
     },
     "query": "SELECT balance FROM gear_bank_balance_cache WHERE member = $1 LIMIT 1"
   },
+  "c1bd51f9d873e026505b17c93163f27c995e278164c1f2fec7aab3967f565bd6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'building_damaged', -1, $2)"
+  },
+  "c6a644ce847960e7fbf6b37482a54d86f7e33a87e6e3385dbbb506ed1b889704": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'captive_shot', -4, $2)"
+  },
   "c7468f0894e9b6281ac901bd039ad1e8320f892bcc96b88c988939a302ee8843": {
     "describe": {
       "columns": [],
@@ -2107,6 +2203,19 @@
     },
     "query": "SELECT class, quantity FROM gear_locker WHERE member = $1"
   },
+  "e7d589eb146c1c1d5b3918ba996ca7677b1c185ee5df8364be398b8bb7974a87": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'friendly_healed', 1, $2)"
+  },
   "eae50479019a894c3437840a28a492a8aff638b7409f7d5a0837661b245e5d4a": {
     "describe": {
       "columns": [
@@ -2321,6 +2430,20 @@
     },
     "query": "SELECT id,name FROM certifications c WHERE first_kit IS NOT NULL AND c.id NOT IN (SELECT cert FROM reset_kit WHERE MEMBER = $1) AND c.id IN (SELECT certification FROM certifications_trials WHERE trainee = $1 AND passed IS TRUE and (valid_until> NOW() or valid_until IS NULL))"
   },
+  "f37802ab91519a9f9ac3f828cee5dbcb53152b201f3d6df0d9b7ccb4f4baebc6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Int4",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'mission_completed', $2, $3)"
+  },
   "f667b03c67b42ae2f957d73340685fe9255b8147b9c0935f1fb458132c9b89ba": {
     "describe": {
       "columns": [
@@ -2489,6 +2612,19 @@
       }
     },
     "query": "\n                            INSERT INTO\n                                certifications_trials\n                                (instructor, trainee, certification, notes, passed)\n                            VALUES\n                                ($1, $2, $3, $4, false)\n                            RETURNING\n                                id,\n                                instructor,\n                                trainee,\n                                certification,\n                                notes,\n                                passed,\n                                valid_for,\n                                valid_until,\n                                created"
+  },
+  "fab9dda9cc28de03a882493235424d97335be95629f1095acfe0e5c005a7e857": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'friendly_fire', -1, $2)"
   },
   "fbcab6c3343b2f85657ecdb1c66c3bdcf5bce1a4df1742ecf5db217aca38d8fb": {
     "describe": {

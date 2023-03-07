@@ -1,7 +1,5 @@
-use std::collections::HashMap;
-
 use async_trait::async_trait;
-use serde_json::{Number, Value};
+use serde_json::Value;
 use synixe_events::{
     reset::db::{Request, Response},
     respond,

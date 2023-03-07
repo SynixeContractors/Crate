@@ -1,5 +1,9 @@
 use nats::asynk::Message;
-use synixe_events::{discord::write, respond};
+use serenity::model::prelude::ChannelId;
+use synixe_events::{
+    discord::write::{self, DiscordMessage},
+    respond,
+};
 use synixe_meta::discord::GUILD;
 
 use crate::ArcCacheAndHttp;
@@ -92,22 +96,35 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             }
         }
         write::Request::Audit { message } => {
-            let Ok(_) = respond!(msg, write::Response::Audit(Ok(()))).await else {
-                error!("Failed to respond to NATS");
-                return;
-            };
-            if let Err(e) = synixe_meta::discord::channel::LOG
-                .send_message(&client.http, |m| match message.content {
-                    write::DiscordContent::Text(text) => m.content(text),
-                    write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
-                })
-                .await
-            {
-                error!("Failed to send message: {}", e);
-                if let Err(e) = respond!(msg, write::Response::Audit(Err(e.to_string()))).await {
-                    error!("Failed to respond to NATS: {}", e);
-                }
-            }
+            audit(client, msg, message, synixe_meta::discord::channel::LOG).await;
+        }
+        write::Request::GameAudit { message } => {
+            audit(
+                client,
+                msg,
+                message,
+                synixe_meta::discord::channel::GAME_LOG,
+            )
+            .await;
+        }
+    }
+}
+
+async fn audit(client: ArcCacheAndHttp, msg: Message, message: DiscordMessage, channel: ChannelId) {
+    let Ok(_) = respond!(msg, write::Response::Audit(Ok(()))).await else {
+        error!("Failed to respond to NATS");
+        return;
+    };
+    if let Err(e) = channel
+        .send_message(&client.http, |m| match message.content {
+            write::DiscordContent::Text(text) => m.content(text),
+            write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
+        })
+        .await
+    {
+        error!("Failed to send message: {}", e);
+        if let Err(e) = respond!(msg, write::Response::Audit(Err(e.to_string()))).await {
+            error!("Failed to respond to NATS: {}", e);
         }
     }
 }

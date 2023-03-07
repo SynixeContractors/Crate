@@ -5,6 +5,7 @@ mod garage;
 mod gear;
 mod missions;
 mod recruiting;
+mod reputation;
 mod reset;
 mod servers;
 

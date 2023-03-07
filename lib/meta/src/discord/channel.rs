@@ -46,5 +46,7 @@ pub const APPLICATIONS: ChannelId = ChannelId(917_108_105_567_944_704);
 pub const RECRUITING: ChannelId = ChannelId(757_732_083_178_274_937);
 /// Discord event log
 pub const LOG: ChannelId = ChannelId(700_943_290_102_448_208);
+/// Game event log
+pub const GAME_LOG: ChannelId = ChannelId(1_082_455_930_714_718_278);
 /// Bot testing
 pub const BOT: ChannelId = ChannelId(700_941_770_107_650_059);
