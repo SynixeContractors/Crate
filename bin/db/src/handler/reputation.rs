@@ -122,6 +122,27 @@ impl Handler for Request {
                     }),
                 )
             }
+            Self::UnconsciousShot {
+                member,
+                target,
+                weapon,
+            } => {
+                log(format!(
+                    "**Unconscious Shot**\n<@{member}> shot {target} with {weapon}",
+                ));
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::UnconsciousShot,
+                    "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'unconscious_shot', -1, $2)",
+                    member.to_string(),
+                    serde_json::json!({
+                        "target": target.to_string(),
+                        "weapon": weapon.to_string(),
+                    }),
+                )
+            }
             Self::BuildingDamaged {
                 member,
                 target,

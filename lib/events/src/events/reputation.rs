@@ -53,6 +53,15 @@ pub mod db {
             /// The weapon used to shoot the captive unit
             weapon: String,
         } => (Result<(), String>)
+        /// An unconscious unit was shot by a player
+        struct UnconsciousShot {
+            /// The player who shot the unconscious unit
+            member: UserId,
+            /// The unconscious unit that was shot
+            target: String,
+            /// The weapon used to shoot the unconscious unit
+            weapon: String,
+        } => (Result<(), String>)
         /// A building was damaged by a player
         struct BuildingDamaged {
             /// The player who damaged the building
@@ -93,6 +102,6 @@ pub mod db {
         } => (Result<(), String>)
         /// Get the current reputation of the group
         /// This function should never return None
-        struct CurrentReputation {} => (Result<Option<Option<i32>>, String>)
+        struct CurrentReputation {} => (Result<Option<Option<f64>>, String>)
     });
 }

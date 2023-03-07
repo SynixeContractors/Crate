@@ -73,6 +73,19 @@
     },
     "query": "INSERT INTO missions (id, name, summary, description, type, archived)\n                                    VALUES ($1, $2, $3, $4, $5, false)\n                                    ON CONFLICT (id) DO UPDATE SET\n                                        name = $2,\n                                        summary = $3,\n                                        description = $4,\n                                        type = $5,\n                                        archived = false"
   },
+  "0c14f76dbff49bc366de30d0181fc3fe62a61b7c458a87abdeafe84b597150e9": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'unconscious_shot', -1, $2)"
+  },
   "1064a304ef408c4e242dc6c47c5ffcdf9ab3ec43d250657a63a8fa7de78966f8": {
     "describe": {
       "columns": [
@@ -351,7 +364,7 @@
         {
           "name": "value",
           "ordinal": 0,
-          "type_info": "Int4"
+          "type_info": "Float8"
         }
       ],
       "nullable": [
