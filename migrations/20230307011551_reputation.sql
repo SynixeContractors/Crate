@@ -3,7 +3,7 @@ CREATE TABLE reputation_events (
     id UUID NOT NULL DEFAULT uuid_generate_v4(),
     member VARCHAR(128) NOT NULL,
     event VARCHAR(128) NOT NULL,
-    reputation NUMERIC NOT NULL,
+    reputation INTEGER NOT NULL,
     data JSONB NOT NULL,
     created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id)
@@ -15,7 +15,7 @@ CREATE INDEX reputation_events_created_idx ON reputation_events (created);
 
 -- A function that calculates the current reputation of the community
 -- Recent events are weighted more heavily than older events
-CREATE OR REPLACE FUNCTION reputation() RETURNS NUMERIC AS $$
+CREATE OR REPLACE FUNCTION reputation() RETURNS INTEGER AS $$
 DECLARE
     -- The number of days to consider when calculating reputation
     days NUMERIC := 60;
