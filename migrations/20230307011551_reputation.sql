@@ -3,6 +3,7 @@ CREATE TABLE reputation_events (
     id UUID NOT NULL DEFAULT uuid_generate_v4(),
     member VARCHAR(128) NOT NULL,
     event VARCHAR(128) NOT NULL,
+    reputation NUMERIC NOT NULL,
     data JSONB NOT NULL,
     created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id)
@@ -43,7 +44,7 @@ BEGIN
         -- This means that events that have a higher reputation value are
         -- weighted more heavily than events that have a lower reputation value
         -- The weight is then added to the total reputation of the community
-        total := total + EXTRACT(EPOCH FROM now - row.created) / seconds_in_days * (row.data->>'reputation')::NUMERIC;
+        total := total + EXTRACT(EPOCH FROM now - row.created) / seconds_in_days * row.reputation;
         -- Increment the number of events that have been considered
         count := count + 1;
     END LOOP;
