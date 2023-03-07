@@ -27,10 +27,11 @@ pub async fn start() {
             synixe_events::campaigns::db::Request,
             synixe_events::certifications::db::Request,
             synixe_events::discord::db::Request,
+            synixe_events::garage::db::Request,
             synixe_events::gear::db::Request,
             synixe_events::missions::db::Request,
             synixe_events::recruiting::db::Request,
-            synixe_events::garage::db::Request,
+            synixe_events::reputation::db::Request,
             synixe_events::reset::db::Request,
             synixe_events::servers::db::Request,
         );
