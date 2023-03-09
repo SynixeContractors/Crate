@@ -224,6 +224,24 @@ impl EventHandler for Handler {
     async fn message(&self, ctx: Context, message: Message) {
         if message.channel_id == FINANCIALS {
             missions::validate_aar(&ctx, message).await;
+        } else {
+            let lower = message.content.to_lowercase();
+            for key in &[
+                "more guns",
+                "more weapons",
+                "more gear",
+                "more mods",
+                "more equipment",
+            ] {
+                if lower.contains(key) {
+                    if let Err(e) = message
+                        .reply(&ctx.http, "https://www.youtube.com/watch?v=H5d42w4ZcY4")
+                        .await
+                    {
+                        error!("Cannot send message: {}", e);
+                    }
+                }
+            }
         }
     }
 
