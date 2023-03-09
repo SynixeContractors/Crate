@@ -19,3 +19,5 @@ player addEventHandler ["Respawn", {
     _unit call GVAR(disableScore);
 }];
 player call GVAR(disableScore);
+
+[player] call FUNC(noDefaultFace);
