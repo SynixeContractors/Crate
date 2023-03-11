@@ -29,10 +29,8 @@ _unit addEventHandler ["Hit", {
     };
 
     if (_unit getVariable ["ACE_isUnconscious", false]) then {
-        if (_unit getVariable [QGVAR(wasUnconscious), false]) then {
+        if (_unit getVariable [QGVAR(unconsciousSince), CBA_missionTime] < CBA_missionTime - 3) then {
             [QGVAR(unconscious_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
-        } else {
-            _unit setVariable [QGVAR(wasUnconscious), true];
         };
     };
 

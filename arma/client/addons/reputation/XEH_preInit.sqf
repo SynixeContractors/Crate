@@ -4,3 +4,5 @@ ADDON = false;
 ADDON = true;
 
 ["ace_treatmentSucceded", FUNC(ace_onTreatmentSucceded)] call CBA_fnc_addEventHandler;
+
+["ace_medical_knockOut", FUNC(ace_onKnockOut)] call CBA_fnc_addEventHandler;
