@@ -180,6 +180,21 @@ pub async fn run_aar_pay(
                     {
                         error!("Error replying to message: {}", e);
                     }
+                    if let Some((channel, message)) = scheduled.message() {
+                        if let Some(thread) = channel.message(&ctx.http, message).await?.thread {
+                            thread
+                                .send_message(&ctx.http, |m| {
+                                    m.content(format!(
+                                        "```{}```",
+                                        aar.show_math(payment, current_rep)
+                                    ))
+                                })
+                                .await?;
+                            thread
+                                .edit_thread(&ctx.http, |t| t.locked(true).archived(true))
+                                .await?;
+                        }
+                    }
                     interaction.reply("Mission Paid").await?;
                     if let Err(e) = message
                         .react(&ctx.http, ReactionType::Unicode("✅".to_string()))
