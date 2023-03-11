@@ -13,10 +13,10 @@ use tower_http::services::ServeDir;
 #[macro_use]
 extern crate tracing;
 
+mod garage;
 mod members;
 mod missions;
 mod template;
-mod garage;
 
 async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
