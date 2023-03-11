@@ -37,7 +37,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         }).create_option(|option| {
             option
             .name("group_balance")
-            .description("View the Group balance")
+            .description("View the group balance")
             .kind(CommandOptionType::SubCommand)
             .allow_public()
         })
@@ -109,7 +109,7 @@ async fn group(
 
     interaction
         .reply(format!(
-            "The Group has:\n```Cash:      {}\n```",
+            "The Group has:\n```Cash: {}\n```",
             bootstrap::format::money(balance, false),
         ))
         .await
