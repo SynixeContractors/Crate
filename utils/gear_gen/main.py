@@ -6,11 +6,11 @@ import helmets
 import uniforms
 
 conn = psycopg2.connect(
-    host="prod-do-user-6857898-0.b.db.ondigitalocean.com",
-    port="25060",
-    database="synixe",
-    user="doadmin",
-    password="vTrX0on6sAaoJWpd")
+    host="",
+    port="",
+    database="",
+    user="",
+    password="")
 
 if __name__ == "__main__":
     cur = conn.cursor()
