@@ -34,12 +34,6 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .required(true)
                 })
                 .allow_public()
-        }).create_option(|option| {
-            option
-            .name("group_balance")
-            .description("View the group balance")
-            .kind(CommandOptionType::SubCommand)
-            .allow_public()
         })
         .create_option(|option| {
             option
@@ -80,39 +74,11 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
     if subcommand.kind == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
             "balance" => balance(ctx, command, &subcommand.options).await?,
-            "group_balance" => group(ctx, command, &subcommand.options).await?,
             "transfer" => transfer(ctx, command, &subcommand.options).await?,
             _ => unreachable!(),
         }
     }
     Ok(())
-}
-
-async fn group(
-    ctx: &Context,
-    command: &ApplicationCommandInteraction,
-    options: &[CommandDataOption],
-) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
-    interaction.reply("Fetching group balance...").await?;
-
-    let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_2!(
-        bootstrap::NC::get().await,
-        synixe_events::gear::db,
-        BankBalance {
-            member: UserId::from(0),
-        }
-    )
-    .await else {
-        return interaction.reply("Failed to fetch balance").await;
-    };
-
-    interaction
-        .reply(format!(
-            "The Group has:\n```Cash: {}\n```",
-            bootstrap::format::money(balance, false),
-        ))
-        .await
 }
 
 async fn balance(
@@ -125,22 +91,38 @@ async fn balance(
     let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
     };
+    let user_id = if user.id == synixe_meta::discord::BRODSKY {
+        UserId::from(0)
+    } else {
+        user.id
+    };
+
     let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankBalance {
-            member: user.id,
+            member: user_id,
         }
     )
     .await else {
         return interaction.reply("Failed to fetch balance").await;
     };
 
+    if user_id == 0 {
+        return interaction
+            .reply(format!(
+                "<@{}> has:\n```Cash: {}\n```",
+                user_id,
+                bootstrap::format::money(balance, false),
+            ))
+            .await;
+    }
+
     let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         LockerBalance {
-            member: user.id,
+            member: user_id,
         }
     )
     .await else {
@@ -150,7 +132,7 @@ async fn balance(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         LoadoutBalance {
-            member: user.id,
+            member: user_id,
         }
     )
     .await else {
@@ -159,7 +141,7 @@ async fn balance(
     interaction
         .reply(format!(
             "<@{}> has:\n```Cash:      {}\nLocker:    {}\nLoadout:   {}\nNet Worth: {}```",
-            user.id,
+            user_id,
             bootstrap::format::money(balance, false),
             bootstrap::format::money(locker_balance, false),
             bootstrap::format::money(loadout_balance, false),
