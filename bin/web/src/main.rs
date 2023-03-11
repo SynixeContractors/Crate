@@ -16,6 +16,7 @@ extern crate tracing;
 mod members;
 mod missions;
 mod template;
+mod garage;
 
 async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
@@ -31,6 +32,7 @@ async fn main() {
         .route("/", get(dashboard))
         .nest("/members", members::router())
         .nest("/missions", missions::router())
+        .nest("/garage", garage::router())
         .route(
             "/tailwind.css",
             get(|| async {
