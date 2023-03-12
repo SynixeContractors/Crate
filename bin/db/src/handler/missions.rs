@@ -176,7 +176,11 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::FindScheduledDate { mission, date, subcon } => {
+            Self::FindScheduledDate {
+                mission,
+                date,
+                subcon,
+            } => {
                 let date = date
                     .with_time(Time::from_hms(0, 0, 0).unwrap())
                     .assume_utc();
