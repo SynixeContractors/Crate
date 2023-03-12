@@ -23,6 +23,7 @@ time-tz = "1.0.2"
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 uuid = { workspace = true }
+rand = "0.8"
 
 [build-dependencies]
 vergen = { workspace = true }
