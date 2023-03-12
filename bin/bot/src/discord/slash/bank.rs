@@ -300,7 +300,7 @@ async fn fine(
         return interaction.reply("Failed to fine").await;
     };
     let reply = format!(
-        "<Deliverd a fine of @{}> to {}",
+        "<Delivered a fine of @{}> to {}",
         user.id,
         bootstrap::format::money(*amount as i32, false),
     );
