@@ -129,6 +129,7 @@ pub async fn run_aar_pay(
                 FindScheduledDate {
                     mission: aar.mission().to_string(),
                     date: aar.date(),
+                    subcon: false,
                 }
             )
             .await else {

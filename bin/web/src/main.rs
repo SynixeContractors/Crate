@@ -68,8 +68,7 @@ async fn main() {
     debug!("Listening on {}", addr);
     Server::bind(&addr)
         .serve(app.into_make_service())
-        .await
-        .unwrap();
+        .await;
 }
 
 async fn dashboard() -> Html<String> {
