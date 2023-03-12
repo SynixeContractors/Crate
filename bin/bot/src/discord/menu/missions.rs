@@ -186,8 +186,13 @@ pub async fn run_aar_pay(
                             thread
                                 .send_message(&ctx.http, |m| {
                                     m.content(format!(
-                                        "```{}```",
-                                        aar.show_math(payment, current_rep)
+                                        "Contractors Paid: {}```{}\n```",
+                                        aar.show_math(payment, current_rep),
+                                        aar.contractors()
+                                            .iter()
+                                            .map(|c| format!("<@{c}>"))
+                                            .collect::<Vec<String>>()
+                                            .join(", ")
                                     ))
                                 })
                                 .await?;
