@@ -1,3 +1,4 @@
+use rand::Rng;
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
 use synixe_meta::discord::channel::FINANCIALS;
@@ -225,6 +226,19 @@ impl EventHandler for Handler {
         if message.channel_id == FINANCIALS {
             missions::validate_aar(&ctx, message).await;
         } else {
+            // 0.2% chance of losing 10 Harrison Points
+            if rand::thread_rng().gen_range(0..1000) < 2 {
+                if let Err(e) = message
+                    .reply(
+                        &ctx.http,
+                        "I can't believe you've said this! You just lost 10 Harrison Points!",
+                    )
+                    .await
+                {
+                    error!("Cannot send message: {}", e);
+                }
+            }
+
             let lower = message.content.to_lowercase();
             for key in &[
                 "more guns",
