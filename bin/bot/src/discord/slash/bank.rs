@@ -285,24 +285,24 @@ async fn fine(
     let Some(reason) = get_option!(options, "reason", String) else {
         return interaction.reply("Invalid reason").await;
     };
-    let Ok(Ok((Response::BankTransferNew(Ok(_)), _))) = events_request_2!(
+    let Ok(Ok((Response::BankDepositNew(Ok(_)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
-        BankTransferNew {
-            source: command.member.as_ref().expect("member should always exist on guild commands").user.id,
-            target: UserId(0),
+        BankDepositNew {
+            member: command.member.as_ref().expect("member should always exist on guild commands").user.id,
             #[allow(clippy::cast_possible_truncation)]
-            amount:  *amount as i32,
+            amount:  -*amount as i32,
             reason: reason.clone(),
+            id: None,
         }
     )
     .await else {
         return interaction.reply("Failed to fine").await;
     };
     let reply = format!(
-        "Fined {} to <@{}>",
+        "<Deliverd a fine of @{}> to {}",
+        user.id,
         bootstrap::format::money(*amount as i32, false),
-        user.id
     );
     interaction.reply(&reply).await?;
 
@@ -315,13 +315,7 @@ async fn fine(
         .say(
             &ctx.http,
             format!(
-                "<@{}> fined you {}\n> {}",
-                command
-                    .member
-                    .as_ref()
-                    .expect("member should always exist on guild commands")
-                    .user
-                    .id,
+                "<You were fined {}\n> {}",
                 bootstrap::format::money(*amount as i32, false),
                 reason.clone(),
             ),
