@@ -8,6 +8,7 @@ use serenity::{
     prelude::Context,
 };
 use synixe_events::gear::db::Response;
+use synixe_meta::discord::role::STAFF;
 use synixe_proc::events_request_2;
 
 use crate::{
@@ -15,7 +16,7 @@ use crate::{
     get_option, get_option_user,
 };
 
-use super::AllowPublic;
+use super::{AllowPublic, ShouldAsk};
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -64,6 +65,35 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .required(true)
                 })
         })
+        .create_option(|option| {
+            option
+                .name("fine")
+                .description("Fine a member")
+                .kind(CommandOptionType::SubCommand)
+                .create_sub_option(|option| {
+                    option
+                        .name("member")
+                        .description("The member to fine")
+                        .kind(CommandOptionType::User)
+                        .required(true)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("amount")
+                        .description("The amount of money to fine")
+                        .kind(CommandOptionType::Integer)
+                        .min_int_value(1)
+                        .max_int_value(10_000)
+                        .required(true)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("reason")
+                        .description("The reason for the fine")
+                        .kind(CommandOptionType::String)
+                        .required(true)
+                })
+        })
 }
 
 pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
@@ -75,6 +105,7 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
         match subcommand.name.as_str() {
             "balance" => balance(ctx, command, &subcommand.options).await?,
             "transfer" => transfer(ctx, command, &subcommand.options).await?,
+            "fine" => fine(ctx, command, &subcommand.options).await?,
             _ => unreachable!(),
         }
     }
@@ -207,6 +238,84 @@ async fn transfer(
                     .expect("member should always exist on guild commands")
                     .user
                     .id,
+                bootstrap::format::money(*amount as i32, false),
+                reason.clone(),
+            ),
+        )
+        .await
+    {
+        error!("failed to send dm: {}", e);
+        interaction
+            .reply(&format!("{reply}, but I wasn't able to notify them"))
+            .await?;
+    }
+    Ok(())
+}
+
+#[allow(clippy::cast_possible_truncation)]
+async fn fine(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    super::requires_roles(
+        command.user.id,
+        &[STAFF],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Deny,
+        &mut interaction,
+    )
+    .await?;
+
+    interaction.reply("Fining...").await?;
+    let Some(user) = get_option_user!(options, "member") else {
+        return interaction.reply("Invalid member").await;
+    };
+    if user.bot {
+        return interaction.reply("You can't fine a bot").await;
+    }
+    let Some(amount) = get_option!(options, "amount", Integer) else {
+        return interaction.reply("Invalid amount").await;
+    };
+    let Some(reason) = get_option!(options, "reason", String) else {
+        return interaction.reply("Invalid reason").await;
+    };
+    let Ok(Ok((Response::BankDepositNew(Ok(_)), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        BankDepositNew {
+            member: command.member.as_ref().expect("member should always exist on guild commands").user.id,
+            #[allow(clippy::cast_possible_truncation)]
+            amount:  -*amount as i32,
+            reason: reason.clone(),
+            id: None,
+        }
+    )
+    .await else {
+        return interaction.reply("Failed to fine").await;
+    };
+    let reply = format!(
+        "Delivered a fine of {} to <@{}>.",
+        bootstrap::format::money(*amount as i32, false),
+        user.id,
+    );
+    interaction.reply(&reply).await?;
+
+    let Ok(private_channel) = user.create_dm_channel(&ctx).await else {
+        error!("Unable to create DM channel for fine notification");
+        return interaction.reply(&format!("{reply}, but I wasn't able to notify them")).await;
+    };
+
+    if let Err(e) = private_channel
+        .say(
+            &ctx.http,
+            format!(
+                "<You were fined {}\n> {}",
                 bootstrap::format::money(*amount as i32, false),
                 reason.clone(),
             ),
