@@ -17,7 +17,7 @@ pub mod db {
             mission: String,
             /// The day to schedule the mission.
             date: OffsetDateTime,
-        } => (Result<(), String>)
+        } => (Result<Option<ScheduledMission>, String>)
         /// Checks if a day is already scheduled.
         struct IsScheduled {
             /// The day to check.
@@ -64,6 +64,8 @@ pub mod db {
             mission: String,
             /// The date to find.
             date: Date,
+            /// Was a subcon
+            subcon: bool,
         } => (Result<Option<ScheduledMission>, String>)
         /// Pays the group and contractors for a mission.
         struct PayMission {

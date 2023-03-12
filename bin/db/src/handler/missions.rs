@@ -17,15 +17,39 @@ impl Handler for Request {
         let db = bootstrap::DB::get().await;
         match &self {
             Self::Schedule { mission, date } => {
-                execute_and_respond!(
+                fetch_one_as_and_respond!(
                     msg,
                     *db,
                     cx,
+                    synixe_model::missions::ScheduledMission,
                     Response::Schedule,
-                    "INSERT INTO missions_schedule (mission, start) VALUES ($1, $2)",
+                    "
+                    WITH ins (id, mission, schedule_message_id, start) AS (
+                        INSERT INTO missions_schedule (mission, start) VALUES ($1, $2)
+                        RETURNING
+                            id,
+                            mission,
+                            schedule_message_id,
+                            start
+                    ) SELECT
+                        ins.id,
+                        ins.mission,
+                        ins.schedule_message_id,
+                        ins.start,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        ins
+                    INNER JOIN
+                        missions m ON m.id = ins.mission
+                    WHERE ins.start = $2
+                    ",
                     mission,
                     date,
-                )
+                )?;
+                Ok(())
             }
             Self::IsScheduled { date } => {
                 fetch_one_and_respond!(
@@ -152,7 +176,7 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::FindScheduledDate { mission, date } => {
+            Self::FindScheduledDate { mission, date, subcon } => {
                 let date = date
                     .with_time(Time::from_hms(0, 0, 0).unwrap())
                     .assume_utc();
@@ -176,10 +200,13 @@ impl Handler for Request {
                     INNER JOIN
                         missions m ON m.id = s.mission
                     WHERE
-                        LOWER(m.name) = LOWER($1) AND
-                        (start > $2 and start < $2 + '2 Day'::INTERVAL)",
+                        (LOWER(m.name) = LOWER($1) OR ($3 AND s.mission = '$SUBCON$')) AND
+                        (start > $2 and start < $2 + '2 Day'::INTERVAL)
+                    ORDER BY
+                        mission DESC",
                     mission,
                     date,
+                    subcon,
                 )?;
                 Ok(())
             }

@@ -14,8 +14,8 @@ use serenity::{
 };
 use synixe_events::missions::db::Response;
 use synixe_meta::discord::{
-    channel::SCHEDULE,
-    role::{MISSION_REVIEWER, STAFF},
+    channel::{LOOKING_TO_PLAY, SCHEDULE},
+    role::{MEMBER, MISSION_REVIEWER, STAFF},
 };
 use synixe_model::missions::{MissionRsvp, Rsvp, ScheduledMission};
 use synixe_proc::events_request_2;
@@ -32,6 +32,7 @@ use super::ShouldAsk;
 const TIME_FORMAT: &str =
     "[year]-[month]-[day] [hour]:[minute] [offset_hour sign:mandatory]:[offset_minute]";
 
+#[allow(clippy::too_many_lines)]
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
         .name("schedule")
@@ -79,6 +80,46 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         })
         .create_option(|option| {
             option
+                .name("subcon")
+                .description("Propose a subcon mission")
+                .kind(CommandOptionType::SubCommand)
+                .create_sub_option(|option| {
+                    option
+                        .name("month")
+                        .description("The month to schedule the mission")
+                        .kind(CommandOptionType::Integer)
+                        .max_int_value(12)
+                        .min_int_value(1)
+                        .required(true)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("day")
+                        .description("The day to schedule the mission")
+                        .kind(CommandOptionType::Integer)
+                        .max_int_value(31)
+                        .min_int_value(1)
+                        .required(true)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("hour")
+                        .description("The starting hour to schedule the mission")
+                        .kind(CommandOptionType::Integer)
+                        .max_int_value(23)
+                        .min_int_value(0)
+                        .required(false)
+                })
+                .create_sub_option(|option| {
+                    option
+                        .name("channel")
+                        .description("Channel to post the upcoming mission")
+                        .kind(CommandOptionType::Channel)
+                        .required(false)
+                })
+        })
+        .create_option(|option| {
+            option
                 .name("upcoming")
                 .description("View the upcoming missions")
                 .kind(CommandOptionType::SubCommand)
@@ -112,6 +153,7 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
     if subcommand.kind == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
             "new" => new(ctx, command, &subcommand.options).await?,
+            "subcon" => subcon(ctx, command, &subcommand.options).await?,
             "upcoming" => upcoming(ctx, command, &subcommand.options).await?,
             "remove" => remove(ctx, command, &subcommand.options).await?,
             "post" => post(ctx, command, &subcommand.options).await?,
@@ -412,6 +454,119 @@ async fn new_autocomplete(
         .await
     {
         error!("failed to create autocomplete response: {}", e);
+    }
+    Ok(())
+}
+
+#[allow(clippy::too_many_lines)]
+async fn subcon(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let date = super::get_datetime(options);
+    super::requires_roles(
+        command.user.id,
+        &[MEMBER, STAFF],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Yes(("mission subcon", options)),
+        &mut interaction,
+    )
+    .await?;
+    let Ok(Ok((Response::IsScheduled(Ok(Some(Some(false) | None) | None)), _))) =
+        events_request_2!(
+            bootstrap::NC::get().await,
+            synixe_events::missions::db,
+            IsScheduled { date }
+        )
+        .await else {
+        return interaction
+            .reply(format!(
+                "A mission is already scheduled at <t:{}:F>, or the check failed.",
+                date.unix_timestamp()
+            ))
+            .await;
+    };
+    interaction.reply("Scheduling mission...").await?;
+    let Ok(Ok((Response::Schedule(Ok(Some(scheduled))), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        Schedule {
+            mission: "$SUBCON$".to_string(),
+            date
+        }
+    )
+    .await else {
+        error!("failed to schedule mission");
+        return interaction
+            .reply("Failed to schedule mission")
+            .await;
+    };
+    let channel =
+        get_option!(options, "channel", Channel).map_or_else(|| LOOKING_TO_PLAY, |c| c.id);
+    let Ok(sched) = channel
+        .send_message(&ctx, |s| {
+            s.embed(|f| {
+                make_post_embed(f, &scheduled, &[]);
+                f
+            });
+            s.components(|c| {
+                c.create_action_row(|r| {
+                    r.create_button(|b| {
+                        b.style(ButtonStyle::Secondary)
+                            .custom_id("rsvp_yes")
+                            .emoji(ReactionType::Unicode("🟩".to_string()))
+                    })
+                    .create_button(|b| {
+                        b.style(ButtonStyle::Secondary)
+                            .custom_id("rsvp_maybe")
+                            .emoji(ReactionType::Unicode("🟨".to_string()))
+                    })
+                    .create_button(|b| {
+                        b.style(ButtonStyle::Secondary)
+                            .custom_id("rsvp_no")
+                            .emoji(ReactionType::Unicode("🟥".to_string()))
+                    })
+                })
+            })
+        })
+        .await else {
+            return interaction.reply("Failed to post mission").await;
+        };
+    tokio::time::sleep(Duration::from_millis(500)).await;
+    if channel
+        .create_public_thread(&ctx, sched.id, |t| t.name(&scheduled.name))
+        .await
+        .is_err()
+    {
+        return interaction.reply("Failed to create thread").await;
+    };
+    if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        SetScheduledMesssage {
+            scheduled: scheduled.id,
+            channel,
+            message: sched.id,
+        }
+    )
+    .await
+    {
+        interaction
+            .reply(format!(
+                "A subcon is proposed for <t:{}:F>",
+                date.unix_timestamp()
+            ))
+            .await?;
+    } else {
+        interaction
+            .reply("Failed to post subcon, please contact a staff member.")
+            .await?;
     }
     Ok(())
 }
