@@ -30,6 +30,9 @@ impl Listener for Publish {
             if *DOCKER_SERVER != "primary" {
                 return Ok(());
             }
+            if id == "$SUBCON$" {
+                return Ok(());
+            }
             info!("Changing main server mission to `{}`", id);
             let Ok(regex) = Regex::new(r"(?m)template = ([^;]+);") else {
                 error!("failed to compile regex");
