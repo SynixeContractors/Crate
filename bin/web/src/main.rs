@@ -1,8 +1,8 @@
 use std::net::SocketAddr;
 
 use axum::{
-    http::{self, StatusCode},
-    response::{Html, IntoResponse},
+    http,
+    response::Html,
     routing::{get, get_service},
     Router, Server,
 };
@@ -17,15 +17,11 @@ mod members;
 mod missions;
 mod template;
 
-async fn handle_error(_err: std::io::Error) -> impl IntoResponse {
-    (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
-}
-
 #[tokio::main]
 async fn main() {
     bootstrap::logger::init();
 
-    let serve_dir = get_service(ServeDir::new("assets")).handle_error(handle_error);
+    let serve_dir = get_service(ServeDir::new("assets"));
 
     let app = Router::new()
         .route("/", get(dashboard))
@@ -66,9 +62,7 @@ async fn main() {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     debug!("Listening on {}", addr);
-    Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await;
+    let _ = Server::bind(&addr).serve(app.into_make_service()).await;
 }
 
 async fn dashboard() -> Html<String> {
