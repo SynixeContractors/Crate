@@ -112,7 +112,7 @@ async fn balance(
         return interaction
             .reply(format!(
                 "<@{}> has:\n```Cash: {}\n```",
-                user_id,
+                synixe_meta::discord::BRODSKY,
                 bootstrap::format::money(balance, false),
             ))
             .await;
