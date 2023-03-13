@@ -8,7 +8,10 @@ use serenity::{
 };
 use synixe_events::{missions::db::Response, reputation};
 use synixe_meta::discord::role::STAFF;
-use synixe_model::missions::aar::{Aar, PaymentType};
+use synixe_model::missions::{
+    aar::{Aar, PaymentType},
+    MissionType,
+};
 use synixe_proc::events_request_2;
 use time::macros::offset;
 
@@ -129,7 +132,7 @@ pub async fn run_aar_pay(
                 FindScheduledDate {
                     mission: aar.mission().to_string(),
                     date: aar.date(),
-                    subcon: false,
+                    subcon: aar.typ() == MissionType::SubContract,
                 }
             )
             .await else {

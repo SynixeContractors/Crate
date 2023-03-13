@@ -111,3 +111,10 @@ def generate_classes():
                     )
 
     return items
+
+if __name__ == "__main__":
+    items = generate_classes()
+    classes = []
+    for item in items:
+        classes.append(item[0])
+    print("\",\"".join(classes))

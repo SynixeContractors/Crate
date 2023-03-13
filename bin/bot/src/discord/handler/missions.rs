@@ -24,7 +24,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
         FindScheduledDate {
             mission: aar.mission().to_string(),
             date: aar.date(),
-            subcon: false,
+            subcon: aar.typ() == MissionType::SubContract,
         }
     )
     .await
