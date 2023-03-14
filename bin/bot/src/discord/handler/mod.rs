@@ -226,8 +226,8 @@ impl EventHandler for Handler {
         if message.channel_id == FINANCIALS {
             missions::validate_aar(&ctx, message).await;
         } else {
-            // 0.2% chance of losing 10 Harrison Points
-            if rand::thread_rng().gen_range(0..1000) < 2 {
+            // 0.05% chance of losing 10 Harrison Points
+            if rand::thread_rng().gen_range(0..10000) < 5 {
                 if let Err(e) = message
                     .reply(
                         &ctx.http,
