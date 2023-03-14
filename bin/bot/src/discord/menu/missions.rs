@@ -189,7 +189,7 @@ pub async fn run_aar_pay(
                             thread
                                 .send_message(&ctx.http, |m| {
                                     m.content(format!(
-                                        "Contractors Paid: {}```{}\n```",
+                                        "Contractors Paid: {}\n```{}```",
                                         aar.contractors()
                                             .iter()
                                             .map(|c| format!("<@{c}>"))
