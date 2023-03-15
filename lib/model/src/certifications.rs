@@ -22,6 +22,8 @@ pub struct Certification {
     pub roles_granted: Vec<String>,
     /// Valid period in days
     pub valid_for: Option<i32>,
+    /// Certification instructors
+    pub instructors: Option<Vec<String>>,
     /// Certification created at
     pub created: OffsetDateTime,
 }
