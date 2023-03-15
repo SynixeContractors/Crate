@@ -192,7 +192,7 @@ pub async fn run_aar_pay(
                                         "Contractors Paid: {}\n```{}```",
                                         aar.contractors()
                                             .iter()
-                                            .map(|c| format!("<@{c}>"))
+                                            .map(std::string::ToString::to_string)
                                             .collect::<Vec<String>>()
                                             .join(", "),
                                         aar.show_math(payment, current_rep)
