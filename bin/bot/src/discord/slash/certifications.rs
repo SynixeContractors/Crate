@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use bootstrap::format;
 use serenity::{
     builder::CreateApplicationCommand,
     model::prelude::{
@@ -366,11 +367,26 @@ async fn list(
                     format!("Requires: {requires}")
                 }
             },
+            {
+                cert.instructors.map_or_else(|| "No instructors".to_string(), |ins| {
+                        let instructors = ins
+                            .iter()
+                            .map(|i| format!("<@{i}>"))
+                            .collect::<Vec<_>>();
+                        if instructors.is_empty() {
+                            "No instructors".to_string()
+                        } else {
+                            format!("Instructors: {}", instructors.join(", "))
+                        }
+                    })
+            },
             cert.valid_for.map_or_else(
                 || "No expiration".to_string(),
                 |v| format!("Valid for {v} days")
             )
         ));
     }
+    println!("{content}");
+    print!("char count: {}", content.chars().count());
     interaction.reply(content).await
 }
