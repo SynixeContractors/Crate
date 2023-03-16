@@ -866,60 +866,6 @@
     },
     "query": "\n                    SELECT\n                        a.id,\n                        s.name,\n                        s.cost,\n                        s.class,\n                        s.base\n                    FROM\n                        garage_addons a\n                    INNER JOIN\n                        garage_shop s\n                    ON\n                        s.id = a.id\n                    WHERE\n                        s.base = (SELECT v.id FROM garage_vehicles v WHERE v.plate = $1)\n                        AND a.count > 0"
   },
-  "640b8e8639f83b99f78f66d250b2d63859c65159bd6eaa83a54fb95333a33080": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "link",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "roles_required",
-          "ordinal": 3,
-          "type_info": "VarcharArray"
-        },
-        {
-          "name": "roles_granted",
-          "ordinal": 4,
-          "type_info": "VarcharArray"
-        },
-        {
-          "name": "valid_for",
-          "ordinal": 5,
-          "type_info": "Int4"
-        },
-        {
-          "name": "created",
-          "ordinal": 6,
-          "type_info": "Timestamptz"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "\n                        SELECT\n                            id,\n                            name,\n                            link,\n                            roles_required,\n                            roles_granted,\n                            valid_for,\n                            created\n                        FROM\n                            certifications"
-  },
   "660fca0a7936da8a65c41df8368ccf7d44c98503347e45ba53b9c4cbf30fbb0f": {
     "describe": {
       "columns": [
@@ -1140,6 +1086,66 @@
     },
     "query": "UPDATE missions_schedule SET aar_message_id = $1 WHERE id = $2"
   },
+  "78f378a3835cb34ccc37d712ae175f1494c4113c6b34b54c0b63fa91708e06e4": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "instructors",
+          "ordinal": 1,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "link",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "roles_required",
+          "ordinal": 4,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "roles_granted",
+          "ordinal": 5,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "valid_for",
+          "ordinal": 6,
+          "type_info": "Int4"
+        },
+        {
+          "name": "created",
+          "ordinal": 7,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        null,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n                        SELECT\n                            id,\n                            array_agg(ci.member) as instructors,\n                            name,\n                            link,\n                            roles_required,\n                            roles_granted,\n                            valid_for,\n                            c.created\n                        FROM\n                            certifications c\n                        INNER JOIN\n                            certifications_instructors ci\n                        ON\n                            c.id = ci.certification\n                        GROUP BY\n                            c.id;"
+  },
   "7d5d0b39a9970af063037c5991c7e2c36986c75341ecde25e16f378b2e655511": {
     "describe": {
       "columns": [],
@@ -1280,62 +1286,6 @@
       }
     },
     "query": "SELECT NOT EXISTS(SELECT 1 FROM reset_kit WHERE member = $1 AND created > NOW() - INTERVAL '13 days') as value"
-  },
-  "8f58acc714f280ed531e62dd5b77fe9afa6c3404f2e1b56c07c53185e415bd0b": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "link",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "roles_required",
-          "ordinal": 3,
-          "type_info": "VarcharArray"
-        },
-        {
-          "name": "roles_granted",
-          "ordinal": 4,
-          "type_info": "VarcharArray"
-        },
-        {
-          "name": "valid_for",
-          "ordinal": 5,
-          "type_info": "Int4"
-        },
-        {
-          "name": "created",
-          "ordinal": 6,
-          "type_info": "Timestamptz"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        true,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "\n                        SELECT\n                            c.id,\n                            c.name,\n                            c.link,\n                            c.roles_required,\n                            c.roles_granted,\n                            c.valid_for,\n                            c.created\n                        FROM\n                            certifications c\n                        INNER JOIN\n                            certifications_instructors ci\n                        ON\n                            ci.certification = c.id\n                        WHERE\n                            ci.member = $1"
   },
   "96b44a8e96b45162ee26ebd715b45cbbf39a9f0b1ed3fd9924d69c58580738cc": {
     "describe": {
@@ -1488,6 +1438,68 @@
       }
     },
     "query": "\n                    WITH ins (id, mission, schedule_message_id, start) AS (\n                        INSERT INTO missions_schedule (mission, start) VALUES ($1, $2)\n                        RETURNING\n                            id,\n                            mission,\n                            schedule_message_id,\n                            start\n                    ) SELECT\n                        ins.id,\n                        ins.mission,\n                        ins.schedule_message_id,\n                        ins.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        ins\n                    INNER JOIN\n                        missions m ON m.id = ins.mission\n                    WHERE ins.start = $2\n                    "
+  },
+  "9d1f97c7ce97bbfddbb9bd6e289751ff10a137bdfb7ed49f9e87321985c17062": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "instructors",
+          "ordinal": 1,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "link",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "roles_required",
+          "ordinal": 4,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "roles_granted",
+          "ordinal": 5,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "valid_for",
+          "ordinal": 6,
+          "type_info": "Int4"
+        },
+        {
+          "name": "created",
+          "ordinal": 7,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        null,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                        SELECT\n                            id,\n                            array_agg(ci2.member) as instructors,\n                            name,\n                            link,\n                            roles_required,\n                            roles_granted,\n                            valid_for,\n                            c.created\n                        FROM\n                            certifications c\n                        INNER JOIN\n                            certifications_instructors ci\n                        ON\n                            ci.certification = c.id\n                        INNER JOIN certifications_instructors ci2\n                            ON ci2.certification = c.id\n                        WHERE\n                            ci.member = $1\n                        GROUP BY c.id;"
   },
   "a492865c0f8c52b770613822d17d029c4b8925a16a7a283ac0f65ba43831add3": {
     "describe": {

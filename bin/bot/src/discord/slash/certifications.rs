@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use bootstrap::format;
 use serenity::{
     builder::CreateApplicationCommand,
     model::prelude::{
@@ -348,12 +347,30 @@ async fn list(
     if certs.is_empty() {
         return interaction.reply("There are no certifications").await;
     }
-    let mut content = "**Certifications**\n\n".to_string();
+    let mut content = String::new();
     for cert in certs {
         content.push_str(&format!(
-            "**{}**\n<{}>\n{}\n{}\n\n",
+            "**{}**\n<{}>\n{}\n{}\n{}\n\n",
             cert.name,
             cert.link,
+            {
+                if available {
+                    cert.instructors.map_or_else(
+                        || "No instructors".to_string(),
+                        |ins| {
+                            let instructors =
+                                ins.iter().map(|i| format!("<@{i}>")).collect::<Vec<_>>();
+                            if instructors.is_empty() {
+                                "No instructors".to_string()
+                            } else {
+                                format!("Instructor(s): {}", instructors.join(", "))
+                            }
+                        },
+                    )
+                } else {
+                    String::new()
+                }
+            },
             {
                 let requires = cert
                     .roles_required
@@ -367,26 +384,11 @@ async fn list(
                     format!("Requires: {requires}")
                 }
             },
-            {
-                cert.instructors.map_or_else(|| "No instructors".to_string(), |ins| {
-                        let instructors = ins
-                            .iter()
-                            .map(|i| format!("<@{i}>"))
-                            .collect::<Vec<_>>();
-                        if instructors.is_empty() {
-                            "No instructors".to_string()
-                        } else {
-                            format!("Instructors: {}", instructors.join(", "))
-                        }
-                    })
-            },
             cert.valid_for.map_or_else(
                 || "No expiration".to_string(),
                 |v| format!("Valid for {v} days")
             )
         ));
     }
-    println!("{content}");
-    print!("char count: {}", content.chars().count());
     interaction.reply(content).await
 }
