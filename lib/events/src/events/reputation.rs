@@ -107,5 +107,14 @@ pub mod db {
             /// The time to get the reputation for
             at: OffsetDateTime,
         } => (Result<Option<Option<f64>>, String>)
+        /// Update reputation
+        struct UpdateReputation {
+            /// The player who removed the reputation
+            member: UserId,
+            /// The amount of reputation to remove
+            reputation: i32,
+            /// The reason for the reputation
+            reason: String,
+        } => (Result<(), String>)
     });
 }

@@ -223,6 +223,24 @@ impl Handler for Request {
                     at,
                 )
             }
+            Self::UpdateReputation {
+                member,
+                reputation,
+                reason,
+            } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::UpdateReputation,
+                    "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'staff', $2, $3)",
+                    member.to_string(),
+                    i32::from(*reputation),
+                    serde_json::json!({
+                        "reason": reason.to_string(),
+                    }),
+                )
+            }
         }
     }
 }
