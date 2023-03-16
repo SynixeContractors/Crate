@@ -28,14 +28,21 @@ impl Handler for Request {
                     r#"
                         SELECT
                             id,
+                            array_agg(ci.member) as instructors,
                             name,
                             link,
                             roles_required,
                             roles_granted,
                             valid_for,
-                            created
+                            c.created
                         FROM
-                            certifications"#,
+                            certifications c
+                        INNER JOIN
+                            certifications_instructors ci
+                        ON
+                            c.id = ci.certification
+                        GROUP BY
+                            c.id;"#,
                 )?;
                 Ok(())
             }
@@ -48,12 +55,13 @@ impl Handler for Request {
                     Response::ListInstructor,
                     r#"
                         SELECT
-                            c.id,
-                            c.name,
-                            c.link,
-                            c.roles_required,
-                            c.roles_granted,
-                            c.valid_for,
+                            id,
+                            array_agg(ci2.member) as instructors,
+                            name,
+                            link,
+                            roles_required,
+                            roles_granted,
+                            valid_for,
                             c.created
                         FROM
                             certifications c
@@ -61,8 +69,11 @@ impl Handler for Request {
                             certifications_instructors ci
                         ON
                             ci.certification = c.id
+                        INNER JOIN certifications_instructors ci2
+                            ON ci2.certification = c.id
                         WHERE
-                            ci.member = $1"#,
+                            ci.member = $1
+                        GROUP BY c.id;"#,
                     member.0.to_string(),
                 )?;
                 Ok(())
