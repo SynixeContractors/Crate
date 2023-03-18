@@ -32,7 +32,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         .create_option(|option| {
             option
                 .name("add")
-                .description("Add a reputation event")
+                .description("Add reputation amount")
                 .kind(CommandOptionType::SubCommand)
                 .create_sub_option(|option| {
                     option
@@ -59,8 +59,8 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         })
         .create_option(|option| {
             option
-                .name("remove")
-                .description("Remove a reputation event")
+                .name("sub")
+                .description("Substract reputation amount")
                 .kind(CommandOptionType::SubCommand)
                 .create_sub_option(|option| {
                     option
@@ -72,7 +72,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 .create_sub_option(|option| {
                     option
                         .name("amount")
-                        .description("The amount of reputation to remove")
+                        .description("The amount of reputation to substract")
                         .kind(CommandOptionType::Integer)
                         .min_int_value(1)
                         .required(true)
@@ -125,7 +125,7 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
         match subcommand.name.as_str() {
             "view" => view(ctx, command, &subcommand.options).await?,
             "add" => update(ctx, command, &subcommand.options, true).await?,
-            "remove" => update(ctx, command, &subcommand.options, false).await?,
+            "subtract" => update(ctx, command, &subcommand.options, false).await?,
             // "event" => event(ctx, command, &subcommand.options).await?,
             _ => unreachable!(),
         }
