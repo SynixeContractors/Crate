@@ -99,6 +99,6 @@ private _item = _loadout select 8 select 0;
 } forEach [0, 1, 2, 3, 4, 5];
 
 _items deleteAt "ItemRadio";
-_items deleteAt "itemRadioAcreFlagged";
+_items deleteAt "ItemRadioAcreFlagged";
 
 _items
