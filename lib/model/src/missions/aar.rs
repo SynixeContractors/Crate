@@ -1,10 +1,6 @@
 //! After action report
 
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::Display,
-    str::FromStr,
-};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use regex::Regex;
 use time::Date;
@@ -68,16 +64,22 @@ impl Aar {
             return Err(format!("Could not parse date: {date}. Make sure it's in the format YYYY-MM-DD."));
         };
 
-        let contractors = {
+        let contractors: Vec<String> = {
             let Some(contractors) = lines.get("contractors") else { return Err("Could not find contractors.".to_string()) };
-            let mut seen = HashSet::new();
-            let mut c = contractors
+            contractors
                 .split(',')
                 .map(|s| s.trim().to_string())
-                .collect::<Vec<_>>();
-            c.retain(|x| seen.insert(x.clone()));
-            c
+                .collect()
         };
+
+        if contractors.len()
+            != contractors
+                .iter()
+                .collect::<std::collections::HashSet<_>>()
+                .len()
+        {
+            return Err("Duplicate contractors found.".to_string());
+        }
 
         let result = regex.captures_iter(&lower);
         let mut payment = Payment::default();
