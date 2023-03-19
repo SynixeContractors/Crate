@@ -1,6 +1,10 @@
 //! After action report
 
-use std::{collections::HashMap, fmt::Display, str::FromStr};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+    str::FromStr,
+};
 
 use regex::Regex;
 use time::Date;
@@ -66,10 +70,13 @@ impl Aar {
 
         let contractors = {
             let Some(contractors) = lines.get("contractors") else { return Err("Could not find contractors.".to_string()) };
-            contractors
+            let mut seen = HashSet::new();
+            let mut c = contractors
                 .split(',')
                 .map(|s| s.trim().to_string())
-                .collect()
+                .collect::<Vec<_>>();
+            c.retain(|x| seen.insert(x.clone()));
+            c
         };
 
         let result = regex.captures_iter(&lower);
