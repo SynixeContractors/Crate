@@ -72,13 +72,20 @@ impl Aar {
                 .collect()
         };
 
-        if contractors.len()
-            != contractors
-                .iter()
-                .collect::<std::collections::HashSet<_>>()
-                .len()
-        {
-            return Err("Duplicate contractors found.".to_string());
+        //collect names of duplicate contractors
+        let mut duplicates = Vec::new();
+        for i in 0..contractors.len() {
+            for j in i + 1..contractors.len() {
+                if contractors[i] == contractors[j] {
+                    duplicates.push(contractors[i].clone());
+                }
+            }
+        }
+        if !duplicates.is_empty() {
+            return Err(format!(
+                "Duplicate contractors: {duplicates}",
+                duplicates = duplicates.join(", ")
+            ));
         }
 
         let result = regex.captures_iter(&lower);
