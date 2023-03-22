@@ -7,7 +7,7 @@ addMissionEventHandler ["ExtensionCallback", {
     if (_name != "crate:missions") exitWith {};
     switch (_func) do {
         case "set_date": {
-            [parseSimpleArray _data] call FUNC(setDate);
+            (parseSimpleArray _data) call FUNC(setDate);
         };
         case "intro_text": {
             [QGVAR(introText)] call CBA_fnc_globalEvent;
