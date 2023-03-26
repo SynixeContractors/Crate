@@ -565,4 +565,32 @@ Payment request: 60 No Combat 30 Light Combat 45 Medium Combat 15 Heavy Combat``
         println!("-200");
         println!("{}", aar.show_math(PaymentType::Defensive, -200f32));
     }
+
+    #[test]
+    fn test_parse_aar2() {
+        let aar = Aar::from_message(
+            r#"```Contract: Safety
+Date: 2023-03-25
+OL: Thomas Watson
+ELs: Jake King
+
+Contractors: Thomas Watson, Gary McLean, Brett Harrison, Prince Singh, Sean Miles, Arsey Johnson, Brett Harrison, Jake King, Felix de Jong, Emerson Thoreau, John Lamb, Chaplain Yi, Andrew Libby
+Assets Deployed: 2x Land Rover
+Assets Lost: N/A
+Casualties: Thomas Watson, Chaplain Yi, Brett Harrison, Prince Singh, Arsey Johnson, Gary McLean
+
+AAR: Contractors split into two teams between Mandalaria and Barawas (Yellow and Blue, respectively). At Barawas, Blue team took heavy contact, requiring assistance from a mobilized Yellow team (that at the time was checking Kouble Maimatara). After the end of the firefight, Yellow moved to Mimi, to check the area for any ISAS activity, before returning to to Mandalari. At 0800, Blue was experiencing no contact, while Yellow was awaiting the arrival of the convoy to Mandalari. The convoy was taken out by RPG fire, and contractors engaged the sparse contact that remained after the main force retreated. Afterwards, Yellow sent a two man team to patrol Kouble Maimatara, ending up surrounding and KIA. The rest of Synixe contractors assaulted the town to upend the ISAS fighters that were in the town, and recover the bodies of the 2 man team. After 20 or so minutes of heavy combat, where contractors were assaulted from all directions, ISAS retreated from the town, only after the number of KIA contractors tripled (All but one of Yellow was KIA, One of Blue was KIA). Bodies were secured, and the remainder of the contractors RTB'd.
+
+Operation Partial Success
+
+Payment Request
+50 No Combat
+10 Light Combat
+10 Medium Combat
+30 Heavy Combat
+```"#,
+        );
+        assert!(aar.is_ok());
+        let aar = aar.unwrap();
+    }
 }

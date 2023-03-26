@@ -1,7 +1,7 @@
 use arma_rs::Group;
 use synixe_proc::events_request_5;
 
-use crate::RUNTIME;
+use crate::{RUNTIME, SERVER_ID};
 
 pub fn group() -> Group {
     Group::new()
@@ -17,7 +17,7 @@ fn connected(steam: String, name: String) {
             bootstrap::NC::get().await,
             synixe_events::servers::db,
             Log {
-                server: "arma".to_string(),
+                server: (*SERVER_ID).clone(),
                 steam,
                 action: "connected".to_string(),
                 data: serde_json::json!({
@@ -38,7 +38,7 @@ fn disconnected(steam: String, name: String) {
             bootstrap::NC::get().await,
             synixe_events::servers::db,
             Log {
-                server: "arma".to_string(),
+                server: (*SERVER_ID).clone(),
                 steam,
                 action: "disconnected".to_string(),
                 data: serde_json::json!({
@@ -59,7 +59,7 @@ fn chat(steam: String, name: String, message: String) {
             bootstrap::NC::get().await,
             synixe_events::servers::db,
             Log {
-                server: "arma".to_string(),
+                server: (*SERVER_ID).clone(),
                 steam,
                 action: "chat".to_string(),
                 data: serde_json::json!({
@@ -81,7 +81,7 @@ fn role(steam: String, name: String, discord: String, role: String) {
             bootstrap::NC::get().await,
             synixe_events::servers::db,
             Log {
-                server: "arma".to_string(),
+                server: (*SERVER_ID).clone(),
                 steam,
                 action: "role".to_string(),
                 data: serde_json::json!({
