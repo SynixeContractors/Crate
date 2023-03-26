@@ -683,6 +683,20 @@
     },
     "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE id = $1"
   },
+  "5d523cacd6a94e8dc5f0253117bc488c59507696be6e551aec8a17505f6329da": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Int4",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'staff', $2, $3)"
+  },
   "5e7dca5489a3d50dabf827460981d6ca582a0a0f138ebc8018c0c40828dc8d7e": {
     "describe": {
       "columns": [],
