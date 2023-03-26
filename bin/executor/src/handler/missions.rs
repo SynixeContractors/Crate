@@ -57,6 +57,17 @@ impl Handler for Request {
                                 _ => {}
                             }
                         }
+                        if let Err(e) = publish!(
+                            bootstrap::NC::get().await,
+                            synixe_events::missions::publish::Publish::StartingSoon {
+                                scheduled,
+                                minutes,
+                            }
+                        )
+                        .await
+                        {
+                            error!("Failed to publish discord message: {}", e);
+                        }
                         for (text, scheduled, minutes) in posts {
                             if let Some(text) = text {
                                 if let Err(e) = events_request_5!(
@@ -107,17 +118,6 @@ impl Handler for Request {
                                 if let Err(e) = publish!(bootstrap::NC::get().await, event).await {
                                     error!("Failed to publish discord message: {}", e);
                                 }
-                            }
-                            if let Err(e) = publish!(
-                                bootstrap::NC::get().await,
-                                synixe_events::missions::publish::Publish::StartingSoon {
-                                    scheduled,
-                                    minutes,
-                                }
-                            )
-                            .await
-                            {
-                                error!("Failed to publish discord message: {}", e);
                             }
                         }
                         Ok(())
