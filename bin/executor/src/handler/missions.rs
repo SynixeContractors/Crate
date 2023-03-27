@@ -33,40 +33,40 @@ impl Handler for Request {
                     Ok(Ok((db::Response::UpcomingSchedule(Ok(missions)), _))) => {
                         let now = time::OffsetDateTime::now_utc();
                         let mut posts = Vec::new();
-                        for mission in missions {
-                            let num_minutes = (mission.start - now).whole_minutes() + 1;
-                            match num_minutes {
+                        for scheduled in missions {
+                            let minutes = (scheduled.start - now).whole_minutes() + 1;
+                            if let Err(e) = publish!(
+                                bootstrap::NC::get().await,
+                                synixe_events::missions::publish::Publish::StartingSoon {
+                                    scheduled: scheduled.clone(),
+                                    minutes,
+                                }
+                            )
+                            .await
+                            {
+                                error!("Failed to publish discord message: {}", e);
+                            }
+                            match minutes {
                                 178..=182 => {
-                                    posts.push((Some("3 hours!"), mission, num_minutes));
+                                    posts.push((Some("3 hours!"), scheduled, minutes));
                                 }
                                 78..=82 | 68..=72 | -1..=2 => {
-                                    posts.push((None, mission, num_minutes));
+                                    posts.push((None, scheduled, minutes));
                                 }
                                 58..=62 => {
-                                    posts.push((Some("1 hour!"), mission, num_minutes));
+                                    posts.push((Some("1 hour!"), scheduled, minutes));
                                 }
                                 28..=32 => {
-                                    posts.push((Some("30 minutes!"), mission, num_minutes));
+                                    posts.push((Some("30 minutes!"), scheduled, minutes));
                                 }
                                 8..=12 => {
-                                    posts.push((Some("10 minutes!"), mission, num_minutes));
+                                    posts.push((Some("10 minutes!"), scheduled, minutes));
                                 }
                                 3..=7 => {
-                                    posts.push((Some("5 minutes!"), mission, num_minutes));
+                                    posts.push((Some("5 minutes!"), scheduled, minutes));
                                 }
                                 _ => {}
                             }
-                        }
-                        if let Err(e) = publish!(
-                            bootstrap::NC::get().await,
-                            synixe_events::missions::publish::Publish::StartingSoon {
-                                scheduled,
-                                minutes,
-                            }
-                        )
-                        .await
-                        {
-                            error!("Failed to publish discord message: {}", e);
                         }
                         for (text, scheduled, minutes) in posts {
                             if let Some(text) = text {
