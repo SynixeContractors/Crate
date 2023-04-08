@@ -11,3 +11,6 @@ synixe-proc = { path = "../../lib/proc" }
 axum = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
+
+[build-dependencies]
+vergen = { workspace = true }

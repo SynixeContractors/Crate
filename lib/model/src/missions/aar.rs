@@ -591,6 +591,6 @@ Payment Request
 ```"#,
         );
         assert!(aar.is_ok());
-        aar.unwrap();
+        let aar = aar.unwrap();
     }
 }
