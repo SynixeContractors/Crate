@@ -12,16 +12,16 @@ synixe-proc = { path = "../../lib/proc" }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 nats = { workspace = true }
-reqwest = { version = "0.11.14" }
+reqwest = { version = "0.11.16" }
 serenity = { workspace = true, features = ["builder"] }
 time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 
 # recruiting
-roux = "2.2.5"
-rust-embed = "6.6.0"
-scraper = "0.15.0"
+roux = "2.2.6"
+rust-embed = "6.6.1"
+scraper = "0.16.0"
 
 [build-dependencies]
 vergen = { workspace = true }

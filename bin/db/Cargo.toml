@@ -14,7 +14,7 @@ anyhow = { workspace = true }
 arma-rs = { workspace = true }
 async-trait = { workspace = true }
 nats = { workspace = true }
-reqwest = { version = "0.11.14", features = ["json"] }
+reqwest = { version = "0.11.16", features = ["json"] }
 serde_json = { workspace = true }
 serenity = { workspace = true, features = ["builder"] }
 sqlx = { workspace = true, features = ["postgres", "runtime-tokio-native-tls", "offline", "time", "uuid", "json"] }

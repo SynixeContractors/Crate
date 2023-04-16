@@ -11,7 +11,7 @@ synixe-proc = { path = "../../lib/proc" }
 axum = { workspace = true }
 nats = { workspace = true }
 serenity = { workspace = true, features = ["builder"] }
-tera = "1.18.0"
+tera = "1.18.1"
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 tower = { version = "0.4.13", features = ["util"] }
