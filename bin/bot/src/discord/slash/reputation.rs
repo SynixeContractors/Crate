@@ -203,7 +203,7 @@ async fn view(
         return interaction.reply("Failed to retrieve current reputation").await;
     };
     interaction
-        .reply(format!("Current reputation: {current_rep}"))
+        .reply(format!("Current reputation: {current_rep:.2}"))
         .await?;
     Ok(())
 }

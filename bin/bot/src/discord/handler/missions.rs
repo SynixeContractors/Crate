@@ -14,7 +14,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
     }
     let aar = Aar::from_message(&message.content);
     let Ok(aar) = aar else {
-        if let Err(e) = message.reply(&ctx.http, format!(":confused: I couldn't parse that AAR. Please make sure you're using the template. \n > {}", aar.unwrap_err())).await {
+        if let Err(e) = message.reply(&ctx.http, format!(":confused: I couldn't parse that AAR. Please make sure you're using the template. \n > {}", aar.expect_err("checked for ok"))).await {
             error!("Error replying to message: {}", e);
         };
         return;
