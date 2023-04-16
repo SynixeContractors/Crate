@@ -315,7 +315,7 @@ async fn fine(
         .say(
             &ctx.http,
             format!(
-                "<You were fined {}\n> {}",
+                "You were fined {}\n> {}",
                 bootstrap::format::money(*amount as i32, false),
                 reason.clone(),
             ),
