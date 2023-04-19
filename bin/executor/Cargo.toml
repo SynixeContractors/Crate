@@ -22,6 +22,3 @@ tracing = { workspace = true }
 roux = "2.2.6"
 rust-embed = "6.6.1"
 scraper = "0.16.0"
-
-[build-dependencies]
-vergen = { workspace = true }

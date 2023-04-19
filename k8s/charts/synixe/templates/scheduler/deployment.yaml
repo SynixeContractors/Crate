@@ -36,8 +36,6 @@ spec:
           env:
             - name: NATS_URL
               value: {{ .Values.config.nats_url | quote }}
-            - name: LIGHTSTEP_ACCESS_TOKEN
-              value: {{ .Values.config.lightstep_access_token | quote }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "ghcr.io/synixecontractors/apps-scheduler:{{ .Values.image.tag | default .Chart.AppVersion }}"
