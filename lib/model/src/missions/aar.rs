@@ -201,7 +201,7 @@ impl Aar {
     #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
     /// Show the math for the payments
     /// Example:
-    /// ```
+    /// ```txt
     /// No Combat  | 420/h x 60  = $420
     /// Light      | 490/h x 30  = $245
     /// Heavy      | 700/h x 30  = $350
@@ -590,6 +590,6 @@ Payment Request
 30 Heavy Combat
 ```"#,
         );
-        assert!(aar.is_ok());
+        assert!(aar.is_err()); // Duplicate Brett Harrison
     }
 }
