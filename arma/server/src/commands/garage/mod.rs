@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use arma_rs::{Context, Group, Value};
+use arma_rs::{Context, ContextState, Group, Value};
 use nats::asynk::Message;
 use serenity::model::prelude::UserId;
 use synixe_events::{
@@ -27,7 +27,10 @@ pub fn group() -> Group {
 
 fn spawn(ctx: Context, id: Uuid, res: String) {
     RUNTIME.spawn(async move {
-        let pending = ctx.state().get::<PendingSpawn>();
+        let pending = ctx
+            .global()
+            .get::<PendingSpawn>()
+            .expect("Unable to get pending spawns");
         let pending = pending.as_ref().read().await;
         let msg = pending.get(&id).expect("Unable to get message");
         let res = res

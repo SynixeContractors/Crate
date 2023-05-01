@@ -1,4 +1,4 @@
-use arma_rs::IntoArma;
+use arma_rs::{ContextState, IntoArma};
 use async_trait::async_trait;
 use synixe_events::garage::arma::Request;
 use uuid::Uuid;
@@ -25,7 +25,10 @@ impl Handler for Request {
             } => {
                 let ctxguard = CONTEXT.read().await;
                 let ctx = ctxguard.as_ref().expect("Unable to get context");
-                let pending = ctx.state().get::<crate::commands::garage::PendingSpawn>();
+                let pending = ctx
+                    .global()
+                    .get::<crate::commands::garage::PendingSpawn>()
+                    .expect("Unable to get pending spawns");
                 let id = Uuid::new_v4();
                 pending.as_ref().write().await.insert(id, msg);
                 ctx.callback_data(
