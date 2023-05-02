@@ -59,6 +59,8 @@ config:
 
   # bot
   discord_token: ~
+  openai_key: ~
+  prompt_members: ~
 
   # db
   database_url: ~

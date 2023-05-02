@@ -38,6 +38,10 @@ spec:
               value: {{ .Values.config.discord_token | quote }}
             - name: NATS_URL
               value: {{ .Values.config.nats_url | quote }}
+            - name: OPENAI_KEY
+              value: {{ .Values.config.openai_key | quote }}
+            - name: PROMPT_MEMBERS
+              value: {{ .Values.config.prompt_members | quote }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "ghcr.io/synixecontractors/apps-bot:{{ .Values.image.tag | default .Chart.AppVersion }}"
