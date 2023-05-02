@@ -1,7 +1,10 @@
 use rand::Rng;
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
-use synixe_meta::discord::channel::FINANCIALS;
+use synixe_meta::discord::{
+    channel::{BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC, STAFF},
+    GUILD,
+};
 use synixe_proc::events_request_2;
 use uuid::Uuid;
 
@@ -13,11 +16,16 @@ use crate::{
     },
 };
 
+pub use self::brain::Brain;
+
 use super::{menu, slash};
 
+mod brain;
 mod missions;
 
-pub struct Handler;
+pub struct Handler {
+    pub brain: Option<Brain>,
+}
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -225,35 +233,75 @@ impl EventHandler for Handler {
     async fn message(&self, ctx: Context, message: Message) {
         if message.channel_id == FINANCIALS {
             missions::validate_aar(&ctx, message).await;
-        } else {
-            // 0.02% chance of losing 10 Harrison Points
-            if rand::thread_rng().gen_range(0..10000) < 2 {
+            return;
+        }
+
+        if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, STAFF, LOBBY].contains(&message.channel_id) {
+            if message.author.bot {
+                return;
+            }
+
+            if let Some(brain) = &self.brain {
+                let mut name = message.author.name.clone();
+                if let Ok(author) = GUILD.member(&ctx, message.author.id).await {
+                    if let Some(nick) = &author.nick {
+                        name = nick.clone();
+                    }
+                }
+                let mut content = format!("{}: {}", name, message.content);
+                for user in &message.mentions {
+                    if let Ok(member) = GUILD.member(&ctx, user.id).await {
+                        if let Some(nick) = &member.nick {
+                            content = content.replace(&format!("<@{}>", user.id), nick);
+                        }
+                    }
+                }
+                content = content.replace("<@1028418063168708638>", "Ctirad Brodsky");
+                if message
+                    .mentions
+                    .iter()
+                    .any(|user| user.id == ctx.cache.current_user_id())
+                {
+                    if let Some(reply) = brain.message(message.channel_id, content).await {
+                        message.reply_ping(&ctx.http, reply).await.ok();
+                    }
+                } else if rand::thread_rng().gen_range(0..100) < 2 {
+                    if let Some(reply) = brain.message(message.channel_id, content).await {
+                        message.reply_ping(&ctx.http, reply).await.ok();
+                    }
+                } else {
+                    brain.context(message.channel_id, content).await;
+                }
+            }
+        }
+
+        // 0.02% chance of losing 10 Harrison Points
+        if rand::thread_rng().gen_range(0..10000) < 2 {
+            if let Err(e) = message
+                .reply(
+                    &ctx.http,
+                    "I can't believe you've said this! You just lost 10 Harrison Points!",
+                )
+                .await
+            {
+                error!("Cannot send message: {}", e);
+            }
+        }
+
+        let lower = message.content.to_lowercase();
+        for key in &[
+            "more guns",
+            "more weapons",
+            "more gear",
+            "more mods",
+            "more equipment",
+        ] {
+            if lower.contains(key) {
                 if let Err(e) = message
-                    .reply(
-                        &ctx.http,
-                        "I can't believe you've said this! You just lost 10 Harrison Points!",
-                    )
+                    .reply(&ctx.http, "https://www.youtube.com/watch?v=H5d42w4ZcY4")
                     .await
                 {
                     error!("Cannot send message: {}", e);
-                }
-            }
-
-            let lower = message.content.to_lowercase();
-            for key in &[
-                "more guns",
-                "more weapons",
-                "more gear",
-                "more mods",
-                "more equipment",
-            ] {
-                if lower.contains(key) {
-                    if let Err(e) = message
-                        .reply(&ctx.http, "https://www.youtube.com/watch?v=H5d42w4ZcY4")
-                        .await
-                    {
-                        error!("Cannot send message: {}", e);
-                    }
                 }
             }
         }

@@ -10,7 +10,9 @@ pub async fn build() -> Client {
     // Login with a bot token from the environment
     let token = std::env::var("DISCORD_TOKEN").expect("token");
     Client::builder(token, GatewayIntents::all())
-        .event_handler(handler::Handler)
+        .event_handler(handler::Handler {
+            brain: handler::Brain::new(),
+        })
         .await
         .expect("Error creating client")
 }
