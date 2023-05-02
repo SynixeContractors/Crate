@@ -2,7 +2,7 @@ use rand::Rng;
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
 use synixe_meta::discord::{
-    channel::{BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC, STAFF},
+    channel::{BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC, RECRUITING, STAFF},
     GUILD,
 };
 use synixe_proc::events_request_2;
@@ -22,6 +22,7 @@ use super::{menu, slash};
 
 mod brain;
 mod missions;
+pub mod recruiting;
 
 pub struct Handler {
     pub brain: Option<Brain>,
@@ -122,7 +123,7 @@ impl EventHandler for Handler {
             if let Err(e) = synixe_meta::discord::channel::LOBBY
                 .send_message(&_ctx, |m| {
                     m.content(&format!(
-                        "Welcome <@{}>! Please follow the steps in <#{}> to get prepared to jump in game with us. If you have any questions, feel free to ask here!",
+                        "Welcome <@{}>! Please follow the steps in <#{}> to get prepared to jump in game with us. If you have any questions, feel free to ask here or reply to this post, I may know the answer!",
                         new_member.user.id,
                         synixe_meta::discord::channel::ONBOARDING,
                     ))
@@ -236,12 +237,20 @@ impl EventHandler for Handler {
             return;
         }
 
+        if message.channel_id == RECRUITING && message.author.bot {
+            recruiting::check_embed(&ctx, &message).await;
+            return;
+        }
+
         if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, STAFF, LOBBY].contains(&message.channel_id) {
             if message.author.bot {
                 return;
             }
 
             if let Some(brain) = &self.brain {
+                if message.content.is_empty() {
+                    return;
+                }
                 let mut name = message.author.name.clone();
                 if let Ok(author) = GUILD.member(&ctx, message.author.id).await {
                     if let Some(nick) = &author.nick {
@@ -262,15 +271,25 @@ impl EventHandler for Handler {
                     .iter()
                     .any(|user| user.id == ctx.cache.current_user_id())
                 {
-                    if let Some(reply) = brain.message(message.channel_id, content).await {
+                    let typing = message
+                        .channel_id
+                        .start_typing(&ctx.http)
+                        .expect("Cannot start typing");
+                    if let Some(reply) = brain.message(&ctx, message.channel_id, content).await {
                         message.reply_ping(&ctx.http, reply).await.ok();
                     }
-                } else if rand::thread_rng().gen_range(0..100) < 2 {
-                    if let Some(reply) = brain.message(message.channel_id, content).await {
+                    typing.stop();
+                } else if rand::thread_rng().gen_range(0..100) < 4 {
+                    let typing = message
+                        .channel_id
+                        .start_typing(&ctx.http)
+                        .expect("Cannot start typing");
+                    if let Some(reply) = brain.message(&ctx, message.channel_id, content).await {
                         message.reply_ping(&ctx.http, reply).await.ok();
                     }
+                    typing.stop();
                 } else {
-                    brain.context(message.channel_id, content).await;
+                    brain.context(&ctx, message.channel_id, content).await;
                 }
             }
         }

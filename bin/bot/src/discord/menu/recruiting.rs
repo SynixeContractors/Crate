@@ -4,14 +4,17 @@ use serenity::{
         application::interaction::{
             application_command::ApplicationCommandInteraction, InteractionResponseType,
         },
-        prelude::{command::CommandType, MessageId},
+        prelude::{command::CommandType, Message, MessageId},
     },
     prelude::*,
 };
 use synixe_meta::discord::channel::RECRUITING;
 use synixe_proc::events_request_2;
 
-use crate::discord::interaction::{Generic, Interaction};
+use crate::discord::{
+    handler,
+    interaction::{Generic, Interaction},
+};
 
 pub const MENU_RECRUITING_REPLY: &str = "Recruiting - Reply";
 
@@ -34,50 +37,56 @@ pub async fn run_reply(
             .reply("Failed to find message")
             .await;
     };
-    if let Some(embed) = msg.embeds.first() {
-        debug!("embeded url {:?}", embed.url);
-        if let Some(url) = &embed.url {
-            if url.starts_with("https://reddit.com") {
-                let resp = if (events_request_2!(
-                    bootstrap::NC::get().await,
-                    synixe_events::recruiting::executions,
-                    ReplyReddit {
-                        url: url.to_string()
-                    }
-                )
-                .await)
-                    .is_ok()
-                {
-                    "Reply Sent"
-                } else {
-                    "Failed to send reply"
-                };
+    // if let Some(embed) = msg.embeds.first() {
+    //     debug!("embeded url {:?}", embed.url);
+    //     if let Some(url) = &embed.url {
+    //         if url.starts_with("https://reddit.com") {
+    //             let resp = if (events_request_2!(
+    //                 bootstrap::NC::get().await,
+    //                 synixe_events::recruiting::executions,
+    //                 ReplyReddit {
+    //                     url: url.to_string()
+    //                 }
+    //             )
+    //             .await)
+    //                 .is_ok()
+    //             {
+    //                 "Reply Sent"
+    //             } else {
+    //                 "Failed to send reply"
+    //             };
 
-                if let Err(why) = command
-                    .create_interaction_response(&ctx.http, |response| {
-                        response
-                            .kind(InteractionResponseType::ChannelMessageWithSource)
-                            .interaction_response_data(|message| message.content(resp))
-                    })
-                    .await
-                {
-                    error!("Cannot respond to slash command: {}", why);
-                }
-            } else if let Err(why) = command
-                .create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| {
-                            message
-                                .content("Only reddit posts can be replied to currently")
-                                .ephemeral(true)
-                        })
-                })
-                .await
-            {
-                error!("Cannot respond to slash command: {}", why);
-            }
-        }
+    //             if let Err(why) = command
+    //                 .create_interaction_response(&ctx.http, |response| {
+    //                     response
+    //                         .kind(InteractionResponseType::ChannelMessageWithSource)
+    //                         .interaction_response_data(|message| message.content(resp))
+    //                 })
+    //                 .await
+    //             {
+    //                 error!("Cannot respond to slash command: {}", why);
+    //             }
+    //         } else if let Err(why) = command
+    //             .create_interaction_response(&ctx.http, |response| {
+    //                 response
+    //                     .kind(InteractionResponseType::ChannelMessageWithSource)
+    //                     .interaction_response_data(|message| {
+    //                         message
+    //                             .content("Only reddit posts can be replied to currently")
+    //                             .ephemeral(true)
+    //                     })
+    //             })
+    //             .await
+    //         {
+    //             error!("Cannot respond to slash command: {}", why);
+    //         }
+    //     }
+    // }
+    if let Some(_reply) = handler::recruiting::check_embed(&ctx, &msg).await {
+        // msg
+        //     .channel_id
+        //     .send_message(&ctx.http, |m| m.content(reply))
+        //     .await?;
     }
     Ok(())
 }

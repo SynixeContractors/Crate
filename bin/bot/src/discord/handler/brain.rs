@@ -4,8 +4,9 @@ use chatgpt::{
     prelude::{ChatGPT, ModelConfiguration},
     types::{ChatMessage, Role},
 };
-use serenity::model::prelude::ChannelId;
+use serenity::{model::prelude::ChannelId, prelude::Context};
 use synixe_events::missions;
+use synixe_meta::discord::channel::LOBBY;
 use synixe_proc::events_request_2;
 use time::{format_description, OffsetDateTime};
 use tokio::sync::RwLock;
@@ -32,7 +33,12 @@ impl Brain {
         })
     }
 
-    pub async fn context(&self, channel: ChannelId, message: String) -> Vec<ChatMessage> {
+    pub async fn context(
+        &self,
+        _ctx: &Context,
+        channel: ChannelId,
+        message: String,
+    ) -> Vec<ChatMessage> {
         let (last, mut history) = self
             .rolling_history
             .read()
@@ -41,8 +47,8 @@ impl Brain {
             .cloned()
             .unwrap_or_else(|| (OffsetDateTime::now_utc(), vec![]));
         if last
-            .checked_add(time::Duration::hours(2))
-            .expect("can add 12 hours")
+            .checked_add(time::Duration::minutes(30))
+            .expect("can add 30 minutes")
             < OffsetDateTime::now_utc()
         {
             history = Vec::new();
@@ -50,7 +56,7 @@ impl Brain {
         if history.is_empty() {
             history = vec![ChatMessage {
                 role: Role::System,
-                content: create_prompt().await,
+                content: create_prompt(channel).await,
             }];
             history.push(ChatMessage {
                 role: Role::User,
@@ -72,8 +78,13 @@ impl Brain {
         history
     }
 
-    pub async fn message(&self, channel: ChannelId, message: String) -> Option<String> {
-        let mut history = self.context(channel, message).await;
+    pub async fn message(
+        &self,
+        ctx: &Context,
+        channel: ChannelId,
+        message: String,
+    ) -> Option<String> {
+        let mut history = self.context(ctx, channel, message).await;
         match self.client.send_history(&history).await {
             Ok(resp) => {
                 history.push(resp.message_choices[0].message.clone());
@@ -97,11 +108,11 @@ impl Brain {
     }
 }
 
-async fn create_prompt() -> String {
-    let mut start = include_str!("prompt.txt").to_string();
+async fn create_prompt(channel: ChannelId) -> String {
+    let mut start = include_str!("brain-prompt.txt").to_string();
     // Date
     start = start.replace(
-        "%%currentDate%%",
+        "%%date%%",
         &OffsetDateTime::now_utc()
             .format(
                 &format_description::parse("[year]-[month]-[day]")
@@ -109,6 +120,12 @@ async fn create_prompt() -> String {
             )
             .expect("failed to format date"),
     );
+    start = start.replace("%%channel%%", &format!("<#{}>", channel.0));
+    start = start.replace("%%teamspeak%%", if channel == LOBBY {
+        "Sorry, I can't reveal that information in a public setting, once you have joined as a recruit you'll get everything you need to know."
+    } else {
+        "The TeamSpeak server details are <ts.synixe.contractors>"
+    });
 
     // Schedule
     let schedule = match events_request_2!(
@@ -167,7 +184,10 @@ async fn create_prompt() -> String {
     };
     start = start.replace("%%brief%%", &brief);
 
-    start = start.replace("%%members%%", std::env::var("PROMPT_MEMBERS").unwrap_or_default().as_str());
+    start = start.replace(
+        "%%members%%",
+        std::env::var("PROMPT_MEMBERS").unwrap_or_default().as_str(),
+    );
 
     start
 }
