@@ -2,6 +2,8 @@
 
 #![allow(clippy::use_self)] // serde false positive
 
+use std::fmt::{Display, Formatter};
+
 use serde::{Deserialize, Serialize};
 use serenity::model::prelude::{ChannelId, MessageId};
 use time::OffsetDateTime;
@@ -158,6 +160,16 @@ pub enum Rsvp {
     Maybe,
     /// The user is not attending
     No,
+}
+
+impl Display for Rsvp {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Yes => write!(f, "Yes"),
+            Self::Maybe => write!(f, "Maybe"),
+            Self::No => write!(f, "No"),
+        }
+    }
 }
 
 #[cfg(feature = "mission-schedule")]

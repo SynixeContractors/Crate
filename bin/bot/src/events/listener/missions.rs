@@ -1,6 +1,8 @@
 use async_trait::async_trait;
 use serenity::model::prelude::Activity;
 use synixe_events::missions::{db::Response, publish::Publish};
+use synixe_meta::discord::channel::LOG;
+use synixe_model::missions::Rsvp;
 use synixe_proc::events_request_5;
 
 use crate::{bot::Bot, cache_http::CacheAndHttp};
@@ -18,6 +20,7 @@ impl Listener for Publish {
             Self::StartingSoon { scheduled, minutes } => {
                 let Some((channel, message)) = scheduled.message() else { return Ok(()) };
                 if (-1..=1).contains(minutes) {
+                    // Remove RSVP buttons
                     if let Err(e) = channel
                         .edit_message(&CacheAndHttp::get().http, message, |m| m.components(|f| f))
                         .await
@@ -30,6 +33,41 @@ impl Listener for Publish {
                     thread
                         .edit_thread(&CacheAndHttp::get().http, |t| t.locked(true).archived(true))
                         .await?;
+
+                    // Send RSVP report to LOG
+                    let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) = events_request_5!(
+                        bootstrap::NC::get().await,
+                        synixe_events::missions::db,
+                        FetchMissionRsvps {
+                            scheduled: scheduled.id,
+                        }
+                    ).await else {
+                        error!("failed to fetch mission rsvps");
+                        return Ok(());
+                    };
+
+                    let mut report = String::new();
+                    for rsvp in rsvps {
+                        report.push_str(&format!(
+                            "<@{}>: {}\n",
+                            rsvp.member,
+                            match rsvp.state {
+                                Rsvp::Yes => "Yes".to_string(),
+                                Rsvp::No | Rsvp::Maybe => {
+                                    format!("{} ({})", rsvp.state, rsvp.details.unwrap_or_default())
+                                }
+                            }
+                        ));
+                    }
+
+                    if let Err(e) = LOG
+                        .send_message(&CacheAndHttp::get().http, |m| {
+                            m.content(format!("RSVP Report for {}: \n{}", scheduled.name, report))
+                        })
+                        .await
+                    {
+                        error!("failed to send RSVP report: {}", e);
+                    }
                 }
                 Ok(())
             }
