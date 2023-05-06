@@ -48,16 +48,14 @@ impl Listener for Publish {
 
                     let mut report = String::new();
                     for rsvp in rsvps {
-                        report.push_str(&format!(
-                            "<@{}>: {}\n",
-                            rsvp.member,
-                            match rsvp.state {
-                                Rsvp::Yes => "Yes".to_string(),
-                                Rsvp::No | Rsvp::Maybe => {
-                                    format!("{} ({})", rsvp.state, rsvp.details.unwrap_or_default())
-                                }
-                            }
-                        ));
+                        if rsvp.state != Rsvp::Yes {
+                            report.push_str(&format!(
+                                "<@{}>: {} ({})\n",
+                                rsvp.member,
+                                rsvp.state,
+                                rsvp.details.unwrap_or_default(),
+                            ));
+                        }
                     }
 
                     if let Err(e) = LOG
