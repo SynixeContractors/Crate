@@ -332,6 +332,19 @@
     },
     "query": "INSERT into garage_log (plate, action, member) VALUES ($1, 'retrieve', $2)"
   },
+  "2b028e37a0f11cde9c39d57892670a05b9ad81882300ea2745a4587aec7e2df6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'civilian_healed', 2, $2)"
+  },
   "32c2dd476f4e3ec8d7dcecea6fab01004bd6f9a1e5cee67b4efdf2d6032fa3e0": {
     "describe": {
       "columns": [
@@ -1173,19 +1186,6 @@
     },
     "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'surrendering_shot', -2, $2)"
   },
-  "7ff6a7dc7090de994c05695139f058d27cda1c98139c4683d5bc9a62dd4ed123": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Jsonb"
-        ]
-      }
-    },
-    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'civilian_healed', 1, $2)"
-  },
   "815617522fc3f0a9a5f494efd0416f0c840495523152f95ccad384167fbc22ec": {
     "describe": {
       "columns": [],
@@ -1514,6 +1514,19 @@
       }
     },
     "query": "\n                        SELECT\n                            id,\n                            array_agg(ci2.member) as instructors,\n                            name,\n                            link,\n                            roles_required,\n                            roles_granted,\n                            valid_for,\n                            c.created\n                        FROM\n                            certifications c\n                        INNER JOIN\n                            certifications_instructors ci\n                        ON\n                            ci.certification = c.id\n                        INNER JOIN certifications_instructors ci2\n                            ON ci2.certification = c.id\n                        WHERE\n                            ci.member = $1\n                        GROUP BY c.id;"
+  },
+  "9ee4254b78235be2b90c2353379418004cdb1ed81e2476950f9645129f88f576": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'unfriendly_healed', 1, $2)"
   },
   "a492865c0f8c52b770613822d17d029c4b8925a16a7a283ac0f65ba43831add3": {
     "describe": {
