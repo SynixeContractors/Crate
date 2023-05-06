@@ -178,6 +178,22 @@ impl Handler for Request {
                     }),
                 )
             }
+            Self::UnfriendlyHealed { member, target } => {
+                log(format!(
+                    "**Unfriendly Healed**\n<@{member}> healed {target}",
+                ));
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::UnfriendlyHealed,
+                    "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'unfriendly_healed', 1, $2)",
+                    member.to_string(),
+                    serde_json::json!({
+                        "target": target.to_string(),
+                    }),
+                )
+            }
             Self::CivilianHealed { member, target } => {
                 log(format!("**Civilian Healed**\n<@{member}> healed {target}",));
                 execute_and_respond!(
@@ -185,7 +201,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::CivilianHealed,
-                    "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'civilian_healed', 1, $2)",
+                    "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'civilian_healed', 2, $2)",
                     member.to_string(),
                     serde_json::json!({
                         "target": target.to_string(),

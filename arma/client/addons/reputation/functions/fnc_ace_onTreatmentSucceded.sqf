@@ -15,6 +15,10 @@ if (side _medic == side group _patient) then {
     [QGVAR(friendly_healed), [_discord, _patient]] call CBA_fnc_serverEvent;
 };
 
+if (side _medic != side group _patient) then {
+    [QGVAR(unfriendly_healed), [_discord, _patient]] call CBA_fnc_serverEvent;
+};
+
 if (side group _patient == civilian) then {
     [QGVAR(civilian_healed), [_discord, _patient]] call CBA_fnc_serverEvent;
 };

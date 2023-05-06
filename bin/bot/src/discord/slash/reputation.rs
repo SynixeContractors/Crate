@@ -85,35 +85,6 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .required(true)
                 })
         })
-    // .create_option(|option| {
-    //     option
-    //         .name("event")
-    //         .description("Add a reputation event")
-    //         .kind(CommandOptionType::SubCommand)
-    //         .create_sub_option(|option| {
-    //             option
-    //                 .name("member")
-    //                 .description("The member that the event is for (use Brodsky if ambiguous)")
-    //                 .kind(CommandOptionType::User)
-    //                 .required(true)
-    //         })
-    //         .create_sub_option(|option| {
-    //             option
-    //                 .name("description")
-    //                 .description("The description of the event")
-    //                 .kind(CommandOptionType::String)
-    //                 .required(true)
-    //         })
-    //         .create_sub_option(|option| {
-    //             option
-    //                 .name("significance")
-    //                 .description("The significance of the event")
-    //                 .kind(CommandOptionType::Integer)
-    //                 .required(true)
-    //                 .min_int_value(-200)
-    //                 .max_int_value(200)
-    //         })
-    //     })
 }
 
 pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
@@ -207,17 +178,3 @@ async fn view(
         .await?;
     Ok(())
 }
-
-// async fn event(
-//     ctx: &Context,
-//     command: &ApplicationCommandInteraction,
-//     options: &[CommandDataOption],
-// ) -> serenity::Result<()> {
-//     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
-//     let Some(member) = get_option_user!(options, "member") else {
-//         return interaction.reply("Invalid trainee").await;
-//     };
-//     let description = get_option!(options, "description", String);
-//     let significance = get_option!(options, "significance", Integer);
-//     Ok(())
-// }

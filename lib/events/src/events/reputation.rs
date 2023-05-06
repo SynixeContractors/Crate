@@ -82,6 +82,13 @@ pub mod db {
             /// The friendly unit that was healed
             target: String,
         } => (Result<(), String>)
+        /// An unfriendly unit was healed by a player
+        struct UnfriendlyHealed {
+            /// The player who healed the unfriendly unit
+            member: UserId,
+            /// The unfriendly unit that was healed
+            target: String,
+        } => (Result<(), String>)
         /// A civilian was healed by a player
         struct CivilianHealed {
             /// The player who healed the civilian

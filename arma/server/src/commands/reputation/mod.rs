@@ -15,6 +15,7 @@ pub fn group() -> Group {
         .command("unconscious_shot", command_unconscious_shot)
         .command("building_damaged", command_building_damaged)
         .command("friendly_healed", command_friendly_healed)
+        .command("unfriendly_healed", command_unfriendly_healed)
         .command("civilian_healed", command_civilian_healed)
 }
 
@@ -172,6 +173,26 @@ fn command_friendly_healed(member: String, target: String) {
     };
     RUNTIME.spawn(async move {
         let Ok(Ok((db::Response::FriendlyHealed(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::reputation::db,
+            FriendlyHealed {
+                member: UserId(discord),
+                target: target.to_string(),
+            }
+        ).await else {
+            error!("failed to submit friendly healed over nats");
+            return;
+        };
+    });
+}
+
+fn command_unfriendly_healed(member: String, target: String) {
+    let Ok(discord) = member.parse::<u64>() else {
+        error!("failed to parse discord id");
+        return;
+    };
+    RUNTIME.spawn(async move {
+        let Ok(Ok((db::Response::UnfriendlyHealed(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             FriendlyHealed {

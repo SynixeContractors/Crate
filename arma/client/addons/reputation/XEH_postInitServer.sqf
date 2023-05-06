@@ -45,6 +45,12 @@ _target setVariable [format ["%1:%2",QGVAR(timeout),EV], CBA_missionTime + 5, tr
     EXTCALL("reputation:friendly_healed", [ARR_2(_member, name _target)]);
 }] call CBA_fnc_addEventHandler;
 
+[QGVAR(unfriendly_healed), {
+    params ["_member", "_target"];
+    TIMEOUT("unfriendly_healed");
+    EXTCALL("reputation:unfriendly_healed", [ARR_2(_member, name _target)]);
+}] call CBA_fnc_addEventHandler;
+
 [QGVAR(civilian_healed), {
     params ["_member", "_target"];
     TIMEOUT("civilian_healed");
