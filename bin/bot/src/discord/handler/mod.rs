@@ -23,6 +23,7 @@ use super::{menu, slash};
 mod brain;
 mod missions;
 pub mod recruiting;
+mod time_poll;
 
 pub struct Handler {
     pub brain: Option<Brain>,
@@ -34,6 +35,18 @@ impl EventHandler for Handler {
         info!("{} is connected!", ready.user.name);
 
         Bot::init(ctx.shard.into());
+
+        // STAFF.send_message(&ctx.http, |m| {
+        //     m.content("@everyone\nSynixe is considering making some changes to our scheduled times to try and make it easier for everyone to attend. Please take a moment to fill out the following poll to help us make the best decision for the community. Thank you!").components(|c| {
+        //         c.create_action_row(|r| {
+        //             r.create_button(|b| {
+        //                 b.custom_id("time_poll")
+        //                     .label("Answer Poll")
+        //                     .style(interactions::message_component::ButtonStyle::Primary)
+        //             })
+        //         })
+        //     })
+        // }).await.expect("Failed to send poll message");
 
         if let Err(e) =
             GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {
@@ -106,6 +119,7 @@ impl EventHandler for Handler {
                     "rsvp_yes" | "rsvp_maybe" | "rsvp_no" => {
                         slash::schedule::rsvp_button(&ctx, &component).await
                     }
+                    "time_poll" => time_poll::run(&ctx, &component).await,
                     _ => Ok(()),
                 }
             }
