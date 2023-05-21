@@ -1,5 +1,9 @@
 use rand::Rng;
-use serenity::{async_trait, model::prelude::*, prelude::*};
+use serenity::{
+    async_trait,
+    model::prelude::{component::ButtonStyle, *},
+    prelude::*,
+};
 use synixe_events::{discord::publish::Publish, publish};
 use synixe_meta::discord::{
     channel::{BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC, RECRUITING, STAFF},
@@ -22,6 +26,7 @@ use super::{menu, slash};
 
 mod brain;
 mod missions;
+mod pmc_poll;
 pub mod recruiting;
 mod time_poll;
 
@@ -36,17 +41,23 @@ impl EventHandler for Handler {
 
         Bot::init(ctx.shard.into());
 
-        // STAFF.send_message(&ctx.http, |m| {
-        //     m.content("@everyone\nSynixe is considering making some changes to our scheduled times to try and make it easier for everyone to attend. Please take a moment to fill out the following poll to help us make the best decision for the community. Thank you!").components(|c| {
-        //         c.create_action_row(|r| {
-        //             r.create_button(|b| {
-        //                 b.custom_id("time_poll")
-        //                     .label("Answer Poll")
-        //                     .style(interactions::message_component::ButtonStyle::Primary)
+        // STAFF
+        //     .send_message(&ctx.http, |m| {
+
+        //         m.content("@everyone We were interested in gauging the interest for specials and PMC missions. Please take a moment to fill out the polls below. Thank you!")
+        //     .components(|c| {
+        //             c.create_action_row(|r| {
+        //                 r.create_button(|b| {
+        //                     b.custom_id("pmc_poll");
+        //                     b.label("PMC Poll");
+        //                     b.style(ButtonStyle::Primary);
+        //                     b
+        //                 })
         //             })
         //         })
         //     })
-        // }).await.expect("Failed to send poll message");
+        //     .await
+        //     .expect("Cannot send message");
 
         if let Err(e) =
             GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {
@@ -120,6 +131,7 @@ impl EventHandler for Handler {
                         slash::schedule::rsvp_button(&ctx, &component).await
                     }
                     "time_poll" => time_poll::run(&ctx, &component).await,
+                    "pmc_poll" => pmc_poll::run(&ctx, &component).await,
                     _ => Ok(()),
                 }
             }
