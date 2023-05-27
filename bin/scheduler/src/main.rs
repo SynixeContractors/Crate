@@ -46,7 +46,7 @@ async fn main() {
     job!(
         sched,
         "Recruiting - reddit findaunit post",
-        "0 0 23 * * Thu,Fri,Sat",
+        "0 0 19 * * Thu,Fri,Sat",
         synixe_events::recruiting::executions,
         PostReddit
     );
