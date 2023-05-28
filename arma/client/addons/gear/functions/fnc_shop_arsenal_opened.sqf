@@ -3,7 +3,6 @@
 params ["_display"];
 
 if !(GVAR(enabled)) exitWith {};
-if (GVAR(readOnly)) exitWith {};
 
 if (ace_player isNotEqualTo player) exitWith {};
 if !(player getVariable [QGVAR(shop_open), false]) exitWith {};

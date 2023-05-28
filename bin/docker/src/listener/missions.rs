@@ -27,13 +27,13 @@ impl Listener for Publish {
             reason,
         } = &self
         {
-            if *DOCKER_SERVER != "primary" {
+            if *DOCKER_SERVER != "monterey-primary" {
                 return Ok(());
             }
             if id == "$SUBCON$" {
                 return Ok(());
             }
-            info!("Changing main server mission to `{}`", id);
+            info!("Changing contracts server mission to `{}`", id);
             let Ok(regex) = Regex::new(r"(?m)template = ([^;]+);") else {
                 error!("failed to compile regex");
                 return Ok(());
@@ -47,18 +47,18 @@ impl Listener for Publish {
             {
                 return Ok(());
             }
-            let current_config = std::fs::read_to_string("/arma/main/configs/main.cfg")?;
+            let current_config = std::fs::read_to_string("/arma/contracts/configs/main.cfg")?;
             let new_config = regex
                 .replace_all(&current_config, format!("template = {id};"))
                 .to_string();
-            let mut file = File::create("/arma/main/configs/main.cfg")?;
+            let mut file = File::create("/arma/contracts/configs/main.cfg")?;
             file.write_all(new_config.as_bytes())?;
             if let Err(e) = events_request_5!(
                 nats,
                 synixe_events::discord::write,
                 Audit {
                     message: DiscordMessage {
-                        content: DiscordContent::Text(format!("Main server mission changed to `{id}`, will restart in 60 seconds. ({reason})")),
+                        content: DiscordContent::Text(format!("Contracts server mission changed to `{id}`, will restart in 60 seconds. ({reason})")),
                         reactions: vec![],
                     }
                 }

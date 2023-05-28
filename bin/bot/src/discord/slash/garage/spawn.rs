@@ -102,8 +102,8 @@ pub async fn spawn(
                     error!("Failed to send log message: {}", e);
                 }
             }
-            interaction.reply("Vehicle spawned").await;
-            events_request_2!(
+            interaction.reply("Vehicle spawned").await?;
+            if let Err(e) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::write,
                 Audit {
@@ -116,7 +116,10 @@ pub async fn spawn(
                     }
                 }
             )
-            .await;
+            .await
+            {
+                error!("Failed to audit vehicle spawn: {}", e);
+            }
             Ok(())
         }
         SpawnResult::AreaBlocked => interaction.reply("Area blocked").await,

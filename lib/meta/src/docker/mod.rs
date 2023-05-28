@@ -74,7 +74,7 @@ impl From<Primary> for Container {
     fn from(container: Primary) -> Self {
         Self {
             id: container.id(),
-            dc: String::from("primary"),
+            dc: String::from("monterey-primary"),
             name: Some(container.to_string()),
         }
     }

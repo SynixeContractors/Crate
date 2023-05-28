@@ -1,9 +1,5 @@
 use rand::Rng;
-use serenity::{
-    async_trait,
-    model::prelude::{component::ButtonStyle, *},
-    prelude::*,
-};
+use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
 use synixe_meta::discord::{
     channel::{BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC, RECRUITING, STAFF},
@@ -40,24 +36,6 @@ impl EventHandler for Handler {
         info!("{} is connected!", ready.user.name);
 
         Bot::init(ctx.shard.into());
-
-        // STAFF
-        //     .send_message(&ctx.http, |m| {
-
-        //         m.content("@everyone We were interested in gauging the interest for specials and PMC missions. Please take a moment to fill out the polls below. Thank you!")
-        //     .components(|c| {
-        //             c.create_action_row(|r| {
-        //                 r.create_button(|b| {
-        //                     b.custom_id("pmc_poll");
-        //                     b.label("PMC Poll");
-        //                     b.style(ButtonStyle::Primary);
-        //                     b
-        //                 })
-        //             })
-        //         })
-        //     })
-        //     .await
-        //     .expect("Cannot send message");
 
         if let Err(e) =
             GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {

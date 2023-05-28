@@ -18,17 +18,16 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        // All arma servers are on worker-primary
-        if *DOCKER_SERVER != "primary" {
+        if *DOCKER_SERVER != "monterey-primary" {
             return Ok(());
         }
         respond!(msg, Response::Updated(Ok(()))).await?;
         let command = Command::new("rsync")
             .arg("-ur")
             .arg("--delete-after")
-            .arg("moddownload@192.168.1.241:/")
+            .arg("moddownload@192.168.1.211:/home/download/mods")
             .arg(".")
-            .current_dir("/arma/main/mods")
+            .current_dir("/arma/contracts/mods")
             .status()
             .await?;
         if !command.success() {

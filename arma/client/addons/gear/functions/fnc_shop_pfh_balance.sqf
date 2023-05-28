@@ -20,10 +20,18 @@ if (_invalid isNotEqualTo []) exitWith {
         _names pushBack _name;
     } forEach _invalid;
     _btnHide ctrlSetTooltip (_names joinString "\n");
-    _btnClose ctrlSetText "Cancel";
+    if !(GVAR(readOnly)) then {
+        _btnClose ctrlSetText "Cancel";
+    };
 };
 
 private _cost = [_items] call FUNC(shop_items_cost);
+
+if (GVAR(readOnly)) exitWith {
+    _btnHide ctrlEnable false;
+    _btnHide ctrlSetText format ["%1", _cost];
+    _btnHide ctrlSetTooltip "Loadout Cost";
+};
 
 if (_cost == 0) then {
     _btnHide ctrlEnable false;
