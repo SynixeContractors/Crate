@@ -25,14 +25,14 @@ impl Handler for Request {
         let command = Command::new("rsync")
             .arg("-ur")
             .arg("--delete-after")
-            .arg("moddownload@192.168.1.111:/home/download/mods")
+            .arg("download@192.168.1.111:/home/download/mods")
             .arg(".")
             .current_dir("/arma/contracts/mods")
             .status()
             .await?;
         if !command.success() {
-            error!("Failed to update mission list");
-            return Err(anyhow::anyhow!("Failed to update mission list"));
+            error!("Failed to update mods");
+            return Err(anyhow::anyhow!("Failed to update mods"));
         }
         if let Err(e) = events_request_5!(
             nats,

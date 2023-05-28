@@ -16,7 +16,6 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        // All arma servers are on worker-primary
         if *DOCKER_SERVER != "monterey-primary" {
             return Ok(());
         }
