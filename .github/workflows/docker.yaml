@@ -10,6 +10,7 @@ on:
       - lib/bootstrap/**
       - lib/events/**
       - lib/proc/**
+      - lib/meta/**
 
 permissions:
   packages: write
