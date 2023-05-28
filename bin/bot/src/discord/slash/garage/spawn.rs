@@ -2,9 +2,12 @@ use serenity::{
     model::prelude::application_command::{ApplicationCommandInteraction, CommandDataOption},
     prelude::Context,
 };
-use synixe_events::garage::{
-    arma::{Response, SpawnResult},
-    db,
+use synixe_events::{
+    discord::write::{DiscordContent, DiscordMessage},
+    garage::{
+        arma::{Response, SpawnResult},
+        db,
+    },
 };
 use synixe_meta::discord::{channel::LOG, role::LEADERSHIP};
 use synixe_proc::{events_request_2, events_request_5};
@@ -17,6 +20,7 @@ use crate::{
     get_option,
 };
 
+#[allow(clippy::too_many_lines)]
 pub async fn spawn(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
@@ -98,7 +102,22 @@ pub async fn spawn(
                     error!("Failed to send log message: {}", e);
                 }
             }
-            interaction.reply("Vehicle spawned").await
+            interaction.reply("Vehicle spawned").await;
+            events_request_2!(
+                bootstrap::NC::get().await,
+                synixe_events::discord::write,
+                Audit {
+                    message: DiscordMessage {
+                        content: DiscordContent::Text(format!(
+                            "Vehicle `{}` spawned by <@{}>",
+                            plate, command.user.id,
+                        )),
+                        reactions: vec![],
+                    }
+                }
+            )
+            .await;
+            Ok(())
         }
         SpawnResult::AreaBlocked => interaction.reply("Area blocked").await,
         SpawnResult::NoPlayers => interaction.reply("No players online").await,

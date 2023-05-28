@@ -11,7 +11,7 @@ use synixe_proc::events_request_5;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::RUNTIME;
+use crate::{audit, RUNTIME};
 
 #[derive(Default)]
 pub struct PendingSpawn(RwLock<HashMap<Uuid, Message>>);
@@ -67,6 +67,11 @@ fn store(ctx: Context, plate: String, state: HashMap<String, Value>, discord: St
             error!("failed to store vehicle over nats");
             return;
         };
+        audit(format!(
+            "
+            vehicle {plate} stored by <@{discord}>",
+        ))
+        .await;
         ctx.callback_data("crate:garage", "store", vec![plate]);
     });
 }

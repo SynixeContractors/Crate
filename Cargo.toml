@@ -14,7 +14,7 @@ members = [
     "bin/executor",
     "bin/hooks",
     "bin/scheduler",
-    "bin/web",
+    # "bin/web",
 
     "arma/server",
 ]
