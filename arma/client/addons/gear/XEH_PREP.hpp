@@ -8,7 +8,7 @@ PREP(loadout_onChange);
 PREP(shop_arsenal_btnHide);
 PREP(shop_arsenal_closed);
 PREP(shop_arsenal_leftPanelFilled);
-// PREP(shop_arsenal_loadoutListFilled);
+PREP(shop_arsenal_loadoutsListFilled);
 PREP(shop_arsenal_opened);
 PREP(shop_arsenal_rightPanelFilled);
 PREP(shop_arsenal_rightPanelSelChanged);
