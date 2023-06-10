@@ -69,7 +69,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
     } else if let Err(e) = message.reply(&ctx.http, ":white_check_mark: AAR Valid! Although since this is a non-contract mission, it won't be automatically linked to a mission.").await {
         error!("Error replying to message: {}", e);
     }
-    let Ok((ids, unknown)) = find_members(ctx, aar.contractors()).await else {
+    let Ok((_, unknown)) = find_members(ctx, aar.contractors()).await else {
         if let Err(e) = message.reply(&ctx.http, "Failed to find members").await {
             error!("Error replying to message: {}", e);
         };
@@ -87,13 +87,6 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
             .await
         {
             error!("Error replying to message: {}", e);
-            return;
         };
-    }
-    if let Err(e) = message
-        .reply(&ctx.http, format!("Found {} members", ids.len()))
-        .await
-    {
-        error!("Error replying to message: {}", e);
     }
 }

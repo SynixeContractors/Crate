@@ -73,6 +73,7 @@ impl Aar {
             contractors
                 .split(',')
                 .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
                 .collect()
         };
 

@@ -22,9 +22,7 @@ use super::{menu, slash};
 
 mod brain;
 mod missions;
-mod pmc_poll;
 pub mod recruiting;
-mod time_poll;
 
 pub struct Handler {
     pub brain: Option<Brain>,
@@ -108,8 +106,6 @@ impl EventHandler for Handler {
                     "rsvp_yes" | "rsvp_maybe" | "rsvp_no" => {
                         slash::schedule::rsvp_button(&ctx, &component).await
                     }
-                    "time_poll" => time_poll::run(&ctx, &component).await,
-                    "pmc_poll" => pmc_poll::run(&ctx, &component).await,
                     _ => Ok(()),
                 }
             }

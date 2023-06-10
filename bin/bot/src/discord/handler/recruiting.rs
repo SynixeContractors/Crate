@@ -56,7 +56,13 @@ pub async fn check_embed(ctx: &Context, message: &Message) -> Option<String> {
             data.description.as_ref().expect("embed has description")
         );
         if let Some(reply) = get_reply(content).await {
-            message.reply_ping(ctx, format!("I'm not replying yet, just in testing. I do think this is a good candidate though, this is what I would've sent.\n\n> {reply}")).await;
+            let Ok(mut message) = message.reply_ping(ctx, format!("I'm not replying yet, just in testing. I do think this is a good candidate though, this is what I would've sent.\n\n> {reply}")).await else {
+                error!("failed to send reply");
+                return None;
+            };
+            if let Err(e) = message.suppress_embeds(ctx).await {
+                error!("failed to suppress embeds: {:?}", e);
+            };
             return Some(reply);
         }
     }

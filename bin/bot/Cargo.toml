@@ -12,7 +12,7 @@ synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-chatgpt_rs = "1.1.7"
+chatgpt_rs = "1.1.10"
 nats = { workspace = true }
 rand = "0.8.5"
 reqwest = { version = "0.11.18", features = ["json"] }
