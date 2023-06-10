@@ -31,7 +31,7 @@ impl Handler for Request {
                     .expect("Unable to get pending spawns");
                 let id = Uuid::new_v4();
                 pending.as_ref().write().await.insert(id, msg);
-                ctx.callback_data(
+                if let Err(e) = ctx.callback_data(
                     "crate:garage",
                     "spawn",
                     vec![
@@ -40,7 +40,9 @@ impl Handler for Request {
                         class.to_arma(),
                         state.to_arma(),
                     ],
-                );
+                ) {
+                    error!("error sending spawn: {:?}", e);
+                }
                 Ok(())
             }
         }

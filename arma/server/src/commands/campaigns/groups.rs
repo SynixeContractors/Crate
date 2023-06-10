@@ -55,13 +55,17 @@ fn load(campaign: Uuid) {
         };
         debug!("loading {} groups", groups.len());
         for group in groups {
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:campaigns:groups",
                 "load",
                 vec![group.id.to_arma(), group.data.to_arma()],
-            );
+            ) {
+                error!("error sending groups:load: {:?}", e);
+            }
         }
-        context.callback_null("crate:campaigns:groups", "done");
+        if let Err(e) = context.callback_null("crate:campaigns:groups", "done") {
+            error!("error sending groups:done: {:?}", e);
+        }
     });
 }
 

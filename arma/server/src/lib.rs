@@ -1,6 +1,6 @@
 #![deny(clippy::pedantic, clippy::unwrap_used)]
 #![warn(clippy::nursery, clippy::all)]
-#![allow(clippy::needless_pass_by_value)]
+#![allow(clippy::needless_pass_by_value, clippy::significant_drop_tightening)]
 
 use std::collections::HashMap;
 

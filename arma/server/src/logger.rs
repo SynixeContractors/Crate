@@ -12,14 +12,16 @@ impl log::Log for ArmaLogger {
 
     fn log(&self, record: &Record) {
         if self.enabled(record.metadata()) {
-            self.context.callback_data(
+            if let Err(e) = self.context.callback_data(
                 "crate:log",
                 record.target(),
                 Some(vec![
                     format!("{}", record.level()).to_uppercase(),
                     format!("{}", record.args()),
                 ]),
-            );
+            ) {
+                eprintln!("error sending log: {e:?}");
+            }
         }
     }
 

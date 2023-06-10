@@ -59,7 +59,7 @@ fn load(campaign: Uuid) {
         };
         debug!("loading {} objects", objects.len());
         for object in objects {
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:campaigns:objects",
                 "load",
                 vec![
@@ -67,9 +67,13 @@ fn load(campaign: Uuid) {
                     object.class.to_arma(),
                     object.data.to_arma(),
                 ],
-            );
+            ) {
+                error!("error sending objects:load: {:?}", e);
+            }
         }
-        context.callback_null("crate:campaigns:objects", "done");
+        if let Err(e) = context.callback_null("crate:campaigns:objects", "done") {
+            error!("error sending objects:done: {:?}", e);
+        }
     });
 }
 

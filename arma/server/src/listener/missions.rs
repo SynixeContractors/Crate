@@ -7,6 +7,7 @@ use crate::{CONTEXT, SERVER_ID};
 use super::Listener;
 
 #[async_trait]
+#[allow(clippy::too_many_lines)]
 #[deny(clippy::unwrap_used)]
 impl Listener for Publish {
     async fn listen(
@@ -23,35 +24,43 @@ impl Listener for Publish {
             Self::StartingSoon { scheduled, minutes } => {
                 if *SERVER_ID == "primary-main" {
                     #[allow(clippy::cast_precision_loss)]
-                    context.callback_data(
+                    if let Err(e) = context.callback_data(
                         "crate:missions",
                         "set_date",
                         vec![arma_rs::Value::Number(*minutes as f64)],
-                    );
+                    ) {
+                        error!("error sending set_date: {:?}", e);
+                    }
                 }
                 match minutes {
                     4..=6 | 9..=11 | 14..=16 | 29..=31 | 59..=61 | 89..=91 | 119..=121 => {
-                        context.callback_data(
+                        if let Err(e) = context.callback_data(
                             "crate:global",
                             "brodsky_say",
                             vec![arma_rs::Value::String(format!(
                                 "[Mission] {} starts in {minutes} minutes!",
                                 scheduled.name
                             ))],
-                        );
+                        ) {
+                            error!("error sending brodsky_say: {:?}", e);
+                        }
                     }
                     -1..=1 => {
-                        context.callback_data(
+                        if let Err(e) = context.callback_data(
                             "crate:global",
                             "brodsky_say",
                             vec![arma_rs::Value::String(format!(
                                 "[Mission] {} starting now!",
                                 scheduled.name
                             ))],
-                        );
+                        ) {
+                            error!("error sending brodsky_say: {:?}", e);
+                        }
                         if *SERVER_ID == "primary-main" {
                             #[allow(clippy::cast_precision_loss)]
-                            context.callback_null("crate:missions", "intro_text");
+                            if let Err(e) = context.callback_null("crate:missions", "intro_text") {
+                                error!("error sending intro_text: {:?}", e);
+                            }
                         }
                     }
                     _ => {}
@@ -73,34 +82,40 @@ impl Listener for Publish {
                     _ => return Ok(()),
                 }
                 info!("Changing main server mission to `{id}`");
-                context.callback_data(
+                if let Err(e) = context.callback_data(
                     "crate:global",
                     "brodsky_say",
                     vec![arma_rs::Value::String(format!(
                         "[Mission] You will be disconnected. Server is changing mission: {id}"
                     ))],
-                );
-                context.callback_data(
+                ) {
+                    error!("error sending brodsky_say: {:?}", e);
+                }
+                if let Err(e) = context.callback_data(
                     "crate:global",
                     "brodsky_say",
                     vec![arma_rs::Value::String(
                         "[Mission] You have 30 seconds to save any gear and leave the shop."
                             .to_string(),
                     )],
-                );
+                ) {
+                    error!("error sending brodsky_say: {:?}", e);
+                }
                 Ok(())
             }
             Self::WarnChangeMission {
                 id,
                 mission_type: _,
             } => {
-                context.callback_data(
+                if let Err(e) = context.callback_data(
                     "crate:global",
                     "brodsky_say",
                     vec![arma_rs::Value::String(format!(
                         "[Mission] Restart in 10 minutes! Mission Starting: {id}"
                     ))],
-                );
+                ) {
+                    error!("error sending brodsky_say: {:?}", e);
+                }
                 Ok(())
             }
         }

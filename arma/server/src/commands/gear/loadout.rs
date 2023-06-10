@@ -31,19 +31,27 @@ fn command_get(discord: String, steam: String) {
             }
         ).await else {
             error!("failed to fetch loadout over nats");
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:gear:loadout",
                 "get:err",
                 vec![steam],
-            );
+            ) {
+                error!("error sending loadout:get:err: {:?}", e);
+            }
             return;
         };
         if let Some(loadout) = loadout {
             debug!("found loadout for {}", discord);
-            context.callback_data("crate:gear:loadout", "get:set", vec![steam, loadout]);
+            if let Err(e) =
+                context.callback_data("crate:gear:loadout", "get:set", vec![steam, loadout])
+            {
+                error!("error sending loadout:get:set: {:?}", e);
+            }
         } else {
             debug!("no loadout found for {}", discord);
-            context.callback_data("crate:gear:loadout", "get:empty", vec![steam]);
+            if let Err(e) = context.callback_data("crate:gear:loadout", "get:empty", vec![steam]) {
+                error!("error sending loadout:get:empty: {:?}", e);
+            }
         }
     });
 }
@@ -70,13 +78,17 @@ fn command_store(discord: String, steam: String, loadout: String) {
         .await
         else {
             error!("failed to save loadout over nats");
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:gear:loadout",
                 "store:err",
                 vec![steam],
-            );
+            ) {
+                error!("error sending loadout:store:err: {:?}", e);
+            }
             return;
         };
-        context.callback_data("crate:gear:loadout", "store:ok", vec![steam]);
+        if let Err(e) = context.callback_data("crate:gear:loadout", "store:ok", vec![steam]) {
+            error!("error sending loadout:store:ok: {:?}", e);
+        }
     });
 }

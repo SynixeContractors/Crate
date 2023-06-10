@@ -55,13 +55,17 @@ fn load(campaign: Uuid) {
         };
         debug!("loading {} markers", markers.len());
         for marker in markers {
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:campaigns:markers",
                 "load",
                 vec![marker.name.to_arma(), marker.data.to_arma()],
-            );
+            ) {
+                error!("error sending campaigns:markers:load: {:?}", e);
+            }
         }
-        context.callback_null("crate:campaigns:markers", "done");
+        if let Err(e) = context.callback_null("crate:campaigns:markers", "done") {
+            error!("error sending campaigns:markers:done: {:?}", e);
+        }
     });
 }
 

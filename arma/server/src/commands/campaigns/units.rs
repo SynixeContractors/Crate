@@ -57,7 +57,7 @@ fn load(campaign: Uuid) {
         };
         debug!("loading {} units", units.len());
         for unit in units {
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:campaigns:units",
                 "load",
                 vec![
@@ -66,9 +66,13 @@ fn load(campaign: Uuid) {
                     unit.group.to_arma(),
                     unit.data.to_arma(),
                 ],
-            );
+            ) {
+                error!("error sending campaigns:units:load: {:?}", e);
+            }
         }
-        context.callback_null("crate:campaigns:units", "done");
+        if let Err(e) = context.callback_null("crate:campaigns:units", "done") {
+            error!("error sending campaigns:units:done: {:?}", e);
+        }
     });
 }
 

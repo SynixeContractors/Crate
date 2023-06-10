@@ -21,7 +21,7 @@ impl Listener for Publish {
         match &self {
             Self::MemberUpdate { member } => {
                 if let Some(steam) = STEAM_CACHE.read().await.get(&member.user.id.to_string()) {
-                    context.callback_data(
+                    if let Err(e) = context.callback_data(
                         "crate:discord",
                         "member:get:ok",
                         vec![
@@ -36,7 +36,9 @@ impl Listener for Publish {
                                     .collect(),
                             ),
                         ],
-                    );
+                    ) {
+                        error!("error sending member:get:ok: {:?}", e);
+                    }
                 }
                 Ok(())
             }

@@ -30,12 +30,16 @@ fn command_items() {
             ShopGetAll {}
         ).await else {
             error!("failed to fetch shop items over nats");
-            context.callback_null("crate:gear:shop", "items:err");
+            if let Err(e) = context.callback_null("crate:gear:shop", "items:err") {
+                error!("error sending shop:items:err: {:?}", e);
+            }
             return;
         };
-        context.callback_null("crate:gear:shop", "items:clear");
+        if let Err(e) = context.callback_null("crate:gear:shop", "items:clear") {
+            error!("error sending shop:items:clear: {:?}", e);
+        }
         for (class, (roles, price)) in items {
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:gear:shop",
                 "items:set",
                 vec![
@@ -45,9 +49,13 @@ fn command_items() {
                         price.to_arma(),
                     ]),
                 ],
-            );
+            ) {
+                error!("error sending shop:items:set: {:?}", e);
+            }
         }
-        context.callback_null("crate:gear:shop", "items:publish");
+        if let Err(e) = context.callback_null("crate:gear:shop", "items:publish") {
+            error!("error sending shop:items:publish: {:?}", e);
+        }
     });
 }
 
@@ -73,18 +81,22 @@ fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>
             }
         ).await else {
             error!("failed to enter shop over nats");
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:gear:shop",
                 "enter:err",
                 vec![steam],
-            );
+            ) {
+                error!("error sending shop:enter:err: {:?}", e);
+            }
             return;
         };
-        context.callback_data(
+        if let Err(e) = context.callback_data(
             "crate:gear:shop",
             "enter:ok",
             vec![steam.to_arma(), locker.to_arma(), balance.to_arma()],
-        );
+        ) {
+            error!("error sending shop:enter:ok: {:?}", e);
+        }
         debug!("shop entered for {}", discord);
     });
 }
@@ -112,14 +124,19 @@ fn command_leave(discord: String, steam: String, loadout: String, mut items: Has
             }
         ).await else {
             error!("failed to leave shop over nats");
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:gear:shop",
                 "leave:err",
                 vec![steam],
-            );
+            ) {
+                error!("error sending shop:leave:err: {:?}", e);
+            }
             return;
         };
-        context.callback_data("crate:gear:shop", "leave:ok", vec![steam.to_arma()]);
+        if let Err(e) = context.callback_data("crate:gear:shop", "leave:ok", vec![steam.to_arma()])
+        {
+            error!("error sending shop:leave:ok: {:?}", e);
+        }
         debug!("shop left for {}", discord);
     });
 }
@@ -147,18 +164,22 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
             }
         ).await else {
             error!("failed to purchase items over nats");
-            context.callback_data(
+            if let Err(e) = context.callback_data(
                 "crate:gear:shop",
                 "purchase:err",
                 vec![steam],
-            );
+            ) {
+                error!("error sending shop:purchase:err: {:?}", e);
+            }
             return;
         };
-        context.callback_data(
+        if let Err(e) = context.callback_data(
             "crate:gear:shop",
             "purchase:ok",
             vec![steam.to_arma(), locker.to_arma(), balance.to_arma()],
-        );
+        ) {
+            error!("error sending shop:purchase:ok: {:?}", e);
+        }
         debug!("shop purchase for {}", discord);
     });
 }
