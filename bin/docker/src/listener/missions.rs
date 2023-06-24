@@ -14,6 +14,8 @@ use crate::DOCKER_SERVER;
 
 use super::Listener;
 
+const CONFIG_CONTRACTS: &str = "/arma/config/configs/contracts.cfg";
+
 #[async_trait]
 impl Listener for Publish {
     async fn listen(
@@ -47,11 +49,11 @@ impl Listener for Publish {
             {
                 return Ok(());
             }
-            let current_config = std::fs::read_to_string("/arma/contracts/configs/main.cfg")?;
+            let current_config = std::fs::read_to_string(CONFIG_CONTRACTS)?;
             let new_config = regex
                 .replace_all(&current_config, format!("template = {id};"))
                 .to_string();
-            let mut file = File::create("/arma/contracts/configs/main.cfg")?;
+            let mut file = File::create(CONFIG_CONTRACTS)?;
             file.write_all(new_config.as_bytes())?;
             if let Err(e) = events_request_5!(
                 nats,
