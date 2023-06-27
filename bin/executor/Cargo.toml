@@ -21,4 +21,4 @@ tracing = { workspace = true }
 # recruiting
 roux = "2.2.9"
 rust-embed = "6.7.0"
-scraper = "0.16.0"
+scraper = "0.17.1"
