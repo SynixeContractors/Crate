@@ -155,7 +155,7 @@ impl Brain {
                 name = nick.clone();
             }
         }
-        let mut content = format!("{}: -_-|{}|-_-", name, message.content);
+        let mut content = format!("|{}| {}: -_-|{}|-_-", message.timestamp, name, message.content);
         for user in &message.mentions {
             if let Ok(member) = GUILD.member(&ctx, user.id).await {
                 if let Some(nick) = &member.nick {
