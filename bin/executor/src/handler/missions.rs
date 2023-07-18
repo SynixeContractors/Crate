@@ -7,7 +7,7 @@ use synixe_events::{
     },
     publish, respond,
 };
-use synixe_meta::discord::channel::ONTOPIC;
+use synixe_meta::discord::{channel::ONTOPIC, GUILD};
 use synixe_proc::events_request_5;
 
 use super::Handler;
@@ -66,8 +66,15 @@ impl Handler for Request {
                                         channel: ONTOPIC,
                                         message: DiscordMessage {
                                             content: DiscordContent::Text(format!(
-                                                "**{}** starts in {text}",
-                                                scheduled.name
+                                                "**{}** starts in {text}{}",
+                                                scheduled.name,
+                                                {
+                                                    if let Some((channel, message)) = scheduled.message() {
+                                                        format!("\n\nhttps://discord.com/channels/{GUILD}/{channel}/{message}")
+                                                    } else {
+                                                        String::new()
+                                                    }
+                                                }
                                             )),
                                             reactions: Vec::new(),
                                         },
