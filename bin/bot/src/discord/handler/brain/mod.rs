@@ -80,7 +80,6 @@ impl Brain {
                 };
             match self.client.chat().create(request).await {
                 Ok(response) => {
-                    println!("{:?}", response.usage);
                     let response = response.choices.get(0)?.message.clone();
                     if let Some(function_call) = response.function_call {
                         println!("ask function_call: {function_call:?}");
@@ -125,7 +124,6 @@ impl Brain {
                                     .build()
                                     .expect("prompt is valid"),
                             );
-                            println!("observed response");
                         }
                         continue;
                     } else if let Some(content) = response.content {
