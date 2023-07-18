@@ -58,7 +58,7 @@ pub async fn run_aar_ids(
     if unknown.is_empty() {
         let ids = found
             .into_iter()
-            .map(|id| id.to_string())
+            .map(|id| id.1.to_string())
             .collect::<Vec<_>>();
         interaction
             .reply(format!("**IDs**\n{}", ids.join("\n")))
@@ -188,7 +188,7 @@ pub async fn run_aar_pay(
             synixe_events::missions::db,
             PayMission {
                 scheduled: scheduled.id,
-                contractors: ids,
+                contractors: ids.iter().map(|m| m.1).collect::<Vec<_>>(),
                 contractor_amount: aar.contractor_payment(payment, current_rep),
                 group_amount: aar.employer_payment(payment, current_rep),
             }
@@ -218,7 +218,7 @@ pub async fn run_aar_pay(
                         .send_message(&ctx.http, |m| {
                             let mut found = found
                                 .into_iter()
-                                .map(|id| format!("<@{id}>"))
+                                .map(|id| format!("<@{}>", id.1))
                                 .collect::<Vec<String>>();
                             found.extend(unknown);
                             m.content(format!(

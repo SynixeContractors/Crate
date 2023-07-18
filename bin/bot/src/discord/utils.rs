@@ -4,7 +4,7 @@ use synixe_meta::discord::GUILD;
 pub async fn find_members(
     ctx: &Context,
     names: &[String],
-) -> Result<(Vec<UserId>, Vec<String>), String> {
+) -> Result<(Vec<(String, UserId)>, Vec<String>), String> {
     let Ok(members) = GUILD.members(&ctx.http, None, None).await else {
         return Err("Failed to fetch members".to_string())
     };
@@ -14,7 +14,7 @@ pub async fn find_members(
         let name = name.trim();
         // Handle the special snowflake
         if name == "Nathanial Greene" {
-            ids.push(UserId(358_146_229_626_077_187));
+            ids.push((name.to_string(), UserId(358_146_229_626_077_187)));
             continue;
         }
         members
@@ -22,7 +22,7 @@ pub async fn find_members(
             .find(|m| m.display_name().to_string().to_lowercase() == name.to_lowercase())
             .map_or_else(
                 || unknown.push(name.to_string()),
-                |member| ids.push(member.user.id),
+                |member| ids.push((member.display_name().to_string(), member.user.id)),
             );
     }
     Ok((ids, unknown))

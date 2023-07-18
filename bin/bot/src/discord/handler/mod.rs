@@ -1,31 +1,27 @@
 use rand::Rng;
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
-use synixe_meta::discord::{
-    channel::{BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC, RECRUITING, STAFF},
-    GUILD,
+use synixe_meta::discord::channel::{
+    BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC, STAFF,
 };
 use synixe_proc::events_request_2;
 use uuid::Uuid;
 
 use crate::{
     bot::Bot,
-    discord::menu::{
-        missions::{MENU_AAR_IDS, MENU_AAR_PAY},
-        recruiting::MENU_RECRUITING_REPLY,
-    },
+    discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY},
 };
-
-pub use self::brain::Brain;
 
 use super::{menu, slash};
 
 mod brain;
 mod missions;
-pub mod recruiting;
+// pub mod recruiting;
+
+pub use self::brain::Brain;
 
 pub struct Handler {
-    pub brain: Option<Brain>,
+    pub brain: Brain,
 }
 
 #[async_trait]
@@ -40,7 +36,6 @@ impl EventHandler for Handler {
                 commands
                     .create_application_command(|command| menu::missions::aar_ids(command))
                     .create_application_command(|command| menu::missions::aar_pay(command))
-                    .create_application_command(|command| menu::recruiting::reply(command))
                     .create_application_command(|command| slash::bank::register(command))
                     .create_application_command(|command| slash::certifications::register(command))
                     .create_application_command(|command| slash::docker::register(command))
@@ -74,7 +69,6 @@ impl EventHandler for Handler {
                     "schedule" => slash::schedule::run(&ctx, &command).await,
                     MENU_AAR_IDS => menu::missions::run_aar_ids(&ctx, &command).await,
                     MENU_AAR_PAY => menu::missions::run_aar_pay(&ctx, &command).await,
-                    MENU_RECRUITING_REPLY => menu::recruiting::run_reply(&ctx, &command).await,
                     _ => Ok(()),
                 }
             }
@@ -237,35 +231,20 @@ impl EventHandler for Handler {
             return;
         }
 
-        if message.channel_id == RECRUITING && message.author.bot {
-            recruiting::check_embed(&ctx, &message).await;
-            return;
-        }
+        // if message.channel_id == RECRUITING && message.author.bot {
+        //     recruiting::check_embed(&ctx, &message).await;
+        //     return;
+        // }
 
         if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, STAFF, LOBBY].contains(&message.channel_id) {
             if message.author.bot {
                 return;
             }
 
-            if let Some(brain) = &self.brain {
+            if self.brain.awake() {
                 if message.content.is_empty() {
                     return;
                 }
-                let mut name = message.author.name.clone();
-                if let Ok(author) = GUILD.member(&ctx, message.author.id).await {
-                    if let Some(nick) = &author.nick {
-                        name = nick.clone();
-                    }
-                }
-                let mut content = format!("{}: {}", name, message.content);
-                for user in &message.mentions {
-                    if let Ok(member) = GUILD.member(&ctx, user.id).await {
-                        if let Some(nick) = &member.nick {
-                            content = content.replace(&format!("<@{}>", user.id), nick);
-                        }
-                    }
-                }
-                content = content.replace("<@1028418063168708638>", "Ctirad Brodsky");
                 if message
                     .mentions
                     .iter()
@@ -275,8 +254,11 @@ impl EventHandler for Handler {
                         .channel_id
                         .start_typing(&ctx.http)
                         .expect("Cannot start typing");
-                    if let Some(reply) = brain.message(&ctx, message.channel_id, content).await {
-                        message.reply_ping(&ctx.http, reply).await.ok();
+                    if let Some(reply) = self.brain.ask(&ctx, &message).await {
+                        match message.reply_ping(&ctx.http, reply).await {
+                            Ok(reply) => self.brain.observe(&ctx, &reply).await,
+                            Err(e) => error!("Cannot send message: {}", e),
+                        }
                     }
                     typing.stop();
                 } else if rand::thread_rng().gen_range(0..100) < 4 {
@@ -284,12 +266,20 @@ impl EventHandler for Handler {
                         .channel_id
                         .start_typing(&ctx.http)
                         .expect("Cannot start typing");
-                    if let Some(reply) = brain.message(&ctx, message.channel_id, content).await {
-                        message.reply_ping(&ctx.http, reply).await.ok();
+                    if let Some(reply) = self.brain.ask(&ctx, &message).await {
+                        match message.reply_ping(&ctx.http, reply).await {
+                            Ok(reply) => self.brain.observe(&ctx, &reply).await,
+                            Err(e) => error!("Cannot send message: {}", e),
+                        }
+                    } else if let Err(e) = message
+                        .reply_ping(&ctx, "Oh no, I couldn't determine what to say!")
+                        .await
+                    {
+                        error!("Cannot send message: {}", e);
                     }
                     typing.stop();
                 } else {
-                    brain.context(&ctx, message.channel_id, content).await;
+                    self.brain.observe(&ctx, &message).await;
                 }
             }
         }

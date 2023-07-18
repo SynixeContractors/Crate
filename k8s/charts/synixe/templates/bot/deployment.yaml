@@ -38,7 +38,7 @@ spec:
               value: {{ .Values.config.discord_token | quote }}
             - name: NATS_URL
               value: {{ .Values.config.nats_url | quote }}
-            - name: OPENAI_KEY
+            - name: OPENAI_API_KEY
               value: {{ .Values.config.openai_key | quote }}
             - name: PROMPT_MEMBERS
               value: {{ .Values.config.prompt_members | quote }}
