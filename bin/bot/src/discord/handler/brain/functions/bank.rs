@@ -24,9 +24,10 @@ impl BrainFunction for GetBalance {
             "properties": {
                 "members": {
                     "type": "array",
-                    "description": "member ids to get the balance of, brodsky's id (1028418063168708638) returns the company's balance",
+                    "description": "member discord ids to get the balance of, brodsky's id (1028418063168708638) returns the company's balance",
                     "items": {
                         "type": "string",
+                        "description": "discord id of the member to get the balance of, numbers only"
                     },
                 }
             }
