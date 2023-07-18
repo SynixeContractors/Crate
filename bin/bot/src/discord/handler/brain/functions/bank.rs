@@ -67,8 +67,8 @@ impl BrainFunction for GetBalance {
             };
 
             if member == UserId(0) {
-                return Some(json!({
-                    "bank": bootstrap::format::money(balance, false),
+                responses.push(json!({
+                    "company": bootstrap::format::money(balance, false),
                 }));
             }
 
