@@ -64,6 +64,18 @@ impl Listener for Publish {
                 if let Ok(Ok((Response::List(Ok(certs)), _))) =
                     events_request_5!(nats, synixe_events::certifications::db, List {}).await
                 {
+                    let all_members_ids = GUILD
+                        .members(&CacheAndHttp::get().http, None, None)
+                        .await?
+                        .into_iter()
+                        .map(|m| m.user.id)
+                        .collect::<Vec<_>>();
+
+                    if all_members_ids.contains(&trial.trainee.parse::<UserId>()?) {
+                        warn!("User not found in the server: {}", trial.trainee);
+                        return Ok(());
+                    }
+
                     let Some(cert) = certs
                         .iter()
                         .find(|cert| cert.id == trial.certification) else {
