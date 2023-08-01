@@ -289,10 +289,10 @@ async fn fine(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankDepositNew {
-            member: command.member.as_ref().expect("member should always exist on guild commands").user.id,
+            member: user.id,
             #[allow(clippy::cast_possible_truncation)]
             amount:  -*amount as i32,
-            reason: reason.clone(),
+            reason: format!("{}: {reason}", command.user.id),
             id: None,
         }
     )
