@@ -1,9 +1,7 @@
 use rand::Rng;
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
-use synixe_meta::discord::channel::{
-    BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC, STAFF,
-};
+use synixe_meta::discord::channel::{BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC};
 use synixe_proc::events_request_2;
 use uuid::Uuid;
 
@@ -236,7 +234,7 @@ impl EventHandler for Handler {
         //     return;
         // }
 
-        if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, STAFF, LOBBY].contains(&message.channel_id) {
+        if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, LOBBY].contains(&message.channel_id) {
             if message.author.bot {
                 return;
             }
@@ -280,37 +278,6 @@ impl EventHandler for Handler {
                     typing.stop();
                 } else {
                     self.brain.observe(&ctx, &message).await;
-                }
-            }
-        }
-
-        // 0.02% chance of losing 10 Harrison Points
-        if rand::thread_rng().gen_range(0..10000) < 2 {
-            if let Err(e) = message
-                .reply(
-                    &ctx.http,
-                    "I can't believe you've said this! You just lost 10 Harrison Points!",
-                )
-                .await
-            {
-                error!("Cannot send message: {}", e);
-            }
-        }
-
-        let lower = message.content.to_lowercase();
-        for key in &[
-            "more guns",
-            "more weapons",
-            "more gear",
-            "more mods",
-            "more equipment",
-        ] {
-            if lower.contains(key) {
-                if let Err(e) = message
-                    .reply(&ctx.http, "https://www.youtube.com/watch?v=H5d42w4ZcY4")
-                    .await
-                {
-                    error!("Cannot send message: {}", e);
                 }
             }
         }

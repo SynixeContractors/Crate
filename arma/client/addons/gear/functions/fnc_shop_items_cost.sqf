@@ -13,7 +13,7 @@ private _cost = 0;
 
 {
     // (desired) - (already owned)
-    private _need = if (GVAR(readOnly)) then { _y } else {_y - ([_x] call FUNC(shop_item_owned))};
+    private _need = if (GVAR(readOnly)) then { _y } else { _y - ([_x] call FUNC(shop_item_owned)) };
     if (_need > 0) then {
         private _class = [_x] call FUNC(shop_item_listing);
         ([_class, false] call FUNC(shop_item_price)) params ["_basePrice", "_currentPrice", "_global"];
