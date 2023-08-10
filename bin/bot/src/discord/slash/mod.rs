@@ -24,7 +24,6 @@ pub mod garage;
 pub mod meme;
 pub mod missions;
 pub mod reputation;
-pub mod reset;
 pub mod schedule;
 
 #[derive(Debug, Clone)]

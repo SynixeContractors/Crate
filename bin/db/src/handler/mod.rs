@@ -6,7 +6,6 @@ mod gear;
 mod missions;
 mod recruiting;
 mod reputation;
-mod reset;
 mod servers;
 
 include!("../../../../lib/common/handler.rs");
@@ -32,7 +31,6 @@ pub async fn start() {
             synixe_events::missions::db::Request,
             synixe_events::recruiting::db::Request,
             synixe_events::reputation::db::Request,
-            synixe_events::reset::db::Request,
             synixe_events::servers::db::Request,
         );
     }

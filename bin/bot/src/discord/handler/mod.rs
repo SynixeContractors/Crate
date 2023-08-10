@@ -41,7 +41,6 @@ impl EventHandler for Handler {
                     .create_application_command(|command| slash::meme::register(command))
                     .create_application_command(|command| slash::missions::register(command))
                     .create_application_command(|command| slash::reputation::register(command))
-                    .create_application_command(|command| slash::reset::register(command))
                     .create_application_command(|command| slash::schedule::register(command))
             })
             .await
@@ -63,7 +62,6 @@ impl EventHandler for Handler {
                     "meme" => slash::meme::run(&ctx, &command).await,
                     "missions" => slash::missions::run(&ctx, &command).await,
                     "reputation" => slash::reputation::run(&ctx, &command).await,
-                    "reset" => slash::reset::run(&ctx, &command).await,
                     "schedule" => slash::schedule::run(&ctx, &command).await,
                     MENU_AAR_IDS => menu::missions::run_aar_ids(&ctx, &command).await,
                     MENU_AAR_PAY => menu::missions::run_aar_pay(&ctx, &command).await,
@@ -84,7 +82,6 @@ impl EventHandler for Handler {
                     }
                     "docker" => slash::docker::autocomplete(&ctx, &autocomplete).await,
                     "missions" => slash::missions::autocomplete(&ctx, &autocomplete).await,
-                    "reset" => slash::reset::autocomplete(&ctx, &autocomplete).await,
                     "schedule" => slash::schedule::autocomplete(&ctx, &autocomplete).await,
                     _ => Ok(()),
                 }

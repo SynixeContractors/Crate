@@ -20,7 +20,6 @@ default = [
     "garage",
     "gear",
     "missions",
-    "reset",
     "roles",
 ]
 campaigns = ["uuid", "serde_json"]
@@ -29,5 +28,4 @@ garage = []
 gear = ["time"]
 mission-schedule = ["missions", "time", "uuid"]
 missions = ["uuid", "time", "regex", "serenity"]
-reset = ["uuid"]
 roles = ["serenity"]
