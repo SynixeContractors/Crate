@@ -118,19 +118,6 @@
     },
     "query": "INSERT INTO missions_maps (map, archived)\n                                    VALUES ($1, false)\n                                    ON CONFLICT (map) DO UPDATE SET\n                                        archived = false"
   },
-  "13daec49db7e698d81f6f11e760db314a057e1a4e6510f14b9e522b3ac4daf3c": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Uuid"
-        ]
-      }
-    },
-    "query": "INSERT INTO reset_kit (member, cert) VALUES ($1, $2)"
-  },
   "1ce18fd17a5b1363ea677cd2d140ecf22f56a8c6d394f7f25af6ffabe92ae07b": {
     "describe": {
       "columns": [
@@ -344,6 +331,26 @@
       }
     },
     "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'civilian_healed', 2, $2)"
+  },
+  "2d1b8b109af2ae7dc57b8c521875b8429291e99e707cddd9a691a52fef7df056": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT github as value FROM github_usernames WHERE member = $1"
   },
   "32c2dd476f4e3ec8d7dcecea6fab01004bd6f9a1e5cee67b4efdf2d6032fa3e0": {
     "describe": {
@@ -1047,26 +1054,6 @@
     },
     "query": "\n                            INSERT INTO\n                                certifications_trials\n                                (instructor, trainee, certification, notes, passed, valid_for)\n                            VALUES\n                                ($1, $2, $3, $4, true, $5)\n                            RETURNING\n                                id,\n                                instructor,\n                                trainee,\n                                certification,\n                                notes,\n                                passed,\n                                valid_for,\n                                valid_until,\n                                created"
   },
-  "710d53a79494c97f14ff57ae7fc93b75eb9b52ffc120373191d58f7842415ea0": {
-    "describe": {
-      "columns": [
-        {
-          "name": "first_kit",
-          "ordinal": 0,
-          "type_info": "Jsonb"
-        }
-      ],
-      "nullable": [
-        true
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "SELECT first_kit FROM certifications WHERE id = $1"
-  },
   "713a1d9e5f789e6d6c953a9d3441c676b8df41086b7091775b2c94f4eb286982": {
     "describe": {
       "columns": [],
@@ -1286,26 +1273,6 @@
       }
     },
     "query": "INSERT INTO servers_log (server, steam, action, data) VALUES ($1, $2, $3, $4)"
-  },
-  "8f1b3a64f6896c75bc1a526ee036f60329b6a0a77a8860fe8f1094b9c0dccc04": {
-    "describe": {
-      "columns": [
-        {
-          "name": "value",
-          "ordinal": 0,
-          "type_info": "Bool"
-        }
-      ],
-      "nullable": [
-        null
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT NOT EXISTS(SELECT 1 FROM reset_kit WHERE member = $1 AND created > NOW() - INTERVAL '13 days') as value"
   },
   "96b44a8e96b45162ee26ebd715b45cbbf39a9f0b1ed3fd9924d69c58580738cc": {
     "describe": {
@@ -1878,6 +1845,19 @@
     },
     "query": "\n                        SELECT\n                            id,\n                            campaign,\n                            class,\n                            data\n                        FROM\n                            campaigns_objects\n                        WHERE\n                            campaign = $1"
   },
+  "b09881db5e4e42e314a43b73aa2cd5ec49a6b8c389a835ee7ea516f98106dbc0": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Text"
+        ]
+      }
+    },
+    "query": "INSERT INTO github_usernames (member, github) VALUES ($1, $2)"
+  },
   "b8a25dc33c0644eb158bf10e82cf3ce3f63e143926bc2389ba2d7d30af726872": {
     "describe": {
       "columns": [],
@@ -2040,6 +2020,26 @@
     },
     "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'building_damaged', -1, $2)"
   },
+  "c500eaa43a3a2b072bb30eea03bd7c409b592a19c6e4b128fd2d8e102dff8104": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT member as value FROM github_usernames WHERE github = $1"
+  },
   "c6a644ce847960e7fbf6b37482a54d86f7e33a87e6e3385dbbb506ed1b889704": {
     "describe": {
       "columns": [],
@@ -2186,20 +2186,6 @@
       }
     },
     "query": "INSERT INTO\n                        campaigns_groups (id, campaign, data)\n                    VALUES\n                        ($1, $2, $3)\n                    ON CONFLICT (id, campaign) DO UPDATE SET\n                        data = $3"
-  },
-  "cf99d3407602afb949746c150fe5b2bc105576193e40f51bbe058483ad99f380": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Varchar",
-          "Int4"
-        ]
-      }
-    },
-    "query": "\n                                INSERT INTO\n                                    gear_bank_purchases (member, class, quantity, cost, global)\n                                VALUES\n                                    ($1, $2, $3, (SELECT cost FROM gear_item_current_cost($2)), TRUE)\n                            "
   },
   "d4b22c007b1776085c8d65b791c2ad147f53d2548ad5aff73ab9c28a9bb0922c": {
     "describe": {
@@ -2436,32 +2422,6 @@
       }
     },
     "query": "INSERT INTO gear_bank_deposits (member, amount, reason, id, created) VALUES ($1, $2, $3, $4, $5)"
-  },
-  "f0d9a82c4470a00b29f5a917307355df412c56ceabb8f6741e4180ac68302f2c": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT id,name FROM certifications c WHERE first_kit IS NOT NULL AND c.id NOT IN (SELECT cert FROM reset_kit WHERE MEMBER = $1) AND c.id IN (SELECT certification FROM certifications_trials WHERE trainee = $1 AND passed IS TRUE and (valid_until> NOW() or valid_until IS NULL))"
   },
   "f37802ab91519a9f9ac3f828cee5dbcb53152b201f3d6df0d9b7ccb4f4baebc6": {
     "describe": {
