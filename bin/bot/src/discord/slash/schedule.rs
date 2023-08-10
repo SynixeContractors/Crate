@@ -441,6 +441,18 @@ async fn new_autocomplete(
         error!("failed to fetch mission list");
         return Ok(());
     };
+    // Show unplayed when no search term is provided
+    if focus.value.is_none()
+        || focus
+            .value
+            .as_ref()
+            .expect("should always exists from discord")
+            .as_str()
+            .unwrap_or_default()
+            .is_empty()
+    {
+        missions.retain(|m| m.play_count.unwrap_or_default() == 0);
+    }
     if missions.len() > 25 {
         missions.truncate(25);
     }

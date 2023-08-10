@@ -355,7 +355,25 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::Mission,
                     Response::FetchMissionList,
-                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE archived = FALSE AND (LOWER(missions.name) LIKE LOWER($1) OR LOWER(missions.id) LIKE LOWER($1)) ORDER BY name ASC",
+                    r#"
+                    SELECT
+                        COUNT(s.mission) as play_count,
+                        m.id,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as "typ: MissionType"
+                    FROM missions m
+                    LEFT JOIN missions_schedule s
+                        ON s.mission = m.id
+                    WHERE
+                        archived = FALSE AND
+                        (
+                            LOWER(m.name) LIKE LOWER($1) OR
+                            LOWER(m.id) LIKE LOWER($1)
+                        )
+                    GROUP BY m.id
+                    ORDER BY m.name ASC"#,
                     format!("%{search}%"),
                 )?;
                 Ok(())
@@ -367,7 +385,20 @@ impl Handler for Request {
                     cx,
                     synixe_model::missions::Mission,
                     Response::FetchMission,
-                    "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE id = $1",
+                    r#"
+                    SELECT
+                        COUNT(s.mission) as play_count,
+                        m.id,
+                        m.name,
+                        m.summary,
+                        m.description,
+                        m.type as "typ: MissionType"
+                    FROM missions m
+                    LEFT JOIN missions_schedule s
+                        ON s.mission = m.id
+                    WHERE
+                        m.id = $1
+                    GROUP BY m.id"#,
                     mission,
                 )?;
                 Ok(())

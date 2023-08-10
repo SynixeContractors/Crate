@@ -14,7 +14,7 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        if *SERVER_ID != "primary-main" && *SERVER_ID != "test_brett_yehuda" {
+        if *SERVER_ID != "primary-main" {
             return Ok(());
         }
         match self {

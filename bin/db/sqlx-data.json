@@ -432,6 +432,69 @@
     },
     "query": "\n                        INSERT INTO\n                            members_dlc (member, dlc)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT (member)\n                        DO UPDATE\n                            SET dlc = $2"
   },
+  "407056d4dd2484e07b69a5a1c91d64c235a560f2ef796eab4ebf386e8d3e546f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "play_count",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        null,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                    SELECT\n                        COUNT(s.mission) as play_count,\n                        m.id,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM missions m\n                    LEFT JOIN missions_schedule s\n                        ON s.mission = m.id\n                    WHERE\n                        archived = FALSE AND\n                        (\n                            LOWER(m.name) LIKE LOWER($1) OR\n                            LOWER(m.id) LIKE LOWER($1)\n                        )\n                    GROUP BY m.id\n                    ORDER BY m.name ASC"
+  },
   "49d218afe8836741a986264ef34c8939a6e0478991f048ceadd1fb64cf6defe2": {
     "describe": {
       "columns": [],
@@ -638,63 +701,6 @@
       }
     },
     "query": "INSERT into garage_log (plate, action, member, data) VALUES ($1, 'store', $2, $3)"
-  },
-  "5c15a2c4fcf938e63fd5f83d38c83e7a72e4d6e4d73cc27251a05e648a1f9f6a": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 4,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE id = $1"
   },
   "5d523cacd6a94e8dc5f0253117bc488c59507696be6e551aec8a17505f6329da": {
     "describe": {
@@ -1661,6 +1667,69 @@
     },
     "query": "\n                        SELECT\n                            DISTINCT ON (trainee, certification)\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW() OR valid_until IS NULL)\n                        ORDER BY trainee, certification, created DESC"
   },
+  "a84a27f51b643a143b54b6005b6ecb1035025131e8af7785d3ec5923af35a735": {
+    "describe": {
+      "columns": [
+        {
+          "name": "play_count",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        null,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                    SELECT\n                        COUNT(s.mission) as play_count,\n                        m.id,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM missions m\n                    LEFT JOIN missions_schedule s\n                        ON s.mission = m.id\n                    WHERE\n                        m.id = $1\n                    GROUP BY m.id"
+  },
   "a9766a6623056980e393a178806d1b230819a7429b2c8ef5472afda0e8e05d81": {
     "describe": {
       "columns": [],
@@ -2351,63 +2420,6 @@
       }
     },
     "query": "\n                        SELECT\n                            member AS value\n                        FROM\n                            members_steam\n                        WHERE\n                            steam = $1"
-  },
-  "ed029c4fa87ff5b45fbfdf0ad1f312c2f34061bc78210385d2c3304fb9d328da": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 4,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT id, name, summary, description, type as \"typ: MissionType\" FROM missions WHERE archived = FALSE AND (LOWER(missions.name) LIKE LOWER($1) OR LOWER(missions.id) LIKE LOWER($1)) ORDER BY name ASC"
   },
   "ee6c8f44f664174c4ae6d35fa1fb17f712ecd4778cb0cb139df0d48dbd43cf73": {
     "describe": {

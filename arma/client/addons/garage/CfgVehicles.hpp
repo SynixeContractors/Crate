@@ -33,4 +33,36 @@ class CfgVehicles {
     class Ship_F: Ship {
         STORE_ACTION
     };
+
+    class Cage_Large_lxWS;
+    class GVAR(land_large): Cage_Large_lxWS {
+        displayName = "Spawn (Land, Large)";
+        editorCategory = "SynixeContractors";
+        GVAR(size) = 8;
+    };
+
+    class GVAR(sea_large): Cage_Large_lxWS {
+        displayName = "Spawn (Sea, Large)";
+        editorCategory = "SynixeContractors";
+        GVAR(size) = 8;
+    };
+
+    class GVAR(heli_large): Cage_Large_lxWS {
+        displayName = "Spawn (Heli, Large)";
+        editorCategory = "SynixeContractors";
+        GVAR(size) = 8;
+    };
+
+    class GVAR(plane_large): Cage_Large_lxWS {
+        displayName = "Spawn (Plane, Large)";
+        editorCategory = "SynixeContractors";
+        GVAR(size) = 8;
+    };
+
+    class Cage_Medium_lxWS;
+    class GVAR(thing_medium): Cage_Medium_lxWS {
+        displayName = "Spawn (Thing, Medium)";
+        editorCategory = "SynixeContractors";
+        GVAR(size) = 2;
+    };
 };

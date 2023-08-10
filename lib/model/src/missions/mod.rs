@@ -28,6 +28,8 @@ pub struct Mission {
     /// Mission type
     #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
     pub typ: MissionType,
+    /// Mission play count
+    pub play_count: Option<i64>,
 }
 
 #[derive(Debug, Default, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]

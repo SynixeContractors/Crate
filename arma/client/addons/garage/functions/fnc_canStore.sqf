@@ -8,19 +8,28 @@ if ((_vehicle getVariable [QGVAR(plate), ""]) == "") exitWith {
 private _discord = _player getVariable [QEGVAR(discord,id), ""];
 if (_discord == "") exitWith {};
 
-private _type = switch (true) do {
-    case (_vehicle isKindOf "Ship"): { "sea" };
-    case (_vehicle isKindOf "Helicopter"): { "heli" };
-    case (_vehicle isKindOf "Plane"): { "plane" };
-    case (_vehicle isKindOf "Thing"): { "thing" };
-    default { "land" };
-};
-private _spawn = getMarkerPos (switch (_type) do {
-    case "sea": { "spawn_sea" };
-    case "heli": { "spawn_heli" };
-    case "plane": { "spawn_plane" };
-    case "thing": { "spawn_thing" };
-    default { "spawn_land" };
-});
+if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
+    private _spawn = switch (true) do {
+        case (_vehicle isKindOf "Ship"): { "spawn_sea" };
+        case (_vehicle isKindOf "Helicopter"): { "spawn_heli" };
+        case (_vehicle isKindOf "Plane"): { "spawn_plane" };
+        case (_vehicle isKindOf "Thing"): { "spawn_thing" };
+        default { "spawn_land" };
+    };
 
-getPos _vehicle distance _spawn < (SPAWN_SIZE * 2)
+    getPos _vehicle distance _spawn < (SPAWN_SIZE * 2)
+} else {
+    private _objType = switch (true) do {
+        case (_vehicle isKindOf "Ship"): { QGVAR(sea) };
+        case (_vehicle isKindOf "Helicopter"): { QGVAR(heli) };
+        case (_vehicle isKindOf "Plane"): { QGVAR(plane) };
+        case (_vehicle isKindOf "Thing"): { QGVAR(thing) };
+        default { QGVAR(land) };
+    };
+
+    private _size = getNumber (configFile >> "CfgVehicles" >> _objType >> QGVAR(size));
+
+    (allMissionObjects _objType) findIf {
+        getPos _vehicle distance _x < (size * 2)
+    } != -1
+}
