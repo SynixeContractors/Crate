@@ -21,6 +21,7 @@ pub mod bank;
 pub mod certifications;
 pub mod docker;
 pub mod garage;
+pub mod github;
 pub mod meme;
 pub mod missions;
 pub mod reputation;

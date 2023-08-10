@@ -57,6 +57,9 @@ config:
   reddit_username: ~
   reddit_password: ~
 
+  # executor-github
+  github_token: ~
+
   # bot
   discord_token: ~
   openai_key: ~
