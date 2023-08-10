@@ -27,7 +27,7 @@ pub mod db {
 }
 
 /// Interact with GitHub
-pub mod executor {
+pub mod executions {
     use synixe_proc::events_requests;
 
     events_requests!(executor.github {

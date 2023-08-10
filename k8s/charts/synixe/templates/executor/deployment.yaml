@@ -42,6 +42,8 @@ spec:
               value: {{ .Values.config.reddit_username | quote }}
             - name: REDDIT_PASSWORD
               value: {{ .Values.config.reddit_password | quote }}
+            - name: GITHUB_TOKEN
+              value: {{ .Values.config.github_token | quote }}
             - name: NATS_URL
               value: {{ .Values.config.nats_url | quote }}
           securityContext:

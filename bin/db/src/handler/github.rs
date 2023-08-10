@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use synixe_events::github::db::{Response, Request};
+use synixe_events::github::db::{Request, Response};
 
 use super::Handler;
 
@@ -13,7 +13,7 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
-            Request::UserByGitHub { github } => fetch_one_and_respond!(
+            Self::UserByGitHub { github } => fetch_one_and_respond!(
                 msg,
                 *db,
                 cx,
@@ -21,7 +21,7 @@ impl Handler for Request {
                 "SELECT member as value FROM github_usernames WHERE github = $1",
                 github,
             ),
-            Request::UserByDiscord { discord } => fetch_one_and_respond!(
+            Self::UserByDiscord { discord } => fetch_one_and_respond!(
                 msg,
                 *db,
                 cx,
@@ -29,7 +29,7 @@ impl Handler for Request {
                 "SELECT github as value FROM github_usernames WHERE member = $1",
                 discord.to_string(),
             ),
-            Request::Link { discord, github } => execute_and_respond!(
+            Self::Link { discord, github } => execute_and_respond!(
                 msg,
                 *db,
                 cx,
