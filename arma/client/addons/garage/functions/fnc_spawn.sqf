@@ -9,22 +9,15 @@ if (count allPlayers == 0) exitWith {
 if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     private _vehicle = _class createVehicleLocal [0,0,0];
     _vehicle enableSimulation false;
-    private _type = switch (true) do {
-        case (_vehicle isKindOf "Ship"): { "sea" };
-        case (_vehicle isKindOf "Helicopter"): { "heli" };
-        case (_vehicle isKindOf "Plane"): { "plane" };
-        case (_vehicle isKindOf "Thing"): { "thing" };
-        default { "land" };
-    };
-    deleteVehicle _vehicle;
-
-    private _spawn = switch (_type) do {
+    private _spawn = switch (true) do {
         case "sea": { "spawn_sea" };
         case "heli": { "spawn_heli" };
         case "plane": { "spawn_plane" };
         case "thing": { "spawn_thing" };
         default { "spawn_land" };
     };
+    deleteVehicle _vehicle;
+
     private _spawnPos = markerPos _spawn;
     private _spawnDir = markerDir _spawn;
 
@@ -33,7 +26,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     };
 
     // Check for any obstruction in the spawn area
-    if (count nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], SPAWN_SIZE] > 0) exitWith {
+    if (count nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], 5] > 0) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"AreaBlocked")]);
     };
 
@@ -54,23 +47,33 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     private _vehicle = _class createVehicleLocal [0,0,0];
     _vehicle enableSimulation false;
     private _objType = switch (true) do {
-        case (_vehicle isKindOf "Ship"): { QGVAR(sea_large) };
-        case (_vehicle isKindOf "Helicopter"): { QGVAR(heli_large) };
-        case (_vehicle isKindOf "Plane"): { QGVAR(plane_large) };
-        case (_vehicle isKindOf "Thing"): { QGVAR(thing_medium) };
-        default { QGVAR(land_large) };
+        case (_vehicle isKindOf "Ship"): { "sea" };
+        case (_vehicle isKindOf "Helicopter"): { "heli" };
+        case (_vehicle isKindOf "Plane"): { "plane" };
+        case (_vehicle isKindOf "Thing"): { "thing" };
+        default { "land" };
     };
+    private _bounds = boundingBoxReal _vehicle;
+    private _objSize = (_bounds#0 distance _bounds#1) / 2;
     deleteVehicle _vehicle;
 
-    private _spawns = allMissionObjects _objType;
+    private _spawns = [];
+    {
+        if (_objType in _x) then {
+            _spawns append allMissionObjects _x;
+        };
+    } forEach SPAWN_TYPES;
+
+    private _spawns = _spawns select {
+        getNumber (configOf _x >> QGVAR(size)) > _objSize
+    };
 
     if (count _spawns == 0) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"NoSpawnArea")]);
     };
 
     private _spawn = spawns findIf {
-        private _size = getNumber (configFile >> "CfgVehicles" >> _objType >> QGVAR(size));
-        count nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], _size] > 0
+        count nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], _objSize + 0.5] > 0
     };
     if (_spawn == -1) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"AreaBlocked")]);
@@ -80,7 +83,6 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     private _spawnPos = getPos _spawn;
     private _spawnDir = getDir _spawn;
 
-    // Spawn the vehicle
     private _vehicle = _class createVehicle _spawnPos;
     _vehicle setDir _spawnDir;
     _vehicle setVariable [QGVAR(plate), _plate, true];

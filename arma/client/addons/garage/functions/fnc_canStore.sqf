@@ -17,7 +17,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
         default { "spawn_land" };
     };
 
-    getPos _vehicle distance _spawn < (SPAWN_SIZE * 2)
+    getPos _vehicle distance _spawn < 12
 } else {
     private _objType = switch (true) do {
         case (_vehicle isKindOf "Ship"): { QGVAR(sea) };
@@ -30,6 +30,6 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     private _size = getNumber (configFile >> "CfgVehicles" >> _objType >> QGVAR(size));
 
     (allMissionObjects _objType) findIf {
-        getPos _vehicle distance _x < (size * 2)
+        getPos _vehicle distance _x < (_size * 2)
     } != -1
 }

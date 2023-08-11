@@ -52,7 +52,7 @@ pub enum Primary {
     /// Arma 3 - Main
     /// Used for all contracts, subcontracts, and specials
     #[strum(serialize = "Arma 3 - Contract")]
-    Arma3Main,
+    Arma3Contracts,
     /// Arma 3 - Training
     /// Used for training
     #[strum(serialize = "Arma 3 - Training")]
@@ -64,7 +64,7 @@ impl Primary {
     /// Get the container ID
     pub fn id(&self) -> String {
         match self {
-            Self::Arma3Main => "arma-contracts".to_string(),
+            Self::Arma3Contracts => "arma-contracts".to_string(),
             Self::Arma3Training => "arma-training".to_string(),
         }
     }

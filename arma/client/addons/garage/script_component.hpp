@@ -18,5 +18,5 @@
     QGVAR(plane_large), QGVAR(plane_medium), QGVAR(plane_small), \
     QGVAR(sea_large), QGVAR(sea_medium), QGVAR(sea_small), \
     QGVAR(land_large), QGVAR(land_medium), QGVAR(land_small), \
-    QGVAR(thing_large), QGVAR(thing_medium), QGVAR(thing_small), \
+    QGVAR(thing_large), QGVAR(thing_medium), QGVAR(thing_small) \
 ]

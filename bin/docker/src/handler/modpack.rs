@@ -25,7 +25,7 @@ impl Handler for Request {
         let command = Command::new("rsync")
             .arg("-ur")
             .arg("--delete-after")
-            .arg("download@192.168.1.111:/home/download/mods")
+            .arg("download@192.168.1.111:/home/download/mods/")
             .arg(".")
             .current_dir("/arma/contracts/mods")
             .status()
@@ -38,7 +38,7 @@ impl Handler for Request {
             nats,
             synixe_events::containers::docker,
             Restart {
-                container: Primary::Arma3Main.into(),
+                container: Primary::Arma3Contracts.into(),
                 reason: "modpack updated".to_string(),
             }
         )

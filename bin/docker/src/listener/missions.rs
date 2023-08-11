@@ -74,7 +74,7 @@ impl Listener for Publish {
                 nats,
                 synixe_events::containers::docker,
                 Restart {
-                    container: Primary::Arma3Main.into(),
+                    container: Primary::Arma3Contracts.into(),
                     reason: format!("Mission changed to `{id}`"),
                 }
             )
