@@ -191,6 +191,7 @@ pub enum Rsvp {
     No,
 }
 
+#[cfg(feature = "mission-schedule")]
 impl Display for Rsvp {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
