@@ -29,9 +29,10 @@ pub struct Mission {
     pub summary: String,
     /// Mission description
     pub briefing: serde_json::Value,
-    /// Mission type
     #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
+    /// Mission type
     pub typ: MissionType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     /// Mission play count
     pub play_count: Option<i64>,
 }
