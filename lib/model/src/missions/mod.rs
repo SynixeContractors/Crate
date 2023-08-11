@@ -28,7 +28,7 @@ pub struct Mission {
     /// Mission summary
     pub summary: String,
     /// Mission description
-    pub briefing: sqlx::types::JsonValue,
+    pub briefing: serde_json::Value,
     /// Mission type
     #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
     pub typ: MissionType,
@@ -138,7 +138,7 @@ pub struct ScheduledMission {
     /// Mission summary
     pub summary: String,
     /// Mission briefing
-    pub briefing: sqlx::types::JsonValue,
+    pub briefing: serde_json::Value,
     /// Mission type
     #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
     pub typ: MissionType,

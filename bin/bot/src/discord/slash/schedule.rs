@@ -981,11 +981,13 @@ fn briefing_messages(mission: &ScheduledMission) -> Vec<String> {
         let Some(content) = briefing.get(&title.to_lowercase()) else {
             continue;
         };
+        text.push_str(&format!("## {title}\n"));
         text.push_str(content);
     }
 
     let img_regex = Regex::new(r"(?m)<img ([^>]+?)\/>").expect("valid regex");
     let img_path_regex = Regex::new(r#"(?m)image=(?:'|")([^'"]+)"#).expect("valid regex");
+    let img_name_regex = Regex::new(r#"(?m)name=(?:'|")([^'"]+)"#).expect("valid regex");
 
     let out = img_regex.replace_all(&text, |caps: &Captures| {
         let img = caps.get(1).expect("group 1 will always exist").as_str();
@@ -995,10 +997,17 @@ fn briefing_messages(mission: &ScheduledMission) -> Vec<String> {
             .get(1)
             .expect("img image will always exist")
             .as_str();
+        let name = {
+            let name = img_name_regex
+                .captures(img)
+                .map(|c| c.get(1).expect("always in capture").as_str());
+            name.map_or("image", |name| name)
+        };
         format!(
-            "https://raw.githubusercontent.com/SynixeContractors/Missions/main/{}/{}/{}",
+            "[{}](https://raw.githubusercontent.com/SynixeContractors/Missions/main/{}/{}/{})",
+            name,
             mission.typ.github_folder().to_lowercase(),
-            mission.name.to_lowercase(),
+            mission.mission.to_lowercase(),
             path
         )
     });
@@ -1006,9 +1015,7 @@ fn briefing_messages(mission: &ScheduledMission) -> Vec<String> {
     let tag_regex = Regex::new(r"(?m)<([^>]+)>").expect("valid regex");
     let out = tag_regex.replace_all(&out, |caps: &Captures| {
         let tag = caps.get(1).expect("group 1 will always exist").as_str();
-        if tag.contains("#E0A750") {
-            "## ".to_string()
-        } else if tag.contains("color") {
+        if tag.contains("color") {
             "### ".to_string()
         } else {
             String::new()
@@ -1018,7 +1025,7 @@ fn briefing_messages(mission: &ScheduledMission) -> Vec<String> {
     let mut sections = Vec::with_capacity(10);
     let mut section = String::with_capacity(2048);
     for line in out.lines() {
-        if line.starts_with('#') {
+        if line.starts_with("## ") {
             if !section.is_empty() {
                 sections.push(section.trim_end_matches('\n').to_string());
             }
