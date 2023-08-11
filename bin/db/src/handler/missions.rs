@@ -38,7 +38,7 @@ impl Handler for Request {
                         ins.start,
                         m.name,
                         m.summary,
-                        m.description,
+                        m.briefing,
                         m.type as \"typ: MissionType\"
                     FROM
                         ins
@@ -104,7 +104,7 @@ impl Handler for Request {
                         s.start,
                         m.name,
                         m.summary,
-                        m.description,
+                        m.briefing,
                         m.type as \"typ: MissionType\"
                     FROM
                         missions_schedule s
@@ -140,7 +140,7 @@ impl Handler for Request {
                         s.start,
                         m.name,
                         m.summary,
-                        m.description,
+                        m.briefing,
                         m.type as \"typ: MissionType\"
                     FROM
                         missions_schedule s
@@ -165,7 +165,7 @@ impl Handler for Request {
                         s.start,
                         m.name,
                         m.summary,
-                        m.description,
+                        m.briefing,
                         m.type as \"typ: MissionType\"
                     FROM
                         missions_schedule s
@@ -197,7 +197,7 @@ impl Handler for Request {
                         s.start,
                         m.name,
                         m.summary,
-                        m.description,
+                        m.briefing,
                         m.type as \"typ: MissionType\"
                     FROM
                         missions_schedule s
@@ -230,7 +230,7 @@ impl Handler for Request {
                         s.start,
                         m.name,
                         m.summary,
-                        m.description,
+                        m.briefing,
                         m.type as \"typ: MissionType\"
                     FROM
                         missions_schedule s
@@ -291,18 +291,18 @@ impl Handler for Request {
                     Ok(listing) => {
                         for mission in listing.missions() {
                             let query = sqlx::query!(
-                                r#"INSERT INTO missions (id, name, summary, description, type, archived)
+                                r#"INSERT INTO missions (id, name, summary, briefing, type, archived)
                                     VALUES ($1, $2, $3, $4, $5, false)
                                     ON CONFLICT (id) DO UPDATE SET
                                         name = $2,
                                         summary = $3,
-                                        description = $4,
+                                        briefing = $4,
                                         type = $5,
                                         archived = false"#,
                                 mission.id,
                                 mission.name,
                                 mission.summary,
-                                mission.description,
+                                mission.briefing,
                                 mission.typ as MissionType,
                             );
                             if let Err(e) = query.execute(&*db).await {
@@ -361,7 +361,7 @@ impl Handler for Request {
                         m.id,
                         m.name,
                         m.summary,
-                        m.description,
+                        m.briefing,
                         m.type as "typ: MissionType"
                     FROM missions m
                     LEFT JOIN missions_schedule s
@@ -391,7 +391,7 @@ impl Handler for Request {
                         m.id,
                         m.name,
                         m.summary,
-                        m.description,
+                        m.briefing,
                         m.type as "typ: MissionType"
                     FROM missions m
                     LEFT JOIN missions_schedule s
@@ -447,7 +447,7 @@ impl Handler for Request {
                         s.start,
                         m.name,
                         m.summary,
-                        m.description,
+                        m.briefing,
                         m.type as \"typ: MissionType\"
                     FROM
                         missions_schedule s

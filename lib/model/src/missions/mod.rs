@@ -2,9 +2,13 @@
 
 #![allow(clippy::use_self)] // serde false positive
 
-use std::fmt::{Display, Formatter};
+use std::{
+    collections::HashMap,
+    fmt::{Display, Formatter},
+};
 
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 use serenity::model::prelude::{ChannelId, MessageId};
 use time::OffsetDateTime;
 use uuid::Uuid;
@@ -24,7 +28,7 @@ pub struct Mission {
     /// Mission summary
     pub summary: String,
     /// Mission description
-    pub description: String,
+    pub briefing: sqlx::types::JsonValue,
     /// Mission type
     #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
     pub typ: MissionType,
@@ -51,6 +55,18 @@ pub enum MissionType {
     Special,
     /// Other mission
     Other,
+}
+
+impl MissionType {
+    #[must_use]
+    /// The folder name for the mission type on GitHub
+    pub const fn github_folder(&self) -> &str {
+        match self {
+            Self::Contract | Self::SubContract => "contracts",
+            Self::Training => "company",
+            Self::Special | Self::Other => "specials",
+        }
+    }
 }
 
 impl From<i32> for MissionType {
@@ -121,8 +137,8 @@ pub struct ScheduledMission {
     pub name: String,
     /// Mission summary
     pub summary: String,
-    /// Mission description
-    pub description: String,
+    /// Mission briefing
+    pub briefing: sqlx::types::JsonValue,
     /// Mission type
     #[cfg_attr(feature = "sqlx", sqlx(rename = "type"))]
     pub typ: MissionType,
@@ -143,6 +159,17 @@ impl ScheduledMission {
         } else {
             None
         }
+    }
+
+    #[must_use]
+    /// Get the briefing as a [`HashMap`]
+    pub fn briefing(&self) -> HashMap<String, String> {
+        let briefing: Map<String, Value> =
+            serde_json::from_value(self.briefing.clone()).expect("always a valid map");
+        briefing
+            .into_iter()
+            .map(|(k, v)| (k, v.as_str().expect("a valid string").to_string()))
+            .collect()
     }
 }
 

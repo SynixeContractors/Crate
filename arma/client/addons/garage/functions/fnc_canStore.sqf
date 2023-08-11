@@ -17,7 +17,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
         default { "spawn_land" };
     };
 
-    getPos _vehicle distance _spawn < 12
+    getPos _vehicle distance getMarkerPos _spawn < 12
 } else {
     private _objType = switch (true) do {
         case (_vehicle isKindOf "Ship"): { QGVAR(sea) };

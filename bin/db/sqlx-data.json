@@ -44,17 +44,38 @@
     },
     "query": "INSERT INTO gear_loadouts (member, loadout) VALUES ($1, $2) ON CONFLICT (member) DO UPDATE SET loadout = $2"
   },
-  "05701ce57600da9f75a08befb898f7f4c516a53e0a1c43e12270ae6d538088d2": {
+  "036ef8ebce276542e6d0e6bf281ec6e7211e888217635f270ecca6dfc26c61be": {
     "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Varchar",
-          "Varchar",
-          "Text",
-          {
+      "columns": [
+        {
+          "name": "play_count",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "briefing",
+          "ordinal": 4,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 5,
+          "type_info": {
             "Custom": {
               "kind": {
                 "Enum": [
@@ -68,10 +89,23 @@
               "name": "mission_type"
             }
           }
+        }
+      ],
+      "nullable": [
+        null,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
         ]
       }
     },
-    "query": "INSERT INTO missions (id, name, summary, description, type, archived)\n                                    VALUES ($1, $2, $3, $4, $5, false)\n                                    ON CONFLICT (id) DO UPDATE SET\n                                        name = $2,\n                                        summary = $3,\n                                        description = $4,\n                                        type = $5,\n                                        archived = false"
+    "query": "\n                    SELECT\n                        COUNT(s.mission) as play_count,\n                        m.id,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM missions m\n                    LEFT JOIN missions_schedule s\n                        ON s.mission = m.id\n                    WHERE\n                        archived = FALSE AND\n                        (\n                            LOWER(m.name) LIKE LOWER($1) OR\n                            LOWER(m.id) LIKE LOWER($1)\n                        )\n                    GROUP BY m.id\n                    ORDER BY m.name ASC"
   },
   "0c14f76dbff49bc366de30d0181fc3fe62a61b7c458a87abdeafe84b597150e9": {
     "describe": {
@@ -117,6 +151,82 @@
       }
     },
     "query": "INSERT INTO missions_maps (map, archived)\n                                    VALUES ($1, false)\n                                    ON CONFLICT (map) DO UPDATE SET\n                                        archived = false"
+  },
+  "19cb977f5e830bff6681162b53eed3eb025a0bb7c0fb37467618b263f92c9b72": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "mission",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "schedule_message_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "start",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "briefing",
+          "ordinal": 6,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 7,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Timestamptz"
+        ]
+      }
+    },
+    "query": "\n                    WITH ins (id, mission, schedule_message_id, start) AS (\n                        INSERT INTO missions_schedule (mission, start) VALUES ($1, $2)\n                        RETURNING\n                            id,\n                            mission,\n                            schedule_message_id,\n                            start\n                    ) SELECT\n                        ins.id,\n                        ins.mission,\n                        ins.schedule_message_id,\n                        ins.start,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        ins\n                    INNER JOIN\n                        missions m ON m.id = ins.mission\n                    WHERE ins.start = $2\n                    "
   },
   "1ce18fd17a5b1363ea677cd2d140ecf22f56a8c6d394f7f25af6ffabe92ae07b": {
     "describe": {
@@ -232,79 +342,6 @@
       }
     },
     "query": "SELECT\n                        *\n                    FROM\n                        garage_shop\n                    WHERE\n                        name Like $1"
-  },
-  "23c0931c22545ccd5a45119553f7270ed4aa92852833900ab475bb22a665ea33": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "mission",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "schedule_message_id",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "start",
-          "ordinal": 3,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 7,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        start + '2 minutes'::Interval > NOW() ORDER BY start ASC"
   },
   "26b3ef600e47a97ac4ad2a7c344ea130d2c5d4a6a01fcbc04e92bb0824c5e936": {
     "describe": {
@@ -439,69 +476,6 @@
     },
     "query": "\n                        INSERT INTO\n                            members_dlc (member, dlc)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT (member)\n                        DO UPDATE\n                            SET dlc = $2"
   },
-  "407056d4dd2484e07b69a5a1c91d64c235a560f2ef796eab4ebf386e8d3e546f": {
-    "describe": {
-      "columns": [
-        {
-          "name": "play_count",
-          "ordinal": 0,
-          "type_info": "Int8"
-        },
-        {
-          "name": "id",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "name",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 5,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        null,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "\n                    SELECT\n                        COUNT(s.mission) as play_count,\n                        m.id,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM missions m\n                    LEFT JOIN missions_schedule s\n                        ON s.mission = m.id\n                    WHERE\n                        archived = FALSE AND\n                        (\n                            LOWER(m.name) LIKE LOWER($1) OR\n                            LOWER(m.id) LIKE LOWER($1)\n                        )\n                    GROUP BY m.id\n                    ORDER BY m.name ASC"
-  },
   "49d218afe8836741a986264ef34c8939a6e0478991f048ceadd1fb64cf6defe2": {
     "describe": {
       "columns": [],
@@ -528,6 +502,83 @@
       }
     },
     "query": "INSERT INTO garage_purchases (id, member) VALUES ($1, $2)"
+  },
+  "4c2adba6293f2d339d75521c18f060e61c2adbda2ec023deaf399aa5b38efb50": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "mission",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "schedule_message_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "start",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "briefing",
+          "ordinal": 6,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 7,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Timestamptz",
+          "Bool"
+        ]
+      }
+    },
+    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        (LOWER(m.name) = LOWER($1) OR ($3 AND s.mission = '$SUBCON$')) AND\n                        (start > $2 and start < $2 + '2 Day'::INTERVAL)\n                    ORDER BY\n                        mission DESC"
   },
   "4edfe285b237cf058a908d498caf1c5c7122a5247d98faf063a09fe51bfd2e86": {
     "describe": {
@@ -634,6 +685,81 @@
       }
     },
     "query": "SELECT i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.class = $1"
+  },
+  "4f944df14e702a610e2eca4f200662d667b0707b51318684bd8e358d67326789": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "mission",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "schedule_message_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "start",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "briefing",
+          "ordinal": 6,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 7,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        s.id = $1"
   },
   "52dd177583a553b718318b1b47ef44f5f654b6d72560d6b1eec4f74c2c89e2cb": {
     "describe": {
@@ -955,6 +1081,81 @@
     },
     "query": "SELECT scheduled, member, state as \"state: Rsvp\", details FROM missions_schedule_rsvp WHERE scheduled = $1"
   },
+  "66cb00339041d1cbf922bedfac52b367a447acc8aed2d7edbe105278a82ad3e2": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "mission",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "schedule_message_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "start",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "briefing",
+          "ordinal": 6,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 7,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE schedule_message_id = $1"
+  },
   "69ccfe65de2531ae559c4b37375488d8924f2a7659380717d1611bb34c42d9ea": {
     "describe": {
       "columns": [],
@@ -1053,6 +1254,79 @@
       }
     },
     "query": "\n                            INSERT INTO\n                                certifications_trials\n                                (instructor, trainee, certification, notes, passed, valid_for)\n                            VALUES\n                                ($1, $2, $3, $4, true, $5)\n                            RETURNING\n                                id,\n                                instructor,\n                                trainee,\n                                certification,\n                                notes,\n                                passed,\n                                valid_for,\n                                valid_until,\n                                created"
+  },
+  "6f8599098dbd9df97326fa98a593dc9f7aaa4b908f601b3086073633ef85b7bc": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "mission",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "schedule_message_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "start",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "briefing",
+          "ordinal": 6,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 7,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        start + '2 minutes'::Interval > NOW() ORDER BY start ASC"
   },
   "713a1d9e5f789e6d6c953a9d3441c676b8df41086b7091775b2c94f4eb286982": {
     "describe": {
@@ -1350,82 +1624,6 @@
     },
     "query": "SELECT member, amount, reason, id, created FROM gear_bank_deposits WHERE member = $1"
   },
-  "99614f73ba06b3938130f1384ed2b07aabbb143dad8679de35d7f72314acbc72": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "mission",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "schedule_message_id",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "start",
-          "ordinal": 3,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 7,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Timestamptz"
-        ]
-      }
-    },
-    "query": "\n                    WITH ins (id, mission, schedule_message_id, start) AS (\n                        INSERT INTO missions_schedule (mission, start) VALUES ($1, $2)\n                        RETURNING\n                            id,\n                            mission,\n                            schedule_message_id,\n                            start\n                    ) SELECT\n                        ins.id,\n                        ins.mission,\n                        ins.schedule_message_id,\n                        ins.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        ins\n                    INNER JOIN\n                        missions m ON m.id = ins.mission\n                    WHERE ins.start = $2\n                    "
-  },
   "9d1f97c7ce97bbfddbb9bd6e289751ff10a137bdfb7ed49f9e87321985c17062": {
     "describe": {
       "columns": [
@@ -1634,69 +1832,6 @@
     },
     "query": "\n                        SELECT\n                            DISTINCT ON (trainee, certification)\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW() OR valid_until IS NULL)\n                        ORDER BY trainee, certification, created DESC"
   },
-  "a84a27f51b643a143b54b6005b6ecb1035025131e8af7785d3ec5923af35a735": {
-    "describe": {
-      "columns": [
-        {
-          "name": "play_count",
-          "ordinal": 0,
-          "type_info": "Int8"
-        },
-        {
-          "name": "id",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "name",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 3,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 5,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        null,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "\n                    SELECT\n                        COUNT(s.mission) as play_count,\n                        m.id,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM missions m\n                    LEFT JOIN missions_schedule s\n                        ON s.mission = m.id\n                    WHERE\n                        m.id = $1\n                    GROUP BY m.id"
-  },
   "a9766a6623056980e393a178806d1b230819a7429b2c8ef5472afda0e8e05d81": {
     "describe": {
       "columns": [],
@@ -1858,6 +1993,81 @@
     },
     "query": "INSERT INTO github_usernames (member, github) VALUES ($1, $2)"
   },
+  "b3b9279d8cbf82270c06b91dd70b107b2cf7c2fa4e1eb2d81390bb74c7f760dd": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "mission",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "schedule_message_id",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "start",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "name",
+          "ordinal": 4,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 5,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "briefing",
+          "ordinal": 6,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 7,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE aar_message_id = $1"
+  },
   "b8a25dc33c0644eb158bf10e82cf3ce3f63e143926bc2389ba2d7d30af726872": {
     "describe": {
       "columns": [],
@@ -1911,81 +2121,6 @@
       }
     },
     "query": "\n                        SELECT\n                            id,\n                            campaign,\n                            class,\n                            \"group\",\n                            data\n                        FROM\n                            campaigns_units\n                        WHERE\n                            campaign = $1"
-  },
-  "be6579136d8b77653da9b6f36b992dfc70004b10b92736f2e4ed7030f2913090": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "mission",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "schedule_message_id",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "start",
-          "ordinal": 3,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 7,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE aar_message_id = $1"
   },
   "be9d7102a0c2621d3d42b660434065c449ff3ff571dab74372d2937fea8835a9": {
     "describe": {
@@ -2066,81 +2201,6 @@
     },
     "query": "DELETE FROM campaigns_units WHERE id = $1 AND campaign = $2"
   },
-  "c7ac84e9fb411548ea042be20ceb11d01634e16a2613ba08ab49218f43794ecc": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "mission",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "schedule_message_id",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "start",
-          "ordinal": 3,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 7,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        s.id = $1"
-  },
   "c7ec02d0d5945ed152fa44d4fc37b724347d169e5286d008278ce03d7d6802f3": {
     "describe": {
       "columns": [
@@ -2173,6 +2233,35 @@
     },
     "query": "SELECT\n                        *\n                    FROM\n                        garage_colors\n                    WHERE\n                        id = $1"
   },
+  "cc377e5337fe8f927aee592b673a1308da65726573ee1b181ccdfc9b8f97f005": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Jsonb",
+          {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        ]
+      }
+    },
+    "query": "INSERT INTO missions (id, name, summary, briefing, type, archived)\n                                    VALUES ($1, $2, $3, $4, $5, false)\n                                    ON CONFLICT (id) DO UPDATE SET\n                                        name = $2,\n                                        summary = $3,\n                                        briefing = $4,\n                                        type = $5,\n                                        archived = false"
+  },
   "cd832f303665f3eda8f51d54d567952b726d8ed2af0193f3e850eb6c55b47828": {
     "describe": {
       "columns": [],
@@ -2198,6 +2287,69 @@
       }
     },
     "query": "INSERT INTO recruitment_replied (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created = NOW()"
+  },
+  "d6d3965b3baccf3f17e8ad5ef3fa6badbd2c4c14672ee4c60d547f67df8a6c51": {
+    "describe": {
+      "columns": [
+        {
+          "name": "play_count",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "id",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "summary",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "briefing",
+          "ordinal": 4,
+          "type_info": "Jsonb"
+        },
+        {
+          "name": "typ: MissionType",
+          "ordinal": 5,
+          "type_info": {
+            "Custom": {
+              "kind": {
+                "Enum": [
+                  "contract",
+                  "subcontract",
+                  "training",
+                  "special",
+                  "other"
+                ]
+              },
+              "name": "mission_type"
+            }
+          }
+        }
+      ],
+      "nullable": [
+        null,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                    SELECT\n                        COUNT(s.mission) as play_count,\n                        m.id,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM missions m\n                    LEFT JOIN missions_schedule s\n                        ON s.mission = m.id\n                    WHERE\n                        m.id = $1\n                    GROUP BY m.id"
   },
   "d7950393e8e94d4368ff0873f10c2ddfa91ef097f52cd431a69b89fc1b7587f6": {
     "describe": {
@@ -2292,81 +2444,6 @@
     },
     "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'friendly_healed', 1, $2)"
   },
-  "eae50479019a894c3437840a28a492a8aff638b7409f7d5a0837661b245e5d4a": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "mission",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "schedule_message_id",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "start",
-          "ordinal": 3,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 7,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      }
-    },
-    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE schedule_message_id = $1"
-  },
   "eaebec4df05a448e5a6a8083f1a7c6b3771229cc96503717bf91f02c95d80fbc": {
     "describe": {
       "columns": [
@@ -2437,27 +2514,7 @@
     },
     "query": "INSERT INTO reputation_events (member, event, reputation, data) VALUES ($1, 'mission_completed', $2, $3)"
   },
-  "f4e87e320d4a802b7389fe25c093f4a028468691e8f6fd39993a359bb5c62ce7": {
-    "describe": {
-      "columns": [
-        {
-          "name": "value",
-          "ordinal": 0,
-          "type_info": "Float8"
-        }
-      ],
-      "nullable": [
-        null
-      ],
-      "parameters": {
-        "Left": [
-          "Timestamptz"
-        ]
-      }
-    },
-    "query": "SELECT reputation($1) as value"
-  },
-  "f5b692014ca1b4e3f766bf51edfeb416499212bde385f7034e2c4d57358c252f": {
+  "f424105727845e4a3fc36c87510059e3991b779afc15a4a3315929fdb2f26d24": {
     "describe": {
       "columns": [
         {
@@ -2491,86 +2548,9 @@
           "type_info": "Varchar"
         },
         {
-          "name": "description",
+          "name": "briefing",
           "ordinal": 6,
-          "type_info": "Text"
-        },
-        {
-          "name": "typ: MissionType",
-          "ordinal": 7,
-          "type_info": {
-            "Custom": {
-              "kind": {
-                "Enum": [
-                  "contract",
-                  "subcontract",
-                  "training",
-                  "special",
-                  "other"
-                ]
-              },
-              "name": "mission_type"
-            }
-          }
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        true,
-        false,
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Text",
-          "Timestamptz",
-          "Bool"
-        ]
-      }
-    },
-    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        (LOWER(m.name) = LOWER($1) OR ($3 AND s.mission = '$SUBCON$')) AND\n                        (start > $2 and start < $2 + '2 Day'::INTERVAL)\n                    ORDER BY\n                        mission DESC"
-  },
-  "f667b03c67b42ae2f957d73340685fe9255b8147b9c0935f1fb458132c9b89ba": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "mission",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "schedule_message_id",
-          "ordinal": 2,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "start",
-          "ordinal": 3,
-          "type_info": "Timestamptz"
-        },
-        {
-          "name": "name",
-          "ordinal": 4,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "summary",
-          "ordinal": 5,
-          "type_info": "Varchar"
-        },
-        {
-          "name": "description",
-          "ordinal": 6,
-          "type_info": "Text"
+          "type_info": "Jsonb"
         },
         {
           "name": "typ: MissionType",
@@ -2605,7 +2585,27 @@
         "Left": []
       }
     },
-    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.description,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        s.start <= NOW() AND s.start + INTERVAL '150 minutes' >= NOW()\n                    ORDER BY\n                        s.start ASC\n                    LIMIT 1"
+    "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        s.start <= NOW() AND s.start + INTERVAL '150 minutes' >= NOW()\n                    ORDER BY\n                        s.start ASC\n                    LIMIT 1"
+  },
+  "f4e87e320d4a802b7389fe25c093f4a028468691e8f6fd39993a359bb5c62ce7": {
+    "describe": {
+      "columns": [
+        {
+          "name": "value",
+          "ordinal": 0,
+          "type_info": "Float8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Timestamptz"
+        ]
+      }
+    },
+    "query": "SELECT reputation($1) as value"
   },
   "f8ac5fbedb7c1df86cab2428b5711ad428bfe171f60d5c0c4463dfcd0b02d90c": {
     "describe": {

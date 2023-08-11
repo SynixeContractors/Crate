@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use regex::{Captures, Regex};
 use serenity::{
     builder::{CreateApplicationCommand, CreateEmbed},
     model::{
@@ -842,24 +843,34 @@ async fn post(
                     return interaction.reply("Failed to create thread").await;
                 };
             tokio::time::sleep(Duration::from_millis(100)).await;
-            if let Err(e) = sched_thread
-                .send_message(&ctx, |pt| {
-                    pt.content(
-                        scheduled
-                            .description
-                            .replace("            <br/>", "\n")
-                            .replace("<font color='#D81717'>", "")
-                            .replace("<font color='#1D69F6'>", "")
-                            .replace("<font color='#993399'>", "")
-                            .replace("<font color='#663300'>", "")
-                            .replace("<font color='#139120'>", "")
-                            .replace("</font color>", "") // felix you scoundrel
-                            .replace("</font>", ""),
-                    )
-                })
-                .await
-            {
-                error!("Failed to post mission description: {}", e);
+            if let Some(content) = scheduled.briefing().get("old") {
+                if let Err(e) = sched_thread
+                    .send_message(&ctx, |pt| {
+                        pt.content(
+                            content
+                                .replace("            <br/>", "\n")
+                                .replace("<font color='#D81717'>", "")
+                                .replace("<font color='#1D69F6'>", "")
+                                .replace("<font color='#993399'>", "")
+                                .replace("<font color='#663300'>", "")
+                                .replace("<font color='#139120'>", "")
+                                .replace("</font color>", "") // felix you scoundrel
+                                .replace("</font>", ""),
+                        )
+                    })
+                    .await
+                {
+                    error!("Failed to post mission description: {}", e);
+                }
+            } else {
+                for section in briefing_messages(scheduled) {
+                    if let Err(e) = sched_thread
+                        .send_message(&ctx, |pt| pt.content(section))
+                        .await
+                    {
+                        error!("Failed to post mission description: {}", e);
+                    }
+                }
             }
             if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request_2!(
                 bootstrap::NC::get().await,
@@ -961,4 +972,155 @@ fn make_post_embed(embed: &mut CreateEmbed, scheduled: &ScheduledMission, rsvps:
         },
         true,
     );
+}
+
+fn briefing_messages(mission: &ScheduledMission) -> Vec<String> {
+    let mut text = String::new();
+    let briefing = mission.briefing();
+    for title in ["Situation", "Mission", "Objectives"] {
+        let Some(content) = briefing.get(&title.to_lowercase()) else {
+            continue;
+        };
+        text.push_str(content);
+    }
+
+    let img_regex = Regex::new(r"(?m)<img ([^>]+?)\/>").expect("valid regex");
+    let img_path_regex = Regex::new(r#"(?m)image=(?:'|")([^'"]+)"#).expect("valid regex");
+
+    let out = img_regex.replace_all(&text, |caps: &Captures| {
+        let img = caps.get(1).expect("group 1 will always exist").as_str();
+        let path = img_path_regex
+            .captures(img)
+            .expect("img image will always exist")
+            .get(1)
+            .expect("img image will always exist")
+            .as_str();
+        format!(
+            "https://raw.githubusercontent.com/SynixeContractors/Missions/main/{}/{}/{}",
+            mission.typ.github_folder().to_lowercase(),
+            mission.name.to_lowercase(),
+            path
+        )
+    });
+
+    let tag_regex = Regex::new(r"(?m)<([^>]+)>").expect("valid regex");
+    let out = tag_regex.replace_all(&out, |caps: &Captures| {
+        let tag = caps.get(1).expect("group 1 will always exist").as_str();
+        if tag.contains("#E0A750") {
+            "## ".to_string()
+        } else if tag.contains("color") {
+            "### ".to_string()
+        } else {
+            String::new()
+        }
+    });
+
+    let mut sections = Vec::with_capacity(10);
+    let mut section = String::with_capacity(2048);
+    for line in out.lines() {
+        if line.starts_with('#') {
+            if !section.is_empty() {
+                sections.push(section.trim_end_matches('\n').to_string());
+            }
+            section = line.to_string();
+        } else {
+            section.push('\n');
+            section.push_str(line);
+        }
+    }
+    if !section.is_empty() {
+        sections.push(section.trim_end_matches('\n').to_string());
+    }
+    sections
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::{Map, Value};
+    use synixe_model::missions::MissionType;
+    use time::OffsetDateTime;
+    use uuid::Uuid;
+
+    use super::*;
+
+    #[test]
+    fn briefing() {
+        let mission = ScheduledMission {
+            id: Uuid::new_v4(),
+            mission: "CO30_Brodsky_Test".to_string(),
+            schedule_message_id: None,
+            start: OffsetDateTime::now_utc(),
+            name: "Test Mission".to_string(),
+            summary: "Contractors do a test".to_string(),
+            briefing: {
+                let mut map = Map::new();
+                map.insert(
+                    "situation".to_string(),
+Value::String(r#"<font color='#E0A750'>SITUATION</font>
+Insert things players should know about where they are deploying and/or events that happened leading up to their deployment or to the given conflict
+
+<font color='#D81717'>ENEMY FORCES</font>
+Insert enemies here
+Insert enemy AMLCOA (most likely course of action, aka, what they're doing, how they act, how they'll act towards us, what we know, etc)
+
+<font color='#1D69F6'>FRIENDLY FORCES</font>
+Insert friendlies here
+
+<font color='#139120'>INDEPENDENT FORCES</font>
+Insert independent forces if there are any, otherwise remove this line and one above
+
+<font color='#993399'>CIVILIAN CONSIDERATIONS</font>
+Insert things to consider about civilians, presence/absence and/or behaviour/support to friendlies or enemies
+
+<font color='#663300'>TERRAIN CONSIDERATIONS</font>
+Insert anything you find relevant about how the terrain may be advantageous or disadvantageous
+"#.to_string())
+                );
+                map.insert(
+                    "mission".to_string(),
+                    Value::String(
+                        r#"<font color='#1D69F6'>EMPLOYER</font>
+
+Insert name of employer here
+
+<font color='#E0A750'>MISSION</font>
+
+Insert your mission description here,
+
+You can add as much as you feel is relevant.
+
+<img image='FOLDER\IMAGE.jpg' width='200' height='100'/>
+
+As a rule of thumb, consider: who, what (tasks), where, when, and why
+
+<font color='#595305'>RESTRICTIONS</font>
+
+Insert any additional restrictions here
+
+If there are none, remove this section
+"#
+                        .to_string(),
+                    ),
+                );
+                map.insert(
+                    "objectives".to_string(),
+                    Value::String(
+                        r#"<font color='#E3D310'>PRIMARY OBJECTIVES</font>
+
+Insert objectives that must be completed to achieve the mission goal
+
+<font color='#595305'>SECONDARY OBJECTIVES</font>
+
+Insert objectives that are not required to complete the mission, but may be useful
+"#
+                        .to_string(),
+                    ),
+                );
+                Value::Object(map)
+            },
+            typ: MissionType::Contract,
+        };
+        let messages = briefing_messages(&mission);
+        println!("{messages:#?}");
+    }
 }

@@ -67,11 +67,7 @@ fn store(ctx: Context, plate: String, state: HashMap<String, Value>, discord: St
             error!("failed to store vehicle over nats");
             return;
         };
-        audit(format!(
-            "
-            vehicle {plate} stored by <@{discord}>",
-        ))
-        .await;
+        audit(format!("Vehicle `{plate}` stored by <@{discord}>",)).await;
         if let Err(e) = ctx.callback_data("crate:garage", "store", vec![plate]) {
             error!("error sending store: {:?}", e);
         }

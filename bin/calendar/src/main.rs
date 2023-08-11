@@ -35,10 +35,17 @@ async fn calendar() -> impl IntoResponse {
     let mut calendar = Calendar::new();
     for scheduled in schedule {
         let start = NaiveDateTime::from_timestamp_opt(scheduled.start.unix_timestamp(), 0).unwrap();
+        let briefing = scheduled.briefing();
         calendar.push(
             Event::new()
                 .summary(&scheduled.name)
-                .description(&scheduled.description)
+                .description(
+                    briefing.get("old").unwrap_or(
+                        briefing
+                            .get("mission")
+                            .unwrap_or(&"No briefing available.".to_string()),
+                    ),
+                )
                 .starts(start)
                 .ends(start + chrono::Duration::minutes(150i64))
                 .done(),
