@@ -10,3 +10,6 @@ releases/
 node_modules/
 @template/
 tailwind.css
+
+# Python
+__pycache__/
