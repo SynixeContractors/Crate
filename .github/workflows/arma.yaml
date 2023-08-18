@@ -28,7 +28,7 @@ jobs:
         working-directory: arma/server
         run: |
           cargo build --release
-          cp target/release/libcrate_server.so crate_server_x64.so
+          cp ../../target/release/libcrate_server.so crate_server_x64.so
 
       - name: Build Server
         working-directory: arma/server
