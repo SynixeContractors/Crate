@@ -7,9 +7,7 @@ on:
       - .github/workflows/api.yaml
       - Cargo.toml
       - bin/api/**
-      - lib/bootstrap/**
-      - lib/events/**
-      - lib/proc/**
+      - lib/**
 
 permissions:
   packages: write

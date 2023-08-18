@@ -7,11 +7,7 @@ on:
       - .github/workflows/hooks.yaml
       - Cargo.toml
       - bin/hooks/**
-      - lib/bootstrap/**
-      - lib/events/**
-      - lib/meta/**
-      - lib/model/**
-      - lib/proc/**
+      - lib/**
 
 permissions:
   packages: write

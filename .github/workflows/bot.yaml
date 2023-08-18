@@ -7,11 +7,7 @@ on:
       - .github/workflows/bot.yaml
       - Cargo.toml
       - bin/bot/**
-      - lib/bootstrap/**
-      - lib/events/**
-      - lib/meta/**
-      - lib/model/**
-      - lib/proc/**
+      - lib/**
 
 permissions:
   packages: write

@@ -7,10 +7,7 @@ on:
       - .github/workflows/docker.yaml
       - Cargo.toml
       - bin/docker/**
-      - lib/bootstrap/**
-      - lib/events/**
-      - lib/proc/**
-      - lib/meta/**
+      - lib/**
 
 permissions:
   packages: write

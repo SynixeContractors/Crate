@@ -1,0 +1,43 @@
+name: arma
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/arma.yaml
+      - arma/**
+      - lib/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup HEMTT
+        uses: arma-actions/hemtt@v1
+
+      - name: Build Client
+        working-directory: arma/client
+        run: hemtt release
+
+      - name: Build Server Extension
+        working-directory: arma/server
+        run: |
+          cargo build --release
+          cp target/release/libcrate_server.so crate_server_x64.so
+
+      - name: Build Server
+        working-directory: arma/server
+        run: hemtt release
+
+      - name: Upload Client
+        uses: actions/upload-artifact@v2
+        with:
+          name: crate_client.zip
+          path: arma/client/releases/crate_client-latest.zip
+
+      - name: Upload Server
+        uses: actions/upload-artifact@v2
+        with:
+          name: crate_server.zip
+          path: arma/server/releases/crate_server-latest.zip

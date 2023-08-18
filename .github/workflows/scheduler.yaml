@@ -7,10 +7,7 @@ on:
       - .github/workflows/scheduler.yaml
       - Cargo.toml
       - bin/scheduler/**
-      - lib/bootstrap/**
-      - lib/events/**
-      - lib/meta/**
-      - lib/proc/**
+      - lib/**
 
 permissions:
   packages: write

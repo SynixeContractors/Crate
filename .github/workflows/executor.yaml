@@ -7,11 +7,7 @@ on:
       - .github/workflows/executor.yaml
       - Cargo.toml
       - bin/executor/**
-      - lib/bootstrap/**
-      - lib/events/**
-      - lib/meta/**
-      - lib/model/**
-      - lib/proc/**
+      - lib/**
 
 permissions:
   packages: write

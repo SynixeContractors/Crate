@@ -7,9 +7,7 @@ on:
       - .github/workflows/calendar.yaml
       - Cargo.toml
       - bin/calendar/**
-      - lib/bootstrap/**
-      - lib/events/**
-      - lib/proc/**
+      - lib/**
 
 permissions:
   packages: write
