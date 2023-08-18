@@ -26,8 +26,7 @@ impl Handler for Request {
                 if org.check_membership(github).await? {
                     Err(anyhow::anyhow!("User already in org"))
                 } else {
-                    org.add_or_update_membership(github, None)
-                        .await?;
+                    org.add_or_update_membership(github, None).await?;
                     Ok(())
                 }
             }
