@@ -23,10 +23,10 @@ impl Handler for Request {
                 };
                 let octo = Octocrab::builder().personal_token(token).build()?;
                 let org = octo.orgs("SynixeContractors");
-                if org.check_membership(github).await.is_ok() {
+                if org.check_membership(github).await? {
                     Err(anyhow::anyhow!("User already in org"))
                 } else {
-                    org.add_or_update_membership(github, Some(Role::Member))
+                    org.add_or_update_membership(github, None)
                         .await?;
                     Ok(())
                 }
