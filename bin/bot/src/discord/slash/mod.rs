@@ -45,11 +45,11 @@ pub async fn requires_roles<'a>(
     if !haystack.iter().any(|role| needle.contains(role)) {
         if let ShouldAsk::Yes((name, options)) = ask {
             let command = format!(
-                "{name} {}",
+                "`/{name} {}`\n",
                 options
                     .iter()
                     .map(|option| format!(
-                        "{}: `{}`",
+                        "{}: `{}`\n",
                         option.name.clone(),
                         option.value.as_ref().expect("value")
                     ))
@@ -79,13 +79,14 @@ pub async fn requires_roles<'a>(
                     interaction.reply("Failed to send request message.").await?;
                     return Err(serenity::Error::Other("Failed to send request message"));
                 };
-                interaction.reply("Requesting permission... Staff have 5 minutes to approve your request.").await?;
+                interaction.reply("Requesting permission... Staff have 10 minutes to approve your request.").await?;
                 let Some(confirm_interaction) = message
                     .await_component_interaction(&*Bot::get())
-                    .timeout(Duration::from_secs(60 * 5))
+                    .timeout(Duration::from_secs(60 * 10))
                     .collect_limit(1)
                     .await
                 else {
+                    message.reply_ping(&*CacheAndHttp::get(), "Request timed out").await?;
                     interaction.reply("Didn't receive a response").await?;
                     return Err(serenity::Error::Other("Didn't receive a response"));
                 };
