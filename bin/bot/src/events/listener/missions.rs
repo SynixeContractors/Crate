@@ -58,6 +58,11 @@ impl Listener for Publish {
                         }
                     }
 
+                    if report.is_empty() {
+                        info!("no rsvps to report");
+                        return Ok(());
+                    }
+
                     if let Err(e) = LOG
                         .send_message(&CacheAndHttp::get().http, |m| {
                             m.content(format!("RSVP Report for {}: \n{}", scheduled.name, report))

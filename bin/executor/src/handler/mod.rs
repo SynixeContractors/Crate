@@ -1,5 +1,4 @@
 mod certifications;
-mod github;
 mod missions;
 mod recruiting;
 
@@ -21,7 +20,6 @@ pub async fn start() {
             synixe_events::recruiting::executions::Request,
             synixe_events::missions::executions::Request,
             synixe_events::certifications::executions::Request,
-            synixe_events::github::executions::Request,
         );
     }
 }

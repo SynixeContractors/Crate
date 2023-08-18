@@ -25,16 +25,3 @@ pub mod db {
         } => (Result<(), String>)
     });
 }
-
-/// Interact with GitHub
-pub mod executions {
-    use synixe_proc::events_requests;
-
-    events_requests!(executor.github {
-        /// Invite a user to the GitHub organization
-        struct Invite {
-            /// The GitHub user
-            github: String,
-        } => (Result<(), String>)
-    });
-}
