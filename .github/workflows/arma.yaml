@@ -20,6 +20,10 @@ jobs:
         working-directory: arma/client
         run: hemtt release
 
+      - uses: Swatinem/rust-cache@v1
+        with:
+          key: arma
+
       - name: Build Server Extension
         working-directory: arma/server
         run: |
