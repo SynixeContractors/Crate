@@ -2,7 +2,10 @@
 ADDON = false;
 #include "XEH_PREP.hpp"
 
-GVAR(shop_boxes) = [];
+// Don't erase existing, in the freestyle they are added dynamically
+if (isNil QGVAR(shop_boxes)) then {
+    GVAR(shop_boxes) = [];
+};
 
 [
     QGVAR(enabled),
