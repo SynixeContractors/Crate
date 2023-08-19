@@ -59,6 +59,7 @@ fn init() -> Extension {
         .group("reputation", commands::reputation::group())
         .state(commands::garage::PendingSpawn::default())
         .finish();
+
     let ctx_tokio = ext.context();
     std::thread::spawn(move || {
         RUNTIME.block_on(async {
