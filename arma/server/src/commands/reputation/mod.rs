@@ -5,7 +5,10 @@ use synixe_proc::events_request_5;
 
 use crate::RUNTIME;
 
-pub fn group() -> Group {
+pub fn group(server_id: String) -> Group {
+    if server_id != "primary-main" {
+        return Group::new();
+    };
     Group::new()
         .command("friendly_shot", command_friendly_shot)
         .command("civilian_shot", command_civilian_shot)
