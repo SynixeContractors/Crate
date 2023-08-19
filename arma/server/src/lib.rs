@@ -56,9 +56,13 @@ fn init() -> Extension {
         .group("garage", commands::garage::group())
         .group("gear", commands::gear::group())
         .group("log", commands::log::group())
-        .group("reputation", commands::reputation::group())
-        .state(commands::garage::PendingSpawn::default())
-        .finish();
+        .state(commands::garage::PendingSpawn::default());
+
+    if *SERVER_ID == "primary-main" {
+        ext.group("reputation", commands::reputation::group());
+    }
+    let ext = ext.finish();
+
     let ctx_tokio = ext.context();
     std::thread::spawn(move || {
         RUNTIME.block_on(async {
