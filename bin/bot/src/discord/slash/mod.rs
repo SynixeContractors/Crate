@@ -10,7 +10,7 @@ use serenity::{
     },
 };
 use synixe_meta::discord::channel::LOG;
-use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
+use time::{Date, OffsetDateTime, PrimitiveDateTime, Time, Weekday};
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt, PrimitiveDateTimeExt};
 
 use crate::{bot::Bot, cache_http::CacheAndHttp};
@@ -171,7 +171,22 @@ pub fn get_datetime(options: &[CommandDataOption]) -> OffsetDateTime {
         |day| (*day).try_into().expect("Discord should limit to 1-31"),
     );
     let hour = get_option!(options, "hour", Integer).map_or_else(
-        || 22,
+        || {
+            if matches!(
+                OffsetDateTime::now_utc()
+                    .to_timezone(NEW_YORK)
+                    .replace_day(day)
+                    .expect("The day will be valid cause we check it above")
+                    .replace_month(month)
+                    .expect("The month will be valid cause we check it above")
+                    .weekday(),
+                Weekday::Saturday,
+            ) {
+                16
+            } else {
+                22
+            }
+        },
         |hour| (*hour).try_into().expect("Discord should limit to 0-23"),
     );
     {
