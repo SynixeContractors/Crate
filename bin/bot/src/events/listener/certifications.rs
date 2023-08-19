@@ -70,10 +70,15 @@ impl Listener for Publish {
                             warn!("Certification not found: {}", trial.certification);
                             return Ok(());
                     };
+
+                    let Ok(mut member) = GUILD
+                        .member(CacheAndHttp::get(), trial.trainee.parse::<UserId>()?)
+                        .await else {
+                        warn!("Failed to get member: {}", trial.trainee);
+                        return Ok(());
+                    };
+
                     let message = if *days == 0 {
-                        let mut member = GUILD
-                            .member(CacheAndHttp::get(), trial.trainee.parse::<UserId>()?)
-                            .await?;
                         for role in &cert.roles_granted {
                             member
                                 .remove_role(&CacheAndHttp::get().http, role.parse::<RoleId>()?)
