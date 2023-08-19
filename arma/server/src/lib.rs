@@ -56,7 +56,7 @@ fn init() -> Extension {
         .group("garage", commands::garage::group())
         .group("gear", commands::gear::group())
         .group("log", commands::log::group())
-        .group("reputation", commands::reputation::group(*SERVER_ID))
+        .group("reputation", commands::reputation::group())
         .state(commands::garage::PendingSpawn::default())
         .finish();
 
