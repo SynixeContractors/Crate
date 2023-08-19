@@ -64,28 +64,21 @@ impl Listener for Publish {
                 if let Ok(Ok((Response::List(Ok(certs)), _))) =
                     events_request_5!(nats, synixe_events::certifications::db, List {}).await
                 {
-                    let all_members_ids = GUILD
-                        .members(&CacheAndHttp::get().http, None, None)
-                        .await?
-                        .into_iter()
-                        .map(|m| m.user.id)
-                        .collect::<Vec<_>>();
-
-                    if all_members_ids.contains(&trial.trainee.parse::<UserId>()?) {
-                        warn!("User not found in the server: {}", trial.trainee);
-                        return Ok(());
-                    }
-
                     let Some(cert) = certs
                         .iter()
                         .find(|cert| cert.id == trial.certification) else {
                             warn!("Certification not found: {}", trial.certification);
                             return Ok(());
                     };
+
+                    let Ok(mut member) = GUILD
+                        .member(CacheAndHttp::get(), trial.trainee.parse::<UserId>()?)
+                        .await else {
+                        warn!("Failed to get member: {}", trial.trainee);
+                        return Ok(());
+                    };
+
                     let message = if *days == 0 {
-                        let mut member = GUILD
-                            .member(CacheAndHttp::get(), trial.trainee.parse::<UserId>()?)
-                            .await?;
                         for role in &cert.roles_granted {
                             member
                                 .remove_role(&CacheAndHttp::get().http, role.parse::<RoleId>()?)
