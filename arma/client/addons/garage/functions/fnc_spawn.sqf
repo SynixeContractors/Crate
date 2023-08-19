@@ -10,10 +10,10 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     private _vehicle = _class createVehicleLocal [0,0,0];
     _vehicle enableSimulation false;
     private _spawn = switch (true) do {
-        case "sea": { "spawn_sea" };
-        case "heli": { "spawn_heli" };
-        case "plane": { "spawn_plane" };
-        case "thing": { "spawn_thing" };
+        case (_vehicle isKindOf "Ship"): { "spawn_sea" };
+        case (_vehicle isKindOf "Helicopter"): { "spawn_heli" };
+        case (_vehicle isKindOf "Plane"): { "spawn_plane" };
+        case (_vehicle isKindOf "Thing"): { "spawn_thing" };
         default { "spawn_land" };
     };
     deleteVehicle _vehicle;
