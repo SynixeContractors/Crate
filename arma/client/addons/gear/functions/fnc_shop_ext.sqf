@@ -15,7 +15,7 @@ switch (_func) do {
                 _pretty = getText (configFile >> "CfgVehicles" >> _class >> "displayName");
             };
             if (_pretty != "") then {
-                EXTCALL("gear:shop:pretty", [_class, _pretty]);
+                EXTCALL("gear:shop:pretty", [ARR_2(_class, _pretty)]);
             };
         };
     };
