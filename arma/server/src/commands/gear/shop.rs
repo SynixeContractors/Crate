@@ -46,10 +46,10 @@ fn command_items() {
                 vec![
                     class.to_arma(),
                     arma_rs::Value::Array(vec![
-                        pretty.to_arma(),
                         roles.unwrap_or_default().to_arma(),
                         price.to_arma(),
                     ]),
+                    pretty.to_arma(),
                 ],
             ) {
                 error!("error sending shop:items:set: {:?}", e);
