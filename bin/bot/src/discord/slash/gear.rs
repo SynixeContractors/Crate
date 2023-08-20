@@ -66,10 +66,9 @@ async fn repaint(
     let Some(paint) = get_option!(options, "paint", String) else {
         return interaction.reply("Invalid paint").await;
     };
-    return interaction
+    interaction
         .reply(format!(
-            "The weapon is {} and the paint is {}",
-            weapon, paint,
+            "The weapon is {weapon} and the paint is {paint}",
         ))
-        .await;
+        .await
 }
