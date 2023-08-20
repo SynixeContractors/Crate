@@ -67,8 +67,6 @@ async fn repaint(
         return interaction.reply("Invalid paint").await;
     };
     interaction
-        .reply(format!(
-            "The weapon is {weapon} and the paint is {paint}",
-        ))
+        .reply(format!("The weapon is {weapon} and the paint is {paint}",))
         .await
 }
