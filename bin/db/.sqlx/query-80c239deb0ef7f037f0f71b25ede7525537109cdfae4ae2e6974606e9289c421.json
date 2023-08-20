@@ -1,0 +1,56 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT i.class, i.pretty, i.roles, i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.enabled = TRUE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "class",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "pretty",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "roles",
+        "type_info": "VarcharArray"
+      },
+      {
+        "ordinal": 3,
+        "name": "global",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "base",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "cost",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "end_date",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      false,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "80c239deb0ef7f037f0f71b25ede7525537109cdfae4ae2e6974606e9289c421"
+}

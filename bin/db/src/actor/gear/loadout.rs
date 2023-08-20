@@ -28,7 +28,7 @@ pub async fn store(
         member.0.to_string(),
         loadout,
     );
-    query.execute(&mut *executor).await?;
+    query.execute(&mut **executor).await?;
     Ok(())
 }
 

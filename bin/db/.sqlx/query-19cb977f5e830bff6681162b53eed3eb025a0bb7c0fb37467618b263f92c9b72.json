@@ -1,0 +1,78 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    WITH ins (id, mission, schedule_message_id, start) AS (\n                        INSERT INTO missions_schedule (mission, start) VALUES ($1, $2)\n                        RETURNING\n                            id,\n                            mission,\n                            schedule_message_id,\n                            start\n                    ) SELECT\n                        ins.id,\n                        ins.mission,\n                        ins.schedule_message_id,\n                        ins.start,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        ins\n                    INNER JOIN\n                        missions m ON m.id = ins.mission\n                    WHERE ins.start = $2\n                    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "mission",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "schedule_message_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "start",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "summary",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "briefing",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 7,
+        "name": "typ: MissionType",
+        "type_info": {
+          "Custom": {
+            "name": "mission_type",
+            "kind": {
+              "Enum": [
+                "contract",
+                "subcontract",
+                "training",
+                "special",
+                "other"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "19cb977f5e830bff6681162b53eed3eb025a0bb7c0fb37467618b263f92c9b72"
+}

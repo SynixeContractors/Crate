@@ -29,7 +29,8 @@ nats = { version = "0.24.0" }
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.96"
 serenity = { git = "https://github.com/serenity-rs/serenity", rev = "6e2e70766e1afbce9cd1d4b43e3c6ee3b474f0bf", default-features = false, features = ["rustls_backend"] }
-sqlx = { version = "0.6.3", features = ["offline"] }
+# sqlx = { version = "0.7.1" }
+sqlx = { git = "https://github.com/launchbadge/sqlx", ref = "d0fbe7feff4b3a200cf0453417d5e53bd011643a"}
 strum = "0.24.1"
 time = "0.3.22"
 tokio = "1.28.2"

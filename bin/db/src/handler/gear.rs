@@ -163,12 +163,12 @@ impl Handler for Request {
                 // Store the items
                 actor::gear::locker::store(member, items, &mut tx).await?;
                 // Fetch the player's balance
-                let Some(balance) = actor::gear::bank::balance(member, &mut tx).await? else {
+                let Some(balance) = actor::gear::bank::balance(member, &mut *tx).await? else {
                     respond!(msg, Response::ShopEnter(Err("No balance found".into()))).await?;
                     return Err(anyhow::anyhow!("No balance found"));
                 };
                 // Fetch the player's locker
-                let locker = actor::gear::locker::get(member, &mut tx).await?;
+                let locker = actor::gear::locker::get(member, &mut *tx).await?;
                 tx.commit().await?;
                 respond!(msg, Response::ShopEnter(Ok((locker, balance)))).await?;
                 Ok(())
@@ -192,14 +192,81 @@ impl Handler for Request {
                 // Take the items from the locker
                 actor::gear::bank::shop_purchase(member, items, &mut tx).await?;
                 // Fetch the player's balance
-                let Some(balance) = actor::gear::bank::balance(member, &mut tx).await? else {
+                let Some(balance) = actor::gear::bank::balance(member, &mut *tx).await? else {
                     respond!(msg, Response::ShopPurchase(Err("No balance found".into()))).await?;
                     return Err(anyhow::anyhow!("No balance found"));
                 };
                 // Fetch the player's locker
-                let locker = actor::gear::locker::get(member, &mut tx).await?;
+                let locker = actor::gear::locker::get(member, &mut *tx).await?;
                 tx.commit().await?;
                 respond!(msg, Response::ShopPurchase(Ok((locker, balance)))).await?;
+                Ok(())
+            }
+            Self::SetPrettyName { item, pretty } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::SetPrettyName,
+                    "UPDATE gear_items SET pretty = $2 WHERE class = $1",
+                    item,
+                    pretty,
+                )
+            }
+            Self::GetPrettyName { item } => {
+                fetch_one_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::GetPrettyName,
+                    "SELECT pretty as value FROM gear_items WHERE class = $1",
+                    item,
+                )
+            }
+            Self::FamilySearch { item, relation } => {
+                let query = sqlx::query!(
+                    "SELECT class FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2)",
+                    item,
+                    relation,
+                );
+                match query.fetch_all(&*db).await {
+                    Ok(res) => {
+                        respond!(
+                            msg,
+                            Response::FamilySearch(Ok(res
+                                .into_iter()
+                                .map(|row| row.class)
+                                .collect()))
+                        )
+                        .await?;
+                    }
+                    Err(e) => {
+                        respond!(msg, Response::FamilySearch(Err(e.to_string()))).await?;
+                    }
+                }
+                Ok(())
+            }
+            Self::FamilyCompatibleItems { member, relation } => {
+                let query = sqlx::query!(
+                    "SELECT class FROM gear_items_family WHERE relation = $2 AND class IN (SELECT class FROM gear_locker WHERE member = $1)",
+                    member.to_string(),
+                    relation,
+                );
+                match query.fetch_all(&*db).await {
+                    Ok(res) => {
+                        respond!(
+                            msg,
+                            Response::FamilySearch(Ok(res
+                                .into_iter()
+                                .map(|row| row.class)
+                                .collect()))
+                        )
+                        .await?;
+                    }
+                    Err(e) => {
+                        respond!(msg, Response::FamilySearch(Err(e.to_string()))).await?;
+                    }
+                }
                 Ok(())
             }
         }

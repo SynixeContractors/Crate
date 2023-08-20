@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE missions_maps SET archived = true",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "f8ac5fbedb7c1df86cab2428b5711ad428bfe171f60d5c0c4463dfcd0b02d90c"
+}

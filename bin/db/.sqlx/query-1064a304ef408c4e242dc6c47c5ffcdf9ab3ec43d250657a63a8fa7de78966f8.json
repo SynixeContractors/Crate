@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            valid_for\n                        FROM\n                            certifications\n                        WHERE\n                            id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "valid_for",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "1064a304ef408c4e242dc6c47c5ffcdf9ab3ec43d250657a63a8fa7de78966f8"
+}

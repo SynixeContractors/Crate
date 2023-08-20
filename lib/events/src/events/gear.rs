@@ -98,7 +98,7 @@ pub mod db {
 
         /// Get all items in the shop
         #[allow(clippy::type_complexity)]
-        struct ShopGetAll {} => (Result<HashMap<String, (Option<Vec<String>>, Price)>, String>)
+        struct ShopGetAll {} => (Result<HashMap<String, (Option<String>, Option<Vec<String>>, Price)>, String>)
         /// Get the price of an item in the shop
         struct ShopGetPrice {
             /// The item to get the price of
@@ -133,5 +133,33 @@ pub mod db {
             /// The items to purchase
             items: HashMap<String, i32>,
         } => (Result<(HashMap<String, i32>, i32), String>)
+
+        /// Set the pretty name of an item
+        struct SetPrettyName {
+            /// The item to set the pretty name of
+            item: String,
+            /// The pretty name to set
+            pretty: String,
+        } => (Result<(), String>)
+        /// Get the pretty name of an item
+        struct GetPrettyName {
+            /// The item to get the pretty name of
+            item: String,
+        } => (Result<Option<Option<String>>, String>)
+
+        ///Brodsky will find a weapon family
+        struct FamilySearch {
+            /// The weapon's class
+            item: String,
+            /// Relation
+            relation: String,
+        } => (Result<Vec<String>, String>)
+        ///Brodsky will find items within locker that can be repainted
+        struct FamilyCompatibleItems {
+            /// Member
+            member: UserId,
+            /// Relation
+            relation: String,
+        } => (Result<Vec<String>, String>)
     });
 }

@@ -34,7 +34,7 @@ pub async fn store(
             class,
             quantity,
         );
-        query.execute(&mut *executor).await?;
+        query.execute(&mut **executor).await?;
     }
     Ok(())
 }
@@ -51,7 +51,7 @@ pub async fn take(
             class,
             -quantity,
         );
-        query.execute(&mut *executor).await?;
+        query.execute(&mut **executor).await?;
     }
     Ok(())
 }

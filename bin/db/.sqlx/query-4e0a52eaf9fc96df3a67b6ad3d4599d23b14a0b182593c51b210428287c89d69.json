@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE gear_items SET pretty = $2 WHERE class = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4e0a52eaf9fc96df3a67b6ad3d4599d23b14a0b182593c51b210428287c89d69"
+}

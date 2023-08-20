@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO\n                        campaigns_markers (name, campaign, data)\n                    VALUES\n                        ($1, $2, $3)\n                        ON CONFLICT (name, campaign) DO UPDATE SET\n                        data = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Uuid",
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "49d218afe8836741a986264ef34c8939a6e0478991f048ceadd1fb64cf6defe2"
+}

@@ -15,6 +15,7 @@ pub fn group() -> Group {
         .command("enter", command_enter)
         .command("leave", command_leave)
         .command("purchase", command_purchase)
+        .command("pretty", command_pretty)
 }
 
 fn command_items() {
@@ -38,7 +39,7 @@ fn command_items() {
         if let Err(e) = context.callback_null("crate:gear:shop", "items:clear") {
             error!("error sending shop:items:clear: {:?}", e);
         }
-        for (class, (roles, price)) in items {
+        for (class, (pretty, roles, price)) in items {
             if let Err(e) = context.callback_data(
                 "crate:gear:shop",
                 "items:set",
@@ -48,6 +49,7 @@ fn command_items() {
                         roles.unwrap_or_default().to_arma(),
                         price.to_arma(),
                     ]),
+                    pretty.to_arma(),
                 ],
             ) {
                 error!("error sending shop:items:set: {:?}", e);
@@ -181,5 +183,24 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
             error!("error sending shop:purchase:ok: {:?}", e);
         }
         debug!("shop purchase for {}", discord);
+    });
+}
+
+fn command_pretty(item: String, pretty: String) {
+    if item.is_empty() || pretty.is_empty() {
+        return;
+    }
+    RUNTIME.spawn(async move {
+        let Ok(Ok((db::Response::SetPrettyName(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::gear::db,
+            SetPrettyName {
+                item,
+                pretty,
+            }
+        ).await else {
+            error!("failed to set pretty name over nats");
+            return;
+        };
     });
 }

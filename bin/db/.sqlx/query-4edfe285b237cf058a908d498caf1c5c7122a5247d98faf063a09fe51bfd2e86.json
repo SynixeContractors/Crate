@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    SELECT\n                        DISTINCT ON (certification)\n                        certification,\n                        id,\n                        instructor,\n                        trainee,\n                        notes,\n                        passed,\n                        valid_for,\n                        valid_until,\n                        created\n                    FROM\n                        certifications_trials\n                    WHERE\n                        trainee = $1\n                        AND passed IS TRUE\n                        AND (valid_until > NOW() OR valid_until IS NULL)\n                    ORDER BY certification, created DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "certification",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "instructor",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "trainee",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "notes",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "passed",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "valid_for",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "valid_until",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "created",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "4edfe285b237cf058a908d498caf1c5c7122a5247d98faf063a09fe51bfd2e86"
+}

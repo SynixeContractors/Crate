@@ -4,11 +4,11 @@ use synixe_model::gear::Price;
 
 pub async fn items(
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-) -> Result<HashMap<String, (Option<Vec<String>>, Price)>, anyhow::Error> {
+) -> Result<HashMap<String, (Option<String>, Option<Vec<String>>, Price)>, anyhow::Error> {
     let query = sqlx::query!(
-        "SELECT i.class, i.roles, i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.enabled = TRUE",
+        "SELECT i.class, i.pretty, i.roles, i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.enabled = TRUE",
     );
-    let res = query.fetch_all(&mut *executor).await?;
+    let res = query.fetch_all(&mut **executor).await?;
     Ok(res
         .into_iter()
         .filter(|row| row.base.is_some())
@@ -16,6 +16,7 @@ pub async fn items(
             (
                 row.class,
                 (
+                    row.pretty,
                     row.roles
                         .map(|r| r.into_iter().filter(|r| !r.is_empty()).collect()),
                     Price::new(row.base.unwrap(), row.cost, row.end_date, row.global),
@@ -33,7 +34,7 @@ pub async fn price(
         "SELECT i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.class = $1",
         item,
     );
-    let res = query.fetch_one(&mut *executor).await?;
+    let res = query.fetch_one(&mut **executor).await?;
     Ok(Price::new(
         res.base.unwrap_or(-1),
         res.cost,

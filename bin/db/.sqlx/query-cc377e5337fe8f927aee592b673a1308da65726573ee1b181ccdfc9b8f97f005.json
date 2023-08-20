@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO missions (id, name, summary, briefing, type, archived)\n                                    VALUES ($1, $2, $3, $4, $5, false)\n                                    ON CONFLICT (id) DO UPDATE SET\n                                        name = $2,\n                                        summary = $3,\n                                        briefing = $4,\n                                        type = $5,\n                                        archived = false",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Jsonb",
+        {
+          "Custom": {
+            "name": "mission_type",
+            "kind": {
+              "Enum": [
+                "contract",
+                "subcontract",
+                "training",
+                "special",
+                "other"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cc377e5337fe8f927aee592b673a1308da65726573ee1b181ccdfc9b8f97f005"
+}

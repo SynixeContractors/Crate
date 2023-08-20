@@ -17,7 +17,7 @@ nats = { workspace = true }
 reqwest = { workspace = true, features = ["json"] }
 serde_json = { workspace = true }
 serenity = { workspace = true, features = ["builder"] }
-sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "offline", "time", "uuid", "json"] }
+sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "time", "uuid", "json"] }
 time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }

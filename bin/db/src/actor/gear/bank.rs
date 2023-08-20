@@ -34,7 +34,7 @@ pub async fn deposit(
         reason,
         id.unwrap_or_else(Uuid::new_v4),
     );
-    query.execute(&mut *executor).await?;
+    query.execute(&mut **executor).await?;
     Ok(())
 }
 
@@ -49,7 +49,7 @@ pub async fn deposit_search(
         "SELECT member, amount, reason, id, created FROM gear_bank_deposits WHERE member = $1",
         member.0.to_string(),
     );
-    let res = query.fetch_all(&mut *executor).await?;
+    let res = query.fetch_all(&mut **executor).await?;
     Ok(res
         .into_iter()
         .filter(|row| id.map_or(true, |id| row.id() == id))
@@ -71,7 +71,7 @@ pub async fn transfer(
         amount,
         reason,
     );
-    query.execute(&mut *executor).await?;
+    query.execute(&mut **executor).await?;
     Ok(())
 }
 
@@ -90,7 +90,7 @@ pub async fn purchase(
                 quantity,
                 is_loadout,
             );
-            query.execute(&mut *executor).await?;
+            query.execute(&mut **executor).await?;
         }
     }
     Ok(())
@@ -108,7 +108,7 @@ pub async fn shop_purchase(
             class,
             quantity,
         );
-        query.execute(&mut *executor).await?;
+        query.execute(&mut **executor).await?;
     }
     Ok(())
 }

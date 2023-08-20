@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            id,\n                            array_agg(ci2.member) as instructors,\n                            name,\n                            link,\n                            roles_required,\n                            roles_granted,\n                            valid_for,\n                            c.created\n                        FROM\n                            certifications c\n                        INNER JOIN\n                            certifications_instructors ci\n                        ON\n                            ci.certification = c.id\n                        INNER JOIN certifications_instructors ci2\n                            ON ci2.certification = c.id\n                        WHERE\n                            ci.member = $1\n                        GROUP BY c.id;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "instructors",
+        "type_info": "VarcharArray"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "link",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "roles_required",
+        "type_info": "VarcharArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "roles_granted",
+        "type_info": "VarcharArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "valid_for",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "created",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "9d1f97c7ce97bbfddbb9bd6e289751ff10a137bdfb7ed49f9e87321985c17062"
+}
