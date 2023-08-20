@@ -233,20 +233,20 @@ impl Handler for Request {
                     Ok(res) => {
                         respond!(
                             msg,
-                            Response::FamilySearch(Ok(res.into_iter().map(|row| row.class).collect()))
+                            Response::FamilySearch(Ok(res
+                                .into_iter()
+                                .map(|row| row.class)
+                                .collect()))
                         )
                         .await?;
                     }
                     Err(e) => {
-                        respond!(
-                            msg,
-                            Response::FamilySearch(Err(e.to_string()))
-                        ).await?;
+                        respond!(msg, Response::FamilySearch(Err(e.to_string()))).await?;
                     }
                 }
                 Ok(())
             }
-            Self::FamilyCompatibleItems {member, relation} => {
+            Self::FamilyCompatibleItems { member, relation } => {
                 let query = sqlx::query!(
                     "SELECT class FROM gear_items_family WHERE relation = $2 AND class IN (SELECT class FROM gear_locker WHERE member = $1)",
                     member.to_string(),
@@ -256,15 +256,15 @@ impl Handler for Request {
                     Ok(res) => {
                         respond!(
                             msg,
-                            Response::FamilySearch(Ok(res.into_iter().map(|row| row.class).collect()))
+                            Response::FamilySearch(Ok(res
+                                .into_iter()
+                                .map(|row| row.class)
+                                .collect()))
                         )
                         .await?;
                     }
                     Err(e) => {
-                        respond!(
-                            msg,
-                            Response::FamilySearch(Err(e.to_string()))
-                        ).await?;
+                        respond!(msg, Response::FamilySearch(Err(e.to_string()))).await?;
                     }
                 }
                 Ok(())

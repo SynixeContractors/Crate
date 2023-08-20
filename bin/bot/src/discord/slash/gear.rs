@@ -1,4 +1,6 @@
-use serenity::{builder::CreateApplicationCommand, model::prelude::command::CommandOptionType};
+use serenity::{builder::CreateApplicationCommand, model::prelude::{command::CommandOptionType, application_command::{ApplicationCommandInteraction, CommandDataOption}}, prelude::Context};
+
+use crate::{discord::interaction::{Interaction, Generic}, get_option};
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -26,4 +28,24 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                         .set_autocomplete(true)
                 })
         })
+}
+
+async fn repaint(
+    ctx: &Context,
+    command: &ApplicationCommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let Some(weapon) = get_option!(options, "weapon", String) else {
+        return interaction.reply("Invalid weapon").await;
+    };
+    let Some(paint) = get_option!(options, "paint", String) else {
+        return interaction.reply("Invalid paint").await;
+    };
+    return interaction.reply(
+        format!("The weapon is {} and the paint is {}",
+        weapon,
+        paint,
+    )
+    ).await;
 }
