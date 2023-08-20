@@ -38,6 +38,7 @@ impl EventHandler for Handler {
                     .create_application_command(|command| slash::certifications::register(command))
                     .create_application_command(|command| slash::docker::register(command))
                     .create_application_command(|command| slash::garage::register(command))
+                    .create_application_command(|command| slash::gear::register(command))
                     .create_application_command(|command| slash::github::register(command))
                     .create_application_command(|command| slash::meme::register(command))
                     .create_application_command(|command| slash::missions::register(command))

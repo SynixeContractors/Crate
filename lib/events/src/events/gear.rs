@@ -146,5 +146,20 @@ pub mod db {
             /// The item to get the pretty name of
             item: String,
         } => (Result<Option<String>, String>)
+
+        ///Brodsky will find a weapon family
+        struct FamilySearch {
+            /// The weapon's class
+            item: String,
+            /// Relation
+            relation: String,
+        } => (Result<Vec<String>, String>)
+        ///Brodsky will find items within locker that can be repainted
+        struct FamilyCompatibleItems {
+            /// Member
+            member: UserId,
+            /// Relation
+            relation: String,
+        } => (Result<Vec<String>, String>)
     });
 }

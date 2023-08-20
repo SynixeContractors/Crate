@@ -223,6 +223,52 @@ impl Handler for Request {
                     item,
                 )
             }
+            Self::FamilySearch { item, relation } => {
+                let query = sqlx::query!(
+                    "SELECT class FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2)",
+                    item,
+                    relation,
+                );
+                match query.fetch_all(&*db).await {
+                    Ok(res) => {
+                        respond!(
+                            msg,
+                            Response::FamilySearch(Ok(res.into_iter().map(|row| row.class).collect()))
+                        )
+                        .await?;
+                    }
+                    Err(e) => {
+                        respond!(
+                            msg,
+                            Response::FamilySearch(Err(e.to_string()))
+                        ).await?;
+                    }
+                }
+                Ok(())
+            }
+            Self::FamilyCompatibleItems {member, relation} => {
+                let query = sqlx::query!(
+                    "SELECT class FROM gear_items_family WHERE relation = $2 AND class IN (SELECT class FROM gear_locker WHERE member = $1)",
+                    member.to_string(),
+                    relation,
+                );
+                match query.fetch_all(&*db).await {
+                    Ok(res) => {
+                        respond!(
+                            msg,
+                            Response::FamilySearch(Ok(res.into_iter().map(|row| row.class).collect()))
+                        )
+                        .await?;
+                    }
+                    Err(e) => {
+                        respond!(
+                            msg,
+                            Response::FamilySearch(Err(e.to_string()))
+                        ).await?;
+                    }
+                }
+                Ok(())
+            }
         }
     }
 }
