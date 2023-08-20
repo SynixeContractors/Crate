@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT into garage_log (plate, action, member, data) VALUES ($1, 'attach', $2, $3)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "69ccfe65de2531ae559c4b37375488d8924f2a7659380717d1611bb34c42d9ea"
+}

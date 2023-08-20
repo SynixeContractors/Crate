@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO recruitment_replied (link) VALUES ($1) ON CONFLICT (link) DO UPDATE SET created = NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d4b22c007b1776085c8d65b791c2ad147f53d2548ad5aff73ab9c28a9bb0922c"
+}

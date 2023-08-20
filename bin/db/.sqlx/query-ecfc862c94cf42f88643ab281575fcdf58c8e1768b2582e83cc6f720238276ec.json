@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            member AS value\n                        FROM\n                            members_steam\n                        WHERE\n                            steam = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "value",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "ecfc862c94cf42f88643ab281575fcdf58c8e1768b2582e83cc6f720238276ec"
+}

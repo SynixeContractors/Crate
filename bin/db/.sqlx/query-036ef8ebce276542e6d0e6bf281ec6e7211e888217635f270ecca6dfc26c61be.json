@@ -1,0 +1,65 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    SELECT\n                        COUNT(s.mission) as play_count,\n                        m.id,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM missions m\n                    LEFT JOIN missions_schedule s\n                        ON s.mission = m.id\n                    WHERE\n                        archived = FALSE AND\n                        (\n                            LOWER(m.name) LIKE LOWER($1) OR\n                            LOWER(m.id) LIKE LOWER($1)\n                        )\n                    GROUP BY m.id\n                    ORDER BY m.name ASC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "play_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "summary",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "briefing",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 5,
+        "name": "typ: MissionType",
+        "type_info": {
+          "Custom": {
+            "name": "mission_type",
+            "kind": {
+              "Enum": [
+                "contract",
+                "subcontract",
+                "training",
+                "special",
+                "other"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "036ef8ebce276542e6d0e6bf281ec6e7211e888217635f270ecca6dfc26c61be"
+}

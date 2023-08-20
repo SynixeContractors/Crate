@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 nats = { workspace = true, optional = true }
-sqlx = { workspace = true, optional = true, features = ["postgres", "offline"] }
+sqlx = { workspace = true, optional = true, features = ["postgres"] }
 tracing-subscriber = { workspace = true }
 
 reqwest = { workspace = true, optional = true }

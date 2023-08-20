@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n                        (\n                            SELECT\n                                class\n                            FROM\n                                garage_shop s\n                            WHERE\n                                s.id = COALESCE(v.addon, v.id)\n                        ) as class,\n                        state\n                    FROM\n                        garage_vehicles v\n                    WHERE\n                        v.plate = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "class",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "state",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      true
+    ]
+  },
+  "hash": "32c2dd476f4e3ec8d7dcecea6fab01004bd6f9a1e5cee67b4efdf2d6032fa3e0"
+}

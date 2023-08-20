@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO missions_maps (map, archived)\n                                    VALUES ($1, false)\n                                    ON CONFLICT (map) DO UPDATE SET\n                                        archived = false",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1295389d95ec074d6bfdebb383be142d5449a8c52e731ccac26077c1436c7747"
+}

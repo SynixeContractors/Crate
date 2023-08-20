@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            DISTINCT ON (trainee, certification)\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials as ct\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW())\n                            AND valid_until < NOW() + $1 * INTERVAL '1 day'\n                            AND NOT EXISTS (SELECT 1 FROM certifications_trials as ict WHERE\n                                ct.certification = ict.certification\n                                AND ct.trainee = ict.trainee\n                                AND valid_until > NOW() + $1 * INTERVAL '1 day')\n                        ORDER BY trainee, certification, created DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "instructor",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "trainee",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "certification",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "notes",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "passed",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "valid_for",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "valid_until",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "created",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Float8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "615bd943426fba715272731444c3f65c1c4819677f14285768369e23c5fccc5a"
+}

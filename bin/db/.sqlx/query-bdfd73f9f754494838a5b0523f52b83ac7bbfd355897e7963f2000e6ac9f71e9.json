@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            id,\n                            campaign,\n                            class,\n                            \"group\",\n                            data\n                        FROM\n                            campaigns_units\n                        WHERE\n                            campaign = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "campaign",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "class",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "group",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "data",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "bdfd73f9f754494838a5b0523f52b83ac7bbfd355897e7963f2000e6ac9f71e9"
+}

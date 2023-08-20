@@ -1,0 +1,51 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT scheduled, member, state as \"state: Rsvp\", details FROM missions_schedule_rsvp WHERE scheduled = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "scheduled",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "member",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "state: Rsvp",
+        "type_info": {
+          "Custom": {
+            "name": "missions_schedule_rsvp_state",
+            "kind": {
+              "Enum": [
+                "yes",
+                "maybe",
+                "no"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "details",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "660fca0a7936da8a65c41df8368ccf7d44c98503347e45ba53b9c4cbf30fbb0f"
+}

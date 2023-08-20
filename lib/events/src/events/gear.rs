@@ -133,5 +133,18 @@ pub mod db {
             /// The items to purchase
             items: HashMap<String, i32>,
         } => (Result<(HashMap<String, i32>, i32), String>)
+
+        /// Set the pretty name of an item
+        struct SetPrettyName {
+            /// The item to set the pretty name of
+            item: String,
+            /// The pretty name to set
+            pretty: String,
+        } => (Result<(), String>)
+        /// Get the pretty name of an item
+        struct GetPrettyName {
+            /// The item to get the pretty name of
+            item: String,
+        } => (Result<Option<String>, String>)
     });
 }

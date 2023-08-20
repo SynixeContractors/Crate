@@ -1,0 +1,68 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            DISTINCT ON (trainee, certification)\n                            id,\n                            instructor,\n                            trainee,\n                            certification,\n                            notes,\n                            passed,\n                            valid_for,\n                            valid_until,\n                            created\n                        FROM\n                            certifications_trials\n                        WHERE\n                            passed IS TRUE\n                            AND (valid_until > NOW() OR valid_until IS NULL)\n                        ORDER BY trainee, certification, created DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "instructor",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "trainee",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "certification",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "notes",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "passed",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "valid_for",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "valid_until",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "created",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "a80cd694ff0906d3d1e9f3ba97a307232d766bfbea9158f13727b68666226564"
+}

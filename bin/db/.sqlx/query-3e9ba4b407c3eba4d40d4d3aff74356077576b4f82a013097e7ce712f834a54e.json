@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        INSERT INTO\n                            members_dlc (member, dlc)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT (member)\n                        DO UPDATE\n                            SET dlc = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Int4Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3e9ba4b407c3eba4d40d4d3aff74356077576b4f82a013097e7ce712f834a54e"
+}

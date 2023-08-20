@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    SELECT\n                        v.plate,\n                        v.id,\n                        v.addon,\n                        v.stored,\n                        s.name,\n                        s.class,\n                        (SELECT COUNT(base) FROM garage_shop WHERE base = s.id) as addons\n                    FROM\n                        garage_vehicles v\n                    INNER JOIN\n                        garage_shop s\n                    ON\n                        s.id = v.id\n                    WHERE plate = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "plate",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "addon",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 3,
+        "name": "stored",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "class",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "addons",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "1ce18fd17a5b1363ea677cd2d140ecf22f56a8c6d394f7f25af6ffabe92ae07b"
+}

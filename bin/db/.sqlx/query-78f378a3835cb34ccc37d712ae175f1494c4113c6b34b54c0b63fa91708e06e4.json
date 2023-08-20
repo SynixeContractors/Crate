@@ -1,0 +1,62 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            id,\n                            array_agg(ci.member) as instructors,\n                            name,\n                            link,\n                            roles_required,\n                            roles_granted,\n                            valid_for,\n                            c.created\n                        FROM\n                            certifications c\n                        INNER JOIN\n                            certifications_instructors ci\n                        ON\n                            c.id = ci.certification\n                        GROUP BY\n                            c.id;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "instructors",
+        "type_info": "VarcharArray"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "link",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "roles_required",
+        "type_info": "VarcharArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "roles_granted",
+        "type_info": "VarcharArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "valid_for",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "created",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      null,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "78f378a3835cb34ccc37d712ae175f1494c4113c6b34b54c0b63fa91708e06e4"
+}

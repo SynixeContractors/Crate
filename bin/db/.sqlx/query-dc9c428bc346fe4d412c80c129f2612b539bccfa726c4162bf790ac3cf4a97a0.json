@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            EXISTS(\n                                SELECT\n                                    1\n                                FROM\n                                    certifications_instructors\n                                WHERE\n                                    member = $1\n                                    AND certification = $2\n                            ) AS \"instructor_certified!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "instructor_certified!",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "dc9c428bc346fe4d412c80c129f2612b539bccfa726c4162bf790ac3cf4a97a0"
+}

@@ -1,0 +1,79 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n                        s.id,\n                        s.mission,\n                        s.schedule_message_id,\n                        s.start,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM\n                        missions_schedule s\n                    INNER JOIN\n                        missions m ON m.id = s.mission\n                    WHERE\n                        (LOWER(m.name) = LOWER($1) OR ($3 AND s.mission = '$SUBCON$')) AND\n                        (start > $2 and start < $2 + '2 Day'::INTERVAL)\n                    ORDER BY\n                        mission DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "mission",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "schedule_message_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "start",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "summary",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "briefing",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 7,
+        "name": "typ: MissionType",
+        "type_info": {
+          "Custom": {
+            "name": "mission_type",
+            "kind": {
+              "Enum": [
+                "contract",
+                "subcontract",
+                "training",
+                "special",
+                "other"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "4c2adba6293f2d339d75521c18f060e61c2adbda2ec023deaf399aa5b38efb50"
+}

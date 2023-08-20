@@ -240,7 +240,7 @@ impl Handler for Request {
                         s.id = $1",
                     scheduled,
                 )
-                .fetch_one(&mut tx)
+                .fetch_one(&mut *tx)
                 .await?;
                 let end = scheduled.start + time::Duration::hours(2);
                 for contractor in contractors {
@@ -252,7 +252,7 @@ impl Handler for Request {
                         scheduled.id,
                         end,
                     )
-                    .execute(&mut tx)
+                    .execute(&mut *tx)
                     .await?;
                 }
                 sqlx::query!(
@@ -262,7 +262,7 @@ impl Handler for Request {
                     scheduled.id,
                     end,
                 )
-                .execute(&mut tx)
+                .execute(&mut *tx)
                 .await?;
                 tx.commit().await?;
                 synixe_events::respond!(msg, Response::PayMission(Ok(())))

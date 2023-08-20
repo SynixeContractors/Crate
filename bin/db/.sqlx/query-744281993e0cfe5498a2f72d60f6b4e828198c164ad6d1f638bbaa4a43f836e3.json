@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM campaigns_groups WHERE id = $1 AND campaign = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "744281993e0cfe5498a2f72d60f6b4e828198c164ad6d1f638bbaa4a43f836e3"
+}

@@ -163,12 +163,12 @@ impl Handler for Request {
                 // Store the items
                 actor::gear::locker::store(member, items, &mut tx).await?;
                 // Fetch the player's balance
-                let Some(balance) = actor::gear::bank::balance(member, &mut tx).await? else {
+                let Some(balance) = actor::gear::bank::balance(member, &mut *tx).await? else {
                     respond!(msg, Response::ShopEnter(Err("No balance found".into()))).await?;
                     return Err(anyhow::anyhow!("No balance found"));
                 };
                 // Fetch the player's locker
-                let locker = actor::gear::locker::get(member, &mut tx).await?;
+                let locker = actor::gear::locker::get(member, &mut *tx).await?;
                 tx.commit().await?;
                 respond!(msg, Response::ShopEnter(Ok((locker, balance)))).await?;
                 Ok(())
@@ -192,15 +192,36 @@ impl Handler for Request {
                 // Take the items from the locker
                 actor::gear::bank::shop_purchase(member, items, &mut tx).await?;
                 // Fetch the player's balance
-                let Some(balance) = actor::gear::bank::balance(member, &mut tx).await? else {
+                let Some(balance) = actor::gear::bank::balance(member, &mut *tx).await? else {
                     respond!(msg, Response::ShopPurchase(Err("No balance found".into()))).await?;
                     return Err(anyhow::anyhow!("No balance found"));
                 };
                 // Fetch the player's locker
-                let locker = actor::gear::locker::get(member, &mut tx).await?;
+                let locker = actor::gear::locker::get(member, &mut *tx).await?;
                 tx.commit().await?;
                 respond!(msg, Response::ShopPurchase(Ok((locker, balance)))).await?;
                 Ok(())
+            }
+            Self::SetPrettyName { item, pretty } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::SetPrettyName,
+                    "INSERT INTO gear_pretty (class, pretty) VALUES ($1, $2) ON CONFLICT (class) DO UPDATE SET pretty = $2",
+                    item,
+                    pretty,
+                )
+            }
+            Self::GetPrettyName { item } => {
+                fetch_one_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::GetPrettyName,
+                    "SELECT pretty as value FROM gear_pretty WHERE class = $1",
+                    item,
+                )
             }
         }
     }
