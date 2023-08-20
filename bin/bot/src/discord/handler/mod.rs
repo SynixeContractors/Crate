@@ -61,6 +61,7 @@ impl EventHandler for Handler {
                     "certifications" => slash::certifications::run(&ctx, &command).await,
                     "docker" => slash::docker::run(&ctx, &command).await,
                     "garage" => slash::garage::run(&ctx, &command).await,
+                    "gear" => slash::gear::run(&ctx, &command).await,
                     "github" => slash::github::run(&ctx, &command).await,
                     "meme" => slash::meme::run(&ctx, &command).await,
                     "missions" => slash::missions::run(&ctx, &command).await,

@@ -1,6 +1,16 @@
-use serenity::{builder::CreateApplicationCommand, model::prelude::{command::CommandOptionType, application_command::{ApplicationCommandInteraction, CommandDataOption}}, prelude::Context};
+use serenity::{
+    builder::CreateApplicationCommand,
+    model::prelude::{
+        application_command::{ApplicationCommandInteraction, CommandDataOption},
+        command::CommandOptionType,
+    },
+    prelude::Context,
+};
 
-use crate::{discord::interaction::{Interaction, Generic}, get_option};
+use crate::{
+    discord::interaction::{Generic, Interaction},
+    get_option,
+};
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -30,6 +40,20 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
         })
 }
 
+pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+    let Some (subcommand) = command.data.options.first() else {
+        warn!("No subcommand for gear provided");
+        return Ok(());
+    };
+    if subcommand.kind == CommandOptionType::SubCommand {
+        match subcommand.name.as_str() {
+            "repaint" => repaint(ctx, command, &subcommand.options).await?,
+            _ => unreachable!(),
+        }
+    }
+    Ok(())
+}
+
 async fn repaint(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
@@ -42,10 +66,10 @@ async fn repaint(
     let Some(paint) = get_option!(options, "paint", String) else {
         return interaction.reply("Invalid paint").await;
     };
-    return interaction.reply(
-        format!("The weapon is {} and the paint is {}",
-        weapon,
-        paint,
-    )
-    ).await;
+    return interaction
+        .reply(format!(
+            "The weapon is {} and the paint is {}",
+            weapon, paint,
+        ))
+        .await;
 }
