@@ -7,8 +7,15 @@ switch (_func) do {
         GVAR(shop_items_importing) = createHashMap;
     };
     case "items:set": {
-        (parseSimpleArray _data) params ["_class", "_entry"];
+        (parseSimpleArray _data) params ["_class", "_entry", "_pretty"];
         GVAR(shop_items_importing) set [_class, _entry];
+        private _pretty = getText (configFile >> "CfgWeapons" >> _class >> "displayName");
+        if (_pretty == "") then {
+            _pretty = getText (configFile >> "CfgVehicles" >> _class >> "displayName");
+        };
+        if (_pretty != "") then {
+            EXTCALL("gear:shop:pretty", [_class, _pretty]);
+        };
     };
     case "items:publish": {
         GVAR(shop_items) = +GVAR(shop_items_importing);

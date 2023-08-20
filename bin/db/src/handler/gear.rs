@@ -208,7 +208,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::SetPrettyName,
-                    "INSERT INTO gear_pretty (class, pretty) VALUES ($1, $2) ON CONFLICT (class) DO UPDATE SET pretty = $2",
+                    "UPDATE gear_items SET pretty = $2 WHERE class = $1",
                     item,
                     pretty,
                 )
@@ -219,7 +219,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::GetPrettyName,
-                    "SELECT pretty as value FROM gear_pretty WHERE class = $1",
+                    "SELECT pretty as value FROM gear_items WHERE class = $1",
                     item,
                 )
             }
