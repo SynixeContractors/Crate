@@ -146,6 +146,7 @@ impl Brain {
         }
     }
 
+    #[allow(clippy::significant_drop_tightening)] // false positive on conversations
     pub async fn observe(&self, ctx: &Context, message: &Message) {
         let mut name = message.author.name.clone();
         if let Ok(author) = GUILD.member(&ctx, message.author.id).await {
