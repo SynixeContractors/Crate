@@ -14,6 +14,9 @@ switch (_func) do {
             if (_pretty == "") then {
                 _pretty = getText (configFile >> "CfgVehicles" >> _class >> "displayName");
             };
+            if (_pretty == "") then {
+                _pretty = getText (configFile >> "CfgMagazines" >> _class >> "displayName");
+            };
             if (_pretty != "") then {
                 EXTCALL("gear:shop:pretty", [ARR_2(_class, _pretty)]);
             };
