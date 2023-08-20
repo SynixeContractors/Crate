@@ -208,7 +208,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::SetPrettyName,
-                    "INSERT INTO gear_pretty (class, pretty) VALUES ($1, $2) ON CONFLICT (class) DO UPDATE SET pretty = $2",
+                    "UPDATE gear_items SET pretty = $2 WHERE class = $1",
                     item,
                     pretty,
                 )
@@ -219,7 +219,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::GetPrettyName,
-                    "SELECT pretty as value FROM gear_pretty WHERE class = $1",
+                    "SELECT pretty as value FROM gear_items WHERE class = $1",
                     item,
                 )
             }
@@ -233,20 +233,20 @@ impl Handler for Request {
                     Ok(res) => {
                         respond!(
                             msg,
-                            Response::FamilySearch(Ok(res.into_iter().map(|row| row.class).collect()))
+                            Response::FamilySearch(Ok(res
+                                .into_iter()
+                                .map(|row| row.class)
+                                .collect()))
                         )
                         .await?;
                     }
                     Err(e) => {
-                        respond!(
-                            msg,
-                            Response::FamilySearch(Err(e.to_string()))
-                        ).await?;
+                        respond!(msg, Response::FamilySearch(Err(e.to_string()))).await?;
                     }
                 }
                 Ok(())
             }
-            Self::FamilyCompatibleItems {member, relation} => {
+            Self::FamilyCompatibleItems { member, relation } => {
                 let query = sqlx::query!(
                     "SELECT class FROM gear_items_family WHERE relation = $2 AND class IN (SELECT class FROM gear_locker WHERE member = $1)",
                     member.to_string(),
@@ -256,15 +256,15 @@ impl Handler for Request {
                     Ok(res) => {
                         respond!(
                             msg,
-                            Response::FamilySearch(Ok(res.into_iter().map(|row| row.class).collect()))
+                            Response::FamilySearch(Ok(res
+                                .into_iter()
+                                .map(|row| row.class)
+                                .collect()))
                         )
                         .await?;
                     }
                     Err(e) => {
-                        respond!(
-                            msg,
-                            Response::FamilySearch(Err(e.to_string()))
-                        ).await?;
+                        respond!(msg, Response::FamilySearch(Err(e.to_string()))).await?;
                     }
                 }
                 Ok(())
