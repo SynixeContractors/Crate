@@ -22,7 +22,7 @@ serde_json = { workspace = true }
 serenity = { workspace = true, features = ["builder", "cache", "client", "collector", "gateway", "http", "model", "utils", "rustls_backend"] }
 strum = { workspace = true }
 time = { workspace = true }
-time-tz = "1.0.2"
+time-tz = "2.0.0"
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 uuid = { workspace = true }
