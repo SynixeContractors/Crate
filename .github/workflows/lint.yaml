@@ -21,7 +21,7 @@ jobs:
 
       - run: rustup component add clippy
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           key: clippy
 
