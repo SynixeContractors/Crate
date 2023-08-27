@@ -73,7 +73,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     };
 
     private _spawn = spawns findIf {
-        count nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], _objSize + 0.5] > 0
+        count nearestObjects [getPos _x, ["Land", "Air", "Ship", "Thing"], _objSize + 0.5] == 0
     };
     if (_spawn == -1) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"AreaBlocked")]);
