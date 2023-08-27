@@ -41,13 +41,13 @@ jobs:
         run: hemtt release
 
       - name: Upload Client
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: crate_client.zip
           path: arma/client/releases/crate_client-latest.zip
 
       - name: Upload Server
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: crate_server.zip
           path: arma/server/releases/crate_server-latest.zip
