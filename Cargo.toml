@@ -20,21 +20,21 @@ members = [
 ]
 
 [workspace.dependencies]
-anyhow = "1.0.71"
+anyhow = "1.0.75"
 # arma-rs = "1.9.3"
 arma-rs = { git = "https://github.com/brettmayson/arma-rs", features = ["uuid", "serde_json"] }
-async-trait = "0.1.68"
-axum = "0.6.18"
+async-trait = "0.1.73"
+axum = "0.6.20"
 nats = { version = "0.24.0" }
-serde = { version = "1.0.164", features = ["derive"] }
-serde_json = "1.0.96"
+serde = { version = "1.0.188", features = ["derive"] }
+serde_json = "1.0.105"
 serenity = { git = "https://github.com/serenity-rs/serenity", rev = "6e2e70766e1afbce9cd1d4b43e3c6ee3b474f0bf", default-features = false, features = ["rustls_backend"] }
 # sqlx = { version = "0.7.1" }
 sqlx = { git = "https://github.com/launchbadge/sqlx", ref = "d0fbe7feff4b3a200cf0453417d5e53bd011643a"}
-strum = "0.24.1"
-time = "0.3.22"
-tokio = "1.28.2"
+strum = "0.25.0"
+time = "0.3.28"
+tokio = "1.32.0"
 tracing = { version = "0.1.37", features = ["log"] }
 tracing-subscriber = "0.3.17"
-uuid = "1.3.3"
-reqwest = { version = "0.11.18", features = ["rustls-tls"] }
+uuid = "1.4.1"
+reqwest = { version = "0.11.20", features = ["rustls-tls"] }

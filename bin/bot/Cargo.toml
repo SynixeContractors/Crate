@@ -11,18 +11,18 @@ synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 anyhow = { workspace = true }
-async-openai = "0.12.1"
+async-openai = "0.14.0"
 async-trait = { workspace = true }
 nats = { workspace = true }
 rand = "0.8.5"
 regex = "1.8.4"
-reqwest = { version = "0.11.18", features = ["json"] }
+reqwest = { version = "0.11.20", features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 serenity = { workspace = true, features = ["builder", "cache", "client", "collector", "gateway", "http", "model", "utils", "rustls_backend"] }
 strum = { workspace = true }
 time = { workspace = true }
-time-tz = "1.0.2"
+time-tz = "2.0.0"
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 uuid = { workspace = true }
