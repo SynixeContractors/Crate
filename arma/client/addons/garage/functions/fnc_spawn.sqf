@@ -19,7 +19,6 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     deleteVehicle _vehicle;
 
     private _spawnPos = markerPos _spawn;
-    private _spawnDir = markerDir _spawn;
 
     if (_spawnPos isEqualTo [0,0,0]) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"NoSpawnArea")]);
@@ -32,13 +31,12 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
 
     // Spawn the vehicle
     private _vehicle = _class createVehicle _spawnPos;
-    _vehicle setDir _spawnDir;
+    _vehicle setDir (markerDir _spawn);
     _vehicle setVariable [QGVAR(plate), _plate, true];
     _vehicle setPlateNumber _plate;
-    private _state = createHashMapFromArray _state;
     [{
         _this call EFUNC(common,objectState_load);
-    }, [_vehicle, _state]] call CBA_fnc_execNextFrame;
+    }, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;
 
     EXTCALL("garage:spawn",[ARR_2(_id,"Yes")]);
 
@@ -80,17 +78,15 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     };
     private _spawn = _spawns select _spawn;
 
-    private _spawnPos = getPos _spawn;
-    private _spawnDir = getDir _spawn;
+    [format ["%1 at %2", _class, getPos _spawn]] remoteExec ["systemChat", 0];
 
-    private _vehicle = _class createVehicle _spawnPos;
-    _vehicle setDir _spawnDir;
+    private _vehicle = _class createVehicle (getPos _spawn);
+    _vehicle setDir (getDir _spawn);
     _vehicle setVariable [QGVAR(plate), _plate, true];
     _vehicle setPlateNumber _plate;
-    private _state = createHashMapFromArray _state;
     [{
         _this call EFUNC(common,objectState_load);
-    }, [_vehicle, _state]] call CBA_fnc_execNextFrame;
+    }, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;
 
     EXTCALL("garage:spawn",[ARR_2(_id,"Yes")]);
 
