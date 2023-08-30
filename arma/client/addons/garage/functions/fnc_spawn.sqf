@@ -70,15 +70,13 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
         EXTCALL("garage:spawn",[ARR_2(_id,"NoSpawnArea")]);
     };
 
-    private _spawn = spawns findIf {
+    private _spawn = __spawns findIf {
         count nearestObjects [getPos _x, ["Land", "Air", "Ship", "Thing"], _objSize + 0.5] == 0
     };
     if (_spawn == -1) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"AreaBlocked")]);
     };
     private _spawn = _spawns select _spawn;
-
-    [format ["%1 at %2", _class, getPos _spawn]] remoteExec ["systemChat", 0];
 
     private _vehicle = _class createVehicle (getPos _spawn);
     _vehicle setDir (getDir _spawn);
