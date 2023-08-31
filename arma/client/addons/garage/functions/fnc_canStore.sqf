@@ -20,16 +20,23 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     getPos _vehicle distance getMarkerPos _spawn < 12
 } else {
     private _objType = switch (true) do {
-        case (_vehicle isKindOf "Ship"): { QGVAR(sea) };
-        case (_vehicle isKindOf "Helicopter"): { QGVAR(heli) };
-        case (_vehicle isKindOf "Plane"): { QGVAR(plane) };
-        case (_vehicle isKindOf "Thing"): { QGVAR(thing) };
-        default { QGVAR(land) };
+        case (_vehicle isKindOf "Ship"): { "sea" };
+        case (_vehicle isKindOf "Helicopter"): { "heli" };
+        case (_vehicle isKindOf "Plane"): { "plane" };
+        case (_vehicle isKindOf "Thing"): { "thing" };
+        default { "land" };
     };
 
     private _size = getNumber (configFile >> "CfgVehicles" >> _objType >> QGVAR(size));
 
-    (allMissionObjects _objType) findIf {
+    private _spawns = [];
+    {
+        if (_objType in _x) then {
+            _spawns append allMissionObjects _x;
+        };
+    } forEach SPAWN_TYPES;
+
+    _spawns findIf {
         getPos _vehicle distance _x < (_size * 2)
     } != -1
 }
