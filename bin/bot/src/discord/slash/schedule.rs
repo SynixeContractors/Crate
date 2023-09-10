@@ -185,33 +185,33 @@ pub async fn rsvp_button(
 ) -> serenity::Result<()> {
     let channel = component.channel_id;
     let message = component.message.id;
-    let Ok(Ok((Response::FetchScheduledMessage(Ok(Some(scheduled))), _))) =
-        events_request_2!(
-            bootstrap::NC::get().await,
-            synixe_events::missions::db,
-            FetchScheduledMessage { channel, message }
-        )
-        .await else {
-            error!("Failed to fetch scheduled mission for component");
-            return Ok(());
-        };
+    let Ok(Ok((Response::FetchScheduledMessage(Ok(Some(scheduled))), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        FetchScheduledMessage { channel, message }
+    )
+    .await
+    else {
+        error!("Failed to fetch scheduled mission for component");
+        return Ok(());
+    };
     match component.data.custom_id.as_str() {
         "rsvp_yes" => {
-            let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
-                events_request_2!(
-                    bootstrap::NC::get().await,
-                    synixe_events::missions::db,
-                    AddMissionRsvp {
-                        scheduled: scheduled.id,
-                        member: component.user.id.to_string(),
-                        rsvp: Rsvp::Yes,
-                        details: None,
-                    }
-                )
-                .await else {
-                    error!("Failed to add mission rsvp for component");
-                    return Ok(());
-                };
+            let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) = events_request_2!(
+                bootstrap::NC::get().await,
+                synixe_events::missions::db,
+                AddMissionRsvp {
+                    scheduled: scheduled.id,
+                    member: component.user.id.to_string(),
+                    rsvp: Rsvp::Yes,
+                    details: None,
+                }
+            )
+            .await
+            else {
+                error!("Failed to add mission rsvp for component");
+                return Ok(());
+            };
             if let Err(e) = component
                 .create_interaction_response(&ctx.http, |r| {
                     r.kind(InteractionResponseType::DeferredUpdateMessage)
@@ -237,21 +237,21 @@ pub async fn rsvp_button(
                 warn!("No reason provided for rsvp_maybe");
                 return Ok(());
             };
-            let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
-                events_request_2!(
-                    bootstrap::NC::get().await,
-                    synixe_events::missions::db,
-                    AddMissionRsvp {
-                        scheduled: scheduled.id,
-                        member: component.user.id.to_string(),
-                        rsvp: Rsvp::Maybe,
-                        details: Some(reason),
-                    }
-                )
-                .await else {
-                    error!("Failed to add mission rsvp for component");
-                    return Ok(());
-                };
+            let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) = events_request_2!(
+                bootstrap::NC::get().await,
+                synixe_events::missions::db,
+                AddMissionRsvp {
+                    scheduled: scheduled.id,
+                    member: component.user.id.to_string(),
+                    rsvp: Rsvp::Maybe,
+                    details: Some(reason),
+                }
+            )
+            .await
+            else {
+                error!("Failed to add mission rsvp for component");
+                return Ok(());
+            };
             interaction.reply("Thank you for your RSVP!").await?;
         }
         "rsvp_no" => {
@@ -270,37 +270,38 @@ pub async fn rsvp_button(
                 warn!("No reason provided for rsvp_no");
                 return Ok(());
             };
-            let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) =
-                events_request_2!(
-                    bootstrap::NC::get().await,
-                    synixe_events::missions::db,
-                    AddMissionRsvp {
-                        scheduled: scheduled.id,
-                        member: component.user.id.to_string(),
-                        rsvp: Rsvp::No,
-                        details: Some(reason),
-                    }
-                )
-                .await else {
-                    error!("Failed to add mission rsvp for component");
-                    return Ok(());
-                };
+            let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) = events_request_2!(
+                bootstrap::NC::get().await,
+                synixe_events::missions::db,
+                AddMissionRsvp {
+                    scheduled: scheduled.id,
+                    member: component.user.id.to_string(),
+                    rsvp: Rsvp::No,
+                    details: Some(reason),
+                }
+            )
+            .await
+            else {
+                error!("Failed to add mission rsvp for component");
+                return Ok(());
+            };
             interaction.reply("Thank you for your RSVP!").await?;
         }
         _ => {
             warn!("Unknown component id: {}", component.data.custom_id);
         }
     }
-    let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) =
-            events_request_2!(
-                bootstrap::NC::get().await,
-                synixe_events::missions::db,
-                FetchMissionRsvps { scheduled: scheduled.id }
-            )
-            .await
-        else {
-            return Ok(());
-        };
+    let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        FetchMissionRsvps {
+            scheduled: scheduled.id
+        }
+    )
+    .await
+    else {
+        return Ok(());
+    };
     if let Err(e) = component
         .channel_id
         .edit_message(&ctx.http, message, |s| {
@@ -366,7 +367,8 @@ async fn new(
             search: Some(mission_id.to_string()),
         }
     )
-    .await else {
+    .await
+    else {
         error!("failed to fetch mission list");
         return Ok(());
     };
@@ -435,10 +437,19 @@ async fn new_autocomplete(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
-            search: Some(focus.value.as_ref().expect("value should always exist").as_str().expect("discord should enforce string type").to_string())
+            search: Some(
+                focus
+                    .value
+                    .as_ref()
+                    .expect("value should always exist")
+                    .as_str()
+                    .expect("discord should enforce string type")
+                    .to_string()
+            )
         }
     )
-    .await else {
+    .await
+    else {
         error!("failed to fetch mission list");
         return Ok(());
     };
@@ -497,7 +508,8 @@ async fn subcon(
             synixe_events::missions::db,
             IsScheduled { date }
         )
-        .await else {
+        .await
+    else {
         return interaction
             .reply(format!(
                 "A mission is already scheduled at <t:{}:F>, or the check failed.",
@@ -514,11 +526,10 @@ async fn subcon(
             date
         }
     )
-    .await else {
+    .await
+    else {
         error!("failed to schedule mission");
-        return interaction
-            .reply("Failed to schedule mission")
-            .await;
+        return interaction.reply("Failed to schedule mission").await;
     };
     let channel =
         get_option!(options, "channel", Channel).map_or_else(|| LOOKING_TO_PLAY, |c| c.id);
@@ -548,9 +559,10 @@ async fn subcon(
                 })
             })
         })
-        .await else {
-            return interaction.reply("Failed to post mission").await;
-        };
+        .await
+    else {
+        return interaction.reply("Failed to post mission").await;
+    };
     tokio::time::sleep(Duration::from_millis(500)).await;
     if channel
         .create_public_thread(&ctx, sched.id, |t| t.name(&scheduled.name))
@@ -657,15 +669,28 @@ pub async fn remove(
     else {
         return interaction.reply("Failed to fetch missions").await;
     };
-    let Some(scheduled_id) = interaction.choice("Select Mission", &missions.iter().map(|m| (format!(
-        "{} - {}",
-        m.mission,
-        &m
-            .start
-            .to_timezone(NEW_YORK)
-            .format(&time_format)
-            .expect("Should have been able to format time")
-    ), m.id)).collect()).await? else {
+    let Some(scheduled_id) = interaction
+        .choice(
+            "Select Mission",
+            &missions
+                .iter()
+                .map(|m| {
+                    (
+                        format!(
+                            "{} - {}",
+                            m.mission,
+                            &m.start
+                                .to_timezone(NEW_YORK)
+                                .format(&time_format)
+                                .expect("Should have been able to format time")
+                        ),
+                        m.id,
+                    )
+                })
+                .collect(),
+        )
+        .await?
+    else {
         return interaction.reply("Cancelled").await;
     };
     let scheduled_id = scheduled_id.parse().expect("Should have been a valid uuid");
@@ -795,13 +820,14 @@ async fn post(
         .await?;
     match confirm {
         Confirmation::Yes => {
-            let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) =
-                events_request_2!(
-                    bootstrap::NC::get().await,
-                    synixe_events::missions::db,
-                    FetchMissionRsvps { scheduled: scheduled.id }
-                )
-                .await
+            let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) = events_request_2!(
+                bootstrap::NC::get().await,
+                synixe_events::missions::db,
+                FetchMissionRsvps {
+                    scheduled: scheduled.id
+                }
+            )
+            .await
             else {
                 return interaction.reply("Failed to fetch rsvps").await;
             };
@@ -833,15 +859,17 @@ async fn post(
                         })
                     })
                 })
-                .await else {
-                    return interaction.reply("Failed to post mission").await;
-                };
+                .await
+            else {
+                return interaction.reply("Failed to post mission").await;
+            };
             tokio::time::sleep(Duration::from_millis(500)).await;
             let Ok(sched_thread) = channel
                 .create_public_thread(&ctx, sched.id, |t| t.name(&scheduled.name))
-                .await else {
-                    return interaction.reply("Failed to create thread").await;
-                };
+                .await
+            else {
+                return interaction.reply("Failed to create thread").await;
+            };
             tokio::time::sleep(Duration::from_millis(100)).await;
             if let Some(content) = scheduled.briefing().get("old") {
                 if let Err(e) = sched_thread

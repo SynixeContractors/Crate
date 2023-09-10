@@ -148,7 +148,8 @@ async fn update(
             reason: reason.to_string(),
         }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to update reputation").await;
     };
     interaction
@@ -163,15 +164,19 @@ async fn view(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
-    let Ok(Ok((reputation::db::Response::CurrentReputation(Ok(Some(Some(current_rep)))), _))) = events_request_2!(
-        bootstrap::NC::get().await,
-        synixe_events::reputation::db,
-        CurrentReputation {
-            at: OffsetDateTime::now_utc(),
-        }
-    )
-    .await else {
-        return interaction.reply("Failed to retrieve current reputation").await;
+    let Ok(Ok((reputation::db::Response::CurrentReputation(Ok(Some(Some(current_rep)))), _))) =
+        events_request_2!(
+            bootstrap::NC::get().await,
+            synixe_events::reputation::db,
+            CurrentReputation {
+                at: OffsetDateTime::now_utc(),
+            }
+        )
+        .await
+    else {
+        return interaction
+            .reply("Failed to retrieve current reputation")
+            .await;
     };
     interaction
         .reply(format!("Current reputation: {current_rep:.2}"))

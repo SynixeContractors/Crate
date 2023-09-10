@@ -6,7 +6,7 @@ pub async fn find_members(
     names: &[String],
 ) -> Result<(Vec<(String, UserId)>, Vec<String>), String> {
     let Ok(members) = GUILD.members(&ctx.http, None, None).await else {
-        return Err("Failed to fetch members".to_string())
+        return Err("Failed to fetch members".to_string());
     };
     let mut ids = Vec::with_capacity(names.len());
     let mut unknown = Vec::new();

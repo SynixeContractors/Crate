@@ -23,13 +23,12 @@ fn save(campaign: Uuid, id: Uuid, data: HashMap<String, Value>) {
                 campaign,
                 id,
                 data: serde_json::Value::Object(
-                    data
-                        .into_iter()
-                        .map(|(k, v)| (k, v.to_json()))
-                        .collect()
+                    data.into_iter().map(|(k, v)| (k, v.to_json())).collect()
                 ),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to save group");
             return;
         };
@@ -46,10 +45,10 @@ fn load(campaign: Uuid) {
         let Ok(Ok((Response::Groups(Ok(groups)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            Groups {
-                campaign,
-            }
-        ).await else {
+            Groups { campaign }
+        )
+        .await
+        else {
             error!("failed to load groups");
             return;
         };
@@ -74,11 +73,10 @@ fn delete(campaign: Uuid, id: Uuid) {
         let Ok(Ok((Response::DeleteGroup(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            DeleteGroup {
-                campaign,
-                id,
-            }
-        ).await else {
+            DeleteGroup { campaign, id }
+        )
+        .await
+        else {
             error!("failed to delete group");
             return;
         };

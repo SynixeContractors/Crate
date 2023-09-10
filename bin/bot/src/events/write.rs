@@ -70,9 +70,10 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             };
             let Ok(mut member) = GUILD.member(&client, member).await else {
                 error!("Failed to get member");
-                if let Err(e) = respond!(msg, write::Response::EnsureRoles(Err(String::from(
-                    "Failed to get member"
-                ))))
+                if let Err(e) = respond!(
+                    msg,
+                    write::Response::EnsureRoles(Err(String::from("Failed to get member")))
+                )
                 .await
                 {
                     error!("Failed to respond to NATS: {}", e);

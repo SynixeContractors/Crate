@@ -128,10 +128,16 @@ async fn trial(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         ListInstructor {
-            member: command.member.as_ref().expect("member should always exist on guild commands").user.id
+            member: command
+                .member
+                .as_ref()
+                .expect("member should always exist on guild commands")
+                .user
+                .id
         }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to fetch certifications").await;
     };
     if certs.is_empty() {
@@ -210,7 +216,8 @@ async fn trial_autocomplete(
             member: autocomplete.user.id
         }
     )
-    .await else {
+    .await
+    else {
         error!("Failed to fetch certifications");
         return Ok(());
     };
@@ -314,7 +321,8 @@ async fn list(
         synixe_events::certifications::db,
         List {}
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to fetch certifications").await;
     };
     if available {

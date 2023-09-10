@@ -29,7 +29,8 @@ async fn calendar() -> impl IntoResponse {
         synixe_events::missions::db,
         UpcomingSchedule {}
     )
-    .await else {
+    .await
+    else {
         return "Error".to_string();
     };
     let mut calendar = Calendar::new();

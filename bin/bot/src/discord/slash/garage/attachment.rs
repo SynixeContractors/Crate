@@ -56,7 +56,12 @@ pub async fn attach(
         AttachAddon {
             plate: plate.clone(),
             addon,
-            member: command.member.as_ref().expect("member should always exist on guild commands").user.id
+            member: command
+                .member
+                .as_ref()
+                .expect("member should always exist on guild commands")
+                .user
+                .id
         }
     )
     .await
@@ -101,7 +106,12 @@ pub async fn detach(
         synixe_events::garage::db,
         DetachAddon {
             plate: plate.clone(),
-            member: command.member.as_ref().expect("member should always exist on guild commands").user.id
+            member: command
+                .member
+                .as_ref()
+                .expect("member should always exist on guild commands")
+                .user
+                .id
         }
     )
     .await

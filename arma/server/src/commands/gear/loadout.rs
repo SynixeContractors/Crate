@@ -29,13 +29,11 @@ fn command_get(discord: String, steam: String) {
             LoadoutGet {
                 member: UserId(discord),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to fetch loadout over nats");
-            if let Err(e) = context.callback_data(
-                "crate:gear:loadout",
-                "get:err",
-                vec![steam],
-            ) {
+            if let Err(e) = context.callback_data("crate:gear:loadout", "get:err", vec![steam]) {
                 error!("error sending loadout:get:err: {:?}", e);
             }
             return;
@@ -78,11 +76,7 @@ fn command_store(discord: String, steam: String, loadout: String) {
         .await
         else {
             error!("failed to save loadout over nats");
-            if let Err(e) = context.callback_data(
-                "crate:gear:loadout",
-                "store:err",
-                vec![steam],
-            ) {
+            if let Err(e) = context.callback_data("crate:gear:loadout", "store:err", vec![steam]) {
                 error!("error sending loadout:store:err: {:?}", e);
             }
             return;

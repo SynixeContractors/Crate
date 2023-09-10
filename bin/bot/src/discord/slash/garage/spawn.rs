@@ -42,7 +42,9 @@ pub async fn spawn(
 
     let plate = get_option!(options, "vehicle", String);
     let Some(plate) = plate else {
-        return interaction.reply("Required option not provided: vehicle").await;
+        return interaction
+            .reply("Required option not provided: vehicle")
+            .await;
     };
     let Ok(Ok((db::Response::FetchVehicleInfo(Ok(info)), _))) = events_request_2!(
         bootstrap::NC::get().await,
@@ -51,7 +53,8 @@ pub async fn spawn(
             plate: plate.to_string(),
         }
     )
-    .await else {
+    .await
+    else {
         error!("Failed to fetch spawn info");
         return Ok(());
     };
@@ -72,7 +75,9 @@ pub async fn spawn(
             state,
             plate: plate.to_string(),
         }
-    ).await else {
+    )
+    .await
+    else {
         error!("Failed to spawn vehicle");
         interaction.reply("Failed to spawn vehicle").await?;
         return Ok(());

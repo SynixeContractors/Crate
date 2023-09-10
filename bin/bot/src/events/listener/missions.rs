@@ -18,7 +18,9 @@ impl Listener for Publish {
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::StartingSoon { scheduled, minutes } => {
-                let Some((channel, message)) = scheduled.message() else { return Ok(()) };
+                let Some((channel, message)) = scheduled.message() else {
+                    return Ok(());
+                };
                 if (-1..=1).contains(minutes) {
                     // Remove RSVP buttons
                     if let Err(e) = channel
@@ -27,7 +29,11 @@ impl Listener for Publish {
                     {
                         error!("Failed to edit message: {}", e);
                     }
-                    let Some(thread) = channel.message(&CacheAndHttp::get().http, message).await?.thread else {
+                    let Some(thread) = channel
+                        .message(&CacheAndHttp::get().http, message)
+                        .await?
+                        .thread
+                    else {
                         return Ok(());
                     };
                     thread
@@ -41,7 +47,9 @@ impl Listener for Publish {
                         FetchMissionRsvps {
                             scheduled: scheduled.id,
                         }
-                    ).await else {
+                    )
+                    .await
+                    else {
                         error!("failed to fetch mission rsvps");
                         return Ok(());
                     };

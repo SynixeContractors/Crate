@@ -36,7 +36,9 @@ fn command_friendly_shot(member: String, target: String, weapon: String) {
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit friendly Shot over nats");
             return;
         };
@@ -60,7 +62,9 @@ fn command_civilian_shot(member: String, target: String, weapon: String) {
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit civilian Shot over nats");
             return;
         };
@@ -84,7 +88,9 @@ fn command_unarmed_shot(member: String, target: String, weapon: String) {
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit unarmed Shot over nats");
             return;
         };
@@ -108,7 +114,9 @@ fn command_surrendering_shot(member: String, target: String, weapon: String) {
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit surrendering Shot over nats");
             return;
         };
@@ -132,7 +140,9 @@ fn command_captive_shot(member: String, target: String, weapon: String) {
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit captive Shot over nats");
             return;
         };
@@ -156,7 +166,9 @@ fn command_unconscious_shot(member: String, target: String, weapon: String) {
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit unconscious Shot over nats");
             return;
         };
@@ -180,7 +192,9 @@ fn command_building_damaged(member: String, target: String, weapon: String) {
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit building damaged over nats");
             return;
         };
@@ -203,7 +217,9 @@ fn command_friendly_healed(member: String, target: String) {
                 member: UserId(discord),
                 target: target.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit friendly healed over nats");
             return;
         };
@@ -226,7 +242,9 @@ fn command_unfriendly_healed(member: String, target: String) {
                 member: UserId(discord),
                 target: target.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit friendly healed over nats");
             return;
         };
@@ -249,7 +267,9 @@ fn command_civilian_healed(member: String, target: String) {
                 member: UserId(discord),
                 target: target.to_string(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to submit civilian healed over nats");
             return;
         };

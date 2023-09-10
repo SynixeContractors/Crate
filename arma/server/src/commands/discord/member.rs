@@ -29,26 +29,40 @@ fn command_get(steam: String, name: String) {
             FromSteam {
                 steam: steam.clone(),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to fetch discord id over nats");
-            if let Err(e) = context.callback_data("crate:discord", "member:get:err", vec![
-                arma_rs::Value::String(steam),
-            ]) {
+            if let Err(e) = context.callback_data(
+                "crate:discord",
+                "member:get:err",
+                vec![arma_rs::Value::String(steam)],
+            ) {
                 error!("error sending member:get:err: {:?}", e);
             }
             return;
         };
-        let discord_id = if let Ok(Some(discord_id)) = resp { discord_id } else {
-            let Ok(Ok((discord::info::Response::MemberByName(Ok(Some(discord_id))), _))) = events_request_5!(
-                bootstrap::NC::get().await,
-                synixe_events::discord::info,
-                MemberByName {
-                    name: name.clone(),
-                }
-            ).await else {
+        let discord_id = if let Ok(Some(discord_id)) = resp {
+            discord_id
+        } else {
+            let Ok(Ok((discord::info::Response::MemberByName(Ok(Some(discord_id))), _))) =
+                events_request_5!(
+                    bootstrap::NC::get().await,
+                    synixe_events::discord::info,
+                    MemberByName { name: name.clone() }
+                )
+                .await
+            else {
                 error!("failed to check for name match over nats");
-                audit(format!("Steam account {steam} failed to link using the name {name}")).await;
-                if let Err(e) = context.callback_data("crate:discord", "member:get:needs_link", vec![steam.clone()]) {
+                audit(format!(
+                    "Steam account {steam} failed to link using the name {name}"
+                ))
+                .await;
+                if let Err(e) = context.callback_data(
+                    "crate:discord",
+                    "member:get:needs_link",
+                    vec![steam.clone()],
+                ) {
                     error!("error sending member:get:needs_link: {:?}", e);
                 }
                 return;
@@ -60,23 +74,32 @@ fn command_get(steam: String, name: String) {
                     steam: steam.clone(),
                     member: discord_id,
                 }
-            ).await else {
+            )
+            .await
+            else {
                 error!("failed to save discord id over nats");
-                if let Err(e) = context.callback_data("crate:discord", "member:get:err", vec![
-                    arma_rs::Value::String(steam),
-                ]) {
+                if let Err(e) = context.callback_data(
+                    "crate:discord",
+                    "member:get:err",
+                    vec![arma_rs::Value::String(steam)],
+                ) {
                     error!("error sending member:get:err: {:?}", e);
                 }
                 return;
             };
-            audit(format!("Steam account {steam} is now linked to <@{discord_id}>")).await;
+            audit(format!(
+                "Steam account {steam} is now linked to <@{discord_id}>"
+            ))
+            .await;
             discord_id.to_string()
         };
         let Ok(discord_id_u64) = discord_id.parse::<u64>() else {
             error!("failed to parse discord id");
-            if let Err(e) = context.callback_data("crate:discord", "member:get:err", vec![
-                arma_rs::Value::String(steam),
-            ]) {
+            if let Err(e) = context.callback_data(
+                "crate:discord",
+                "member:get:err",
+                vec![arma_rs::Value::String(steam)],
+            ) {
                 error!("error sending member:get:err: {:?}", e);
             }
             return;
@@ -87,36 +110,49 @@ fn command_get(steam: String, name: String) {
             MemberRoles {
                 user: UserId(discord_id_u64),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to fetch discord roles over nats");
-            if let Err(e) = context.callback_data("crate:discord", "member:get:err", vec![
-                arma_rs::Value::String(steam),
-            ]) {
+            if let Err(e) = context.callback_data(
+                "crate:discord",
+                "member:get:err",
+                vec![arma_rs::Value::String(steam)],
+            ) {
                 error!("error sending member:get:err: {:?}", e);
             }
             return;
         };
         let Ok(roles) = resp else {
             error!("failed to fetch discord roles over nats");
-            if let Err(e) = context.callback_data("crate:discord", "member:get:err", vec![
-                arma_rs::Value::String(steam),
-            ]) {
+            if let Err(e) = context.callback_data(
+                "crate:discord",
+                "member:get:err",
+                vec![arma_rs::Value::String(steam)],
+            ) {
                 error!("error sending member:get:err: {:?}", e);
             }
             return;
         };
-        STEAM_CACHE.write().await.insert(discord_id.clone(), steam.clone());
-        if let Err(e) = context.callback_data("crate:discord", "member:get:ok", vec![
-            arma_rs::Value::String(steam),
-            arma_rs::Value::String(discord_id),
-            arma_rs::Value::Array(
-                roles
-                    .into_iter()
-                    .map(|r| r.to_string())
-                    .map(arma_rs::Value::String)
-                    .collect(),
-            ),
-        ]) {
+        STEAM_CACHE
+            .write()
+            .await
+            .insert(discord_id.clone(), steam.clone());
+        if let Err(e) = context.callback_data(
+            "crate:discord",
+            "member:get:ok",
+            vec![
+                arma_rs::Value::String(steam),
+                arma_rs::Value::String(discord_id),
+                arma_rs::Value::Array(
+                    roles
+                        .into_iter()
+                        .map(|r| r.to_string())
+                        .map(arma_rs::Value::String)
+                        .collect(),
+                ),
+            ],
+        ) {
             error!("error sending member:get:ok: {:?}", e);
         }
     });
@@ -135,7 +171,9 @@ fn command_save_dlc(discord: String, dlc: Vec<u32>) {
                 member: UserId(discord_u64),
                 dlc,
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to save dlc over nats");
             return;
         };

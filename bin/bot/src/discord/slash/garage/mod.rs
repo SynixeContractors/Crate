@@ -166,8 +166,13 @@ async fn view(
     let Ok(Ok((Response::FetchStoredVehicles(Ok(vehicles)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
-        FetchStoredVehicles{ stored: None, plate: None }
-    ).await else {
+        FetchStoredVehicles {
+            stored: None,
+            plate: None
+        }
+    )
+    .await
+    else {
         return interaction.reply("Error fetching vehicle assests").await;
     };
 

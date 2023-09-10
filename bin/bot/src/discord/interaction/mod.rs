@@ -159,9 +159,11 @@ impl<'a> Interaction<'a> {
             .collect_limit(1)
             .await
         else {
-            self.interaction.edit_followup_message(&self.ctx, message.id, |r| {
-                r.content("Didn't receive a response").components(|c| c)
-            }).await?;
+            self.interaction
+                .edit_followup_message(&self.ctx, message.id, |r| {
+                    r.content("Didn't receive a response").components(|c| c)
+                })
+                .await?;
             return Ok(None);
         };
         interaction
@@ -202,9 +204,11 @@ impl<'a> Interaction<'a> {
             .collect_limit(1)
             .await
         else {
-            self.interaction.edit_followup_message(&self.ctx, message.id, |r| {
-                r.content("Didn't receive a response").components(|c| c)
-            }).await?;
+            self.interaction
+                .edit_followup_message(&self.ctx, message.id, |r| {
+                    r.content("Didn't receive a response").components(|c| c)
+                })
+                .await?;
             return Ok(Confirmation::Timeout);
         };
         interaction

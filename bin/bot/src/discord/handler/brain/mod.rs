@@ -65,19 +65,18 @@ impl Brain {
                         .cloned()
                         .unwrap_or_default(),
                 )
-                .functions(
-                    if max_iter == 1 {
-                        Vec::new()
-                    } else {
-                        self.functions
-                            .iter()
-                            .map(|f| f.to_openai())
-                            .collect::<Vec<_>>()
-                    }
-                )
-                .build() else {
-                    return None;
-                };
+                .functions(if max_iter == 1 {
+                    Vec::new()
+                } else {
+                    self.functions
+                        .iter()
+                        .map(|f| f.to_openai())
+                        .collect::<Vec<_>>()
+                })
+                .build()
+            else {
+                return None;
+            };
             match self.client.chat().create(request).await {
                 Ok(response) => {
                     let response = response.choices.get(0)?.message.clone();
@@ -88,25 +87,44 @@ impl Brain {
                             .iter()
                             .find(|f| f.name() == function_call.name)
                         else {
-                            self.conversations.write().await.entry(message.channel_id).or_default().push(
-                                ChatCompletionRequestMessageArgs::default()
-                                    .role(Role::Function)
-                                    .name(function_call.name)
-                                    .content("{\"error\": \"function not found\"}")
-                                    .build()
-                                    .expect("prompt is valid"),
-                            );
+                            self.conversations
+                                .write()
+                                .await
+                                .entry(message.channel_id)
+                                .or_default()
+                                .push(
+                                    ChatCompletionRequestMessageArgs::default()
+                                        .role(Role::Function)
+                                        .name(function_call.name)
+                                        .content("{\"error\": \"function not found\"}")
+                                        .build()
+                                        .expect("prompt is valid"),
+                                );
                             continue;
                         };
-                        let Some(response) = function.run(ctx, function_call.arguments.parse().expect("chatgpt returns valid arguments")).await else {
-                            self.conversations.write().await.entry(message.channel_id).or_default().push(
-                                ChatCompletionRequestMessageArgs::default()
-                                    .role(Role::Function)
-                                    .name(function_call.name)
-                                    .content("{\"error\": \"function failed as called\"}")
-                                    .build()
-                                    .expect("prompt is valid"),
-                            );
+                        let Some(response) = function
+                            .run(
+                                ctx,
+                                function_call
+                                    .arguments
+                                    .parse()
+                                    .expect("chatgpt returns valid arguments"),
+                            )
+                            .await
+                        else {
+                            self.conversations
+                                .write()
+                                .await
+                                .entry(message.channel_id)
+                                .or_default()
+                                .push(
+                                    ChatCompletionRequestMessageArgs::default()
+                                        .role(Role::Function)
+                                        .name(function_call.name)
+                                        .content("{\"error\": \"function failed as called\"}")
+                                        .build()
+                                        .expect("prompt is valid"),
+                                );
                             continue;
                         };
                         println!("ask response: {response}");

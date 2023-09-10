@@ -174,31 +174,37 @@ impl EventHandler for Handler {
             }
         }
         if new.roles.contains(&synixe_meta::discord::role::RECRUIT) {
-            let Ok(Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _))) = events_request_2!(
-                bootstrap::NC::get().await,
-                synixe_events::gear::db,
-                BankDepositSearch {
-                    member: new.user.id,
-                    reason: Some("Starting Funds".to_string()),
-                    id: None,
-                }
-            ).await else {
+            let Ok(Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _))) =
+                events_request_2!(
+                    bootstrap::NC::get().await,
+                    synixe_events::gear::db,
+                    BankDepositSearch {
+                        member: new.user.id,
+                        reason: Some("Starting Funds".to_string()),
+                        id: None,
+                    }
+                )
+                .await
+            else {
                 error!("Cannot get starting funds for {}", new.user.id);
                 return;
             };
             if !deposits.is_empty() {
                 return;
             }
-            let Ok(Ok((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _))) = events_request_2!(
-                bootstrap::NC::get().await,
-                synixe_events::gear::db,
-                BankDepositNew {
-                    member: new.user.id,
-                    reason: "Starting Funds".to_string(),
-                    amount: 3500,
-                    id: Some(Uuid::nil()),
-                }
-            ).await else {
+            let Ok(Ok((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _))) =
+                events_request_2!(
+                    bootstrap::NC::get().await,
+                    synixe_events::gear::db,
+                    BankDepositNew {
+                        member: new.user.id,
+                        reason: "Starting Funds".to_string(),
+                        amount: 3500,
+                        id: Some(Uuid::nil()),
+                    }
+                )
+                .await
+            else {
                 error!("Failed to create starting funds {}", new.user.id);
                 return;
             };

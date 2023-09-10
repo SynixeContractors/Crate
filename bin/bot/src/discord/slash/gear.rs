@@ -41,7 +41,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
 }
 
 pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
-    let Some (subcommand) = command.data.options.first() else {
+    let Some(subcommand) = command.data.options.first() else {
         warn!("No subcommand for gear provided");
         return Ok(());
     };

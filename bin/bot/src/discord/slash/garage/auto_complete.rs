@@ -54,29 +54,29 @@ pub async fn autocomplete(
             }
             _ => Ok(()),
         },
-        Command::Attach | Command::Detach => {
-            match focus.name.as_str() {
-                "vehicle" => {
-                    autocomplete_vehicle(
-                        ctx,
-                        autocomplete,
-                        command,
-                        focus_value,
-                        VehicleValueType::Plate,
-                    )
-                    .await
-                }
-                "addon" => autocomplete_addon(ctx, autocomplete, {
+        Command::Attach | Command::Detach => match focus.name.as_str() {
+            "vehicle" => {
+                autocomplete_vehicle(
+                    ctx,
+                    autocomplete,
+                    command,
+                    focus_value,
+                    VehicleValueType::Plate,
+                )
+                .await
+            }
+            "addon" => {
+                autocomplete_addon(ctx, autocomplete, {
                     let Some(vehicle) = get_option!(&subcommand.options, "vehicle", String) else {
                         error!("Missing vehicle option");
                         return Ok(());
                     };
                     vehicle.to_string()
                 })
-                .await,
-                _ => Ok(()),
+                .await
             }
-        }
+            _ => Ok(()),
+        },
         Command::Spawn => match focus.name.as_str() {
             "vehicle" => {
                 autocomplete_vehicle(
@@ -109,8 +109,13 @@ async fn autocomplete_vehicle(
     let Ok(Ok((Response::FetchStoredVehicles(Ok(mut vehicles)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
-        FetchStoredVehicles { stored: Some(true), plate: Some(filter) }
-    ).await else {
+        FetchStoredVehicles {
+            stored: Some(true),
+            plate: Some(filter)
+        }
+    )
+    .await
+    else {
         error!("Failed to fetch vehicles");
         return Ok(());
     };
@@ -161,17 +166,18 @@ async fn autocomplete_color(
         .find(|o| o.name == "vehicle")
         .and_then(|o| o.value.as_ref())
         .and_then(synixe_events::serde_json::Value::as_str)
-        .map(|v| Uuid::parse_str(v).expect("Invalid UUID")) else {
+        .map(|v| Uuid::parse_str(v).expect("Invalid UUID"))
+    else {
         error!("Missing vehicle option");
         return Ok(());
     };
     let Ok(Ok((Response::FetchVehicleColors(Ok(colors)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
-        FetchVehicleColors {
-            id,
-        }
-    ).await else {
+        FetchVehicleColors { id }
+    )
+    .await
+    else {
         error!("Failed to fetch colors");
         return Ok(());
     };
@@ -200,7 +206,9 @@ async fn autocomplete_addon(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchStoredAddons { plate }
-    ).await else {
+    )
+    .await
+    else {
         error!("Failed to fetch addons");
         return Ok(());
     };
@@ -230,8 +238,12 @@ async fn autocomplete_shop(
     let Ok(Ok((Response::FetchShopAssets(Ok(assets)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
-        FetchShopAssets { search: filter.search() }
-    ).await else {
+        FetchShopAssets {
+            search: filter.search()
+        }
+    )
+    .await
+    else {
         error!("Failed to fetch all shop assests");
         return Ok(());
     };
@@ -248,7 +260,8 @@ async fn autocomplete_shop(
                 .find(|o| o.name == "vehicle")
                 .and_then(|o| o.value.as_ref())
                 .and_then(synixe_events::serde_json::Value::as_str)
-                .map(|v| Uuid::parse_str(v).expect("Invalid UUID")) else {
+                .map(|v| Uuid::parse_str(v).expect("Invalid UUID"))
+            else {
                 error!("Missing vehicle option");
                 return Ok(());
             };

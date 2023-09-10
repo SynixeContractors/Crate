@@ -25,11 +25,12 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
         }
         retry -= 1;
         let meme: MemeResponse = {
-            let Ok(res) = reqwest::get("https://meme-api.com/gimme/memes+dankmemes+armamemes")
-                .await else {
-                    error!("Cannot get meme");
-                    continue;
-                };
+            let Ok(res) =
+                reqwest::get("https://meme-api.com/gimme/memes+dankmemes+armamemes").await
+            else {
+                error!("Cannot get meme");
+                continue;
+            };
             let Ok(json) = res.json().await else {
                 error!("Cannot parse meme");
                 continue;

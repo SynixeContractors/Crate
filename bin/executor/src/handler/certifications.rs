@@ -27,7 +27,9 @@ impl Handler for Request {
                     bootstrap::NC::get().await,
                     synixe_events::certifications::db,
                     AllExpiring { days: 30 }
-                ).await else {
+                )
+                .await
+                else {
                     return Ok(());
                 };
                 for trial in expiring {
@@ -73,7 +75,9 @@ impl Handler for Request {
                     bootstrap::NC::get().await,
                     synixe_events::certifications::db,
                     AllActive {}
-                ).await else {
+                )
+                .await
+                else {
                     return Ok(());
                 };
                 if let Ok(Ok((db::Response::List(Ok(certs)), _))) = events_request_5!(

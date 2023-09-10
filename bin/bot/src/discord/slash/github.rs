@@ -100,7 +100,8 @@ async fn invite(
             discord: command.user.id,
         }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to fetch github user").await;
     };
 
@@ -120,7 +121,8 @@ async fn invite(
             github: github.clone(),
         }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to link GitHub account").await;
     };
 

@@ -29,7 +29,9 @@ fn command_items() {
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopGetAll {}
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to fetch shop items over nats");
             if let Err(e) = context.callback_null("crate:gear:shop", "items:err") {
                 error!("error sending shop:items:err: {:?}", e);
@@ -81,13 +83,11 @@ fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>
                 member: UserId(discord),
                 items,
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to enter shop over nats");
-            if let Err(e) = context.callback_data(
-                "crate:gear:shop",
-                "enter:err",
-                vec![steam],
-            ) {
+            if let Err(e) = context.callback_data("crate:gear:shop", "enter:err", vec![steam]) {
                 error!("error sending shop:enter:err: {:?}", e);
             }
             return;
@@ -124,13 +124,11 @@ fn command_leave(discord: String, steam: String, loadout: String, mut items: Has
                 loadout: loadout.replace("\"\"", "\""),
                 items,
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to leave shop over nats");
-            if let Err(e) = context.callback_data(
-                "crate:gear:shop",
-                "leave:err",
-                vec![steam],
-            ) {
+            if let Err(e) = context.callback_data("crate:gear:shop", "leave:err", vec![steam]) {
                 error!("error sending shop:leave:err: {:?}", e);
             }
             return;
@@ -164,13 +162,11 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
                 member: UserId(discord),
                 items,
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to purchase items over nats");
-            if let Err(e) = context.callback_data(
-                "crate:gear:shop",
-                "purchase:err",
-                vec![steam],
-            ) {
+            if let Err(e) = context.callback_data("crate:gear:shop", "purchase:err", vec![steam]) {
                 error!("error sending shop:purchase:err: {:?}", e);
             }
             return;
@@ -194,11 +190,10 @@ fn command_pretty(item: String, pretty: String) {
         let Ok(Ok((db::Response::SetPrettyName(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
-            SetPrettyName {
-                item,
-                pretty,
-            }
-        ).await else {
+            SetPrettyName { item, pretty }
+        )
+        .await
+        else {
             error!("failed to set pretty name over nats");
             return;
         };

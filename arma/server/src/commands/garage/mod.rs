@@ -55,10 +55,7 @@ fn store(ctx: Context, plate: String, state: HashMap<String, Value>, discord: St
                 plate: plate.to_string(),
                 member: UserId(discord),
                 state: serde_json::Value::Object(
-                    state
-                        .into_iter()
-                        .map(|(k, v)| (k, v.to_json()))
-                        .collect()
+                    state.into_iter().map(|(k, v)| (k, v.to_json())).collect()
                 ),
             }
         )

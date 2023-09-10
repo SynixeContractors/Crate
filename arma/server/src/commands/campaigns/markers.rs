@@ -23,13 +23,12 @@ fn save(campaign: Uuid, name: String, data: HashMap<String, Value>) {
                 campaign,
                 name,
                 data: serde_json::Value::Object(
-                    data
-                        .into_iter()
-                        .map(|(k, v)| (k, v.to_json()))
-                        .collect()
+                    data.into_iter().map(|(k, v)| (k, v.to_json())).collect()
                 ),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to save marker");
             return;
         };
@@ -46,10 +45,10 @@ fn load(campaign: Uuid) {
         let Ok(Ok((Response::Markers(Ok(markers)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            Markers {
-                campaign,
-            }
-        ).await else {
+            Markers { campaign }
+        )
+        .await
+        else {
             error!("failed to load markers");
             return;
         };
@@ -74,11 +73,10 @@ fn delete(campaign: Uuid, name: String) {
         let Ok(Ok((Response::DeleteMarker(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            DeleteMarker {
-                campaign,
-                name,
-            }
-        ).await else {
+            DeleteMarker { campaign, name }
+        )
+        .await
+        else {
             error!("failed to delete marker");
             return;
         };

@@ -58,11 +58,10 @@ impl BrainFunction for GetBalance {
             let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
-                BankBalance {
-                    member,
-                }
+                BankBalance { member }
             )
-            .await else {
+            .await
+            else {
                 return None;
             };
 
@@ -75,21 +74,19 @@ impl BrainFunction for GetBalance {
             let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
-                LockerBalance {
-                    member,
-                }
+                LockerBalance { member }
             )
-            .await else {
+            .await
+            else {
                 return None;
             };
-            let  Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_2!(
+            let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
-                LoadoutBalance {
-                    member,
-                }
+                LoadoutBalance { member }
             )
-            .await else {
+            .await
+            else {
                 return None;
             };
 

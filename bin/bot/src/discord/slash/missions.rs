@@ -100,7 +100,8 @@ async fn load(
             search: Some(mission_id.to_string()),
         }
     )
-    .await else {
+    .await
+    else {
         error!("failed to fetch mission list");
         return Ok(());
     };
@@ -147,10 +148,19 @@ async fn load_autocomplete(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
-            search: Some(focus.value.as_ref().expect("value should always exist").as_str().expect("discord should enforce string type").to_string())
+            search: Some(
+                focus
+                    .value
+                    .as_ref()
+                    .expect("value should always exist")
+                    .as_str()
+                    .expect("discord should enforce string type")
+                    .to_string()
+            )
         }
     )
-    .await else {
+    .await
+    else {
         error!("failed to fetch mission list");
         return Ok(());
     };

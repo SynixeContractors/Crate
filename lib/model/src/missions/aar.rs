@@ -61,15 +61,28 @@ impl Aar {
                 return Err("Could not determine mission type. Valid types are Contract, Subcontract, Training, and Special.".to_string());
             }
         };
-        let Some(mission_name) = lines.get(mission_type) else { return Err(format!("Could not find mission name for mission type {mission_type}")) };
+        let Some(mission_name) = lines.get(mission_type) else {
+            return Err(format!(
+                "Could not find mission name for mission type {mission_type}"
+            ));
+        };
 
-        let Some(date) = lines.get("date") else { return Err("Could not find date.".to_string()) };
-        let Ok(date) = Date::parse(date, time::macros::format_description!("[year]-[month]-[day]")) else {
-            return Err(format!("Could not parse date: {date}. Make sure it's in the format YYYY-MM-DD."));
+        let Some(date) = lines.get("date") else {
+            return Err("Could not find date.".to_string());
+        };
+        let Ok(date) = Date::parse(
+            date,
+            time::macros::format_description!("[year]-[month]-[day]"),
+        ) else {
+            return Err(format!(
+                "Could not parse date: {date}. Make sure it's in the format YYYY-MM-DD."
+            ));
         };
 
         let mut contractors: Vec<String> = {
-            let Some(contractors) = lines.get("contractors") else { return Err("Could not find contractors.".to_string()) };
+            let Some(contractors) = lines.get("contractors") else {
+                return Err("Could not find contractors.".to_string());
+            };
             contractors
                 .split(',')
                 .map(|s| s.trim().to_string())
@@ -97,11 +110,15 @@ impl Aar {
         let result = regex.captures_iter(&lower);
         let mut payment = Payment::default();
         for mat in result {
-            let Some(mat1) = mat.get(1) else { return Err("Could not find payment amount.".to_string()) };
+            let Some(mat1) = mat.get(1) else {
+                return Err("Could not find payment amount.".to_string());
+            };
             let Ok(amount) = mat1.as_str().parse::<i32>() else {
                 return Err(format!("Could not parse payment amount: {}", mat1.as_str()));
             };
-            let Some(mat2) = mat.get(2) else { return Err("Could not find payment type.".to_string()) };
+            let Some(mat2) = mat.get(2) else {
+                return Err("Could not find payment type.".to_string());
+            };
             let kind = mat2.as_str();
             match kind {
                 "no" => payment.no_combat = amount,

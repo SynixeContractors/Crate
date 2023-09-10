@@ -27,13 +27,12 @@ fn save(campaign: Uuid, id: Uuid, class: String, data: HashMap<String, Value>) {
                 id,
                 class,
                 data: serde_json::Value::Object(
-                    data
-                        .into_iter()
-                        .map(|(k, v)| (k, v.to_json()))
-                        .collect()
+                    data.into_iter().map(|(k, v)| (k, v.to_json())).collect()
                 ),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to save object");
             return;
         };
@@ -50,10 +49,10 @@ fn load(campaign: Uuid) {
         let Ok(Ok((Response::Objects(Ok(objects)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            Objects {
-                campaign,
-            }
-        ).await else {
+            Objects { campaign }
+        )
+        .await
+        else {
             error!("failed to load objects");
             return;
         };
@@ -82,11 +81,10 @@ fn delete(campaign: Uuid, id: Uuid) {
         let Ok(Ok((Response::DeleteObject(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            DeleteObject {
-                campaign,
-                id,
-            }
-        ).await else {
+            DeleteObject { campaign, id }
+        )
+        .await
+        else {
             error!("failed to delete object");
             return;
         };

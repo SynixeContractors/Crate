@@ -29,7 +29,8 @@ async fn balance(Path(id): Path<u64>) -> impl IntoResponse {
             member: serenity::model::prelude::UserId(id),
         }
     )
-    .await else {
+    .await
+    else {
         return "Error".to_string();
     };
     balance.to_string()

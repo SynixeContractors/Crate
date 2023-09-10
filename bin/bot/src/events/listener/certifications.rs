@@ -23,10 +23,9 @@ impl Listener for Publish {
                     if let Ok(Ok((Response::List(Ok(certs)), _))) =
                         events_request_5!(nats, synixe_events::certifications::db, List {}).await
                     {
-                        let Some(cert) = certs
-                            .iter()
-                            .find(|cert| cert.id == trial.certification) else {
-                                warn!("Certification not found: {}", trial.certification);
+                        let Some(cert) = certs.iter().find(|cert| cert.id == trial.certification)
+                        else {
+                            warn!("Certification not found: {}", trial.certification);
                             return Ok(());
                         };
                         let mut member = GUILD
@@ -50,7 +49,13 @@ impl Listener for Publish {
                         }
                     }
                 } else {
-                    let Ok(dm) = trial.trainee.parse::<UserId>().expect("Failed to parse user id").create_dm_channel(CacheAndHttp::get()).await else {
+                    let Ok(dm) = trial
+                        .trainee
+                        .parse::<UserId>()
+                        .expect("Failed to parse user id")
+                        .create_dm_channel(CacheAndHttp::get())
+                        .await
+                    else {
                         warn!("Failed to create DM channel for {}", trial.trainee);
                         return Ok(());
                     };
@@ -64,16 +69,16 @@ impl Listener for Publish {
                 if let Ok(Ok((Response::List(Ok(certs)), _))) =
                     events_request_5!(nats, synixe_events::certifications::db, List {}).await
                 {
-                    let Some(cert) = certs
-                        .iter()
-                        .find(|cert| cert.id == trial.certification) else {
-                            warn!("Certification not found: {}", trial.certification);
-                            return Ok(());
+                    let Some(cert) = certs.iter().find(|cert| cert.id == trial.certification)
+                    else {
+                        warn!("Certification not found: {}", trial.certification);
+                        return Ok(());
                     };
 
                     let Ok(mut member) = GUILD
                         .member(CacheAndHttp::get(), trial.trainee.parse::<UserId>()?)
-                        .await else {
+                        .await
+                    else {
                         warn!("Failed to get member: {}", trial.trainee);
                         return Ok(());
                     };
@@ -100,10 +105,11 @@ impl Listener for Publish {
                         .parse::<UserId>()
                         .expect("Failed to parse user id")
                         .create_dm_channel(CacheAndHttp::get())
-                        .await else {
-                            error!("Failed to create dm channel");
-                            return Ok(());
-                        };
+                        .await
+                    else {
+                        error!("Failed to create dm channel");
+                        return Ok(());
+                    };
                     if let Err(e) = dm.say(&*CacheAndHttp::get(), &message).await {
                         error!("Failed to send message: {}", e);
                     }

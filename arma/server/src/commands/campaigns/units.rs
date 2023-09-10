@@ -25,13 +25,12 @@ fn save(campaign: Uuid, id: Uuid, class: String, group: Uuid, data: HashMap<Stri
                 class,
                 group,
                 data: serde_json::Value::Object(
-                    data
-                        .into_iter()
-                        .map(|(k, v)| (k, v.to_json()))
-                        .collect()
+                    data.into_iter().map(|(k, v)| (k, v.to_json())).collect()
                 ),
             }
-        ).await else {
+        )
+        .await
+        else {
             error!("failed to save unit");
             return;
         };
@@ -48,10 +47,10 @@ fn load(campaign: Uuid) {
         let Ok(Ok((Response::Units(Ok(units)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            Units {
-                campaign,
-            }
-        ).await else {
+            Units { campaign }
+        )
+        .await
+        else {
             error!("failed to load units");
             return;
         };
@@ -81,11 +80,10 @@ fn delete(campaign: Uuid, id: Uuid) {
         let Ok(Ok((Response::DeleteUnit(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            DeleteUnit {
-                campaign,
-                id,
-            }
-        ).await else {
+            DeleteUnit { campaign, id }
+        )
+        .await
+        else {
             error!("failed to delete unit");
             return;
         };

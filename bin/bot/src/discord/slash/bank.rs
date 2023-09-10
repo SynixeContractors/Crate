@@ -131,11 +131,10 @@ async fn balance(
     let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
-        BankBalance {
-            member: user_id,
-        }
+        BankBalance { member: user_id }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to fetch balance").await;
     };
 
@@ -152,21 +151,19 @@ async fn balance(
     let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
-        LockerBalance {
-            member: user_id,
-        }
+        LockerBalance { member: user_id }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to fetch locker balance").await;
     };
-    let  Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_2!(
+    let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
-        LoadoutBalance {
-            member: user_id,
-        }
+        LoadoutBalance { member: user_id }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to fetch loudout balance").await;
     };
     interaction
@@ -205,14 +202,20 @@ async fn transfer(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankTransferNew {
-            source: command.member.as_ref().expect("member should always exist on guild commands").user.id,
+            source: command
+                .member
+                .as_ref()
+                .expect("member should always exist on guild commands")
+                .user
+                .id,
             target: user.id,
             #[allow(clippy::cast_possible_truncation)]
             amount: *amount as i32,
             reason: reason.clone(),
         }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to transfer money").await;
     };
     let reply = format!(
@@ -224,7 +227,9 @@ async fn transfer(
 
     let Ok(private_channel) = user.create_dm_channel(&ctx).await else {
         error!("Unable to create DM channel for transfer notification");
-        return interaction.reply(&format!("{reply}, but I wasn't able to notify them")).await;
+        return interaction
+            .reply(&format!("{reply}, but I wasn't able to notify them"))
+            .await;
     };
 
     if let Err(e) = private_channel
@@ -291,12 +296,13 @@ async fn fine(
         BankDepositNew {
             member: user.id,
             #[allow(clippy::cast_possible_truncation)]
-            amount:  -*amount as i32,
+            amount: -*amount as i32,
             reason: format!("{}: {reason}", command.user.id),
             id: None,
         }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to fine").await;
     };
     let reply = format!(
@@ -308,7 +314,9 @@ async fn fine(
 
     let Ok(private_channel) = user.create_dm_channel(&ctx).await else {
         error!("Unable to create DM channel for fine notification");
-        return interaction.reply(&format!("{reply}, but I wasn't able to notify them")).await;
+        return interaction
+            .reply(&format!("{reply}, but I wasn't able to notify them"))
+            .await;
     };
 
     if let Err(e) = private_channel

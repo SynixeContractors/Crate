@@ -32,18 +32,23 @@ pub async fn run_aar_ids(
     command: &ApplicationCommandInteraction,
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), &[]);
-    let Ok(msg) = command.channel_id
-        .message(&ctx.http, MessageId::from(command.data.target_id.expect("Should only be possible to run this command on a message")))
+    let Ok(msg) = command
+        .channel_id
+        .message(
+            &ctx.http,
+            MessageId::from(
+                command
+                    .data
+                    .target_id
+                    .expect("Should only be possible to run this command on a message"),
+            ),
+        )
         .await
     else {
-        return interaction
-            .reply("Failed to find message")
-            .await;
+        return interaction.reply("Failed to find message").await;
     };
     let Some(data) = msg.content.lines().find(|l| l.starts_with("Contractors: ")) else {
-        return interaction
-            .reply("Failed to find contractors list")
-            .await;
+        return interaction.reply("Failed to find contractors list").await;
     };
     let names = data
         .trim_start_matches("Contractors: ")
@@ -51,9 +56,7 @@ pub async fn run_aar_ids(
         .map(std::string::ToString::to_string)
         .collect::<Vec<_>>();
     let Ok((found, unknown)) = find_members(ctx, &names).await else {
-        return interaction
-            .reply("Failed to find members")
-            .await;
+        return interaction.reply("Failed to find members").await;
     };
     if unknown.is_empty() {
         let ids = found
@@ -84,22 +87,27 @@ pub async fn run_aar_pay(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, Generic::Application(command), &[]);
     let Some(member) = command.member.as_ref() else {
-        return interaction
-            .reply("Failed to get member")
-            .await;
+        return interaction.reply("Failed to get member").await;
     };
     if !member.roles.contains(&STAFF) {
         return interaction
             .reply("You must be staff to use this command")
             .await;
     }
-    let Ok(message) = command.channel_id
-        .message(&ctx.http, MessageId::from(command.data.target_id.expect("Should only be possible to run this command on a message")))
+    let Ok(message) = command
+        .channel_id
+        .message(
+            &ctx.http,
+            MessageId::from(
+                command
+                    .data
+                    .target_id
+                    .expect("Should only be possible to run this command on a message"),
+            ),
+        )
         .await
     else {
-        return interaction
-            .reply("Failed to find message")
-            .await;
+        return interaction.reply("Failed to find message").await;
     };
     let aar = match Aar::from_message(&message.content) {
         Ok(aar) => aar,
@@ -107,14 +115,19 @@ pub async fn run_aar_pay(
             return interaction.reply(format!(":confused: I couldn't parse that AAR. Please make sure you're using the template. Error: {e}")).await;
         }
     };
-    let Ok(Ok((reputation::db::Response::CurrentReputation(Ok(Some(Some(current_rep)))), _))) = events_request_2!(
-        bootstrap::NC::get().await,
-        synixe_events::reputation::db,
-        CurrentReputation {
-            at: aar.date().with_time(time::Time::from_hms(0, 0, 0).expect("Will always be valid date")).assume_offset(offset!(UTC)),
-        }
-    )
-    .await else {
+    let Ok(Ok((reputation::db::Response::CurrentReputation(Ok(Some(Some(current_rep)))), _))) =
+        events_request_2!(
+            bootstrap::NC::get().await,
+            synixe_events::reputation::db,
+            CurrentReputation {
+                at: aar
+                    .date()
+                    .with_time(time::Time::from_hms(0, 0, 0).expect("Will always be valid date"))
+                    .assume_offset(offset!(UTC)),
+            }
+        )
+        .await
+    else {
         return interaction.reply("Failed to get get reputation").await;
     };
     #[allow(clippy::cast_possible_truncation)]
@@ -137,9 +150,7 @@ pub async fn run_aar_pay(
             .await;
     };
     let Ok((ids, unknown)) = find_members(ctx, aar.contractors()).await else {
-        return interaction
-            .reply("Failed to find members")
-            .await;
+        return interaction.reply("Failed to find members").await;
     };
     if !unknown.is_empty() {
         return interaction
@@ -158,25 +169,37 @@ pub async fn run_aar_pay(
             subcon: aar.typ() == MissionType::SubContract,
         }
     )
-    .await else {
+    .await
+    else {
         return interaction.reply("Failed to find scheduled date").await;
     };
     let Ok(Ok((reputation::db::Response::MissionCompleted(Ok(_)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::reputation::db,
-        MissionCompleted { member: member.user.id, mission: scheduled.id.to_string(), reputation: reputation.parse().expect("Should only receive the number values from the reputation choices") }
-    ).await else {
+        MissionCompleted {
+            member: member.user.id,
+            mission: scheduled.id.to_string(),
+            reputation: reputation
+                .parse()
+                .expect("Should only receive the number values from the reputation choices")
+        }
+    )
+    .await
+    else {
         return interaction.reply("Failed to set reputation").await;
     };
-    let Some(payment) = interaction.choice("Select Payment Type", &PaymentType::as_choices()).await? else {
-        return interaction
-            .reply("Failed to get payment type")
-            .await;
+    let Some(payment) = interaction
+        .choice("Select Payment Type", &PaymentType::as_choices())
+        .await?
+    else {
+        return interaction.reply("Failed to get payment type").await;
     };
-    let Some(payment) = PaymentType::from_i32(payment.parse().expect("Should only receive the number values from the payment type choices")) else {
-        return interaction
-            .reply("Failed to get payment type")
-            .await;
+    let Some(payment) = PaymentType::from_i32(
+        payment
+            .parse()
+            .expect("Should only receive the number values from the payment type choices"),
+    ) else {
+        return interaction.reply("Failed to get payment type").await;
     };
     if interaction
         .confirm(&format!("```{}```", &aar.show_math(payment, current_rep)))
@@ -210,9 +233,7 @@ pub async fn run_aar_pay(
             if let Some((channel, message)) = scheduled.message() {
                 if let Some(thread) = channel.message(&ctx.http, message).await?.thread {
                     let Ok((found, unknown)) = find_members(ctx, aar.contractors()).await else {
-                        return interaction
-                            .reply("Failed to find members")
-                            .await;
+                        return interaction.reply("Failed to find members").await;
                     };
                     thread
                         .send_message(&ctx.http, |m| {

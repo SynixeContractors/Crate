@@ -12,9 +12,10 @@ pub async fn start() {
 
     let Ok(sub) = nats
         .queue_subscribe("synixe.publish.>", &format!("arma-server-{}", *SERVER_ID))
-        .await else {
-            panic!("failed to subscribe to publish events");
-        };
+        .await
+    else {
+        panic!("failed to subscribe to publish events");
+    };
     while let Some(msg) = sub.next().await {
         synixe_events::listener!(
             msg.clone(),
