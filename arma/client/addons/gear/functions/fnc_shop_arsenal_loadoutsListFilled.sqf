@@ -35,6 +35,6 @@ for "_lbIndex" from 0 to (_rows - 1) do {
         _loadout = [_loadout, []];
     };
 
-    private _cost = [_loadout call FUNC(loadout_items), 0] call FUNC(shop_items_cost);
+    private _cost = [[_loadout] call FUNC(loadout_items), 0, false] call FUNC(shop_items_cost);
     _contentPanelCtrl lnbSetText [[_lbIndex, 10], format ["$%1", _cost]];
 };
