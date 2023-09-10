@@ -27,7 +27,6 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
         default { "land" };
     };
 
-    private _size = getNumber (configFile >> "CfgVehicles" >> _objType >> QGVAR(size));
 
     private _spawns = [];
     {
@@ -37,6 +36,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     } forEach SPAWN_TYPES;
 
     _spawns findIf {
-        getPos _vehicle distance _x < (_size * 2)
+        private _size = getNumber (configFile >> "CfgVehicles" >> _x >> QGVAR(size));
+        getPos _vehicle distance _x < (_size * 1.5)
     } != -1
 }
