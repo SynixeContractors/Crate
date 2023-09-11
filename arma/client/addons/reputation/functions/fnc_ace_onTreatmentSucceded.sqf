@@ -4,6 +4,7 @@ params ["_medic", "_patient", "_bodyPart", "_classname", "_itemUser", "_usedItem
 
 if !(isPlayer _medic) exitWith {};
 if (isPlayer _patient) exitWith {};
+if !(alive _patient) exitWith {};
 if (_patient getVariable [QGVAR(hasHealed), false]) exitWith {};
 
 private _discord = _medic getVariable [QEGVAR(discord,id), ""];

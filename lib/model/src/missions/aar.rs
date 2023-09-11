@@ -28,6 +28,7 @@ pub struct Aar {
 }
 
 impl Aar {
+    #[allow(clippy::too_many_lines)]
     /// Parses an AAR from a discord message.
     ///
     /// # Errors

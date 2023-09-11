@@ -164,6 +164,9 @@ impl ScheduledMission {
 
     #[must_use]
     /// Get the briefing as a [`HashMap`]
+    ///
+    /// # Panics
+    /// If the briefing is not a valid [`HashMap`]
     pub fn briefing(&self) -> HashMap<String, String> {
         let briefing: Map<String, Value> =
             serde_json::from_value(self.briefing.clone()).expect("always a valid map");

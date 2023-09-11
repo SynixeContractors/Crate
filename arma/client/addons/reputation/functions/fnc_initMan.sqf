@@ -6,6 +6,7 @@ _unit addEventHandler ["Hit", {
     params ["_unit", "_source", "_damage", "_instigator"];
     if (_unit isEqualTo _instigator) exitWith {};
     if !(isPlayer _instigator) exitWith {};
+    if (isRemoteControlling _instigator) exitWith {};
 
     private _discord = _instigator getVariable [QEGVAR(discord,id), ""];
     if (_discord isEqualTo "") exitWith {};
