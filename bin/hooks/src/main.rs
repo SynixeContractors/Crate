@@ -40,11 +40,13 @@ async fn main() {
 async fn check_token<B: Send>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
     let token = std::env::var("HOOKS_TOKEN").expect("HOOKS_TOKEN must be set");
     let Some(token_header) = req.headers().get("X-Token") else {
+        warn!("Missing X-Token header");
         return Err(StatusCode::UNAUTHORIZED);
     };
     if token_header.to_str().unwrap() == token {
         Ok(next.run(req).await)
     } else {
+        warn!("Invalid X-Token header");
         Err(StatusCode::UNAUTHORIZED)
     }
 }
