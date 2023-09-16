@@ -3,6 +3,7 @@ use synixe_proc::events_request_5;
 
 pub async fn list_updated() -> StatusCode {
     let nats = bootstrap::NC::get().await;
+    info!("missions list updated hook called");
     if let Err(e) = events_request_5!(nats, synixe_events::missions::db, UpdateMissionList {}).await
     {
         error!("Failed to send UpdateMissionList event to db: {}", e);

@@ -71,7 +71,7 @@ hats = [
     "khk",
     "m81",
     "mc",
-    "rhr",
+    "rgr",
     "tan",
     "wht",
 ]
