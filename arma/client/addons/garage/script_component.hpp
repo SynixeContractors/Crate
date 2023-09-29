@@ -14,9 +14,9 @@
 #include "\synixe\crate_client\addons\main\script_macros.hpp"
 
 #define SPAWN_TYPES [ \
-    QGVAR(heli_small), GVAR(heli_medium), GVAR(heli_large), \
-    QGVAR(plane_small), GVAR(plane_medium), GVAR(plane_large), \
-    QGVAR(sea_small), GVAR(sea_medium), GVAR(sea_large), \
-    QGVAR(land_small), GVAR(land_medium), GVAR(land_large), \
-    QGVAR(thing_small), GVAR(thing_medium), GVAR(thing_large) \
+    QGVAR(heli_small), QGVAR(heli_medium), QGVAR(heli_large), \
+    QGVAR(plane_small), QGVAR(plane_medium), QGVAR(plane_large), \
+    QGVAR(sea_small), QGVAR(sea_medium), QGVAR(sea_large), \
+    QGVAR(land_small), QGVAR(land_medium), QGVAR(land_large), \
+    QGVAR(thing_small), QGVAR(thing_medium), QGVAR(thing_large) \
 ]
