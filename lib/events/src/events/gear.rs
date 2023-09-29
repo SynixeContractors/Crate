@@ -43,6 +43,8 @@ pub mod db {
             member: UserId,
             /// The items to store
             items: HashMap<String, i32>,
+            /// Reason
+            reason: String,
         } => (Result<(), String>)
         /// Take items from a member's locker
         struct LockerTake {
@@ -50,6 +52,8 @@ pub mod db {
             member: UserId,
             /// The items to take
             items: HashMap<String, i32>,
+            /// Reason
+            reason: String,
         } => (Result<(), String>)
 
         /// Get a member's bank balance

@@ -58,7 +58,11 @@ impl Handler for Request {
                     cx
                 )
             }
-            Self::LockerStore { member, items } => {
+            Self::LockerStore {
+                member,
+                items,
+                reason,
+            } => {
                 quick_transaction!(
                     LockerStore,
                     db,
@@ -67,9 +71,14 @@ impl Handler for Request {
                     actor::gear::locker::store,
                     member,
                     items,
+                    reason,
                 )
             }
-            Self::LockerTake { member, items } => {
+            Self::LockerTake {
+                member,
+                items,
+                reason,
+            } => {
                 quick_transaction!(
                     LockerTake,
                     db,
@@ -78,6 +87,7 @@ impl Handler for Request {
                     actor::gear::locker::take,
                     member,
                     items,
+                    reason,
                 )
             }
             Self::BankBalance { member } => {
@@ -163,7 +173,7 @@ impl Handler for Request {
                 )
                 .await?;
                 // Store the items
-                actor::gear::locker::store(member, items, &mut tx).await?;
+                actor::gear::locker::store(member, items, "shop enter", &mut tx).await?;
                 // Fetch the player's balance
                 let Some(balance) = actor::gear::bank::balance(member, &mut *tx).await? else {
                     respond!(msg, Response::ShopEnter(Err("No balance found".into()))).await?;
@@ -182,7 +192,7 @@ impl Handler for Request {
             } => {
                 let mut tx = transaction!(db, msg, cx);
                 // Take the items from the locker
-                actor::gear::locker::take(member, items, &mut tx).await?;
+                actor::gear::locker::take(member, items, "shop leave", &mut tx).await?;
                 // Store the loadout
                 actor::gear::loadout::store(member, loadout, &mut tx).await?;
                 tx.commit().await?;
@@ -192,7 +202,7 @@ impl Handler for Request {
             Self::ShopPurchase { member, items } => {
                 let mut tx = transaction!(db, msg, cx);
                 // Take the items from the locker
-                actor::gear::bank::shop_purchase(member, items, &mut tx).await?;
+                actor::gear::bank::shop_purchase(member, items, "shop purchase", &mut tx).await?;
                 // Fetch the player's balance
                 let Some(balance) = actor::gear::bank::balance(member, &mut *tx).await? else {
                     respond!(msg, Response::ShopPurchase(Err("No balance found".into()))).await?;

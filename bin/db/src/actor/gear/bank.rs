@@ -99,14 +99,16 @@ pub async fn purchase(
 pub async fn shop_purchase(
     member: &UserId,
     items: &HashMap<String, i32>,
+    reason: &str,
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<(), anyhow::Error> {
     for (class, quantity) in items {
         let query = sqlx::query!(
-            "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), (SELECT cost FROM gear_item_current_cost($2)))",
+            "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost, reason) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), (SELECT cost FROM gear_item_current_cost($2)), $4)",
             member.0.to_string(),
             class,
             quantity,
+            reason,
         );
         query.execute(&mut **executor).await?;
     }

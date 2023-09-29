@@ -25,14 +25,16 @@ where
 pub async fn store(
     member: &UserId,
     items: &HashMap<String, i32>,
+    reason: &str,
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<(), anyhow::Error> {
     for (class, quantity) in items {
         let query = sqlx::query!(
-            "INSERT INTO gear_locker_log (member, class, quantity) VALUES ($1, $2, $3)",
+            "INSERT INTO gear_locker_log (member, class, quantity, reason) VALUES ($1, $2, $3, $4)",
             member.0.to_string(),
             class,
             quantity,
+            reason,
         );
         query.execute(&mut **executor).await?;
     }
@@ -42,14 +44,16 @@ pub async fn store(
 pub async fn take(
     member: &UserId,
     items: &HashMap<String, i32>,
+    reason: &str,
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<(), anyhow::Error> {
     for (class, quantity) in items {
         let query = sqlx::query!(
-            "INSERT INTO gear_locker_log (member, class, quantity) VALUES ($1, $2, $3)",
+            "INSERT INTO gear_locker_log (member, class, quantity, reason) VALUES ($1, $2, $3, $4)",
             member.0.to_string(),
             class,
             -quantity,
+            reason,
         );
         query.execute(&mut **executor).await?;
     }

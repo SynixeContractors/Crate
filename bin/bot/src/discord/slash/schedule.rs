@@ -1114,7 +1114,7 @@ Insert anything you find relevant about how the terrain may be advantageous or d
                 map.insert(
                     "mission".to_string(),
                     Value::String(
-                        r#"<font color='#1D69F6'>EMPLOYER</font>
+                        r"<font color='#1D69F6'>EMPLOYER</font>
 
 Insert name of employer here
 
@@ -1133,7 +1133,7 @@ As a rule of thumb, consider: who, what (tasks), where, when, and why
 Insert any additional restrictions here
 
 If there are none, remove this section
-"#
+"
                         .to_string(),
                     ),
                 );
