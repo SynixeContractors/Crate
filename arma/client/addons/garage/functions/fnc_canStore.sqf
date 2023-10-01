@@ -28,15 +28,13 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     };
 
 
-    private _spawns = [];
-    {
-        if (_objType in _x) then {
-            _spawns append allMissionObjects _x;
-        };
-    } forEach SPAWN_TYPES;
+    private _spawns = nearestObjects [getPos _vehicle,
+        SPAWN_TYPES select { _objType in _x },
+        100
+    ];
 
     _spawns findIf {
-        private _size = getNumber (configFile >> "CfgVehicles" >> _x >> QGVAR(size));
+        private _size = getNumber (configOf _x >> QGVAR(size));
         getPos _vehicle distance _x < (_size * 1.5)
     } != -1
 }
