@@ -9,4 +9,6 @@ if !(GVAR(enabled)) exitWith {};
 
 if !(GVAR(shop_enabled)) exitWith {};
 
+GVAR(shop_locked) = false;
+
 call FUNC(shop_init);

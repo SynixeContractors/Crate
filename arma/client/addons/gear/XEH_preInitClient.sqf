@@ -64,9 +64,14 @@ GVAR(shop_processing) = false;
     systemChat "An error occurred while trying to enter the shop, please try again later.";
 }] call CBA_fnc_addEventHandler;
 
+[QGVAR(shop_leave_ok), {
+    player setVariable [QGVAR(shop_open), false, true];
+}] call CBA_fnc_addEventHandler;
+
 [QGVAR(shop_leave_err), {
     systemChat "An error occurred while trying to leave the shop, removing items.";
     [player, [[],[],[],[],[],[],"","",[],["","","","","",""]], false] call CBA_fnc_setLoadout;
+    player setVariable [QGVAR(shop_open), false, true];
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_purchase_ok), {
