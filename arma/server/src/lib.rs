@@ -51,12 +51,14 @@ fn init() -> Extension {
     let ext = Extension::build()
         .command("id", command_id)
         .command("uuid", command_uuid)
+        .command("ping", ping)
         .group("campaigns", commands::campaigns::group())
         .group("discord", commands::discord::group())
         .group("garage", commands::garage::group())
         .group("gear", commands::gear::group())
         .group("log", commands::log::group())
         .group("reputation", commands::reputation::group())
+        .group("certifications", commands::certifications::group())
         .state(commands::garage::PendingSpawn::default())
         .finish();
 
@@ -69,6 +71,30 @@ fn init() -> Extension {
     });
     logger::init(ext.context());
     ext
+}
+
+fn ping() {
+    RUNTIME.spawn(async move {
+        let context_store = CONTEXT.read().await;
+        let Some(context) = context_store.as_ref() else {
+            error!("command received before context was initialized");
+            return;
+        };
+        if events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::campaigns::db,
+            Markers {
+                campaign: Uuid::default(),
+            }
+        )
+        .await
+        .is_ok()
+        {
+            let _ = context.callback_null("crate", "ping:ok");
+        } else {
+            let _ = context.callback_null("crate", "ping:err");
+        }
+    });
 }
 
 fn command_id() -> String {
