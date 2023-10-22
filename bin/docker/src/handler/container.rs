@@ -78,7 +78,7 @@ async fn handle(
         Action::Stop => docker.stop_container(container.id(), None).await,
     };
     let audit = match res {
-        Ok(_) => {
+        Ok(()) => {
             format!("container {action}: {} ({reason})", container.key())
         }
         Err(e) => {

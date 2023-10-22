@@ -9,7 +9,9 @@ if !(player getVariable [QGVAR(shop_open), false]) exitWith {};
 
 [GVAR(shop_balanceHandle)] call CBA_fnc_removePerFrameHandler;
 
-if (GVAR(readOnly)) exitWith {};
+if (GVAR(readOnly)) exitWith {
+    player setVariable [QGVAR(shop_open), false, true];
+};
 
 private _loadout = [player] call CBA_fnc_getLoadout;
 private _items = [_loadout] call FUNC(loadout_items);
