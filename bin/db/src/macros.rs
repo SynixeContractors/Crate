@@ -91,7 +91,7 @@ macro_rules! execute_and_respond {
 macro_rules! match_no_return {
     ($query:expr, $typ:ident, $msg:expr, $cx:expr) => {{
         match $query.await {
-            Ok(_) => {
+            Ok(()) => {
                 if let Err(e) = respond!($msg, Response::$typ(Ok(()))).await {
                     error!("Failed to respond to {}: {}", stringify!($typ), e);
                     return Err(e.into());

@@ -11,11 +11,11 @@ synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 anyhow = { workspace = true }
-async-openai = "0.14.0"
+async-openai = "0.14.3"
 async-trait = { workspace = true }
 nats = { workspace = true }
 rand = "0.8.5"
-regex = "1.8.4"
+regex = "1.10.2"
 reqwest = { version = "0.11.20", features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
