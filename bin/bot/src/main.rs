@@ -19,7 +19,7 @@ async fn main() {
 
     cache_http::CacheAndHttp::init(bot.cache_and_http.clone());
 
-    let (_, _) = tokio::join!(
+    let ((), ()) = tokio::join!(
         events::start(bot.cache_and_http.clone()),
         discord::start(bot),
     );
