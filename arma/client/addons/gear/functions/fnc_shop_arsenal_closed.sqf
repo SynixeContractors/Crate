@@ -8,6 +8,7 @@ if (ace_player isNotEqualTo player) exitWith {};
 if !(player getVariable [QGVAR(shop_open), false]) exitWith {};
 
 [GVAR(shop_balanceHandle)] call CBA_fnc_removePerFrameHandler;
+[GVAR(shop_box), false] call ace_arsenal_fnc_removeBox;
 
 if (GVAR(readOnly)) exitWith {
     player setVariable [QGVAR(shop_open), false, true];

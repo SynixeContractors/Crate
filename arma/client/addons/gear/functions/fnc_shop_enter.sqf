@@ -18,6 +18,5 @@ _items = _items - ["ItemRadioAcreFlagged"];
 
 [GVAR(shop_box), _items, false] call ace_arsenal_fnc_initBox;
 [GVAR(shop_box), player] call ace_arsenal_fnc_openBox;
-[GVAR(shop_box), false] call ace_arsenal_fnc_removeBox;
 
 player enableSimulation true;

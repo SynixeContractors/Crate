@@ -2,8 +2,8 @@
     class ACE_MainActions { \
         class GVAR(Store) { \
             displayName = "Store"; \
-            condition = QUOTE([ARR_2(_player, _target)] call FUNC(canStore)); \
-            statement = QUOTE([ARR_2(_player, _target)] call FUNC(store)); \
+            condition = QUOTE([ARR_2(_player,_target)] call FUNC(canStore)); \
+            statement = QUOTE([ARR_2(_player,_target)] call FUNC(store)); \
             exceptions[] = {"isNotInside"}; \
             showDisabled = 0; \
             priority = 1; \
