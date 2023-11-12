@@ -364,7 +364,7 @@ async fn ugl_autocomplete(
         if let Err(e) = autocomplete
             .create_autocomplete_response(&ctx.http, |f| {
                 for item in items {
-                    if item.class == item.family {
+                    if item.class != item.family {
                         continue;
                     }
                     f.add_string_choice(&item.pretty, &item.class);
