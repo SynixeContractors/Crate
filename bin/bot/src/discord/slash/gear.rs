@@ -74,6 +74,7 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
     if subcommand.kind == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
             "repaint" => repaint(ctx, command, &subcommand.options).await?,
+            "ugl" => ugl(ctx, command, &subcommand.options).await?,
             _ => unreachable!(),
         }
     }
