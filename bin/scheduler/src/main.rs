@@ -71,7 +71,7 @@ async fn main() {
     job!(
         sched,
         "Certifications - Check expired certifications",
-        "0 0 12 * * *",
+        "0 0 19 * * *",
         synixe_events::certifications::executions,
         CheckExpiries
     );
