@@ -151,19 +151,28 @@ pub mod db {
             item: String,
         } => (Result<Option<Option<String>>, String>)
 
-        ///Brodsky will find a weapon family
+        /// Find items that share a relation with another item
         struct FamilySearch {
             /// The weapon's class
             item: String,
             /// Relation
             relation: String,
-        } => (Result<Vec<String>, String>)
-        ///Brodsky will find items within locker that can be repainted
+        } => (Result<Vec<(String, String)>, String>)
+        /// Find items that a user has in their locker that are in a family with the given relation
         struct FamilyCompatibleItems {
             /// Member
             member: UserId,
             /// Relation
             relation: String,
-        } => (Result<Vec<String>, String>)
+        } => (Result<Vec<(String, String)>, String>)
+        /// Repaints an item, taking it from the locker and purchasing the new item
+        struct FamilyRepaint {
+            /// Member
+            member: UserId,
+            /// Original item
+            original: String,
+            /// New item
+            new: String,
+        } => (Result<(), String>)
     });
 }

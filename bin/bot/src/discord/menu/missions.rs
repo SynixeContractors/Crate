@@ -173,7 +173,7 @@ pub async fn run_aar_pay(
     else {
         return interaction.reply("Failed to find scheduled date").await;
     };
-    let Ok(Ok((reputation::db::Response::MissionCompleted(Ok(_)), _))) = events_request_2!(
+    let Ok(Ok((reputation::db::Response::MissionCompleted(Ok(())), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::reputation::db,
         MissionCompleted {
@@ -206,7 +206,7 @@ pub async fn run_aar_pay(
         .await?
         == Confirmation::Yes
     {
-        if let Ok(Ok((Response::PayMission(Ok(_)), _))) = events_request_2!(
+        if let Ok(Ok((Response::PayMission(Ok(())), _))) = events_request_2!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
             PayMission {

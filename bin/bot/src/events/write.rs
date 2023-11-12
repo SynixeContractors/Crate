@@ -64,7 +64,7 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             }
         }
         write::Request::EnsureRoles { member, roles } => {
-            let Ok(_) = respond!(msg, write::Response::EnsureRoles(Ok(()))).await else {
+            let Ok(()) = respond!(msg, write::Response::EnsureRoles(Ok(()))).await else {
                 error!("Failed to respond to NATS");
                 return;
             };
@@ -112,7 +112,7 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
 }
 
 async fn audit(client: ArcCacheAndHttp, msg: Message, message: DiscordMessage, channel: ChannelId) {
-    let Ok(_) = respond!(msg, write::Response::Audit(Ok(()))).await else {
+    let Ok(()) = respond!(msg, write::Response::Audit(Ok(()))).await else {
         error!("Failed to respond to NATS");
         return;
     };

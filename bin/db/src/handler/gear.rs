@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use arma_rs::{loadout::Loadout, FromArma};
 use async_trait::async_trait;
 use synixe_events::{
@@ -237,7 +239,7 @@ impl Handler for Request {
             }
             Self::FamilySearch { item, relation } => {
                 let query = sqlx::query!(
-                    "SELECT class FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2)",
+                    "SELECT class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2)",
                     item,
                     relation,
                 );
@@ -247,7 +249,7 @@ impl Handler for Request {
                             msg,
                             Response::FamilySearch(Ok(res
                                 .into_iter()
-                                .map(|row| row.class)
+                                .map(|row| (row.class, row.pretty.unwrap_or_default()))
                                 .collect()))
                         )
                         .await?;
@@ -260,7 +262,7 @@ impl Handler for Request {
             }
             Self::FamilyCompatibleItems { member, relation } => {
                 let query = sqlx::query!(
-                    "SELECT class FROM gear_items_family WHERE relation = $2 AND class IN (SELECT class FROM gear_locker WHERE member = $1)",
+                    "SELECT class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE relation = $2 AND class IN (SELECT class FROM gear_locker WHERE member = $1)",
                     member.to_string(),
                     relation,
                 );
@@ -268,17 +270,51 @@ impl Handler for Request {
                     Ok(res) => {
                         respond!(
                             msg,
-                            Response::FamilySearch(Ok(res
+                            Response::FamilyCompatibleItems(Ok(res
                                 .into_iter()
-                                .map(|row| row.class)
+                                .map(|row| (row.class, row.pretty.unwrap_or_default()))
                                 .collect()))
                         )
                         .await?;
                     }
                     Err(e) => {
-                        respond!(msg, Response::FamilySearch(Err(e.to_string()))).await?;
+                        respond!(msg, Response::FamilyCompatibleItems(Err(e.to_string()))).await?;
                     }
                 }
+                Ok(())
+            }
+            Self::FamilyRepaint {
+                member,
+                original,
+                new,
+            } => {
+                let mut tx = transaction!(db, msg, cx);
+                // Take the original item
+                actor::gear::locker::take(
+                    member,
+                    &{
+                        let mut map = HashMap::new();
+                        map.insert(original.to_string(), 1);
+                        map
+                    },
+                    "repaint",
+                    &mut tx,
+                )
+                .await?;
+                // Purchase the new item
+                actor::gear::bank::shop_purchase_cost(
+                    member,
+                    &{
+                        let mut map = HashMap::new();
+                        map.insert(new.to_string(), (1, 150));
+                        map
+                    },
+                    "repaint",
+                    &mut tx,
+                )
+                .await?;
+                tx.commit().await?;
+                respond!(msg, Response::FamilyRepaint(Ok(()))).await?;
                 Ok(())
             }
         }

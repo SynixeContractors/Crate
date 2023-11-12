@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost, reason) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), $4, $5)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Int4",
+        "Int4",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2337d6f4c8066e3fdb11299fdae152f8dcdec2f688f7a87f822c919927de6227"
+}

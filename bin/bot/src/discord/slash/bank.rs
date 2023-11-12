@@ -198,7 +198,7 @@ async fn transfer(
     let Some(reason) = get_option!(options, "reason", String) else {
         return interaction.reply("Invalid reason").await;
     };
-    let Ok(Ok((Response::BankTransferNew(Ok(_)), _))) = events_request_2!(
+    let Ok(Ok((Response::BankTransferNew(Ok(())), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankTransferNew {
@@ -290,7 +290,7 @@ async fn fine(
     let Some(reason) = get_option!(options, "reason", String) else {
         return interaction.reply("Invalid reason").await;
     };
-    let Ok(Ok((Response::BankDepositNew(Ok(_)), _))) = events_request_2!(
+    let Ok(Ok((Response::BankDepositNew(Ok(())), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankDepositNew {

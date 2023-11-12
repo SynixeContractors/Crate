@@ -81,10 +81,11 @@ impl EventHandler for Handler {
                     "certifications" => {
                         slash::certifications::autocomplete(&ctx, &autocomplete).await
                     }
+                    "docker" => slash::docker::autocomplete(&ctx, &autocomplete).await,
                     "garage" => {
                         slash::garage::auto_complete::autocomplete(&ctx, &autocomplete).await
                     }
-                    "docker" => slash::docker::autocomplete(&ctx, &autocomplete).await,
+                    "gear" => slash::gear::autocomplete(&ctx, &autocomplete).await,
                     "missions" => slash::missions::autocomplete(&ctx, &autocomplete).await,
                     "schedule" => slash::schedule::autocomplete(&ctx, &autocomplete).await,
                     _ => Ok(()),
