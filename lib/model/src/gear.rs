@@ -113,3 +113,15 @@ impl Deposit {
         self.created
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
+/// An item from a family of items
+pub struct FamilyItem {
+    /// The item's family
+    pub family: String,
+    /// The item's class
+    pub class: String,
+    /// The item's display name
+    pub pretty: String,
+}

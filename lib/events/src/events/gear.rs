@@ -5,7 +5,7 @@ pub mod db {
     use std::collections::HashMap;
 
     use serenity::model::prelude::UserId;
-    use synixe_model::gear::{Deposit, Price};
+    use synixe_model::gear::{Deposit, FamilyItem, Price};
     use synixe_proc::events_requests;
     use uuid::Uuid;
 
@@ -157,22 +157,26 @@ pub mod db {
             item: String,
             /// Relation
             relation: String,
-        } => (Result<Vec<(String, String)>, String>)
+        } => (Result<Vec<FamilyItem>, String>)
         /// Find items that a user has in their locker that are in a family with the given relation
         struct FamilyCompatibleItems {
             /// Member
             member: UserId,
             /// Relation
             relation: String,
-        } => (Result<Vec<(String, String)>, String>)
+        } => (Result<Vec<FamilyItem>, String>)
         /// Repaints an item, taking it from the locker and purchasing the new item
-        struct FamilyRepaint {
+        struct FamilyReplace {
             /// Member
             member: UserId,
             /// Original item
             original: String,
             /// New item
             new: String,
+            /// Reason
+            reason: String,
+            /// Cost
+            cost: i32,
         } => (Result<(), String>)
     });
 }

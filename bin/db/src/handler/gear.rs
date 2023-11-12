@@ -6,6 +6,7 @@ use synixe_events::{
     gear::db::{Request, Response},
     respond,
 };
+use synixe_model::gear::FamilyItem;
 
 use crate::actor;
 
@@ -239,7 +240,7 @@ impl Handler for Request {
             }
             Self::FamilySearch { item, relation } => {
                 let query = sqlx::query!(
-                    "SELECT class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2)",
+                    "SELECT family,class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2)",
                     item,
                     relation,
                 );
@@ -249,7 +250,11 @@ impl Handler for Request {
                             msg,
                             Response::FamilySearch(Ok(res
                                 .into_iter()
-                                .map(|row| (row.class, row.pretty.unwrap_or_default()))
+                                .map(|row| FamilyItem {
+                                    family: item.to_string(),
+                                    class: row.class,
+                                    pretty: row.pretty.unwrap_or_default(),
+                                })
                                 .collect()))
                         )
                         .await?;
@@ -262,7 +267,7 @@ impl Handler for Request {
             }
             Self::FamilyCompatibleItems { member, relation } => {
                 let query = sqlx::query!(
-                    "SELECT class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE relation = $2 AND class IN (SELECT class FROM gear_locker WHERE member = $1)",
+                    "SELECT family,class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE relation = $2 AND class IN (SELECT class FROM gear_locker WHERE member = $1)",
                     member.to_string(),
                     relation,
                 );
@@ -272,7 +277,11 @@ impl Handler for Request {
                             msg,
                             Response::FamilyCompatibleItems(Ok(res
                                 .into_iter()
-                                .map(|row| (row.class, row.pretty.unwrap_or_default()))
+                                .map(|row| FamilyItem {
+                                    family: row.family,
+                                    class: row.class,
+                                    pretty: row.pretty.unwrap_or_default(),
+                                })
                                 .collect()))
                         )
                         .await?;
@@ -283,10 +292,12 @@ impl Handler for Request {
                 }
                 Ok(())
             }
-            Self::FamilyRepaint {
+            Self::FamilyReplace {
                 member,
                 original,
                 new,
+                reason,
+                cost,
             } => {
                 let mut tx = transaction!(db, msg, cx);
                 // Take the original item
@@ -297,7 +308,7 @@ impl Handler for Request {
                         map.insert(original.to_string(), 1);
                         map
                     },
-                    "repaint",
+                    reason,
                     &mut tx,
                 )
                 .await?;
@@ -306,15 +317,15 @@ impl Handler for Request {
                     member,
                     &{
                         let mut map = HashMap::new();
-                        map.insert(new.to_string(), (1, 150));
+                        map.insert(new.to_string(), (1, *cost));
                         map
                     },
-                    "repaint",
+                    reason,
                     &mut tx,
                 )
                 .await?;
                 tx.commit().await?;
-                respond!(msg, Response::FamilyRepaint(Ok(()))).await?;
+                respond!(msg, Response::FamilyReplace(Ok(()))).await?;
                 Ok(())
             }
         }

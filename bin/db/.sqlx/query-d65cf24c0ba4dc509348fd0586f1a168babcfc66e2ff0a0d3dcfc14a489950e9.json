@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT family,class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "family",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "class",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "pretty",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "d65cf24c0ba4dc509348fd0586f1a168babcfc66e2ff0a0d3dcfc14a489950e9"
+}
