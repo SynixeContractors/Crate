@@ -62,7 +62,7 @@ pub async fn autocomplete(
     autocomplete: &AutocompleteInteraction,
 ) -> serenity::Result<()> {
     let Some(subcommand) = autocomplete.data.options.first() else {
-        warn!("No subcommand for bank provided");
+        warn!("No subcommand for gear provided");
         return Ok(());
     };
     if subcommand.kind == CommandOptionType::SubCommand && subcommand.name.as_str() == "repaint" {
