@@ -11,7 +11,7 @@ private _unit = _group createUnit [_class, [0,0,0], [], 0, "NONE"];
 
 _unit enableSimulationGlobal false;
 _unit setVariable [QGVAR(id), _id, true];
-GVAR(objects_ids) pushBackUnique _id;
+GVAR(units_ids) pushBackUnique _id;
 
 _unit setPosASL (_data getOrDefault ["pos", [0,0,0]]);
 _unit setVectorDirAndUp (_data getOrDefault ["rot", [[0,0,0],[0,0,0]]]);
