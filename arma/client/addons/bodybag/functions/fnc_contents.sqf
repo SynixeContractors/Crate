@@ -2,19 +2,20 @@
 
 params ["_bodybag"];
 
-private _items = [];
-
-_items pushBack (getBackpackCargo _bodybag);
-_items pushBack (getItemCargo _bodybag);
-_items pushBack (getMagazineCargo _bodybag);
-_items pushBack (getWeaponCargo _bodybag);
-
 private _contents = createHashMap;
 
 {
-    _x params ["_class", "_quantity"];
-    private _existing = _contents get [_class, 0];
-    _contents set [_class, _existing + _quantity];
-} forEach _items;
+    _x params ["_classes", "_quantities"];
+    {
+        private _existing = _contents get [_x, 0];
+        private _quantity = _quantities select _forEachIndex;
+        _contents set [_x, _existing + _quantity];
+    } forEach _classes;
+} forEach [
+    (getBackpackCargo _bodybag),
+    (getItemCargo _bodybag),
+    (getMagazineCargo _bodybag),
+    (getWeaponCargo _bodybag)
+];
 
 _contents

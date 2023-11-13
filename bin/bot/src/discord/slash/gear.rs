@@ -261,7 +261,7 @@ async fn ugl(
     let guild = command
         .guild_id
         .expect("Brodsky is only in Synixe")
-        .to_guild_cached(&ctx)
+        .to_guild_cached(ctx)
         .expect("Brodsky is only in Synixe");
     let member = guild
         .member(&ctx, command.user.id)

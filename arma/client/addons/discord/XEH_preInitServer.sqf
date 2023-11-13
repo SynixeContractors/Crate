@@ -2,6 +2,16 @@
 
 if !(isMultiplayer) exitWith {};
 
+["ace_placedInBodyBag", {
+    params ["_unit", "_bodybag"];
+    private _discord = _unit getVariable [QGVAR(id), ""];
+    if (_discord isEqualTo "") exitWith {};
+    private _steam = _unit getVariable [QGVAR(steam), ""];
+    if (_steam isEqualTo "") exitWith {};
+    _bodybag setVariable [QGVAR(id), _discord, true];
+    _bodybag setVariable [QGVAR(steam), _steam, true];
+}] call CBA_fnc_addEventHandler;
+
 [QGVAR(member), {
     params [
         ["_steam", "", [""]],
@@ -18,7 +28,7 @@ if !(isMultiplayer) exitWith {};
         ["_dlc", [], [[]]]
     ];
     if (isNull _player) exitWith {};
-    private _discord = _player getVariable [QEGVAR(discord,id), ""];
+    private _discord = _player getVariable [QGVAR(id), ""];
     if (_discord isEqualTo "") exitWith {};
     EXTCALL("discord:member:save_dlc",[ARR_2(_discord,_dlc)]);
 }] call CBA_fnc_addEventHandler;
