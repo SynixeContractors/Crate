@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use arma_rs::Group;
 use serenity::model::prelude::UserId;
-use synixe_events::{gear::db, discord::write::{DiscordMessage, DiscordContent}};
+use synixe_events::{
+    discord::write::{DiscordContent, DiscordMessage},
+    gear::db,
+};
 use synixe_proc::events_request_5;
 
 use crate::{CONTEXT, RUNTIME};
@@ -13,7 +16,12 @@ pub fn group() -> Group {
     Group::new().command("store", command_store)
 }
 
-fn command_store(discord: String, instigator: String, mut items: HashMap<String, i32>, net_id: String) {
+fn command_store(
+    discord: String,
+    instigator: String,
+    mut items: HashMap<String, i32>,
+    net_id: String,
+) {
     let Ok(discord) = discord.parse::<u64>() else {
         error!("invalid discord id: {}", discord);
         return;
@@ -56,7 +64,9 @@ fn command_store(discord: String, instigator: String, mut items: HashMap<String,
             synixe_events::discord::write,
             Audit {
                 message: DiscordMessage {
-                    content: DiscordContent::Text(format!("Bodybag stored for <@{discord}> by <@{instigator}>")),
+                    content: DiscordContent::Text(format!(
+                        "Bodybag stored for <@{discord}> by <@{instigator}>"
+                    )),
                     reactions: Vec::new(),
                 }
             }
