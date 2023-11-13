@@ -15,8 +15,7 @@ GVAR(disableScore) = {
 };
 
 player addEventHandler ["Respawn", {
-    params ["_unit"];
-    _unit call GVAR(disableScore);
+    player call GVAR(disableScore);
 }];
 player call GVAR(disableScore);
 

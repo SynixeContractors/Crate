@@ -10,11 +10,11 @@ switch (_func) do {
         clearItemCargoGlobal _bodybag;
         clearMagazineCargoGlobal _bodybag;
         clearWeaponCargoGlobal _bodybag;
-        private _nearby = (getPosATL _bodyBag) nearObjects ["CAManBase", 2];
+        private _nearby = (getPosATL _bodybag) nearObjects ["CAManBase", 2];
         [QGVAR(notify), "Bodybag Stored", _nearby] call CBA_fnc_targetEvent;
     };
     case "store:err": {
-        private _nearby = (getPosATL _bodyBag) nearObjects ["CAManBase", 2];
+        private _nearby = (getPosATL _bodybag) nearObjects ["CAManBase", 2];
         [QGVAR(notify), "Bodybag Storage Failed", nearbyPlayers] call CBA_fnc_targetEvent;
     };
 };

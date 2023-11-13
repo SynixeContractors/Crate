@@ -15,7 +15,7 @@ if !(isMultiplayer) exitWith {};
     if (_instigator == "") exitWith {};
     if (_netId == "") exitWith {};
     EXTCALL("gear:bodybag:store",[ARR_4(_discord,_instigator,_items,_netId)]);
-}] call CBA_fnc_addEventsHandler;
+}] call CBA_fnc_addEventHandler;
 
 // ============= Loadout
 

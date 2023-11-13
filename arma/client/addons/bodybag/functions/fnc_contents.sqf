@@ -7,7 +7,6 @@ private _contents = createHashMap;
     {
         private _existing = _contents getOrDefault [_x, 0];
         private _quantity = _quantities select _forEachIndex;
-        systemChat format ["%1: %2", _x, _quantity];
         _contents set [_x, _existing + _quantity];
     } forEach _classes;
 } forEach [
