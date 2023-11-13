@@ -4,6 +4,7 @@ prefix = "crate_server"
 [files]
 include = [
     "crate_server_x64.dll",
+    "crate_server_x64.so",
 ]
 
 [version]
