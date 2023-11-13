@@ -2,6 +2,19 @@
 
 if !(isMultiplayer) exitWith {};
 
+// ============= Bodybag
+
+[QGVAR(bodybag_store), {
+    params [
+        ["_discord", "", [""]],
+        ["_items", createHashMap, [createHashMap]],
+        ["_netId", "", [""]]
+    ];
+    if (_discord == "") exitWith {};
+    if (_netId == "") exitWith {};
+    EXTCALL("gear:bodybag:store",[ARR_3(_discord,_items,_netId)]);
+}] call CBA_fnc_addEventsHandler;
+
 // ============= Loadout
 
 [QGVAR(loadout_get), {
@@ -81,6 +94,9 @@ if !(isMultiplayer) exitWith {};
 addMissionEventHandler ["ExtensionCallback", {
     params ["_name", "_func", "_data"];
     switch (_name) do {
+        case "crate:gear:bodybag": {
+            [_func, _data] call FUNC(bodybag_ext);
+        };
         case "crate:gear:loadout": {
             [_func, _data] call FUNC(loadout_ext);
         };

@@ -12,8 +12,9 @@ class CfgPatches {
     };
 };
 
+#include "AceArsenalSorts.hpp"
 #include "Cfg3DEN.hpp"
 #include "CfgEventHandlers.hpp"
+#include "CfgVehicles.hpp"
 #include "ui\ACE_Arsenal.hpp"
 #include "ui\RscCheckout.hpp"
-#include "AceArsenalSorts.hpp"

@@ -1,5 +1,9 @@
+PREP(bodybag_ext);
 PREP(loadout_ext);
 PREP(shop_ext);
+
+PREP(bodybag_canStore);
+PREP(bodybag_store);
 
 PREP(loadout_clean);
 PREP(loadout_items);

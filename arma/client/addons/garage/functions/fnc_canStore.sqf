@@ -28,7 +28,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     };
 
 
-    private _spawns = nearestObjects [getPos _vehicle,
+    private _spawns = nearestObjects [getPos ,
         SPAWN_TYPES select { _objType in _x },
         100
     ];

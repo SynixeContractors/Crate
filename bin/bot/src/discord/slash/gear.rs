@@ -260,7 +260,7 @@ async fn ugl(
     // Check if they have the Grenadier role
     let guild = command
         .guild_id
-        .unwrap()
+        .expect("Brodsky is only in Synixe")
         .to_guild_cached(&ctx)
         .expect("Brodsky is only in Synixe");
     let member = guild

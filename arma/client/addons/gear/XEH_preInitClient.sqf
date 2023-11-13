@@ -3,6 +3,11 @@
 if !(hasInterface) exitWith {};
 if !(isMultiplayer) exitWith {};
 
+[QGVAR(notify), {
+    params ["_message"];
+    systemChat _message;
+}] call CBA_fnc_addEventHandler;
+
 // ============= Loadout
 
 GVAR(loadout_tracking) = false;

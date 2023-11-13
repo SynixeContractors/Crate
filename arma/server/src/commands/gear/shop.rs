@@ -147,7 +147,6 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
         return;
     };
     clean_items(&mut items);
-    items.retain(|_, v| *v > 0);
     RUNTIME.spawn(async move {
         let context_store = CONTEXT.read().await;
         let Some(context) = context_store.as_ref() else {
