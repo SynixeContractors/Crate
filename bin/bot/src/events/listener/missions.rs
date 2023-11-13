@@ -57,15 +57,17 @@ impl Listener for Publish {
                     let mut report = String::new();
                     let mut yes = Vec::new();
                     for rsvp in rsvps {
-                        if rsvp.state != Rsvp::Yes {
+                        if rsvp.state == Rsvp::Yes {
+                            yes.push(UserId(
+                                rsvp.member.parse().expect("only valid ids are stored"),
+                            ));
+                        } else {
                             report.push_str(&format!(
                                 "<@{}>: {} ({})\n",
                                 rsvp.member,
                                 rsvp.state,
                                 rsvp.details.unwrap_or_default(),
                             ));
-                        } else {
-                            yes.push(UserId(rsvp.member.parse().unwrap()));
                         }
                     }
 
@@ -142,5 +144,8 @@ async fn log(message: String) {
 }
 
 async fn attending(member: UserId, count: &str) {
-    log(format!("<@{}> will be attending their {} mission", member, count).to_string()).await;
+    log(format!(
+        "<@{member}> will be attending their {count} mission"
+    ))
+    .await;
 }
