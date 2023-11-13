@@ -21,6 +21,7 @@ if !(isMultiplayer) exitWith {};
 player addEventHandler ["Respawn", {
     params ["_unit", "_corpse"];
     private _discord = _unit getVariable [QGVAR(id), ""];
+    if (_discord isEqualTo "") exitWith {};
     _corpse setVariable [QGVAR(id), _discord, true];
-    _corpse setVariable [QGVAR(steam), getPlayerUID _unit, true];
+    _corpse setVariable [QGVAR(steam), getPlayerUID player, true];
 }];

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use arma_rs::Group;
 use serenity::model::prelude::UserId;
-use synixe_events::gear::db;
+use synixe_events::{gear::db, discord::write::{DiscordMessage, DiscordContent}};
 use synixe_proc::events_request_5;
 
 use crate::{CONTEXT, RUNTIME};
@@ -13,9 +13,13 @@ pub fn group() -> Group {
     Group::new().command("store", command_store)
 }
 
-fn command_store(discord: String, mut items: HashMap<String, i32>, net_id: String) {
+fn command_store(discord: String, instigator: String, mut items: HashMap<String, i32>, net_id: String) {
     let Ok(discord) = discord.parse::<u64>() else {
         error!("invalid discord id: {}", discord);
+        return;
+    };
+    let Ok(instigator) = instigator.parse::<u64>() else {
+        error!("invalid instigator id: {}", instigator);
         return;
     };
     clean_items(&mut items);
@@ -47,5 +51,19 @@ fn command_store(discord: String, mut items: HashMap<String, i32>, net_id: Strin
             error!("error sending bodybag:store:ok: {:?}", e);
         }
         debug!("lockerstore for {}", discord);
+        if let Err(e) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::discord::write,
+            Audit {
+                message: DiscordMessage {
+                    content: DiscordContent::Text(format!("Bodybag stored for <@{discord}> by <@{instigator}>")),
+                    reactions: Vec::new(),
+                }
+            }
+        )
+        .await
+        {
+            error!("failed to send audit message over nats: {}", e);
+        }
     });
 }

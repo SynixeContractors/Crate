@@ -7,12 +7,14 @@ if !(isMultiplayer) exitWith {};
 [QGVAR(bodybag_store), {
     params [
         ["_discord", "", [""]],
+        ["_instigator", "", [""]],
         ["_items", createHashMap, [createHashMap]],
         ["_netId", "", [""]]
     ];
     if (_discord == "") exitWith {};
+    if (_instigator == "") exitWith {};
     if (_netId == "") exitWith {};
-    EXTCALL("gear:bodybag:store",[ARR_3(_discord,_items,_netId)]);
+    EXTCALL("gear:bodybag:store",[ARR_4(_discord,_instigator,_items,_netId)]);
 }] call CBA_fnc_addEventsHandler;
 
 // ============= Loadout
