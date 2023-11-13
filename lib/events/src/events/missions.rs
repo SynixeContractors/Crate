@@ -4,6 +4,8 @@
 
 /// Interact with the database.
 pub mod db {
+    use std::collections::HashMap;
+
     use serenity::model::prelude::{ChannelId, MessageId, UserId};
     use synixe_model::missions::{Mission, MissionRsvp, Rsvp, ScheduledMission};
     use synixe_proc::events_requests;
@@ -111,6 +113,12 @@ pub mod db {
 
         /// Fetch the current mission
         struct FetchCurrentMission {} => (Result<Option<ScheduledMission>, String>)
+
+        /// Fetch the counts of missions attended for members
+        struct FetchMissionCounts {
+            /// The members to fetch.
+            members: Vec<UserId>,
+        } => (Result<HashMap<UserId, i32>, String>)
     });
 }
 

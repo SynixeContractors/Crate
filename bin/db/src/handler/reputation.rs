@@ -22,7 +22,7 @@ impl Handler for Request {
                 target,
                 weapon,
             } => {
-                log(format!(
+                game_audit(format!(
                     "**Friendly Fire**\n<@{member}> shot {target} with {weapon}",
                 ));
                 execute_and_respond!(
@@ -43,7 +43,7 @@ impl Handler for Request {
                 target,
                 weapon,
             } => {
-                log(format!(
+                game_audit(format!(
                     "**Civilian Shot**\n<@{member}> shot {target} with {weapon}",
                 ));
                 execute_and_respond!(
@@ -64,7 +64,7 @@ impl Handler for Request {
                 target,
                 weapon,
             } => {
-                log(format!(
+                game_audit(format!(
                     "**Unarmed Shot**\n<@{member}> shot {target} with {weapon}",
                 ));
                 execute_and_respond!(
@@ -85,7 +85,7 @@ impl Handler for Request {
                 target,
                 weapon,
             } => {
-                log(format!(
+                game_audit(format!(
                     "**Surrendering Shot**\n<@{member}> shot {target} with {weapon}",
                 ));
                 execute_and_respond!(
@@ -106,7 +106,7 @@ impl Handler for Request {
                 target,
                 weapon,
             } => {
-                log(format!(
+                game_audit(format!(
                     "**Captive Shot**\n<@{member}> shot {target} with {weapon}",
                 ));
                 execute_and_respond!(
@@ -127,7 +127,7 @@ impl Handler for Request {
                 target,
                 weapon,
             } => {
-                log(format!(
+                game_audit(format!(
                     "**Unconscious Shot**\n<@{member}> shot {target} with {weapon}",
                 ));
                 execute_and_respond!(
@@ -148,7 +148,7 @@ impl Handler for Request {
                 target,
                 weapon,
             } => {
-                log(format!(
+                game_audit(format!(
                     "**Building Damaged**\n<@{member}> damaged {target} with {weapon}",
                 ));
                 execute_and_respond!(
@@ -165,7 +165,7 @@ impl Handler for Request {
                 )
             }
             Self::FriendlyHealed { member, target } => {
-                log(format!("**Friendly Healed**\n<@{member}> healed {target}",));
+                game_audit(format!("**Friendly Healed**\n<@{member}> healed {target}",));
                 execute_and_respond!(
                     msg,
                     *db,
@@ -179,7 +179,7 @@ impl Handler for Request {
                 )
             }
             Self::UnfriendlyHealed { member, target } => {
-                log(format!(
+                game_audit(format!(
                     "**Unfriendly Healed**\n<@{member}> healed {target}",
                 ));
                 execute_and_respond!(
@@ -195,7 +195,7 @@ impl Handler for Request {
                 )
             }
             Self::CivilianHealed { member, target } => {
-                log(format!("**Civilian Healed**\n<@{member}> healed {target}",));
+                game_audit(format!("**Civilian Healed**\n<@{member}> healed {target}",));
                 execute_and_respond!(
                     msg,
                     *db,
@@ -213,7 +213,7 @@ impl Handler for Request {
                 mission,
                 reputation,
             } => {
-                log(format!(
+                game_audit(format!(
                     "**Mission Completed**\n<@{member}> completed {mission} and earned {reputation} reputation",
                 ));
                 execute_and_respond!(
@@ -261,18 +261,21 @@ impl Handler for Request {
     }
 }
 
-fn log(content: String) {
+pub fn game_audit(message: String) {
     tokio::spawn(async {
-        events_request_2!(
+        if let Err(e) = events_request_2!(
             bootstrap::NC::get().await,
             synixe_events::discord::write,
             GameAudit {
                 message: DiscordMessage {
-                    content: DiscordContent::Text(content),
+                    content: DiscordContent::Text(message),
                     reactions: Vec::new(),
                 }
             }
         )
         .await
+        {
+            error!("Failed to audit: {}", e);
+        }
     });
 }

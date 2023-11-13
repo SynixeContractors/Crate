@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 use sqlx::types::time::Time;
 use synixe_events::missions::db::{Request, Response};
@@ -460,6 +462,22 @@ impl Handler for Request {
                     LIMIT 1",
                 )?;
                 Ok(())
+            }
+            Self::FetchMissionCounts { members } => {
+                let mut counts = HashMap::new();
+                for member in members {
+                    let count: i32 = sqlx::query_scalar!(
+                        "SELECT count FROM missions_member_count WHERE member = $1",
+                        member.to_string(),
+                    )
+                    .fetch_one(&*db)
+                    .await
+                    .unwrap_or(0);
+                    counts.insert(*member, count);
+                }
+                synixe_events::respond!(msg, Response::FetchMissionCounts(Ok(counts)))
+                    .await
+                    .map_err(std::convert::Into::into)
             }
         }
     }

@@ -34,8 +34,8 @@ pub const MISSION_MAKING: ChannelId = ChannelId(700_901_938_123_767_828);
 pub const MOD_SUGGESTIONS: ChannelId = ChannelId(1_020_494_672_818_360_411);
 
 // Departments
-/// Financial, for using group funds
-pub const FINANCIALS: ChannelId = ChannelId(833_129_840_193_699_860);
+/// AARs, for after action reports
+pub const AARS: ChannelId = ChannelId(833_129_840_193_699_860);
 
 // Administration
 /// Staff discussions

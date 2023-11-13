@@ -1,7 +1,7 @@
 use rand::Rng;
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, publish};
-use synixe_meta::discord::channel::{BOT, FINANCIALS, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC};
+use synixe_meta::discord::channel::{AARS, BOT, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC};
 use synixe_proc::events_request_2;
 use uuid::Uuid;
 
@@ -39,7 +39,6 @@ impl EventHandler for Handler {
                     .create_application_command(|command| slash::docker::register(command))
                     .create_application_command(|command| slash::garage::register(command))
                     .create_application_command(|command| slash::gear::register(command))
-                    .create_application_command(|command| slash::github::register(command))
                     .create_application_command(|command| slash::meme::register(command))
                     .create_application_command(|command| slash::missions::register(command))
                     .create_application_command(|command| slash::reputation::register(command))
@@ -62,7 +61,6 @@ impl EventHandler for Handler {
                     "docker" => slash::docker::run(&ctx, &command).await,
                     "garage" => slash::garage::run(&ctx, &command).await,
                     "gear" => slash::gear::run(&ctx, &command).await,
-                    "github" => slash::github::run(&ctx, &command).await,
                     "meme" => slash::meme::run(&ctx, &command).await,
                     "missions" => slash::missions::run(&ctx, &command).await,
                     "reputation" => slash::reputation::run(&ctx, &command).await,
@@ -232,7 +230,7 @@ impl EventHandler for Handler {
     }
 
     async fn message(&self, ctx: Context, message: Message) {
-        if message.channel_id == FINANCIALS {
+        if message.channel_id == AARS {
             missions::validate_aar(&ctx, message).await;
             return;
         }
@@ -299,7 +297,7 @@ impl EventHandler for Handler {
         new: Option<Message>,
         event: MessageUpdateEvent,
     ) {
-        if event.channel_id == FINANCIALS {
+        if event.channel_id == AARS {
             #[allow(clippy::single_match_else)]
             let message = match new {
                 Some(message) => message,

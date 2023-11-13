@@ -9,9 +9,11 @@ use synixe_proc::events_request_2;
 use uuid::Uuid;
 
 use crate::discord::slash::ShouldAsk;
+use crate::discord::utils::audit;
 use crate::discord::{self, interaction::Interaction};
 use crate::get_option;
 
+#[allow(clippy::too_many_lines)]
 pub async fn purchase(
     ctx: &Context,
     command: &ApplicationCommandInteraction,
@@ -35,7 +37,11 @@ pub async fn purchase(
     )
     .await?;
 
-    let plate = get_option!(options, "plate", String);
+    let Some(plate) = get_option!(options, "plate", String) else {
+        return interaction
+            .reply("Required option not provided: plate")
+            .await;
+    };
 
     let kind = options
         .iter()
@@ -65,7 +71,7 @@ pub async fn purchase(
                 PurchaseShopAsset {
                     order: ShopOrder::Vehicle {
                         id,
-                        plate: plate.cloned(),
+                        plate: Some(plate.clone()),
                         color: get_option!(options, "color", String).cloned(),
                         member: command
                             .member
@@ -80,6 +86,10 @@ pub async fn purchase(
             else {
                 return interaction.reply("Error purchasing vehicle").await;
             };
+            audit(format!(
+                "Vehicle `{}` purchased by <@{}>",
+                plate, command.user.id,
+            ));
             interaction.reply("**Vehicle Purchased**\n\n").await
         }
         "addon" => {
@@ -102,6 +112,10 @@ pub async fn purchase(
             else {
                 return interaction.reply("Error purchasing addon").await;
             };
+            audit(format!(
+                "Addon `{}` purchased for `{}` by <@{}>",
+                id, plate, command.user.id,
+            ));
             interaction.reply("**Addon Purchased**\n\n").await
         }
         _ => {

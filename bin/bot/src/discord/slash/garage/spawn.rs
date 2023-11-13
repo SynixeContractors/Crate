@@ -2,12 +2,9 @@ use serenity::{
     model::prelude::application_command::{ApplicationCommandInteraction, CommandDataOption},
     prelude::Context,
 };
-use synixe_events::{
-    discord::write::{DiscordContent, DiscordMessage},
-    garage::{
-        arma::{Response, SpawnResult},
-        db,
-    },
+use synixe_events::garage::{
+    arma::{Response, SpawnResult},
+    db,
 };
 use synixe_meta::discord::{channel::LOG, role::LEADERSHIP};
 use synixe_proc::{events_request_2, events_request_5};
@@ -16,6 +13,7 @@ use crate::{
     discord::{
         interaction::{Generic, Interaction},
         slash::ShouldAsk,
+        utils::audit,
     },
     get_option,
 };
@@ -108,23 +106,10 @@ pub async fn spawn(
                 }
             }
             interaction.reply("Vehicle spawned").await?;
-            if let Err(e) = events_request_2!(
-                bootstrap::NC::get().await,
-                synixe_events::discord::write,
-                Audit {
-                    message: DiscordMessage {
-                        content: DiscordContent::Text(format!(
-                            "Vehicle `{}` spawned by <@{}>",
-                            plate, command.user.id,
-                        )),
-                        reactions: vec![],
-                    }
-                }
-            )
-            .await
-            {
-                error!("Failed to audit vehicle spawn: {}", e);
-            }
+            audit(format!(
+                "Vehicle `{}` spawned by <@{}>",
+                plate, command.user.id,
+            ));
             Ok(())
         }
         SpawnResult::AreaBlocked => interaction.reply("Area blocked").await,
