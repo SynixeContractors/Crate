@@ -1091,7 +1091,7 @@ mod tests {
                 let mut map = Map::new();
                 map.insert(
                     "situation".to_string(),
-Value::String(r#"<font color='#E0A750'>SITUATION</font>
+Value::String(r"<font color='#E0A750'>SITUATION</font>
 Insert things players should know about where they are deploying and/or events that happened leading up to their deployment or to the given conflict
 
 <font color='#D81717'>ENEMY FORCES</font>
@@ -1109,7 +1109,7 @@ Insert things to consider about civilians, presence/absence and/or behaviour/sup
 
 <font color='#663300'>TERRAIN CONSIDERATIONS</font>
 Insert anything you find relevant about how the terrain may be advantageous or disadvantageous
-"#.to_string())
+".to_string())
                 );
                 map.insert(
                     "mission".to_string(),
@@ -1140,14 +1140,14 @@ If there are none, remove this section
                 map.insert(
                     "objectives".to_string(),
                     Value::String(
-                        r#"<font color='#E3D310'>PRIMARY OBJECTIVES</font>
+                        r"<font color='#E3D310'>PRIMARY OBJECTIVES</font>
 
 Insert objectives that must be completed to achieve the mission goal
 
 <font color='#595305'>SECONDARY OBJECTIVES</font>
 
 Insert objectives that are not required to complete the mission, but may be useful
-"#
+"
                         .to_string(),
                     ),
                 );
