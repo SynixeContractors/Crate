@@ -463,15 +463,25 @@ impl PaymentType {
     /// Hourly rate for no combat.
     pub const fn no_combat(&self) -> i32 {
         match self {
-            Self::ProtectionLowRisk => 420,
-            Self::ProtectionHighRisk => 490,
-            Self::Logistics => 280,
-            Self::Recon => 280,
-            Self::Offensive => 350,
-            Self::Defensive => 420,
-            Self::Support => 280,
-            Self::Security => 350,
-            Self::SmashGrab => 420,
+            // Self::ProtectionLowRisk => 420,
+            // Self::ProtectionHighRisk => 490,
+            // Self::Logistics => 280,
+            // Self::Recon => 280,
+            // Self::Offensive => 350,
+            // Self::Defensive => 420,
+            // Self::Support => 280,
+            // Self::Security => 350,
+            // Self::SmashGrab => 420,
+            // bump 15%
+            Self::ProtectionLowRisk => 483,
+            Self::ProtectionHighRisk => 563,
+            Self::Logistics => 322,
+            Self::Recon => 322,
+            Self::Offensive => 402,
+            Self::Defensive => 483,
+            Self::Support => 322,
+            Self::Security => 402,
+            Self::SmashGrab => 483,
         }
     }
 
@@ -480,15 +490,25 @@ impl PaymentType {
     /// Hourly rate for light combat.
     pub const fn light_combat(&self) -> i32 {
         match self {
-            Self::ProtectionLowRisk => 490,
-            Self::ProtectionHighRisk => 560,
-            Self::Logistics => 350,
-            Self::Recon => 350,
-            Self::Offensive => 420,
-            Self::Defensive => 490,
-            Self::Support => 350,
-            Self::Security => 420,
-            Self::SmashGrab => 490,
+            // Self::ProtectionLowRisk => 490,
+            // Self::ProtectionHighRisk => 560,
+            // Self::Logistics => 350,
+            // Self::Recon => 350,
+            // Self::Offensive => 420,
+            // Self::Defensive => 490,
+            // Self::Support => 350,
+            // Self::Security => 420,
+            // Self::SmashGrab => 490,
+            // bump 15%
+            Self::ProtectionLowRisk => 564,
+            Self::ProtectionHighRisk => 644,
+            Self::Logistics => 402,
+            Self::Recon => 402,
+            Self::Offensive => 483,
+            Self::Defensive => 564,
+            Self::Support => 402,
+            Self::Security => 483,
+            Self::SmashGrab => 564,
         }
     }
 
@@ -497,15 +517,25 @@ impl PaymentType {
     /// Hourly rate for medium combat.
     pub const fn medium_combat(&self) -> i32 {
         match self {
-            Self::ProtectionLowRisk => 560,
-            Self::ProtectionHighRisk => 700,
-            Self::Logistics => 420,
-            Self::Recon => 420,
-            Self::Offensive => 490,
-            Self::Defensive => 560,
-            Self::Support => 420,
-            Self::Security => 490,
-            Self::SmashGrab => 350,
+            // Self::ProtectionLowRisk => 560,
+            // Self::ProtectionHighRisk => 700,
+            // Self::Logistics => 420,
+            // Self::Recon => 420,
+            // Self::Offensive => 490,
+            // Self::Defensive => 560,
+            // Self::Support => 420,
+            // Self::Security => 490,
+            // Self::SmashGrab => 350,
+            // bump 15%
+            Self::ProtectionLowRisk => 644,
+            Self::ProtectionHighRisk => 805,
+            Self::Logistics => 483,
+            Self::Recon => 483,
+            Self::Offensive => 564,
+            Self::Defensive => 644,
+            Self::Support => 483,
+            Self::Security => 564,
+            Self::SmashGrab => 402,
         }
     }
 
@@ -514,15 +544,25 @@ impl PaymentType {
     /// Hourly rate for heavy combat.
     pub const fn heavy_combat(&self) -> i32 {
         match self {
-            Self::ProtectionLowRisk => 700,
-            Self::ProtectionHighRisk => 840,
-            Self::Logistics => 560,
-            Self::Recon => 560,
-            Self::Offensive => 560,
-            Self::Defensive => 630,
-            Self::Support => 560,
-            Self::Security => 560,
-            Self::SmashGrab => 210,
+            // Self::ProtectionLowRisk => 700,
+            // Self::ProtectionHighRisk => 840,
+            // Self::Logistics => 560,
+            // Self::Recon => 560,
+            // Self::Offensive => 560,
+            // Self::Defensive => 630,
+            // Self::Support => 560,
+            // Self::Security => 560,
+            // Self::SmashGrab => 210,
+            // bump 15%
+            Self::ProtectionLowRisk => 805,
+            Self::ProtectionHighRisk => 966,
+            Self::Logistics => 644,
+            Self::Recon => 644,
+            Self::Offensive => 644,
+            Self::Defensive => 724,
+            Self::Support => 644,
+            Self::Security => 644,
+            Self::SmashGrab => 241,
         }
     }
 
@@ -531,15 +571,25 @@ impl PaymentType {
     /// Hourly rate for the employer
     pub const fn employer(&self) -> i32 {
         match self {
-            Self::ProtectionLowRisk => 59800,
-            Self::ProtectionHighRisk => 89700,
-            Self::Logistics => 44850,
-            Self::Recon => 44850,
-            Self::Offensive => 59800,
-            Self::Defensive => 67275,
-            Self::Support => 44850,
-            Self::Security => 59800,
-            Self::SmashGrab => 44850,
+            // Self::ProtectionLowRisk => 59800,
+            // Self::ProtectionHighRisk => 89700,
+            // Self::Logistics => 44850,
+            // Self::Recon => 44850,
+            // Self::Offensive => 59800,
+            // Self::Defensive => 67275,
+            // Self::Support => 44850,
+            // Self::Security => 59800,
+            // Self::SmashGrab => 44850,
+            // bump 25%
+            Self::ProtectionLowRisk => 74750,
+            Self::ProtectionHighRisk => 112_125,
+            Self::Logistics => 56063,
+            Self::Recon => 56063,
+            Self::Offensive => 74750,
+            Self::Defensive => 84094,
+            Self::Support => 56063,
+            Self::Security => 74750,
+            Self::SmashGrab => 56063,
         }
     }
 }
@@ -551,7 +601,7 @@ mod tests {
     #[test]
     fn test_parse_aar() {
         let aar = Aar::from_message(
-            r#"```Contract: Pusherman
+            r"```Contract: Pusherman
 Date: 2022-12-17
 OL: Jake King
 ELs: Carson Sering (KIA), Chaplain Yi (After Casualty), John Lamb (KIA)
@@ -565,7 +615,7 @@ AAR: Contractors were tasked with destroying Cartel Assets on the island nation 
 
 Operation Successful.
 
-Payment request: 60 No Combat 30 Light Combat 45 Medium Combat 15 Heavy Combat```"#,
+Payment request: 60 No Combat 30 Light Combat 45 Medium Combat 15 Heavy Combat```",
         );
         assert!(aar.is_ok());
         let aar = aar.unwrap();
@@ -588,7 +638,7 @@ Payment request: 60 No Combat 30 Light Combat 45 Medium Combat 15 Heavy Combat``
     #[test]
     fn test_parse_aar2() {
         let aar = Aar::from_message(
-            r#"```Contract: Safety
+            r"```Contract: Safety
 Date: 2023-03-25
 OL: Thomas Watson
 ELs: Jake King
@@ -607,7 +657,7 @@ Payment Request
 10 Light Combat
 10 Medium Combat
 30 Heavy Combat
-```"#,
+```",
         );
         assert!(aar.is_err()); // Duplicate Brett Harrison
     }
