@@ -25,7 +25,7 @@ anyhow = "1.0.75"
 # arma-rs = "1.9.3"
 arma-rs = { git = "https://github.com/brettmayson/arma-rs", features = ["uuid", "serde_json"] }
 async-trait = "0.1.74"
-axum = "0.6.20"
+axum = "0.7.1"
 nats = { version = "0.24.1" }
 serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
