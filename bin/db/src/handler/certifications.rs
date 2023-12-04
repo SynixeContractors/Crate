@@ -294,10 +294,11 @@ impl Handler for Request {
                             passed IS TRUE
                             AND (valid_until > NOW())
                             AND valid_until < NOW() + $1 * INTERVAL '1 day'
-                            AND NOT EXISTS (SELECT 1 FROM certifications_trials as ict WHERE
-                                ct.certification = ict.certification
-                                AND ct.trainee = ict.trainee
-                                AND valid_until > NOW() + $1 * INTERVAL '1 day')
+                            AND NOT EXISTS (
+                                SELECT 1 FROM certifications_trials as ict WHERE
+                                    ct.certification = ict.certification
+                                    AND ct.trainee = ict.trainee
+                                    AND valid_until > NOW() + $1 * INTERVAL '1 day')
                         ORDER BY trainee, certification, created DESC"#,
                     f64::from(*days),
                 )?;

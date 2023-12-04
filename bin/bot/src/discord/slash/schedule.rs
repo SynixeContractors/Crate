@@ -28,7 +28,7 @@ use crate::{
     get_option,
 };
 
-use super::ShouldAsk;
+use super::{ShouldAsk, AllowPublic};
 
 const TIME_FORMAT: &str =
     "[year]-[month]-[day] [hour]:[minute] [offset_hour sign:mandatory]:[offset_minute]";
@@ -124,6 +124,7 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 .name("upcoming")
                 .description("View the upcoming missions")
                 .kind(CommandOptionType::SubCommand)
+                .allow_public()
         })
         .create_option(|option| {
             option
