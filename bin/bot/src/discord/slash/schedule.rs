@@ -28,7 +28,7 @@ use crate::{
     get_option,
 };
 
-use super::{ShouldAsk, AllowPublic};
+use super::{AllowPublic, ShouldAsk};
 
 const TIME_FORMAT: &str =
     "[year]-[month]-[day] [hour]:[minute] [offset_hour sign:mandatory]:[offset_minute]";
