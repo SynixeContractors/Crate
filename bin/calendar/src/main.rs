@@ -54,6 +54,6 @@ async fn calendar() -> impl IntoResponse {
     }
     calendar
         .name("Synixe Contractors")
-        .ttl(&Duration::hours(3))
+        .ttl(&Duration::hours(1))
         .to_string()
 }
