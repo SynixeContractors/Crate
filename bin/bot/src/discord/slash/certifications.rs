@@ -10,13 +10,18 @@ use serenity::{
     prelude::Context,
 };
 use synixe_events::certifications::db::Response;
-use synixe_meta::discord::role::{JUNIOR, MEMBER};
+use synixe_meta::discord::{
+    role::{JUNIOR, MEMBER},
+    GUILD,
+};
 use synixe_proc::events_request_2;
 
 use crate::{
     discord::interaction::{Generic, Interaction},
     get_option, get_option_user,
 };
+
+use super::AllowPublic;
 
 pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
     command
@@ -83,6 +88,13 @@ pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicatio
                 .name("available")
                 .description("List all certifications available to you")
                 .kind(CommandOptionType::SubCommand)
+                .create_sub_option(|option| {
+                    option
+                        .name("member")
+                        .description("The member to view certifications for")
+                        .kind(CommandOptionType::User)
+                })
+                .allow_public()
         })
 }
 
@@ -326,12 +338,24 @@ async fn list(
         return interaction.reply("Failed to fetch certifications").await;
     };
     if available {
-        let mut member_roles = command
-            .member
-            .as_ref()
-            .expect("member should always exist on guild commands")
-            .roles
-            .clone();
+        let member = get_option_user!(options, "member").map_or_else(
+            || {
+                command
+                    .member
+                    .as_ref()
+                    .expect("member should always exist on guild commands")
+                    .user
+                    .id
+            },
+            |user| user.id,
+        );
+        let mut member_roles = GUILD.member(&ctx.http, member).await.map_or_else(
+            |e| {
+                error!("Failed to fetch member: {}", e);
+                Vec::new()
+            },
+            |m| m.roles,
+        );
         if member_roles.contains(&MEMBER) {
             member_roles.push(JUNIOR);
         }
