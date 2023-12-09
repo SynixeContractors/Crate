@@ -152,7 +152,7 @@ pub mod db {
     use synixe_proc::events_requests;
 
     events_requests!(db.discord {
-        /// Get a discord user's ID from their name
+        /// Get a discord user's ID from their steam id
         struct FromSteam {
             /// The steam ID to get the discord ID for
             steam: String,
@@ -171,6 +171,8 @@ pub mod db {
             /// The DLC to save
             dlc: Vec<u32>,
         } => (Result<(), String>)
+        /// Get Active Members
+        struct ActiveMembers {} => (Result<Vec<String>, String>)
     });
 }
 
@@ -184,5 +186,14 @@ pub mod publish {
             /// Member that was updated
             member: Member,
         }
+    });
+}
+
+/// Execute event from discord
+pub mod executions {
+    use synixe_proc::events_requests;
+    events_requests!(execute.info {
+        /// Update activity roles
+        struct UpdateActivityRoles {} => (Result<(), String>)
     });
 }

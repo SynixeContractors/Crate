@@ -1,5 +1,8 @@
 use async_trait::async_trait;
-use synixe_events::discord::db::{Request, Response};
+use synixe_events::{
+    discord::db::{Request, Response},
+    respond,
+};
 
 use super::Handler;
 
@@ -67,6 +70,33 @@ impl Handler for Request {
                     &dlc,
                 )
             }
+            Self::ActiveMembers {} => respond!(
+                msg,
+                Response::ActiveMembers(
+                    match sqlx::query!(
+                        r#"
+                            SELECT DISTINCT ON (member)
+                                member as value
+                            FROM gear_bank_deposits
+                            WHERE
+                                id != '00000000-0000-0000-0000-000000000000'
+                                AND created > NOW() - '3 weeks'::Interval
+                            ORDER BY member, created DESC"#,
+                    )
+                    .fetch_all(&*db)
+                    .await
+                    .map(|x| x.into_iter().map(|x| x.value).collect::<Vec<_>>())
+                    {
+                        Ok(x) => Ok(x),
+                        Err(e) => {
+                            error!("Failed to get active members: {}", e);
+                            Err(e.to_string())
+                        }
+                    }
+                )
+            )
+            .await
+            .map_err(|e| anyhow::anyhow!(e)),
         }
     }
 }

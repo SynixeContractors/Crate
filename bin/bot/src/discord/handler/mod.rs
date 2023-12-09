@@ -240,6 +240,27 @@ impl EventHandler for Handler {
         //     return;
         // }
 
+        if message.channel_id == BOT {
+            match message.content.as_str() {
+                "!exec active" => {
+                    if let Err(e) = events_request_2!(
+                        bootstrap::NC::get().await,
+                        synixe_events::discord::executions,
+                        UpdateActivityRoles {}
+                    )
+                    .await
+                    {
+                        message
+                            .reply_ping(&ctx, format!("Cannot update activity roles: {}", e))
+                            .await
+                            .expect("Cannot send message");
+                    }
+                    return;
+                }
+                _ => {}
+            }
+        }
+
         if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, LOBBY].contains(&message.channel_id) {
             if message.author.bot {
                 return;

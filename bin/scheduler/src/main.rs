@@ -76,6 +76,15 @@ async fn main() {
         CheckExpiries
     );
 
+    // Activity
+    job!(
+        sched,
+        "Activity - Check for new activity",
+        "0 0 19 * * *",
+        synixe_events::discord::executions,
+        UpdateActivityRoles
+    );
+
     sched.start().await;
 
     info!("Done!");
