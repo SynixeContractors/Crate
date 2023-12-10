@@ -9,6 +9,6 @@ private _missing = createHashMap;
     if (_need > 0) then {
         _missing set [_x, _need];
     };
-} forEach _missing;
+} forEach _items;
 
 _missing
