@@ -5,8 +5,9 @@ params ["_player", "_vehicle"];
 if ((_vehicle getVariable [QGVAR(plate), ""]) == "") exitWith {
     false
 };
-private _discord = _player getVariable [QEGVAR(discord,id), ""];
-if (_discord == "") exitWith {};
+if ((_player getVariable [QEGVAR(discord,id), ""]) == "") exitWith {
+    false
+};
 
 if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     private _spawn = switch (true) do {
@@ -28,7 +29,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     };
 
 
-    private _spawns = nearestObjects [getPos ,
+    private _spawns = nearestObjects [getPos _vehicle,
         SPAWN_TYPES select { _objType in _x },
         100
     ];

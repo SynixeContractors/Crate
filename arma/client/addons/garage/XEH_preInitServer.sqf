@@ -25,11 +25,11 @@ addMissionEventHandler ["ExtensionCallback", {
 
 [QGVAR(store), {
     params ["_player", "_vehicle"];
-    if ((_vehicle getVariable [QGVAR(plate), ""]) == "") exitWith {};
+    private _plate = _vehicle getVariable [QGVAR(plate), ""];
+    if (_plate == "") exitWith {};
     private _discord = _player getVariable [QEGVAR(discord,id), ""];
     if (_discord == "") exitWith {};
 
-    private _plate = _vehicle getVariable [QGVAR(plate), ""];
     private _state = [_vehicle] call EFUNC(common,objectState_save);
 
     EXTCALL("garage:store",[ARR_3(_plate, _state, _discord)]);
