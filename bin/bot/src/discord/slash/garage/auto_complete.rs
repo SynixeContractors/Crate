@@ -1,5 +1,8 @@
-use serenity::{model::prelude::autocomplete::AutocompleteInteraction, prelude::Context};
-
+use serenity::{
+    all::{CommandData, CommandDataOptionValue, CommandInteraction},
+    builder::{CreateAutocompleteResponse, CreateInteractionResponse},
+    client::Context,
+};
 use synixe_events::garage::db::Response;
 use synixe_proc::events_request_2;
 use uuid::Uuid;
@@ -11,63 +14,68 @@ use crate::{
 
 pub async fn autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
+    let Some(focus) = CommandData::autocomplete(&autocomplete.data) else {
+        return Ok(());
+    };
     let Some(subcommand) = autocomplete.data.options.first() else {
         return Ok(());
     };
     let Some(command) = Command::from_str(subcommand.name.as_str()) else {
         return Ok(());
     };
-    let focus = subcommand.options.iter().find(|o| o.focused);
-    let Some(focus) = focus else {
+    let CommandDataOptionValue::SubCommand(options) = &subcommand.value else {
         return Ok(());
     };
-    let Some(focus_option) = focus.value.as_ref() else {
-        return Ok(());
-    };
-    let Some(focus_value) = focus_option.as_str() else {
-        return Ok(());
-    };
-    let focus_value = focus_value.to_string();
     match command {
-        Command::PurchaseVehicle => match focus.name.as_str() {
+        Command::PurchaseVehicle => match focus.name {
             "vehicle" => {
-                autocomplete_shop(ctx, autocomplete, AssetFilter::Vehicle(Some(focus_value))).await
+                autocomplete_shop(
+                    ctx,
+                    autocomplete,
+                    AssetFilter::Vehicle(Some(focus.value.to_string())),
+                )
+                .await
             }
             "color" => autocomplete_color(ctx, autocomplete).await,
             _ => Ok(()),
         },
-        Command::PurchaseAddon => match focus.name.as_str() {
+        Command::PurchaseAddon => match focus.name {
             "vehicle" => {
                 autocomplete_vehicle(
                     ctx,
                     autocomplete,
                     command,
-                    focus_value,
+                    focus.value.to_string(),
                     VehicleValueType::Id,
                 )
                 .await
             }
             "addon" => {
-                autocomplete_shop(ctx, autocomplete, AssetFilter::Addon(Some(focus_value))).await
+                autocomplete_shop(
+                    ctx,
+                    autocomplete,
+                    AssetFilter::Addon(Some(focus.value.to_string())),
+                )
+                .await
             }
             _ => Ok(()),
         },
-        Command::Attach | Command::Detach => match focus.name.as_str() {
+        Command::Attach | Command::Detach => match focus.name {
             "vehicle" => {
                 autocomplete_vehicle(
                     ctx,
                     autocomplete,
                     command,
-                    focus_value,
+                    focus.value.to_string(),
                     VehicleValueType::Plate,
                 )
                 .await
             }
             "addon" => {
                 autocomplete_addon(ctx, autocomplete, {
-                    let Some(vehicle) = get_option!(&subcommand.options, "vehicle", String) else {
+                    let Some(vehicle) = get_option!(&options, "vehicle", String) else {
                         error!("Missing vehicle option");
                         return Ok(());
                     };
@@ -77,13 +85,13 @@ pub async fn autocomplete(
             }
             _ => Ok(()),
         },
-        Command::Spawn => match focus.name.as_str() {
+        Command::Spawn => match focus.name {
             "vehicle" => {
                 autocomplete_vehicle(
                     ctx,
                     autocomplete,
                     command,
-                    focus_value,
+                    focus.value.to_string(),
                     VehicleValueType::Plate,
                 )
                 .await
@@ -101,7 +109,7 @@ pub enum VehicleValueType {
 
 async fn autocomplete_vehicle(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
     command: Command,
     filter: String,
     value_type: VehicleValueType,
@@ -133,9 +141,10 @@ async fn autocomplete_vehicle(
         vehicles.truncate(25);
     }
     if let Err(e) = autocomplete
-        .create_autocomplete_response(&ctx.http, |f| {
+        .create_response(&ctx.http, {
+            let mut f = CreateAutocompleteResponse::default();
             for vehicle in vehicles {
-                f.add_string_choice(
+                f = f.add_string_choice(
                     format!("{} - {}", vehicle.name, vehicle.plate),
                     // vehicle.plate,
                     match value_type {
@@ -144,7 +153,7 @@ async fn autocomplete_vehicle(
                     },
                 );
             }
-            f
+            CreateInteractionResponse::Autocomplete(f)
         })
         .await
     {
@@ -155,17 +164,18 @@ async fn autocomplete_vehicle(
 
 async fn autocomplete_color(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
     let Some(subcommand) = autocomplete.data.options.first() else {
         return Ok(());
     };
-    let Some(id) = subcommand
-        .options
+    let CommandDataOptionValue::SubCommand(options) = &subcommand.value else {
+        return Ok(());
+    };
+    let Some(id) = options
         .iter()
         .find(|o| o.name == "vehicle")
-        .and_then(|o| o.value.as_ref())
-        .and_then(synixe_events::serde_json::Value::as_str)
+        .and_then(|o| o.value.as_str())
         .map(|v| Uuid::parse_str(v).expect("Invalid UUID"))
     else {
         error!("Missing vehicle option");
@@ -183,11 +193,12 @@ async fn autocomplete_color(
     };
 
     if let Err(e) = autocomplete
-        .create_autocomplete_response(&ctx.http, |f| {
+        .create_response(&ctx.http, {
+            let mut f = CreateAutocompleteResponse::default();
             for color in colors {
-                f.add_string_choice(color.name.to_string(), color.name.to_string());
+                f = f.add_string_choice(color.name.to_string(), color.name.to_string());
             }
-            f
+            CreateInteractionResponse::Autocomplete(f)
         })
         .await
     {
@@ -198,7 +209,7 @@ async fn autocomplete_color(
 
 async fn autocomplete_addon(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
     plate: String,
 ) -> serenity::Result<()> {
     debug!("Autocompleting addons for {}", plate);
@@ -217,11 +228,12 @@ async fn autocomplete_addon(
         addons.truncate(25);
     }
     if let Err(e) = autocomplete
-        .create_autocomplete_response(&ctx.http, |f| {
+        .create_response(&ctx.http, {
+            let mut f = CreateAutocompleteResponse::default();
             for addon in addons {
-                f.add_string_choice(addon.name.to_string(), addon.id);
+                f = f.add_string_choice(addon.name.to_string(), addon.id);
             }
-            f
+            CreateInteractionResponse::Autocomplete(f)
         })
         .await
     {
@@ -232,7 +244,7 @@ async fn autocomplete_addon(
 
 async fn autocomplete_shop(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
     filter: AssetFilter,
 ) -> serenity::Result<()> {
     let Ok(Ok((Response::FetchShopAssets(Ok(assets)), _))) = events_request_2!(
@@ -254,12 +266,14 @@ async fn autocomplete_shop(
             let Some(subcommand) = autocomplete.data.options.first() else {
                 return Ok(());
             };
-            let Some(id) = subcommand
-                .options
+            // options
+            let CommandDataOptionValue::SubCommand(options) = &subcommand.value else {
+                return Ok(());
+            };
+            let Some(id) = options
                 .iter()
                 .find(|o| o.name == "vehicle")
-                .and_then(|o| o.value.as_ref())
-                .and_then(synixe_events::serde_json::Value::as_str)
+                .and_then(|o| o.value.as_str())
                 .map(|v| Uuid::parse_str(v).expect("Invalid UUID"))
             else {
                 error!("Missing vehicle option");
@@ -273,9 +287,10 @@ async fn autocomplete_shop(
         assets.truncate(25);
     }
     if let Err(e) = autocomplete
-        .create_autocomplete_response(&ctx.http, |f| {
+        .create_response(&ctx.http, {
+            let mut f = CreateAutocompleteResponse::default();
             for assets in assets {
-                f.add_string_choice(
+                f = f.add_string_choice(
                     format!(
                         "{} - {}",
                         assets.name,
@@ -284,7 +299,7 @@ async fn autocomplete_shop(
                     assets.id,
                 );
             }
-            f
+            CreateInteractionResponse::Autocomplete(f)
         })
         .await
     {

@@ -1,6 +1,6 @@
 use std::{mem::MaybeUninit, sync::Arc};
 
-use serenity::client::bridge::gateway::ShardMessenger;
+use serenity::gateway::ShardMessenger;
 
 pub struct Bot();
 

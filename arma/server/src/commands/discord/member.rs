@@ -108,7 +108,7 @@ fn command_get(steam: String, name: String) {
             bootstrap::NC::get().await,
             synixe_events::discord::info,
             MemberRoles {
-                user: UserId(discord_id_u64),
+                user: UserId::new(discord_id_u64),
             }
         )
         .await
@@ -168,7 +168,7 @@ fn command_save_dlc(discord: String, dlc: Vec<u32>) {
             bootstrap::NC::get().await,
             synixe_events::discord::db,
             SaveDLC {
-                member: UserId(discord_u64),
+                member: UserId::new(discord_u64),
                 dlc,
             }
         )

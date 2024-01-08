@@ -35,22 +35,27 @@ impl BrainFunction for GetBalance {
     }
 
     async fn run(&self, _ctx: &Context, args: serde_json::Value) -> Option<serde_json::Value> {
-        let members = args["members"]
+        let members = match args["members"]
             .as_array()?
             .iter()
             .map(|v| {
                 let id = v.as_str().unwrap_or_default();
-                let mut member = if id.trim().is_empty() {
-                    UserId(0)
+                if id.trim().is_empty() {
+                    Ok(BRODSKY)
                 } else {
-                    UserId(id.parse().expect("invalid id"))
-                };
-                if member == BRODSKY {
-                    member = UserId(0);
+                    let Ok(id) = id.parse() else {
+                        return Err(serde_json::Value::String(
+                            "invalid id, only accepts IDS, not names".to_string(),
+                        ));
+                    };
+                    Ok(UserId::new(id))
                 }
-                member
             })
-            .collect::<Vec<_>>();
+            .collect::<Result<Vec<_>, serde_json::Value>>()
+        {
+            Ok(members) => members,
+            Err(e) => return Some(e),
+        };
 
         let mut responses = Vec::new();
 
@@ -65,7 +70,7 @@ impl BrainFunction for GetBalance {
                 return None;
             };
 
-            if member == UserId(0) {
+            if member == BRODSKY {
                 responses.push(json!({
                     "company": bootstrap::format::money(balance, false),
                 }));

@@ -4,12 +4,14 @@
 use std::net::SocketAddr;
 
 use axum::{
+    body::Body,
     http::{Request, StatusCode},
     middleware::{self, Next},
     response::Response,
     routing::post,
-    Router, Server,
+    Router,
 };
+use tokio::net::TcpListener;
 
 #[macro_use]
 extern crate tracing;
@@ -31,13 +33,15 @@ async fn main() {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     debug!("Listening on {}", addr);
-    Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    axum::serve(
+        TcpListener::bind(&addr).await.expect("bind to :3000"),
+        app.into_make_service(),
+    )
+    .await
+    .unwrap();
 }
 
-async fn check_token<B: Send>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
+async fn check_token(req: Request<Body>, next: Next) -> Result<Response, StatusCode> {
     let token = std::env::var("HOOKS_TOKEN").expect("HOOKS_TOKEN must be set");
     let Some(token_header) = req.headers().get("X-Token") else {
         warn!("Missing X-Token header");

@@ -1,6 +1,7 @@
 use axum::http::StatusCode;
 use synixe_proc::events_request_5;
 
+#[allow(clippy::cognitive_complexity)]
 pub async fn list_updated() -> StatusCode {
     let nats = bootstrap::NC::get().await;
     info!("missions list updated hook called");

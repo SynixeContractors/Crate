@@ -74,7 +74,7 @@ impl Handler for Request {
                         WHERE
                             ci.member = $1
                         GROUP BY c.id;"#,
-                    member.0.to_string(),
+                    member.to_string(),
                 )?;
                 Ok(())
             }
@@ -112,7 +112,7 @@ impl Handler for Request {
                                     member = $1
                                     AND certification = $2
                             ) AS "instructor_certified!""#,
-                    instructor.0.to_string(),
+                    instructor.to_string(),
                     certification,
                 )
                 .fetch_one(&*db)
@@ -169,8 +169,8 @@ impl Handler for Request {
                                 valid_for,
                                 valid_until,
                                 created"#,
-                        instructor.0.to_string(),
-                        trainee.0.to_string(),
+                        instructor.to_string(),
+                        trainee.to_string(),
                         certification,
                         notes,
                         valid_for,
@@ -198,8 +198,8 @@ impl Handler for Request {
                                 valid_for,
                                 valid_until,
                                 created"#,
-                        instructor.0.to_string(),
-                        trainee.0.to_string(),
+                        instructor.to_string(),
+                        trainee.to_string(),
                         certification,
                         notes,
                     )?
@@ -237,7 +237,7 @@ impl Handler for Request {
                         AND passed IS TRUE
                         AND (valid_until > NOW() OR valid_until IS NULL)
                     ORDER BY certification, created DESC"#,
-                    member.0.to_string(),
+                    member.to_string(),
                 )?;
                 Ok(())
             }

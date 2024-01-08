@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
+use synixe_meta::discord::BRODSKY;
 use synixe_model::gear::Deposit;
 use uuid::Uuid;
 
@@ -11,7 +12,11 @@ where
 {
     let query = sqlx::query!(
         "SELECT balance FROM gear_bank_balance_cache WHERE member = $1 LIMIT 1",
-        member.0.to_string(),
+        if member == &BRODSKY {
+            "0".to_string()
+        } else {
+            member.to_string()
+        },
     );
     query
         .fetch_optional(executor)
@@ -29,7 +34,7 @@ pub async fn deposit(
 ) -> Result<(), anyhow::Error> {
     let query = sqlx::query!(
         "INSERT INTO gear_bank_deposits (member, amount, reason, id) VALUES ($1, $2, $3, $4)",
-        member.0.to_string(),
+        member.to_string(),
         amount,
         reason,
         id.unwrap_or_else(Uuid::new_v4),
@@ -47,7 +52,7 @@ pub async fn deposit_search(
     let query = sqlx::query_as!(
         Deposit,
         "SELECT member, amount, reason, id, created FROM gear_bank_deposits WHERE member = $1",
-        member.0.to_string(),
+        member.to_string(),
     );
     let res = query.fetch_all(&mut **executor).await?;
     Ok(res
@@ -66,8 +71,8 @@ pub async fn transfer(
 ) -> Result<(), anyhow::Error> {
     let query = sqlx::query!(
         "INSERT INTO gear_bank_transfers (source, target, amount, reason) VALUES ($1, $2, $3, $4)",
-        source.0.to_string(),
-        target.0.to_string(),
+        source.to_string(),
+        target.to_string(),
         amount,
         reason,
     );
@@ -85,7 +90,7 @@ pub async fn purchase(
         if *quantity > 0 {
             let query = sqlx::query!(
                 "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost) VALUES ($1, $2, $3, $4, (SELECT cost FROM gear_item_current_cost($2)))",
-                member.0.to_string(),
+                member.to_string(),
                 class,
                 quantity,
                 is_loadout,
@@ -105,7 +110,7 @@ pub async fn shop_purchase(
     for (class, quantity) in items {
         let query = sqlx::query!(
             "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost, reason) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), (SELECT cost FROM gear_item_current_cost($2)), $4)",
-            member.0.to_string(),
+            member.to_string(),
             class,
             quantity,
             reason,
@@ -124,7 +129,7 @@ pub async fn shop_purchase_cost(
     for (class, (quantity, cost)) in items {
         let query = sqlx::query!(
             "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost, reason) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), $4, $5)",
-            member.0.to_string(),
+            member.to_string(),
             class,
             quantity,
             cost,

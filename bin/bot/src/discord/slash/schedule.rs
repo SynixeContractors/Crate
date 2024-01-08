@@ -2,14 +2,14 @@ use std::time::Duration;
 
 use regex::{Captures, Regex};
 use serenity::{
-    builder::{CreateApplicationCommand, CreateEmbed},
-    model::{
-        application::interaction::application_command::ApplicationCommandInteraction,
-        prelude::{
-            application_command::CommandDataOption, autocomplete::AutocompleteInteraction,
-            command::CommandOptionType, component::ButtonStyle,
-            message_component::MessageComponentInteraction, InteractionResponseType, ReactionType,
-        },
+    all::{
+        ButtonStyle, ChannelType, CommandData, CommandDataOption, CommandDataOptionValue,
+        CommandInteraction, CommandOptionType, ComponentInteraction, ReactionType,
+    },
+    builder::{
+        CreateActionRow, CreateAutocompleteResponse, CreateButton, CreateCommand,
+        CreateCommandOption, CreateEmbed, CreateInteractionResponse, CreateMessage, CreateThread,
+        EditMessage,
     },
     prelude::*,
 };
@@ -24,7 +24,7 @@ use time::format_description;
 use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
 
 use crate::{
-    discord::interaction::{Confirmation, Generic, Interaction},
+    discord::interaction::{Confirmation, Interaction},
     get_option,
 };
 
@@ -34,131 +34,142 @@ const TIME_FORMAT: &str =
     "[year]-[month]-[day] [hour]:[minute] [offset_hour sign:mandatory]:[offset_minute]";
 
 #[allow(clippy::too_many_lines)]
-pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("schedule")
+pub fn register() -> CreateCommand {
+    CreateCommand::new("schedule")
         .description("Contract Schedule")
-        .create_option(|option| {
-            option
-                .name("new")
-                .description("Add a mission to the schedule")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("month")
-                        .description("The month to schedule the mission")
-                        .kind(CommandOptionType::Integer)
-                        .max_int_value(12)
-                        .min_int_value(1)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("day")
-                        .description("The day to schedule the mission")
-                        .kind(CommandOptionType::Integer)
-                        .max_int_value(31)
-                        .min_int_value(1)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("mission")
-                        .description("Mission to schedule")
-                        .kind(CommandOptionType::String)
-                        .required(true)
-                        .set_autocomplete(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("hour")
-                        .description("The starting hour to schedule the mission")
-                        .kind(CommandOptionType::Integer)
-                        .max_int_value(23)
-                        .min_int_value(0)
-                        .required(false)
-                })
-        })
-        .create_option(|option| {
-            option
-                .name("subcon")
-                .description("Propose a subcon mission")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("month")
-                        .description("The month to schedule the mission")
-                        .kind(CommandOptionType::Integer)
-                        .max_int_value(12)
-                        .min_int_value(1)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("day")
-                        .description("The day to schedule the mission")
-                        .kind(CommandOptionType::Integer)
-                        .max_int_value(31)
-                        .min_int_value(1)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("hour")
-                        .description("The starting hour to schedule the mission")
-                        .kind(CommandOptionType::Integer)
-                        .max_int_value(23)
-                        .min_int_value(0)
-                        .required(false)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("channel")
-                        .description("Channel to post the upcoming mission")
-                        .kind(CommandOptionType::Channel)
-                        .required(false)
-                })
-        })
-        .create_option(|option| {
-            option
-                .name("upcoming")
-                .description("View the upcoming missions")
-                .kind(CommandOptionType::SubCommand)
-                .allow_public()
-        })
-        .create_option(|option| {
-            option
-                .name("remove")
-                .description("Remove an upcoming mission")
-                .kind(CommandOptionType::SubCommand)
-        })
-        .create_option(|option| {
-            option
-                .name("post")
-                .description("Post the upcoming mission")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("channel")
-                        .description("Channel to post the upcoming mission")
-                        .kind(CommandOptionType::Channel)
-                        .required(false)
-                })
-        })
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "new",
+                "Add a mission to the schedule",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "mission",
+                    "Mission to schedule",
+                )
+                .required(true)
+                .set_autocomplete(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Integer,
+                    "month",
+                    "The month to schedule the mission",
+                )
+                .max_int_value(12)
+                .min_int_value(1)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Integer,
+                    "day",
+                    "The day to schedule the mission",
+                )
+                .max_int_value(31)
+                .min_int_value(1)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Integer,
+                    "hour",
+                    "The starting hour to schedule the mission",
+                )
+                .max_int_value(23)
+                .min_int_value(0)
+                .required(false),
+            ),
+        )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "subcon",
+                "Propose a subcon mission",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Integer,
+                    "month",
+                    "The month to schedule the mission",
+                )
+                .max_int_value(12)
+                .min_int_value(1)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Integer,
+                    "day",
+                    "The day to schedule the mission",
+                )
+                .max_int_value(31)
+                .min_int_value(1)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Integer,
+                    "hour",
+                    "The starting hour to schedule the mission",
+                )
+                .max_int_value(23)
+                .min_int_value(0)
+                .required(false),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Channel,
+                    "channel",
+                    "Channel to post the upcoming mission",
+                )
+                .required(false),
+            ),
+        )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "upcoming",
+                "View the upcoming missions",
+            )
+            .allow_public(),
+        )
+        .add_option(CreateCommandOption::new(
+            CommandOptionType::SubCommand,
+            "remove",
+            "Remove an upcoming mission",
+        ))
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "post",
+                "Post the upcoming mission",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Channel,
+                    "channel",
+                    "Channel to post the upcoming mission",
+                )
+                .required(false),
+            ),
+        )
 }
 
-pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
     let Some(subcommand) = command.data.options.first() else {
         warn!("No subcommand for bank provided");
         return Ok(());
     };
-    if subcommand.kind == CommandOptionType::SubCommand {
+    if let CommandDataOptionValue::SubCommand(values) = &subcommand.value {
         match subcommand.name.as_str() {
-            "new" => new(ctx, command, &subcommand.options).await?,
-            "subcon" => subcon(ctx, command, &subcommand.options).await?,
-            "upcoming" => upcoming(ctx, command, &subcommand.options).await?,
-            "remove" => remove(ctx, command, &subcommand.options).await?,
-            "post" => post(ctx, command, &subcommand.options).await?,
+            "new" => new(ctx, command, values).await?,
+            "subcon" => subcon(ctx, command, values).await?,
+            "upcoming" => upcoming(ctx, command, values).await?,
+            "remove" => remove(ctx, command, values).await?,
+            "post" => post(ctx, command, values).await?,
             _ => unreachable!(),
         }
     }
@@ -167,23 +178,23 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
 
 pub async fn autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
     let Some(subcommand) = autocomplete.data.options.first() else {
         warn!("No subcommand for bank provided");
         return Ok(());
     };
-    if subcommand.kind == CommandOptionType::SubCommand && subcommand.name.as_str() == "new" {
-        new_autocomplete(ctx, autocomplete, &subcommand.options).await?;
+    if subcommand.kind() == CommandOptionType::SubCommand {
+        match subcommand.name.as_str() {
+            "new" => new_autocomplete(ctx, autocomplete).await?,
+            _ => unreachable!(),
+        }
     }
     Ok(())
 }
 
 #[allow(clippy::too_many_lines)]
-pub async fn rsvp_button(
-    ctx: &Context,
-    component: &MessageComponentInteraction,
-) -> serenity::Result<()> {
+pub async fn rsvp_button(ctx: &Context, component: &ComponentInteraction) -> serenity::Result<()> {
     let channel = component.channel_id;
     let message = component.message.id;
     let Ok(Ok((Response::FetchScheduledMessage(Ok(Some(scheduled))), _))) = events_request_2!(
@@ -214,24 +225,20 @@ pub async fn rsvp_button(
                 return Ok(());
             };
             if let Err(e) = component
-                .create_interaction_response(&ctx.http, |r| {
-                    r.kind(InteractionResponseType::DeferredUpdateMessage)
-                })
+                .create_response(&ctx.http, CreateInteractionResponse::Acknowledge)
                 .await
             {
                 error!("Failed to create interaction response: {}", e);
             }
         }
         "rsvp_maybe" => {
-            let mut interaction = Interaction::new(ctx, Generic::Message(component), &[]);
+            let mut interaction = Interaction::new(ctx, component.clone(), &[]);
             let Some(reason) = interaction
                 .choice("Please provide a reason, this helps us make informed decision to improve Synixe!",
-                &vec![
-                    ("I might not be able to make it".to_string(), "not_sure".to_string()),
+                &[("I might not be able to make it".to_string(), "not_sure".to_string()),
                     ("I'm not interested in this mission".to_string(), "not_interested".to_string()),
                     ("I'm burnt out and may not want to attend".to_string(), "burnt_out".to_string()),
-                    ("Other".to_string(), "other".to_string()),
-                ]
+                    ("Other".to_string(), "other".to_string())]
                 )
                 .await?
             else {
@@ -256,15 +263,13 @@ pub async fn rsvp_button(
             interaction.reply("Thank you for your RSVP!").await?;
         }
         "rsvp_no" => {
-            let mut interaction = Interaction::new(ctx, Generic::Message(component), &[]);
+            let mut interaction = Interaction::new(ctx, component.clone(), &[]);
             let Some(reason) = interaction
                 .choice("Please provide a reason, this helps us make informed decision to improve Synixe!",
-                    &vec![
-                        ("I won't be able to make it".to_string(), "not_sure".to_string()),
+                    &[("I won't be able to make it".to_string(), "not_sure".to_string()),
                         ("I'm not interested in this mission".to_string(), "not_interested".to_string()),
                         ("I'm burnt out".to_string(), "burnt_out".to_string()),
-                        ("Other".to_string(), "other".to_string()),
-                    ]
+                        ("Other".to_string(), "other".to_string())]
                 )
                 .await?
             else {
@@ -305,13 +310,11 @@ pub async fn rsvp_button(
     };
     if let Err(e) = component
         .channel_id
-        .edit_message(&ctx.http, message, |s| {
-            s.embed(|e| {
-                make_post_embed(e, &scheduled, &rsvps);
-                e
-            });
-            s
-        })
+        .edit_message(
+            &ctx.http,
+            message,
+            EditMessage::default().embed(make_post_embed(&scheduled, &rsvps)),
+        )
         .await
     {
         error!("Failed to edit message: {}", e);
@@ -322,10 +325,10 @@ pub async fn rsvp_button(
 #[allow(clippy::too_many_lines)]
 async fn new(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     let date = super::get_datetime(options);
     super::requires_roles(
         command.user.id,
@@ -425,10 +428,9 @@ async fn new(
 
 async fn new_autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
-    options: &[CommandDataOption],
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
-    let Some(focus) = options.iter().find(|o| o.focused) else {
+    let Some(focus) = CommandData::autocomplete(&autocomplete.data) else {
         return Ok(());
     };
     if focus.name != "mission" {
@@ -438,15 +440,7 @@ async fn new_autocomplete(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
-            search: Some(
-                focus
-                    .value
-                    .as_ref()
-                    .expect("value should always exist")
-                    .as_str()
-                    .expect("discord should enforce string type")
-                    .to_string()
-            )
+            search: Some(focus.value.to_string())
         }
     )
     .await
@@ -455,26 +449,19 @@ async fn new_autocomplete(
         return Ok(());
     };
     // Show unplayed when no search term is provided
-    if focus.value.is_none()
-        || focus
-            .value
-            .as_ref()
-            .expect("should always exists from discord")
-            .as_str()
-            .unwrap_or_default()
-            .is_empty()
-    {
+    if focus.value.is_empty() {
         missions.retain(|m| m.play_count.unwrap_or_default() == 0);
     }
     if missions.len() > 25 {
         missions.truncate(25);
     }
     if let Err(e) = autocomplete
-        .create_autocomplete_response(&ctx.http, |f| {
+        .create_response(&ctx.http, {
+            let mut f = CreateAutocompleteResponse::default();
             for mission in missions {
-                f.add_string_choice(&mission.id, &mission.id);
+                f = f.add_string_choice(&mission.id, &mission.id);
             }
-            f
+            CreateInteractionResponse::Autocomplete(f)
         })
         .await
     {
@@ -486,10 +473,10 @@ async fn new_autocomplete(
 #[allow(clippy::too_many_lines)]
 async fn subcon(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     let date = super::get_datetime(options);
     super::requires_roles(
         command.user.id,
@@ -532,41 +519,25 @@ async fn subcon(
         error!("failed to schedule mission");
         return interaction.reply("Failed to schedule mission").await;
     };
-    let channel =
-        get_option!(options, "channel", Channel).map_or_else(|| LOOKING_TO_PLAY, |c| c.id);
+    let channel = get_option!(options, "channel", Channel).map_or_else(|| LOOKING_TO_PLAY, |c| *c);
     let Ok(sched) = channel
-        .send_message(&ctx, |s| {
-            s.embed(|f| {
-                make_post_embed(f, &scheduled, &[]);
-                f
-            });
-            s.components(|c| {
-                c.create_action_row(|r| {
-                    r.create_button(|b| {
-                        b.style(ButtonStyle::Secondary)
-                            .custom_id("rsvp_yes")
-                            .emoji(ReactionType::Unicode("🟩".to_string()))
-                    })
-                    .create_button(|b| {
-                        b.style(ButtonStyle::Secondary)
-                            .custom_id("rsvp_maybe")
-                            .emoji(ReactionType::Unicode("🟨".to_string()))
-                    })
-                    .create_button(|b| {
-                        b.style(ButtonStyle::Secondary)
-                            .custom_id("rsvp_no")
-                            .emoji(ReactionType::Unicode("🟥".to_string()))
-                    })
-                })
-            })
-        })
+        .send_message(
+            &ctx,
+            CreateMessage::default()
+                .embed(make_post_embed(&scheduled, &[]))
+                .components(vec![rsvp_buttons()]),
+        )
         .await
     else {
         return interaction.reply("Failed to post mission").await;
     };
     tokio::time::sleep(Duration::from_millis(500)).await;
     if channel
-        .create_public_thread(&ctx, sched.id, |t| t.name(&scheduled.name))
+        .create_thread_from_message(
+            &ctx,
+            sched.id,
+            CreateThread::new(&scheduled.name).kind(ChannelType::PublicThread),
+        )
         .await
         .is_err()
     {
@@ -599,10 +570,10 @@ async fn subcon(
 
 async fn upcoming(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     match events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
@@ -641,10 +612,10 @@ async fn upcoming(
 #[allow(clippy::too_many_lines)]
 pub async fn remove(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     super::requires_roles(
         command.user.id,
         &[MISSION_REVIEWER, STAFF],
@@ -688,7 +659,7 @@ pub async fn remove(
                         m.id,
                     )
                 })
-                .collect(),
+                .collect::<Vec<_>>(),
         )
         .await?
     else {
@@ -773,10 +744,10 @@ pub async fn remove(
 #[allow(clippy::too_many_lines)]
 async fn post(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     super::requires_roles(
         command.user.id,
         &[MISSION_REVIEWER, STAFF],
@@ -832,41 +803,25 @@ async fn post(
             else {
                 return interaction.reply("Failed to fetch rsvps").await;
             };
-            let channel =
-                get_option!(options, "channel", Channel).map_or_else(|| SCHEDULE, |c| c.id);
+            let channel = get_option!(options, "channel", Channel).map_or_else(|| SCHEDULE, |c| *c);
             let Ok(sched) = channel
-                .send_message(&ctx, |s| {
-                    s.embed(|f| {
-                        make_post_embed(f, scheduled, &rsvps);
-                        f
-                    });
-                    s.components(|c| {
-                        c.create_action_row(|r| {
-                            r.create_button(|b| {
-                                b.style(ButtonStyle::Secondary)
-                                    .custom_id("rsvp_yes")
-                                    .emoji(ReactionType::Unicode("🟩".to_string()))
-                            })
-                            .create_button(|b| {
-                                b.style(ButtonStyle::Secondary)
-                                    .custom_id("rsvp_maybe")
-                                    .emoji(ReactionType::Unicode("🟨".to_string()))
-                            })
-                            .create_button(|b| {
-                                b.style(ButtonStyle::Secondary)
-                                    .custom_id("rsvp_no")
-                                    .emoji(ReactionType::Unicode("🟥".to_string()))
-                            })
-                        })
-                    })
-                })
+                .send_message(
+                    &ctx,
+                    CreateMessage::default()
+                        .embed(make_post_embed(scheduled, &rsvps))
+                        .components(vec![rsvp_buttons()]),
+                )
                 .await
             else {
                 return interaction.reply("Failed to post mission").await;
             };
             tokio::time::sleep(Duration::from_millis(500)).await;
             let Ok(sched_thread) = channel
-                .create_public_thread(&ctx, sched.id, |t| t.name(&scheduled.name))
+                .create_thread_from_message(
+                    &ctx,
+                    sched.id,
+                    CreateThread::new(&scheduled.name).kind(ChannelType::PublicThread),
+                )
                 .await
             else {
                 return interaction.reply("Failed to create thread").await;
@@ -874,19 +829,18 @@ async fn post(
             tokio::time::sleep(Duration::from_millis(100)).await;
             if let Some(content) = scheduled.briefing().get("old") {
                 if let Err(e) = sched_thread
-                    .send_message(&ctx, |pt| {
-                        pt.content(
-                            content
-                                .replace("            <br/>", "\n")
-                                .replace("<font color='#D81717'>", "")
-                                .replace("<font color='#1D69F6'>", "")
-                                .replace("<font color='#993399'>", "")
-                                .replace("<font color='#663300'>", "")
-                                .replace("<font color='#139120'>", "")
-                                .replace("</font color>", "") // felix you scoundrel
-                                .replace("</font>", ""),
-                        )
-                    })
+                    .say(
+                        &ctx,
+                        content
+                            .replace("            <br/>", "\n")
+                            .replace("<font color='#D81717'>", "")
+                            .replace("<font color='#1D69F6'>", "")
+                            .replace("<font color='#993399'>", "")
+                            .replace("<font color='#663300'>", "")
+                            .replace("<font color='#139120'>", "")
+                            .replace("</font color>", "") // felix you scoundrel
+                            .replace("</font>", ""),
+                    )
                     .await
                 {
                     error!("Failed to post mission description: {}", e);
@@ -894,7 +848,7 @@ async fn post(
             } else {
                 for section in briefing_messages(scheduled) {
                     if let Err(e) = sched_thread
-                        .send_message(&ctx, |pt| pt.content(section))
+                        .send_message(&ctx, CreateMessage::default().content(section))
                         .await
                     {
                         error!("Failed to post mission description: {}", e);
@@ -929,7 +883,7 @@ async fn post(
     Ok(())
 }
 
-fn make_post_embed(embed: &mut CreateEmbed, scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) {
+fn make_post_embed(scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) -> CreateEmbed {
     let mut yes = Vec::new();
     let mut maybe = Vec::new();
     let mut no = Vec::new();
@@ -941,66 +895,81 @@ fn make_post_embed(embed: &mut CreateEmbed, scheduled: &ScheduledMission, rsvps:
         }
     }
 
-    embed.title(&scheduled.name);
-    embed.description(&scheduled.summary);
-    embed.color(0x00ff_d731);
-    embed.field(
-        "🕒 Time",
-        format!(
-            "<t:{}:F> - <t:{}:R>",
-            scheduled.start.unix_timestamp(),
-            scheduled.start.unix_timestamp()
-        ),
-        false,
-    );
-    embed.field(
-        format!("🟩 Attending ({})", yes.len()),
-        {
-            let out = yes
-                .iter()
-                .map(|r| format!("> <@{}>", r.member))
-                .collect::<Vec<_>>()
-                .join("\n");
-            if out.is_empty() {
-                "-".to_string()
-            } else {
-                out
-            }
-        },
-        true,
-    );
-    embed.field(
-        format!("🟨 Maybe ({})", maybe.len()),
-        {
-            let out = maybe
-                .iter()
-                .map(|r| format!("> <@{}>", r.member))
-                .collect::<Vec<_>>()
-                .join("\n");
-            if out.is_empty() {
-                "-".to_string()
-            } else {
-                out
-            }
-        },
-        true,
-    );
-    embed.field(
-        format!("🟥 Declined ({})", no.len()),
-        {
-            let out = no
-                .iter()
-                .map(|r| format!("> <@{}>", r.member))
-                .collect::<Vec<_>>()
-                .join("\n");
-            if out.is_empty() {
-                "-".to_string()
-            } else {
-                out
-            }
-        },
-        true,
-    );
+    CreateEmbed::default()
+        .title(&scheduled.name)
+        .description(&scheduled.summary)
+        .color(0x00ff_d731)
+        .field(
+            "🕒 Time",
+            format!(
+                "<t:{}:F> - <t:{}:R>",
+                scheduled.start.unix_timestamp(),
+                scheduled.start.unix_timestamp()
+            ),
+            false,
+        )
+        .field(
+            format!("🟩 Attending ({})", yes.len()),
+            {
+                let out = yes
+                    .iter()
+                    .map(|r| format!("> <@{}>", r.member))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                if out.is_empty() {
+                    "-".to_string()
+                } else {
+                    out
+                }
+            },
+            true,
+        )
+        .field(
+            format!("🟨 Maybe ({})", maybe.len()),
+            {
+                let out = maybe
+                    .iter()
+                    .map(|r| format!("> <@{}>", r.member))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                if out.is_empty() {
+                    "-".to_string()
+                } else {
+                    out
+                }
+            },
+            true,
+        )
+        .field(
+            format!("🟥 Declined ({})", no.len()),
+            {
+                let out = no
+                    .iter()
+                    .map(|r| format!("> <@{}>", r.member))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                if out.is_empty() {
+                    "-".to_string()
+                } else {
+                    out
+                }
+            },
+            true,
+        )
+}
+
+fn rsvp_buttons() -> CreateActionRow {
+    CreateActionRow::Buttons(vec![
+        CreateButton::new("rsvp_yes")
+            .style(ButtonStyle::Secondary)
+            .emoji(ReactionType::Unicode("🟩".to_string())),
+        CreateButton::new("rsvp_maybe")
+            .style(ButtonStyle::Secondary)
+            .emoji(ReactionType::Unicode("🟨".to_string())),
+        CreateButton::new("rsvp_no")
+            .style(ButtonStyle::Secondary)
+            .emoji(ReactionType::Unicode("🟥".to_string())),
+    ])
 }
 
 fn briefing_messages(mission: &ScheduledMission) -> Vec<String> {

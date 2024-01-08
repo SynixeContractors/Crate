@@ -22,7 +22,7 @@ fn auto(discord: String, certification: Uuid, passed: bool) {
             synixe_events::certifications::db,
             Certify {
                 instructor: BRODSKY,
-                trainee: UserId(discord),
+                trainee: UserId::new(discord),
                 certification,
                 notes: "Automated certification".to_string(),
                 passed

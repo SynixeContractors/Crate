@@ -1,12 +1,12 @@
 use std::time::Duration;
 
 use serenity::{
-    builder::CreateApplicationCommandOption,
-    model::prelude::{
-        application_command::{CommandDataOption, CommandDataOptionValue},
-        command::CommandOptionType,
-        component::ButtonStyle,
-        InteractionResponseType, RoleId, UserId,
+    all::{
+        ButtonStyle, CommandDataOption, CommandDataOptionValue, CommandOptionType, RoleId, UserId,
+    },
+    builder::{
+        CreateActionRow, CreateButton, CreateCommandOption, CreateInteractionResponse,
+        CreateMessage, EditMessage,
     },
 };
 use synixe_meta::discord::channel::LOG;
@@ -22,7 +22,6 @@ pub mod certifications;
 pub mod docker;
 pub mod garage;
 pub mod gear;
-pub mod meme;
 pub mod missions;
 pub mod reputation;
 pub mod schedule;
@@ -51,7 +50,7 @@ pub async fn requires_roles<'a>(
                     .map(|option| format!(
                         "{}: `{}`\n",
                         option.name.clone(),
-                        option.value.as_ref().expect("value")
+                        option.value.as_str().unwrap_or("Non-Displayable"),
                     ))
                     .collect::<Vec<_>>()
                     .join(" ")
@@ -59,22 +58,18 @@ pub async fn requires_roles<'a>(
             if interaction.confirm(
                 "You do not have permission to use this command. Would you like to request permission?"
             ).await? == Confirmation::Yes {
-                let Ok(mut message) = LOG.send_message(&*CacheAndHttp::get(), |f| {
-                    f.content(format!("<@{user}> is requesting permission to use {command}"))
-                    .components(|c| {
-                        c.create_action_row(|r| {
-                            r.create_button(|b| {
-                                b.style(ButtonStyle::Danger)
-                                .label("Approve")
-                                .custom_id("approve")
-                            })
-                            .create_button(|b| {
-                                b.style(ButtonStyle::Secondary)
+                let Ok(mut message) = LOG.send_message(CacheAndHttp::get().as_ref(), {
+                    CreateMessage::default().content(format!("<@{user}> is requesting permission to use {command}"))
+                    .components(vec![
+                        CreateActionRow::Buttons(vec![
+                            CreateButton::new("approve")
+                                .style(ButtonStyle::Danger)
+                                .label("Approve"),
+                            CreateButton::new("deny")
+                                .style(ButtonStyle::Secondary)
                                 .label("Deny")
-                                .custom_id("deny")
-                            })
-                        })
-                    })
+                        ])
+                    ])
                 }).await else {
                     interaction.reply("Failed to send request message.").await?;
                     return Err(serenity::Error::Other("Failed to send request message"));
@@ -83,28 +78,22 @@ pub async fn requires_roles<'a>(
                 let Some(confirm_interaction) = message
                     .await_component_interaction(&*Bot::get())
                     .timeout(Duration::from_secs(60 * 10))
-                    .collect_limit(1)
+                    .next()
                     .await
                 else {
-                    message.reply_ping(&*CacheAndHttp::get(), "Request timed out").await?;
+                    message.reply_ping(CacheAndHttp::get().as_ref(), "Request timed out").await?;
                     interaction.reply("Didn't receive a response").await?;
                     return Err(serenity::Error::Other("Didn't receive a response"));
                 };
                 confirm_interaction
-                    .create_interaction_response(&*CacheAndHttp::get(), |r| {
-                        r.kind(InteractionResponseType::DeferredUpdateMessage)
-                    })
+                    .create_response(CacheAndHttp::get().as_ref(), CreateInteractionResponse::Acknowledge)
                     .await?;
-                message.edit(&*CacheAndHttp::get(), |f| {
-                    f.components(|c| {
-                        c
-                    })
-                }).await?;
+                message.edit(CacheAndHttp::get().as_ref(), EditMessage::default().components(vec![])).await?;
                 if confirm_interaction.data.custom_id == "approve" {
-                    message.reply(&*CacheAndHttp::get(), format!("Approved by <@{}>", confirm_interaction.user.id)).await?;
+                    message.reply(CacheAndHttp::get().as_ref(), format!("Approved by <@{}>", confirm_interaction.user.id)).await?;
                     return Ok(());
                 }
-                message.reply(&*CacheAndHttp::get(), format!("Denied by <@{}>", confirm_interaction.user.id)).await?;
+                message.reply(CacheAndHttp::get().as_ref(), format!("Denied by <@{}>", confirm_interaction.user.id)).await?;
                 interaction.reply("Denied").await?;
                 return Err(serenity::Error::Other("Denied"));
             };
@@ -123,16 +112,14 @@ pub fn _get_option<'a>(
     name: &str,
 ) -> Option<&'a CommandDataOptionValue> {
     let option = options.iter().find(|option| option.name == name)?;
-    option.resolved.as_ref()
+    Some(&option.value)
 }
 
 #[macro_export]
 macro_rules! get_option {
     ($options:expr, $name:expr, $typ:ident) => {
         match $crate::discord::slash::_get_option($options, $name) {
-            Some(serenity::model::prelude::application_command::CommandDataOptionValue::$typ(
-                data,
-            )) => Some(data),
+            Some(serenity::all::CommandDataOptionValue::$typ(data)) => Some(data),
             _ => None,
         }
     };
@@ -142,10 +129,7 @@ macro_rules! get_option {
 macro_rules! get_option_user {
     ($options:expr, $name:expr) => {
         match $crate::discord::slash::_get_option($options, $name) {
-            Some(serenity::model::prelude::application_command::CommandDataOptionValue::User(
-                user,
-                _member,
-            )) => Some(user),
+            Some(serenity::all::CommandDataOptionValue::User(user)) => Some(user),
             _ => None,
         }
     };
@@ -209,17 +193,18 @@ pub fn get_datetime(options: &[CommandDataOption]) -> OffsetDateTime {
 }
 
 pub trait AllowPublic {
-    fn allow_public(&mut self) -> &mut Self;
+    fn allow_public(self) -> Self;
 }
 
-impl AllowPublic for CreateApplicationCommandOption {
-    fn allow_public(&mut self) -> &mut Self {
-        self.create_sub_option(|option| {
-            option
-                .name("public")
-                .description("Post the response publicly")
-                .kind(CommandOptionType::Boolean)
-                .required(false)
-        })
+impl AllowPublic for CreateCommandOption {
+    fn allow_public(self) -> Self {
+        self.add_sub_option(
+            Self::new(
+                CommandOptionType::Boolean,
+                "public",
+                "Post the response publicly",
+            )
+            .required(false),
+        )
     }
 }

@@ -1,11 +1,9 @@
 use serenity::{
-    builder::CreateApplicationCommand,
-    model::prelude::{
-        application_command::{ApplicationCommandInteraction, CommandDataOption},
-        autocomplete::AutocompleteInteraction,
-        command::CommandOptionType,
+    all::{CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType},
+    builder::{
+        CreateAutocompleteResponse, CreateCommand, CreateCommandOption, CreateInteractionResponse,
     },
-    prelude::Context,
+    client::Context,
 };
 use strum::IntoEnumIterator;
 use synixe_meta::{
@@ -14,41 +12,39 @@ use synixe_meta::{
 };
 use synixe_proc::events_request_30;
 
-use crate::{
-    discord::interaction::{Generic, Interaction},
-    get_option,
-};
+use crate::{discord::interaction::Interaction, get_option};
 
 use super::ShouldAsk;
 
-pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("docker")
+pub fn register() -> CreateCommand {
+    CreateCommand::new("docker")
         .description("Interact with the docker containers")
-        .create_option(|option| {
-            option
-                .name("restart")
-                .description("Restart a container")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("container")
-                        .description("The container to restart")
-                        .kind(CommandOptionType::String)
-                        .required(true)
-                        .set_autocomplete(true)
-                })
-        })
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "restart",
+                "Restart a container",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "container",
+                    "The container to restart",
+                )
+                .set_autocomplete(true)
+                .required(true),
+            ),
+        )
 }
 
-pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
     let Some(subcommand) = command.data.options.first() else {
         warn!("No subcommand for docker provided");
         return Ok(());
     };
-    if subcommand.kind == CommandOptionType::SubCommand {
+    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value {
         match subcommand.name.as_str() {
-            "restart" => restart(ctx, command, &subcommand.options).await?,
+            "restart" => restart(ctx, command, options).await?,
             _ => unreachable!(),
         }
     }
@@ -57,21 +53,24 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
 
 pub async fn autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
     let Some(subcommand) = autocomplete.data.options.first() else {
         warn!("No subcommand for bank provided");
         return Ok(());
     };
-    if subcommand.kind == CommandOptionType::SubCommand && subcommand.name.as_str() == "restart" {
-        container_autocomplete(ctx, autocomplete, &subcommand.options).await?;
+    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value {
+        match subcommand.name.as_str() {
+            "restart" => container_autocomplete(ctx, autocomplete, options).await?,
+            _ => unreachable!(),
+        }
     }
     Ok(())
 }
 
 async fn container_autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let Some(name) = get_option!(options, "container", String) else {
@@ -94,14 +93,15 @@ async fn container_autocomplete(
         containers.truncate(25);
     }
     if let Err(e) = autocomplete
-        .create_autocomplete_response(&ctx.http, |f| {
+        .create_response(&ctx.http, {
+            let mut f = CreateAutocompleteResponse::default();
             for container in containers {
-                f.add_string_choice(
+                f = f.add_string_choice(
                     container.name().unwrap_or_else(|| container.id()),
                     container.key(),
                 );
             }
-            f
+            CreateInteractionResponse::Autocomplete(f)
         })
         .await
     {
@@ -112,10 +112,10 @@ async fn container_autocomplete(
 
 async fn restart(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Restarting container...").await?;
     super::requires_roles(
         command.user.id,

@@ -9,7 +9,7 @@ where
 {
     let query = sqlx::query!(
         "SELECT class, quantity FROM gear_locker WHERE member = $1",
-        member.0.to_string(),
+        member.to_string(),
     );
     Ok(query.fetch_all(executor).await.map(|rows| {
         rows.into_iter()
@@ -31,7 +31,7 @@ pub async fn store(
     for (class, quantity) in items {
         let query = sqlx::query!(
             "INSERT INTO gear_locker_log (member, class, quantity, reason) VALUES ($1, $2, $3, $4)",
-            member.0.to_string(),
+            member.to_string(),
             class,
             quantity,
             reason,
@@ -50,7 +50,7 @@ pub async fn take(
     for (class, quantity) in items {
         let query = sqlx::query!(
             "INSERT INTO gear_locker_log (member, class, quantity, reason) VALUES ($1, $2, $3, $4)",
-            member.0.to_string(),
+            member.to_string(),
             class,
             -quantity,
             reason,
@@ -70,7 +70,7 @@ where
         INNER JOIN gear_cost gc ON gc.class = gl.class
         INNER JOIN gear_items gi on gc.class = gi.class
         WHERE gl.member = $1 AND gi.global = false AND gc.priority = 0;",
-        member.0.to_string(),
+        member.to_string(),
     );
     let res = query.fetch_one(executor).await?;
     #[allow(clippy::cast_possible_truncation)]

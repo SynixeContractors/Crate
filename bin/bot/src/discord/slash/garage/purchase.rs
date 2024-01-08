@@ -1,29 +1,22 @@
-use serenity::{
-    model::prelude::application_command::ApplicationCommandInteraction, prelude::Context,
-};
-
-use serenity::model::application::interaction::application_command::CommandDataOption;
+use serenity::all::{CommandDataOption, CommandInteraction};
+use serenity::client::Context;
 use synixe_events::garage::db::{Response, ShopOrder};
 use synixe_meta::discord::role::LEADERSHIP;
 use synixe_proc::events_request_2;
 use uuid::Uuid;
 
+use crate::discord::interaction::Interaction;
 use crate::discord::slash::ShouldAsk;
 use crate::discord::utils::audit;
-use crate::discord::{self, interaction::Interaction};
 use crate::get_option;
 
 #[allow(clippy::too_many_lines)]
 pub async fn purchase(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(
-        ctx,
-        discord::interaction::Generic::Application(command),
-        options,
-    );
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     super::super::requires_roles(
         command.user.id,
         &[LEADERSHIP],

@@ -29,21 +29,22 @@ impl EventHandler for Handler {
 
         Bot::init(ctx.shard.into());
 
-        if let Err(e) =
-            GuildId::set_application_commands(&synixe_meta::discord::GUILD, &ctx.http, |commands| {
-                commands
-                    .create_application_command(|command| menu::missions::aar_ids(command))
-                    .create_application_command(|command| menu::missions::aar_pay(command))
-                    .create_application_command(|command| slash::bank::register(command))
-                    .create_application_command(|command| slash::certifications::register(command))
-                    .create_application_command(|command| slash::docker::register(command))
-                    .create_application_command(|command| slash::garage::register(command))
-                    .create_application_command(|command| slash::gear::register(command))
-                    .create_application_command(|command| slash::meme::register(command))
-                    .create_application_command(|command| slash::missions::register(command))
-                    .create_application_command(|command| slash::reputation::register(command))
-                    .create_application_command(|command| slash::schedule::register(command))
-            })
+        if let Err(e) = synixe_meta::discord::GUILD
+            .set_commands(
+                &ctx.http,
+                vec![
+                    menu::missions::aar_ids(),
+                    menu::missions::aar_pay(),
+                    slash::bank::register(),
+                    slash::certifications::register(),
+                    slash::docker::register(),
+                    slash::garage::register(),
+                    slash::gear::register(),
+                    slash::missions::register(),
+                    slash::reputation::register(),
+                    slash::schedule::register(),
+                ],
+            )
             .await
         {
             error!("Cannot register slash commands: {}", e);
@@ -53,7 +54,7 @@ impl EventHandler for Handler {
     #[allow(clippy::too_many_lines)]
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Err(e) = match interaction {
-            Interaction::ApplicationCommand(command) => {
+            Interaction::Command(command) => {
                 debug!("matching command: {:?}", command.data.name.as_str());
                 match command.data.name.as_str() {
                     "bank" => slash::bank::run(&ctx, &command).await,
@@ -61,7 +62,6 @@ impl EventHandler for Handler {
                     "docker" => slash::docker::run(&ctx, &command).await,
                     "garage" => slash::garage::run(&ctx, &command).await,
                     "gear" => slash::gear::run(&ctx, &command).await,
-                    "meme" => slash::meme::run(&ctx, &command).await,
                     "missions" => slash::missions::run(&ctx, &command).await,
                     "reputation" => slash::reputation::run(&ctx, &command).await,
                     "schedule" => slash::schedule::run(&ctx, &command).await,
@@ -89,7 +89,7 @@ impl EventHandler for Handler {
                     _ => Ok(()),
                 }
             }
-            Interaction::MessageComponent(component) => {
+            Interaction::Component(component) => {
                 debug!(
                     "matching component: {:?}",
                     component.data.custom_id.as_str()
@@ -113,13 +113,14 @@ impl EventHandler for Handler {
         }
         if new_member.guild_id == synixe_meta::discord::GUILD {
             if let Err(e) = synixe_meta::discord::channel::LOBBY
-                .send_message(&_ctx, |m| {
-                    m.content(&format!(
+                .say(
+                    &_ctx,
+                    &format!(
                         "Welcome <@{}>! Please follow the steps in <#{}> to get prepared to jump in game with us. If you have any questions, feel free to ask here or reply to this post, I may know the answer!",
                         new_member.user.id,
                         synixe_meta::discord::channel::ONBOARDING,
-                    ))
-                })
+                    ),
+                )
                 .await {
                 error!("Cannot send welcome message: {}", e);
             }
@@ -138,12 +139,19 @@ impl EventHandler for Handler {
         }
         if guild_id == synixe_meta::discord::GUILD {
             if let Err(e) = synixe_meta::discord::channel::LOG
-                .send_message(&ctx, |m| {
-                    m.content(&format!(
-                        "{}#{} ({}) has left, <@{}>",
-                        kicked.name, kicked.discriminator, kicked.id, kicked.id
-                    ))
-                })
+                .say(
+                    &ctx,
+                    &format!(
+                        "{} ({}) has left, <@{}>",
+                        if let Some(discriminator) = kicked.discriminator {
+                            format!("{}#{}", kicked.name, discriminator)
+                        } else {
+                            kicked.name
+                        },
+                        kicked.id,
+                        kicked.id
+                    ),
+                )
                 .await
             {
                 error!("Cannot send leave message: {}", e);
@@ -155,16 +163,17 @@ impl EventHandler for Handler {
         &self,
         _ctx: Context,
         _old_if_available: Option<Member>,
-        new: Member,
+        _new: Option<Member>,
+        event: GuildMemberUpdateEvent,
     ) {
-        if new.user.bot {
+        if event.user.bot {
             return;
         }
-        if new.guild_id == synixe_meta::discord::GUILD {
+        if event.guild_id == synixe_meta::discord::GUILD {
             if let Err(e) = publish!(
                 bootstrap::NC::get().await,
                 Publish::MemberUpdate {
-                    member: new.clone(),
+                    member: event.clone()
                 }
             )
             .await
@@ -172,20 +181,20 @@ impl EventHandler for Handler {
                 error!("Cannot publish member update: {}", e);
             }
         }
-        if new.roles.contains(&synixe_meta::discord::role::RECRUIT) {
+        if event.roles.contains(&synixe_meta::discord::role::RECRUIT) {
             let Ok(Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _))) =
                 events_request_2!(
                     bootstrap::NC::get().await,
                     synixe_events::gear::db,
                     BankDepositSearch {
-                        member: new.user.id,
+                        member: event.user.id,
                         reason: Some("Starting Funds".to_string()),
                         id: None,
                     }
                 )
                 .await
             else {
-                error!("Cannot get starting funds for {}", new.user.id);
+                error!("Cannot get starting funds for {}", event.user.id);
                 return;
             };
             if !deposits.is_empty() {
@@ -196,7 +205,7 @@ impl EventHandler for Handler {
                     bootstrap::NC::get().await,
                     synixe_events::gear::db,
                     BankDepositNew {
-                        member: new.user.id,
+                        member: event.user.id,
                         reason: "Starting Funds".to_string(),
                         amount: 3500,
                         id: Some(Uuid::nil()),
@@ -204,7 +213,7 @@ impl EventHandler for Handler {
                 )
                 .await
             else {
-                error!("Failed to create starting funds {}", new.user.id);
+                error!("Failed to create starting funds {}", event.user.id);
                 return;
             };
         }
@@ -216,12 +225,19 @@ impl EventHandler for Handler {
         }
         if guild_id == synixe_meta::discord::GUILD {
             if let Err(e) = synixe_meta::discord::channel::LOG
-                .send_message(&ctx, |m| {
-                    m.content(&format!(
-                        "{}#{} ({}) was banned, <@{}>",
-                        banned_user.name, banned_user.discriminator, banned_user.id, banned_user.id
-                    ))
-                })
+                .say(
+                    &ctx,
+                    &format!(
+                        "{} ({}) was banned, <@{}>",
+                        if let Some(discriminator) = banned_user.discriminator {
+                            format!("{}#{}", banned_user.name, discriminator)
+                        } else {
+                            banned_user.name
+                        },
+                        banned_user.id,
+                        banned_user.id
+                    ),
+                )
                 .await
             {
                 error!("Cannot send ban message: {}", e);
@@ -268,12 +284,9 @@ impl EventHandler for Handler {
                 if message
                     .mentions
                     .iter()
-                    .any(|user| user.id == ctx.cache.current_user_id())
+                    .any(|user| user.id == ctx.cache.current_user().id)
                 {
-                    let typing = message
-                        .channel_id
-                        .start_typing(&ctx.http)
-                        .expect("Cannot start typing");
+                    let typing = message.channel_id.start_typing(&ctx.http);
                     if let Some(reply) = self.brain.ask(&ctx, &message).await {
                         match message.reply_ping(&ctx.http, reply).await {
                             Ok(reply) => self.brain.observe(&ctx, &reply).await,
@@ -282,20 +295,14 @@ impl EventHandler for Handler {
                     }
                     typing.stop();
                 } else if rand::thread_rng().gen_range(0..100) < 4 {
-                    let typing = message
-                        .channel_id
-                        .start_typing(&ctx.http)
-                        .expect("Cannot start typing");
+                    let typing = message.channel_id.start_typing(&ctx.http);
                     if let Some(reply) = self.brain.ask(&ctx, &message).await {
                         match message.reply_ping(&ctx.http, reply).await {
                             Ok(reply) => self.brain.observe(&ctx, &reply).await,
                             Err(e) => error!("Cannot send message: {}", e),
                         }
-                    } else if let Err(e) = message
-                        .reply_ping(&ctx, "Oh no, I couldn't determine what to say!")
-                        .await
-                    {
-                        error!("Cannot send message: {}", e);
+                    } else {
+                        warn!("No reply could be generated");
                     }
                     typing.stop();
                 } else {

@@ -80,7 +80,7 @@ fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopEnter {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 items,
             }
         )
@@ -120,7 +120,7 @@ fn command_leave(discord: String, steam: String, loadout: String, mut items: Has
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopLeave {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 loadout: loadout.replace("\"\"", "\""),
                 items,
             }
@@ -158,7 +158,7 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopPurchase {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 items,
             }
         )

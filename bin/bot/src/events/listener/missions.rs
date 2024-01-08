@@ -1,5 +1,9 @@
 use async_trait::async_trait;
-use serenity::model::{id::UserId, prelude::Activity};
+use serenity::{
+    builder::{EditMessage, EditThread},
+    gateway::ActivityData,
+    model::id::UserId,
+};
 use synixe_events::missions::{db::Response, publish::Publish};
 use synixe_meta::discord::channel::LOG;
 use synixe_model::missions::Rsvp;
@@ -9,6 +13,7 @@ use crate::{bot::Bot, cache_http::CacheAndHttp};
 
 use super::Listener;
 
+#[allow(clippy::too_many_lines)]
 #[async_trait]
 impl Listener for Publish {
     async fn listen(
@@ -24,20 +29,27 @@ impl Listener for Publish {
                 if (-1..=1).contains(minutes) {
                     // Remove RSVP buttons
                     if let Err(e) = channel
-                        .edit_message(&CacheAndHttp::get().http, message, |m| m.components(|f| f))
+                        .edit_message(
+                            CacheAndHttp::get().as_ref(),
+                            message,
+                            EditMessage::default().components(vec![]),
+                        )
                         .await
                     {
                         error!("Failed to edit message: {}", e);
                     }
-                    let Some(thread) = channel
-                        .message(&CacheAndHttp::get().http, message)
+                    let Some(mut thread) = channel
+                        .message(CacheAndHttp::get().as_ref(), message)
                         .await?
                         .thread
                     else {
                         return Ok(());
                     };
                     thread
-                        .edit_thread(&CacheAndHttp::get().http, |t| t.locked(true).archived(true))
+                        .edit_thread(
+                            CacheAndHttp::get().as_ref(),
+                            EditThread::default().locked(true).archived(true),
+                        )
                         .await?;
 
                     // Send RSVP report to LOG
@@ -58,7 +70,7 @@ impl Listener for Publish {
                     let mut yes = Vec::new();
                     for rsvp in rsvps {
                         if rsvp.state == Rsvp::Yes {
-                            yes.push(UserId(
+                            yes.push(UserId::new(
                                 rsvp.member.parse().expect("only valid ids are stored"),
                             ));
                         } else {
@@ -128,17 +140,14 @@ pub async fn tick(nats: std::sync::Arc<nats::asynk::Connection>) {
     if let Ok(Ok((Response::FetchCurrentMission(Ok(Some(mission))), _))) =
         events_request_5!(nats, synixe_events::missions::db, FetchCurrentMission {}).await
     {
-        Bot::get().set_activity(Some(Activity::playing(mission.name)));
+        Bot::get().set_activity(Some(ActivityData::playing(mission.name)));
     } else {
         Bot::get().set_activity(None);
     }
 }
 
 async fn log(message: String) {
-    if let Err(e) = LOG
-        .send_message(&CacheAndHttp::get().http, |m| m.content(message))
-        .await
-    {
+    if let Err(e) = LOG.say(CacheAndHttp::get().as_ref(), message).await {
         error!("failed to send log: {}", e);
     }
 }

@@ -1,13 +1,14 @@
 use std::collections::HashSet;
 
 use serenity::{
-    builder::CreateApplicationCommand,
-    model::prelude::{
-        application_command::{ApplicationCommandInteraction, CommandDataOption},
-        autocomplete::AutocompleteInteraction,
-        command::CommandOptionType,
+    all::{
+        CommandData, CommandDataOption, CommandDataOptionValue, CommandInteraction,
+        CommandOptionType,
     },
-    prelude::Context,
+    builder::{
+        CreateAutocompleteResponse, CreateCommand, CreateCommandOption, CreateInteractionResponse,
+    },
+    client::Context,
 };
 use synixe_events::certifications::db::Response;
 use synixe_meta::discord::{
@@ -16,99 +17,99 @@ use synixe_meta::discord::{
 };
 use synixe_proc::events_request_2;
 
-use crate::{
-    discord::interaction::{Generic, Interaction},
-    get_option, get_option_user,
-};
+use crate::{discord::interaction::Interaction, get_option, get_option_user};
 
 use super::AllowPublic;
 
-pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("certifications")
+pub fn register() -> CreateCommand {
+    CreateCommand::new("certifications")
         .description("Certifications")
-        .create_option(|option| {
-            option
-                .name("trial")
-                .description("You ran someone through a certification trial")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("trainee")
-                        .description("The person you ran through the trial")
-                        .kind(CommandOptionType::User)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("certification")
-                        .description("The certification you ran them through")
-                        .kind(CommandOptionType::String)
-                        .required(true)
-                        .set_autocomplete(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("passed")
-                        .description("Did the trainee pass the trial?")
-                        .kind(CommandOptionType::Boolean)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("notes")
-                        .description(
-                            "Notes about the trial, only shared between you and the trainee",
-                        )
-                        .kind(CommandOptionType::String)
-                        .required(true)
-                })
-        })
-        .create_option(|option| {
-            option
-                .name("view")
-                .description("View someone's certifications")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("member")
-                        .description("The member to view certifications for")
-                        .kind(CommandOptionType::User)
-                        .required(true)
-                })
-        })
-        .create_option(|option| {
-            option
-                .name("list")
-                .description("List all certifications")
-                .kind(CommandOptionType::SubCommand)
-        })
-        .create_option(|option| {
-            option
-                .name("available")
-                .description("List all certifications available to you")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("member")
-                        .description("The member to view certifications for")
-                        .kind(CommandOptionType::User)
-                })
-                .allow_public()
-        })
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "trial",
+                "You ran someone through a certification trial",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::User,
+                    "trainee",
+                    "The person you ran through the trial",
+                )
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "certification",
+                    "The certification you ran them through",
+                )
+                .required(true)
+                .set_autocomplete(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Boolean,
+                    "passed",
+                    "Did the trainee pass the trial?",
+                )
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "notes",
+                    "Notes about the trial, only shared between you and the trainee",
+                )
+                .required(true),
+            ),
+        )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "view",
+                "View someone's certifications",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::User,
+                    "member",
+                    "The member to view certifications for",
+                )
+                .required(true),
+            ),
+        )
+        .add_option(CreateCommandOption::new(
+            CommandOptionType::SubCommand,
+            "list",
+            "List all certifications",
+        ))
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "available",
+                "List all certifications available to you",
+            )
+            .add_sub_option(CreateCommandOption::new(
+                CommandOptionType::User,
+                "member",
+                "The member to view certifications for",
+            ))
+            .allow_public(),
+        )
 }
 
-pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
     let Some(subcommand) = command.data.options.first() else {
         warn!("No subcommand for bank provided");
         return Ok(());
     };
-    if subcommand.kind == CommandOptionType::SubCommand {
+    if let CommandDataOptionValue::SubCommand(values) = &subcommand.value {
         match subcommand.name.as_str() {
-            "trial" => trial(ctx, command, &subcommand.options).await?,
-            "view" => view(ctx, command, &subcommand.options).await?,
-            "list" => list(ctx, command, &subcommand.options, false).await?,
-            "available" => list(ctx, command, &subcommand.options, true).await?,
+            "trial" => trial(ctx, command, values).await?,
+            "view" => view(ctx, command, values).await?,
+            "list" => list(ctx, command, values, false).await?,
+            "available" => list(ctx, command, values, true).await?,
             _ => unreachable!(),
         }
     }
@@ -117,24 +118,27 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
 
 pub async fn autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
     let Some(subcommand) = autocomplete.data.options.first() else {
         warn!("No subcommand for bank provided");
         return Ok(());
     };
-    if subcommand.kind == CommandOptionType::SubCommand && subcommand.name.as_str() == "trial" {
-        trial_autocomplete(ctx, autocomplete, &subcommand.options).await?;
+    if subcommand.kind() == CommandOptionType::SubCommand {
+        match subcommand.name.as_str() {
+            "trial" => trial_autocomplete(ctx, autocomplete).await?,
+            _ => unreachable!(),
+        }
     }
     Ok(())
 }
 
 async fn trial(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Fetching certifications...").await?;
     let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request_2!(
         bootstrap::NC::get().await,
@@ -183,7 +187,7 @@ async fn trial(
                 .expect("member should always exist on guild commands")
                 .user
                 .id,
-            trainee: trainee.id,
+            trainee: *trainee,
             certification: cert.id,
             notes: notes.clone(),
             passed: *passed,
@@ -211,11 +215,9 @@ async fn trial(
 
 async fn trial_autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
-    options: &[CommandDataOption],
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
-    let focus = options.iter().find(|o| o.focused);
-    let Some(focus) = focus else {
+    let Some(focus) = CommandData::autocomplete(&autocomplete.data) else {
         return Ok(());
     };
     if focus.name != "certification" {
@@ -235,27 +237,18 @@ async fn trial_autocomplete(
     };
     let mut certs: Vec<_> = certs
         .into_iter()
-        .filter(|c| {
-            c.name.to_lowercase().contains(
-                &focus
-                    .value
-                    .as_ref()
-                    .expect("focused option should always have a value")
-                    .as_str()
-                    .expect("value should always be a string")
-                    .to_lowercase(),
-            )
-        })
+        .filter(|c| c.name.to_lowercase().contains(&focus.value.to_lowercase()))
         .collect();
     if certs.len() > 25 {
         certs.truncate(25);
     }
     if let Err(e) = autocomplete
-        .create_autocomplete_response(&ctx.http, |f| {
+        .create_response(&ctx.http, {
+            let mut f = CreateAutocompleteResponse::default();
             for cert in certs {
-                f.add_string_choice(&cert.name, cert.id);
+                f = f.add_string_choice(&cert.name, cert.id);
             }
-            f
+            CreateInteractionResponse::Autocomplete(f)
         })
         .await
     {
@@ -266,10 +259,10 @@ async fn trial_autocomplete(
 
 async fn view(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Fetching certifications...").await?;
     let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
@@ -277,7 +270,7 @@ async fn view(
     let Ok(Ok((Response::Active(Ok(certs)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
-        Active { member: user.id }
+        Active { member: *user }
     )
     .await
     else {
@@ -285,10 +278,10 @@ async fn view(
     };
     if certs.is_empty() {
         return interaction
-            .reply(format!("<@{}> has no certifications", user.id))
+            .reply(format!("<@{user}> has no certifications"))
             .await;
     }
-    let mut content = format!("**<@{}> Certifications**\n\n", user.id);
+    let mut content = format!("**<@{user}> Certifications**\n\n");
     for cert in certs {
         if let Ok(Ok((Response::Name(Ok(Some(name))), _))) = events_request_2!(
             bootstrap::NC::get().await,
@@ -322,11 +315,11 @@ async fn view(
 
 async fn list(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
     available: bool,
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Fetching certifications...").await?;
     let Ok(Ok((Response::List(Ok(mut certs)), _))) = events_request_2!(
         bootstrap::NC::get().await,
@@ -347,7 +340,7 @@ async fn list(
                     .user
                     .id
             },
-            |user| user.id,
+            |user| *user,
         );
         let mut member_roles = GUILD.member(&ctx.http, member).await.map_or_else(
             |e| {
@@ -363,7 +356,7 @@ async fn list(
             (&cert.roles_required.iter().cloned().collect::<HashSet<_>>()
                 - &member_roles
                     .iter()
-                    .map(|r| r.0.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<HashSet<_>>())
                 .is_empty()
         });
@@ -371,7 +364,7 @@ async fn list(
             !(&cert.roles_granted.iter().cloned().collect::<HashSet<_>>()
                 - &member_roles
                     .iter()
-                    .map(|r| r.0.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<HashSet<_>>())
                 .is_empty()
         });

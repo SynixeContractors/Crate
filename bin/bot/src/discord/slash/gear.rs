@@ -1,80 +1,82 @@
 use serenity::{
-    builder::CreateApplicationCommand,
-    model::prelude::{
-        application_command::{ApplicationCommandInteraction, CommandDataOption},
-        autocomplete::AutocompleteInteraction,
-        command::CommandOptionType,
+    all::{
+        CommandData, CommandDataOption, CommandDataOptionValue, CommandInteraction,
+        CommandOptionType,
     },
-    prelude::Context,
+    builder::{
+        CreateAutocompleteResponse, CreateCommand, CreateCommandOption, CreateInteractionResponse,
+    },
+    client::Context,
 };
 use synixe_events::gear::db::Response;
 use synixe_meta::discord::role::CERT_GRENADIER;
 use synixe_proc::events_request_2;
 
 use crate::{
-    discord::interaction::{Confirmation, Generic, Interaction},
+    discord::interaction::{Confirmation, Interaction},
     get_option,
 };
 
-pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("gear")
+pub fn register() -> CreateCommand {
+    CreateCommand::new("gear")
         .description("Manage your gear")
-        .create_option(|option| {
-            option
-                .name("repaint")
-                .description("Repaint a weapon")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("item")
-                        .description("Select the item you want to modify")
-                        .kind(CommandOptionType::String)
-                        .required(true)
-                        .set_autocomplete(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("color")
-                        .description("Select the new variant of the item")
-                        .kind(CommandOptionType::String)
-                        .required(true)
-                        .set_autocomplete(true)
-                })
-        })
-        .create_option(|option| {
-            option
-                .name("ugl")
-                .description("Upgrade a weapon to have a UGL")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("weapon")
-                        .description("Select the weapon you want to modify")
-                        .kind(CommandOptionType::String)
-                        .required(true)
-                        .set_autocomplete(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("ugl")
-                        .description("Select the UGL you want to add")
-                        .kind(CommandOptionType::String)
-                        .required(true)
-                        .set_autocomplete(true)
-                })
-        })
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::SubCommand, "repaint", "Repaint a weapon")
+                .add_sub_option(
+                    CreateCommandOption::new(
+                        CommandOptionType::String,
+                        "item",
+                        "Select the item you want to modify",
+                    )
+                    .required(true)
+                    .set_autocomplete(true),
+                )
+                .add_sub_option(
+                    CreateCommandOption::new(
+                        CommandOptionType::String,
+                        "color",
+                        "Select the new variant of the item",
+                    )
+                    .required(true)
+                    .set_autocomplete(true),
+                ),
+        )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "ugl",
+                "Upgrade a weapon to have a UGL",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "weapon",
+                    "Select the weapon you want to modify",
+                )
+                .required(true)
+                .set_autocomplete(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "ugl",
+                    "Select the UGL you want to add",
+                )
+                .required(true)
+                .set_autocomplete(true),
+            ),
+        )
 }
 
-pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
     let Some(subcommand) = command.data.options.first() else {
         warn!("No subcommand for gear provided");
         return Ok(());
     };
-    if subcommand.kind == CommandOptionType::SubCommand {
+    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value {
         match subcommand.name.as_str() {
-            "repaint" => repaint(ctx, command, &subcommand.options).await?,
-            "ugl" => ugl(ctx, command, &subcommand.options).await?,
+            "repaint" => repaint(ctx, command, options).await?,
+            "ugl" => ugl(ctx, command, options).await?,
             _ => unreachable!(),
         }
     }
@@ -83,16 +85,16 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
 
 pub async fn autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
     let Some(subcommand) = autocomplete.data.options.first() else {
         warn!("No subcommand for gear provided");
         return Ok(());
     };
-    if subcommand.kind == CommandOptionType::SubCommand {
+    if subcommand.kind() == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
-            "repaint" => repaint_autocomplete(ctx, autocomplete, &subcommand.options).await?,
-            "ugl" => ugl_autocomplete(ctx, autocomplete, &subcommand.options).await?,
+            "repaint" => repaint_autocomplete(ctx, autocomplete).await?,
+            "ugl" => ugl_autocomplete(ctx, autocomplete).await?,
             _ => unreachable!(),
         }
     }
@@ -101,10 +103,10 @@ pub async fn autocomplete(
 
 async fn repaint(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     let Some(item) = get_option!(options, "item", String) else {
         return interaction.reply("Invalid item").await;
     };
@@ -172,10 +174,9 @@ async fn repaint(
 
 async fn repaint_autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
-    options: &[CommandDataOption],
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
-    let Some(focus) = options.iter().find(|o| o.focused) else {
+    let Some(focus) = CommandData::autocomplete(&autocomplete.data) else {
         return Ok(());
     };
     if focus.name == "item" {
@@ -196,11 +197,12 @@ async fn repaint_autocomplete(
             items.truncate(25);
         }
         if let Err(e) = autocomplete
-            .create_autocomplete_response(&ctx.http, |f| {
+            .create_response(&ctx.http, {
+                let mut f = CreateAutocompleteResponse::default();
                 for item in items {
-                    f.add_string_choice(&item.pretty, &item.class);
+                    f = f.add_string_choice(&item.pretty, &item.class);
                 }
-                f
+                CreateInteractionResponse::Autocomplete(f)
             })
             .await
         {
@@ -208,11 +210,14 @@ async fn repaint_autocomplete(
         }
         Ok(())
     } else if focus.name == "color" {
-        let item = autocomplete.data.options[0]
-            .options
+        let CommandDataOptionValue::SubCommand(options) = &autocomplete.data.options[0].value
+        else {
+            return Ok(());
+        };
+        let item = options
             .iter()
             .find(|o| o.name == "item")
-            .and_then(|o| o.value.as_ref().map(|v| v.as_str().unwrap_or_default()))
+            .and_then(|o| o.value.as_str())
             .unwrap_or_default()
             .to_string();
         let Ok(Ok((Response::FamilySearch(Ok(mut colors)), _))) = events_request_2!(
@@ -232,14 +237,15 @@ async fn repaint_autocomplete(
             colors.truncate(25);
         }
         if let Err(e) = autocomplete
-            .create_autocomplete_response(&ctx.http, |f| {
+            .create_response(&ctx.http, {
+                let mut f = CreateAutocompleteResponse::default();
                 for color in colors {
                     if color.class == item {
                         continue;
                     }
-                    f.add_string_choice(&color.pretty, &color.class);
+                    f = f.add_string_choice(&color.pretty, &color.class);
                 }
-                f
+                CreateInteractionResponse::Autocomplete(f)
             })
             .await
         {
@@ -253,16 +259,16 @@ async fn repaint_autocomplete(
 
 async fn ugl(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     // Check if they have the Grenadier role
-    let guild = command
-        .guild_id
-        .expect("Brodsky is only in Synixe")
-        .to_guild_cached(ctx)
-        .expect("Brodsky is only in Synixe");
+    let Some(guild) = command.guild_id else {
+        return interaction
+            .reply("This command must be used in a server")
+            .await;
+    };
     let member = guild
         .member(&ctx, command.user.id)
         .await
@@ -339,10 +345,9 @@ async fn ugl(
 
 async fn ugl_autocomplete(
     ctx: &Context,
-    autocomplete: &AutocompleteInteraction,
-    options: &[CommandDataOption],
+    autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
-    let Some(focus) = options.iter().find(|o| o.focused) else {
+    let Some(focus) = CommandData::autocomplete(&autocomplete.data) else {
         return Ok(());
     };
     if focus.name == "weapon" {
@@ -363,25 +368,29 @@ async fn ugl_autocomplete(
             items.truncate(25);
         }
         if let Err(e) = autocomplete
-            .create_autocomplete_response(&ctx.http, |f| {
+            .create_response(&ctx.http, {
+                let mut f = CreateAutocompleteResponse::default();
                 for item in items {
                     if item.class != item.family {
                         continue;
                     }
-                    f.add_string_choice(&item.pretty, &item.class);
+                    f = f.add_string_choice(&item.pretty, &item.class);
                 }
-                f
+                CreateInteractionResponse::Autocomplete(f)
             })
             .await
         {
             error!("failed to create autocomplete response: {}", e);
         }
     } else if focus.name == "ugl" {
-        let weapon = autocomplete.data.options[0]
-            .options
+        let CommandDataOptionValue::SubCommand(options) = &autocomplete.data.options[0].value
+        else {
+            return Ok(());
+        };
+        let weapon = options
             .iter()
             .find(|o| o.name == "weapon")
-            .and_then(|o| o.value.as_ref().map(|v| v.as_str().unwrap_or_default()))
+            .and_then(|o| o.value.as_str())
             .unwrap_or_default()
             .to_string();
         let Ok(Ok((Response::FamilySearch(Ok(mut ugls)), _))) = events_request_2!(
@@ -401,14 +410,15 @@ async fn ugl_autocomplete(
             ugls.truncate(25);
         }
         if let Err(e) = autocomplete
-            .create_autocomplete_response(&ctx.http, |f| {
+            .create_response(&ctx.http, {
+                let mut f = CreateAutocompleteResponse::default();
                 for ugl in ugls {
                     if ugl.class == weapon {
                         continue;
                     }
-                    f.add_string_choice(&ugl.pretty, &ugl.class);
+                    f = f.add_string_choice(&ugl.pretty, &ugl.class);
                 }
-                f
+                CreateInteractionResponse::Autocomplete(f)
             })
             .await
         {

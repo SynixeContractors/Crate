@@ -1,8 +1,9 @@
 use std::net::SocketAddr;
 
-use axum::{extract::Path, response::IntoResponse, routing::get, Router, Server};
+use axum::{extract::Path, response::IntoResponse, routing::get, Router};
 use synixe_events::gear::db::Response;
 use synixe_proc::events_request_5;
+use tokio::net::TcpListener;
 
 #[macro_use]
 extern crate tracing;
@@ -15,10 +16,12 @@ async fn main() {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     debug!("Listening on {}", addr);
-    Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    axum::serve(
+        TcpListener::bind(&addr).await.expect("bind to addr :3000"),
+        app.into_make_service(),
+    )
+    .await
+    .unwrap();
 }
 
 async fn balance(Path(id): Path<u64>) -> impl IntoResponse {
@@ -26,7 +29,7 @@ async fn balance(Path(id): Path<u64>) -> impl IntoResponse {
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankBalance {
-            member: serenity::model::prelude::UserId(id),
+            member: serenity::model::prelude::UserId::new(id),
         }
     )
     .await

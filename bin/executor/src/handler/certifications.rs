@@ -96,11 +96,11 @@ impl Handler for Request {
                             bootstrap::NC::get().await,
                             synixe_events::discord::write,
                             EnsureRoles {
-                                member: UserId(trial.trainee.parse().unwrap()),
+                                member: UserId::new(trial.trainee.parse().unwrap()),
                                 roles: cert
                                     .roles_granted
                                     .iter()
-                                    .map(|r| RoleId(r.parse().unwrap()))
+                                    .map(|r| RoleId::new(r.parse().unwrap()))
                                     .collect(),
                             }
                         )

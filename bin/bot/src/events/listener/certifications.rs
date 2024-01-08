@@ -28,21 +28,25 @@ impl Listener for Publish {
                             warn!("Certification not found: {}", trial.certification);
                             return Ok(());
                         };
-                        let mut member = GUILD
-                            .member(CacheAndHttp::get(), trial.trainee.parse::<UserId>()?)
+                        let member = GUILD
+                            .member(
+                                CacheAndHttp::get().as_ref(),
+                                trial.trainee.parse::<UserId>()?,
+                            )
                             .await?;
                         for role in &cert.roles_granted {
                             member
-                                .add_role(&CacheAndHttp::get().http, role.parse::<RoleId>()?)
+                                .add_role(CacheAndHttp::get().as_ref(), role.parse::<RoleId>()?)
                                 .await?;
                         }
                         if let Err(e) = synixe_meta::discord::channel::TRAINING
-                            .send_message(&*CacheAndHttp::get(), |m| {
-                                m.content(format!(
+                            .say(
+                                CacheAndHttp::get().as_ref(),
+                                format!(
                                     "<@{}> has certified <@{}> in {}",
                                     trial.instructor, trial.trainee, cert.name
-                                ))
-                            })
+                                ),
+                            )
                             .await
                         {
                             error!("Failed to send message: {}", e);
@@ -53,13 +57,13 @@ impl Listener for Publish {
                         .trainee
                         .parse::<UserId>()
                         .expect("Failed to parse user id")
-                        .create_dm_channel(CacheAndHttp::get())
+                        .create_dm_channel(CacheAndHttp::get().as_ref())
                         .await
                     else {
                         warn!("Failed to create DM channel for {}", trial.trainee);
                         return Ok(());
                     };
-                    if let Err(e) = dm.say(&*CacheAndHttp::get(), format!("You failed your certification trial. Here are the notes from your instructor: \n > {}", trial.notes)).await {
+                    if let Err(e) = dm.say(CacheAndHttp::get().as_ref(), format!("You failed your certification trial. Here are the notes from your instructor: \n > {}", trial.notes)).await {
                         error!("Failed to send message: {}", e);
                     }
                 }
@@ -75,8 +79,11 @@ impl Listener for Publish {
                         return Ok(());
                     };
 
-                    let Ok(mut member) = GUILD
-                        .member(CacheAndHttp::get(), trial.trainee.parse::<UserId>()?)
+                    let Ok(member) = GUILD
+                        .member(
+                            CacheAndHttp::get().as_ref(),
+                            trial.trainee.parse::<UserId>()?,
+                        )
                         .await
                     else {
                         warn!("Failed to get member: {}", trial.trainee);
@@ -86,7 +93,7 @@ impl Listener for Publish {
                     let message = if *days == 0 {
                         for role in &cert.roles_granted {
                             member
-                                .remove_role(&CacheAndHttp::get().http, role.parse::<RoleId>()?)
+                                .remove_role(&CacheAndHttp::get().as_ref(), role.parse::<RoleId>()?)
                                 .await?;
                         }
                         format!(
@@ -104,22 +111,20 @@ impl Listener for Publish {
                         .trainee
                         .parse::<UserId>()
                         .expect("Failed to parse user id")
-                        .create_dm_channel(CacheAndHttp::get())
+                        .create_dm_channel(CacheAndHttp::get().as_ref())
                         .await
                     else {
                         error!("Failed to create dm channel");
                         return Ok(());
                     };
-                    if let Err(e) = dm.say(&*CacheAndHttp::get(), &message).await {
+                    if let Err(e) = dm.say(CacheAndHttp::get().as_ref(), &message).await {
                         error!("Failed to send message: {}", e);
                     }
                     if let Err(e) = synixe_meta::discord::channel::LOG
-                        .send_message(&*CacheAndHttp::get(), |m| {
-                            m.content(&format!(
-                                "<@{}> has been notified\n> {message}",
-                                trial.trainee
-                            ))
-                        })
+                        .say(
+                            CacheAndHttp::get().as_ref(),
+                            format!("<@{}> has been notified\n> {message}", trial.trainee,),
+                        )
                         .await
                     {
                         error!("Cannot send ban message: {}", e);
