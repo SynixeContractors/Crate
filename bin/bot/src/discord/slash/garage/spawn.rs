@@ -1,5 +1,5 @@
 use serenity::{
-    model::prelude::application_command::{ApplicationCommandInteraction, CommandDataOption},
+    all::{CommandDataOption, CommandInteraction},
     prelude::Context,
 };
 use synixe_events::garage::{
@@ -10,21 +10,17 @@ use synixe_meta::discord::{channel::LOG, role::LEADERSHIP};
 use synixe_proc::{events_request_2, events_request_5};
 
 use crate::{
-    discord::{
-        interaction::{Generic, Interaction},
-        slash::ShouldAsk,
-        utils::audit,
-    },
+    discord::{interaction::Interaction, slash::ShouldAsk, utils::audit},
     get_option,
 };
 
 #[allow(clippy::too_many_lines)]
 pub async fn spawn(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
     super::super::requires_roles(
         command.user.id,
         &[LEADERSHIP],
@@ -95,11 +91,10 @@ pub async fn spawn(
             {
                 error!("Failed to retrieve vehicle: {}", e);
                 if let Err(e) = LOG
-                    .send_message(&ctx.http, |m| {
-                        m.content(format!(
-                            "Failed to store retrieve action on vehicle {plate}: {e}"
-                        ))
-                    })
+                    .say(
+                        &ctx.http,
+                        format!("Failed to store retrieve action on vehicle {plate}: {e}"),
+                    )
                     .await
                 {
                     error!("Failed to send log message: {}", e);

@@ -27,7 +27,7 @@ fn command_get(discord: String, steam: String) {
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             LoadoutGet {
-                member: UserId(discord),
+                member: UserId::new(discord),
             }
         )
         .await
@@ -69,7 +69,7 @@ fn command_store(discord: String, steam: String, loadout: String) {
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             LoadoutStore {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 loadout: loadout.replace("\"\"", "\""),
             }
         )

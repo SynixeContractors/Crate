@@ -10,7 +10,10 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
     };
     match ev {
         info::Request::Username { user } => {
-            match synixe_meta::discord::GUILD.member(&client, user).await {
+            match synixe_meta::discord::GUILD
+                .member(client.as_ref(), user)
+                .await
+            {
                 Ok(member) => {
                     if let Err(e) = respond!(
                         msg,
@@ -39,7 +42,10 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             }
         }
         info::Request::MemberRoles { user } => {
-            match synixe_meta::discord::GUILD.member(&client, user).await {
+            match synixe_meta::discord::GUILD
+                .member(client.as_ref(), user)
+                .await
+            {
                 Ok(member) => {
                     if let Err(e) =
                         respond!(msg, info::Response::MemberRoles(Ok(member.roles))).await
@@ -58,7 +64,7 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
         }
         info::Request::MemberByName { name } => {
             match synixe_meta::discord::GUILD
-                .members(&client.http, None, None)
+                .members(client.as_ref(), None, None)
                 .await
             {
                 Ok(members) => {
@@ -85,7 +91,7 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
         }
         info::Request::MembersByRole { role } => {
             match synixe_meta::discord::GUILD
-                .members(&client.http, None, None)
+                .members(client.as_ref(), None, None)
                 .await
             {
                 Ok(members) => {

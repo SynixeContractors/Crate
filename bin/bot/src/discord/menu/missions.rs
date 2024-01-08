@@ -1,9 +1,6 @@
 use serenity::{
-    builder::CreateApplicationCommand,
-    model::prelude::{
-        application_command::ApplicationCommandInteraction, command::CommandType, MessageId,
-        ReactionType,
-    },
+    all::{CommandInteraction, CommandType, MessageId, ReactionType},
+    builder::{CreateCommand, CreateMessage, EditThread},
     prelude::Context,
 };
 use synixe_events::{missions::db::Response, reputation};
@@ -19,19 +16,16 @@ pub const MENU_AAR_PAY: &str = "AAR - Pay";
 pub const MENU_AAR_IDS: &str = "AAR - Get IDs";
 
 use crate::discord::{
-    interaction::{Confirmation, Generic, Interaction},
+    interaction::{Confirmation, Interaction},
     utils::find_members,
 };
 
-pub fn aar_ids(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command.name(MENU_AAR_IDS).kind(CommandType::Message)
+pub fn aar_ids() -> CreateCommand {
+    CreateCommand::new(MENU_AAR_IDS).kind(CommandType::Message)
 }
 
-pub async fn run_aar_ids(
-    ctx: &Context,
-    command: &ApplicationCommandInteraction,
-) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), &[]);
+pub async fn run_aar_ids(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), &[]);
     let Ok(msg) = command
         .channel_id
         .message(
@@ -76,16 +70,13 @@ pub async fn run_aar_ids(
     }
 }
 
-pub fn aar_pay(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command.name(MENU_AAR_PAY).kind(CommandType::Message)
+pub fn aar_pay() -> CreateCommand {
+    CreateCommand::new(MENU_AAR_PAY).kind(CommandType::Message)
 }
 
 #[allow(clippy::too_many_lines)]
-pub async fn run_aar_pay(
-    ctx: &Context,
-    command: &ApplicationCommandInteraction,
-) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), &[]);
+pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), &[]);
     let Some(member) = command.member.as_ref() else {
         return interaction.reply("Failed to get member").await;
     };
@@ -231,18 +222,18 @@ pub async fn run_aar_pay(
                 error!("Error replying to message: {}", e);
             }
             if let Some((channel, message)) = scheduled.message() {
-                if let Some(thread) = channel.message(&ctx.http, message).await?.thread {
+                if let Some(mut thread) = channel.message(&ctx.http, message).await?.thread {
                     let Ok((found, unknown)) = find_members(ctx, aar.contractors()).await else {
                         return interaction.reply("Failed to find members").await;
                     };
                     thread
-                        .send_message(&ctx.http, |m| {
+                        .send_message(&ctx.http, {
                             let mut found = found
                                 .into_iter()
                                 .map(|id| format!("<@{}>", id.1))
                                 .collect::<Vec<String>>();
                             found.extend(unknown);
-                            m.content(format!(
+                            CreateMessage::default().content(format!(
                                 "Contractors Paid: {}\n```{}```",
                                 found.join(", "),
                                 aar.show_math(payment, current_rep)
@@ -250,7 +241,7 @@ pub async fn run_aar_pay(
                         })
                         .await?;
                     thread
-                        .edit_thread(&ctx.http, |t| t.locked(true).archived(true))
+                        .edit_thread(&ctx.http, EditThread::default().locked(true).archived(true))
                         .await?;
                 }
             }

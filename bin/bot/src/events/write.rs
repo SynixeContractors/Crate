@@ -1,5 +1,5 @@
 use nats::asynk::Message;
-use serenity::model::prelude::ChannelId;
+use serenity::{builder::CreateMessage, model::prelude::ChannelId};
 use synixe_events::{
     discord::write::{self, DiscordMessage},
     respond,
@@ -20,10 +20,15 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             thread: _,
         } => {
             if let Err(e) = channel
-                .send_message(&client.http, |m| match message.content {
-                    write::DiscordContent::Text(text) => m.content(text),
-                    write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
-                })
+                .send_message(
+                    client.as_ref(),
+                    match message.content {
+                        write::DiscordContent::Text(text) => CreateMessage::default().content(text),
+                        write::DiscordContent::Embed(embed) => {
+                            CreateMessage::default().embed(embed.into())
+                        }
+                    },
+                )
                 .await
             {
                 error!("Failed to send message: {}", e);
@@ -37,14 +42,21 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             }
         }
         write::Request::UserMessage { user, message } => {
-            let dm = user.create_dm_channel(&client.http).await;
+            let dm = user.create_dm_channel(client.as_ref()).await;
             match dm {
                 Ok(dm) => {
                     if let Err(e) = dm
-                        .send_message(&client.http, |m| match message.content {
-                            write::DiscordContent::Text(text) => m.content(text),
-                            write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
-                        })
+                        .send_message(
+                            client.as_ref(),
+                            match message.content {
+                                write::DiscordContent::Text(text) => {
+                                    CreateMessage::default().content(text)
+                                }
+                                write::DiscordContent::Embed(embed) => {
+                                    CreateMessage::default().embed(embed.into())
+                                }
+                            },
+                        )
                         .await
                     {
                         if let Err(e) =
@@ -68,7 +80,7 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
                 error!("Failed to respond to NATS");
                 return;
             };
-            let Ok(mut member) = GUILD.member(&client, member).await else {
+            let Ok(member) = GUILD.member(client.as_ref(), member).await else {
                 error!("Failed to get member");
                 if let Err(e) = respond!(
                     msg,
@@ -85,7 +97,7 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
                 .filter(|r| !member.roles.contains(r))
                 .collect::<Vec<_>>();
             for role in roles {
-                if let Err(e) = member.add_role(&client.http, role).await {
+                if let Err(e) = member.add_role(client.as_ref(), role).await {
                     error!("Failed to add role: {}", e);
                     if let Err(e) =
                         respond!(msg, write::Response::EnsureRoles(Err(e.to_string()))).await
@@ -117,10 +129,13 @@ async fn audit(client: ArcCacheAndHttp, msg: Message, message: DiscordMessage, c
         return;
     };
     if let Err(e) = channel
-        .send_message(&client.http, |m| match message.content {
-            write::DiscordContent::Text(text) => m.content(text),
-            write::DiscordContent::Embed(embed) => m.set_embed(embed.into()),
-        })
+        .send_message(
+            client.as_ref(),
+            match message.content {
+                write::DiscordContent::Text(text) => CreateMessage::default().content(text),
+                write::DiscordContent::Embed(embed) => CreateMessage::default().embed(embed.into()),
+            },
+        )
         .await
     {
         error!("Failed to send message: {}", e);

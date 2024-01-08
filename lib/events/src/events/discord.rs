@@ -53,16 +53,16 @@ pub mod write {
         fn from(val: DiscordEmbed) -> Self {
             let mut embed = Self::default();
             if let Some(title) = val.title {
-                embed.title(title);
+                embed = embed.title(title);
             }
             if let Some(description) = val.description {
-                embed.description(description);
+                embed = embed.description(description);
             }
             if let Some(url) = val.url {
-                embed.url(url);
+                embed = embed.url(url);
             }
             if let Some(colour) = val.colour {
-                embed.color(colour);
+                embed = embed.color(colour);
             }
             embed
         }
@@ -178,13 +178,13 @@ pub mod db {
 
 /// Publish event from discord
 pub mod publish {
-    use serenity::model::prelude::Member;
+    use serenity::all::GuildMemberUpdateEvent;
     use synixe_proc::events_publish;
     events_publish!(publish.info {
         /// A member was updated
         struct MemberUpdate {
             /// Member that was updated
-            member: Member,
+            member: GuildMemberUpdateEvent,
         }
     });
 }

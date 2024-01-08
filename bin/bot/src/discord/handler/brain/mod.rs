@@ -79,7 +79,7 @@ impl Brain {
             };
             match self.client.chat().create(request).await {
                 Ok(response) => {
-                    let response = response.choices.get(0)?.message.clone();
+                    let response = response.choices.first()?.message.clone();
                     if let Some(function_call) = response.function_call {
                         println!("ask function_call: {function_call:?}");
                         let Some(function) = self

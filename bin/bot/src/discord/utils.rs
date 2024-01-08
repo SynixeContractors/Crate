@@ -16,7 +16,7 @@ pub async fn find_members(
         let name = name.trim();
         // Handle the special snowflake
         if name == "Nathanial Greene" {
-            ids.push((name.to_string(), UserId(358_146_229_626_077_187)));
+            ids.push((name.to_string(), UserId::new(358_146_229_626_077_187)));
             continue;
         }
         members

@@ -1,6 +1,8 @@
 #![deny(clippy::pedantic, clippy::unwrap_used)]
 #![warn(clippy::nursery, clippy::all)]
 
+use std::sync::Arc;
+
 #[macro_use]
 extern crate tracing;
 
@@ -9,7 +11,14 @@ mod cache_http;
 mod discord;
 mod events;
 
-type ArcCacheAndHttp = std::sync::Arc<serenity::CacheAndHttp>;
+#[derive(Clone)]
+struct ArcCacheAndHttp(Arc<serenity::cache::Cache>, Arc<serenity::http::Http>);
+
+impl ArcCacheAndHttp {
+    pub fn as_ref(&self) -> (&Arc<serenity::cache::Cache>, &serenity::http::Http) {
+        (&self.0, &self.1)
+    }
+}
 
 #[tokio::main]
 async fn main() {
@@ -17,10 +26,9 @@ async fn main() {
 
     let bot = discord::build().await;
 
-    cache_http::CacheAndHttp::init(bot.cache_and_http.clone());
+    let cache_and_http = ArcCacheAndHttp(bot.cache.clone(), bot.http.clone());
 
-    let ((), ()) = tokio::join!(
-        events::start(bot.cache_and_http.clone()),
-        discord::start(bot),
-    );
+    cache_http::CacheAndHttp::init(cache_and_http.clone());
+
+    let ((), ()) = tokio::join!(events::start(cache_and_http), discord::start(bot),);
 }

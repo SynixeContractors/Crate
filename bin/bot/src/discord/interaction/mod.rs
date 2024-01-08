@@ -1,13 +1,11 @@
 use std::{fmt::Display, time::Duration};
 
 use serenity::{
-    builder::{CreateInteractionResponse, CreateInteractionResponseFollowup},
-    http::Http,
-    model::prelude::{
-        application_command::{ApplicationCommandInteraction, CommandDataOption},
-        component::ButtonStyle,
-        message_component::MessageComponentInteraction,
-        InteractionResponseType, Message, MessageId,
+    all::{ButtonStyle, CommandDataOption, ComponentInteractionDataKind, InteractionType, Message},
+    builder::{
+        CreateActionRow, CreateButton, CreateInteractionResponse,
+        CreateInteractionResponseFollowup, CreateInteractionResponseMessage, CreateSelectMenu,
+        CreateSelectMenuKind, CreateSelectMenuOption,
     },
     prelude::Context,
 };
@@ -17,90 +15,98 @@ pub use confirm::Confirmation;
 
 use crate::get_option;
 
-pub enum Generic<'a> {
-    Application(&'a ApplicationCommandInteraction),
-    Message(&'a MessageComponentInteraction),
-}
-
-impl<'a> Generic<'a> {
-    pub async fn create_interaction_response<'c, F>(
-        &self,
-        http: impl AsRef<Http> + Send + Sync,
-        f: F,
-    ) -> serenity::Result<()>
-    where
-        for<'b> F: FnOnce(&'b mut CreateInteractionResponse<'c>) -> &'b mut CreateInteractionResponse<'c>
-            + Send,
-    {
-        match self {
-            Self::Application(i) => i.create_interaction_response(http, f).await,
-            Self::Message(i) => i.create_interaction_response(http, f).await,
-        }
-    }
-
-    pub async fn edit_followup_message<'c, F, M: Into<MessageId> + Send>(
-        &self,
-        http: impl AsRef<Http> + Send + Sync,
-        message_id: M,
-        f: F,
-    ) -> serenity::Result<Message>
-    where
-        for<'b> F: FnOnce(
-                &'b mut CreateInteractionResponseFollowup<'c>,
-            ) -> &'b mut CreateInteractionResponseFollowup<'c>
-            + Send,
-    {
-        match self {
-            Self::Application(i) => i.edit_followup_message(http, message_id, f).await,
-            Self::Message(i) => i.edit_followup_message(http, message_id, f).await,
-        }
-    }
-
-    pub async fn create_followup_message<'c, F>(
-        &self,
-        http: impl AsRef<Http> + Send + Sync,
-        f: F,
-    ) -> serenity::Result<Message>
-    where
-        for<'b> F: FnOnce(
-                &'b mut CreateInteractionResponseFollowup<'c>,
-            ) -> &'b mut CreateInteractionResponseFollowup<'c>
-            + Send,
-    {
-        match self {
-            Self::Application(i) => i.create_followup_message(http, f).await,
-            Self::Message(i) => i.create_followup_message(http, f).await,
-        }
-    }
+#[allow(clippy::module_name_repetitions)]
+pub trait IntoInteraction {
+    fn into_interaction(self) -> serenity::all::Interaction;
 }
 
 pub struct Interaction<'a> {
     message: Option<Message>,
-    interaction: Generic<'a>,
     ctx: &'a Context,
+    serenity: serenity::all::Interaction,
     initial_response: bool,
     ephemeral: bool,
 }
 
 impl<'a> Interaction<'a> {
-    pub fn new(ctx: &'a Context, interaction: Generic<'a>, options: &[CommandDataOption]) -> Self {
+    /// Only accepts Comand, Component, and Modal interactions
+    pub fn new(
+        ctx: &'a Context,
+        interaction: impl IntoInteraction,
+        options: &[CommandDataOption],
+    ) -> Self {
+        let interaction = interaction.into_interaction();
+        if ![
+            InteractionType::Command,
+            InteractionType::Modal,
+            InteractionType::Component,
+        ]
+        .contains(&interaction.kind())
+        {
+            panic!("Interaction type must be Command, Modal, or Component");
+        }
         Self {
             message: None,
-            interaction,
+            serenity: interaction,
             ctx,
             initial_response: false,
             ephemeral: !get_option!(options, "public", Boolean).unwrap_or(&false),
         }
     }
 
+    async fn _followup(
+        &mut self,
+        content: CreateInteractionResponseFollowup,
+    ) -> serenity::Result<()> {
+        if let Some(message) = self.message.as_ref() {
+            match &self.serenity {
+                serenity::all::Interaction::Command(command) => {
+                    command.edit_followup(self.ctx, message.id, content).await?;
+                }
+                serenity::all::Interaction::Component(component) => {
+                    component
+                        .edit_followup(self.ctx, message.id, content)
+                        .await?;
+                }
+                serenity::all::Interaction::Modal(modal) => {
+                    modal.edit_followup(self.ctx, message.id, content).await?;
+                }
+                _ => unreachable!(),
+            }
+        } else {
+            self.message = Some(match &self.serenity {
+                serenity::all::Interaction::Command(command) => {
+                    command.create_followup(self.ctx, content).await?
+                }
+                serenity::all::Interaction::Component(component) => {
+                    component.create_followup(self.ctx, content).await?
+                }
+                serenity::all::Interaction::Modal(modal) => {
+                    modal.create_followup(self.ctx, content).await?
+                }
+                _ => unreachable!(),
+            });
+        }
+        Ok(())
+    }
+
     async fn initial(&mut self) -> serenity::Result<()> {
         if !self.initial_response {
-            self.interaction
-                .create_interaction_response(self.ctx, |r| {
-                    r.kind(InteractionResponseType::DeferredChannelMessageWithSource)
-                        .interaction_response_data(|d| d.ephemeral(self.ephemeral))
-                })
-                .await?;
+            let defer = CreateInteractionResponse::Defer(
+                CreateInteractionResponseMessage::default().ephemeral(self.ephemeral),
+            );
+            match &self.serenity {
+                serenity::all::Interaction::Command(command) => {
+                    command.create_response(self.ctx, defer).await?;
+                }
+                serenity::all::Interaction::Component(component) => {
+                    component.create_response(self.ctx, defer).await?;
+                }
+                serenity::all::Interaction::Modal(modal) => {
+                    modal.create_response(self.ctx, defer).await?;
+                }
+                _ => unreachable!(),
+            }
             self.initial_response = true;
         }
         Ok(())
@@ -109,112 +115,72 @@ impl<'a> Interaction<'a> {
     pub async fn reply(&mut self, content: impl Display + Send) -> serenity::Result<()> {
         self.initial().await?;
         debug!("replying to interaction: {}", content);
-        if let Some(message) = self.message.as_ref() {
-            self.interaction
-                .edit_followup_message(self.ctx, message.id, |m| {
-                    m.content(content).components(|c| c)
-                })
-                .await?;
-        } else {
-            self.message = Some(
-                self.interaction
-                    .create_followup_message(self.ctx, |m| m.content(content).components(|c| c))
-                    .await?,
-            );
-        }
+        self._followup(
+            CreateInteractionResponseFollowup::default()
+                .content(content.to_string())
+                .components(vec![]),
+        )
+        .await?;
         Ok(())
     }
 
     pub async fn choice<T: ToString + Display + Sync>(
         &mut self,
         prompt: &str,
-        choices: &Vec<(String, T)>,
+        choices: &[(String, T)],
     ) -> serenity::Result<Option<String>> {
         self.initial().await?;
         debug!("prompting for choice: {}", prompt);
-        let message = if let Some(message) = self.message.as_ref() {
-            self.interaction
-                .edit_followup_message(&self.ctx, message.id, |r| {
-                    Self::_choice(prompt, choices, r);
-                    r
-                })
-                .await?;
-            message
-        } else {
-            self.message = Some(
-                self.interaction
-                    .create_followup_message(&self.ctx, |r| {
-                        Self::_choice(prompt, choices, r);
-                        r
-                    })
-                    .await?,
-            );
-            self.message
-                .as_ref()
-                .expect("message should be set literally lines above")
-        };
-        let Some(interaction) = message
+        self._followup(Self::_choice(prompt, choices)).await?;
+        let Some(interaction) = self
+            .message
+            .as_ref()
+            .expect("message should be set after followup")
             .await_component_interaction(self.ctx)
             .timeout(Duration::from_secs(60 * 3))
-            .collect_limit(1)
+            .next()
             .await
         else {
-            self.interaction
-                .edit_followup_message(&self.ctx, message.id, |r| {
-                    r.content("Didn't receive a response").components(|c| c)
-                })
-                .await?;
+            self._followup(
+                CreateInteractionResponseFollowup::default()
+                    .content("Didn't receive a response")
+                    .components(vec![]),
+            )
+            .await?;
             return Ok(None);
         };
         interaction
-            .create_interaction_response(&self.ctx, |r| {
-                r.kind(InteractionResponseType::DeferredUpdateMessage)
-            })
+            .create_response(&self.ctx, CreateInteractionResponse::Acknowledge)
             .await?;
-        Ok(interaction.data.values.get(0).cloned())
+        let ComponentInteractionDataKind::StringSelect { values } = interaction.data.kind else {
+            return Ok(None);
+        };
+        Ok(values.first().cloned())
     }
 
     pub async fn confirm(&mut self, prompt: &str) -> serenity::Result<Confirmation> {
         self.initial().await?;
         debug!("prompting for confirmation: {}", prompt);
-        let message = if let Some(message) = self.message.as_ref() {
-            self.interaction
-                .edit_followup_message(&self.ctx, message.id, |r| {
-                    Self::_confirm(prompt, r);
-                    r
-                })
-                .await?;
-            message
-        } else {
-            self.message = Some(
-                self.interaction
-                    .create_followup_message(&self.ctx, |r| {
-                        Self::_confirm(prompt, r);
-                        r
-                    })
-                    .await?,
-            );
-            self.message
-                .as_ref()
-                .expect("message should be set literally lines above")
-        };
-        let Some(interaction) = message
+        self._followup(Self::_confirm(prompt)).await?;
+        let Some(interaction) = self
+            .message
+            .as_ref()
+            .expect("message should be set after followup")
             .await_component_interaction(self.ctx)
             .timeout(Duration::from_secs(60 * 3))
-            .collect_limit(1)
+            .next()
             .await
         else {
-            self.interaction
-                .edit_followup_message(&self.ctx, message.id, |r| {
-                    r.content("Didn't receive a response").components(|c| c)
-                })
-                .await?;
+            self._followup(
+                CreateInteractionResponseFollowup::default()
+                    .content("Didn't receive a response")
+                    .components(vec![]),
+            )
+            .await?;
             return Ok(Confirmation::Timeout);
         };
         interaction
-            .create_interaction_response(&self.ctx, |r| {
-                r.kind(InteractionResponseType::DeferredUpdateMessage)
-            })
+            .create_response(&self.ctx, CreateInteractionResponse::Acknowledge)
             .await?;
         Ok(if interaction.data.custom_id == "yes" {
             Confirmation::Yes
@@ -227,31 +193,57 @@ impl<'a> Interaction<'a> {
 impl Interaction<'_> {
     fn _choice<T: ToString + Display>(
         prompt: &str,
-        choices: &Vec<(String, T)>,
-        r: &mut CreateInteractionResponseFollowup,
-    ) {
-        r.content(prompt).components(|c| {
-            c.create_action_row(|r| {
-                r.create_select_menu(|m| {
-                    m.custom_id("choice").options(|o| {
-                        for choice in choices {
-                            o.create_option(|o| {
-                                o.label(choice.0.to_string()).value(choice.1.to_string())
-                            });
-                        }
-                        o
-                    })
-                })
-            })
-        });
+        choices: &[(String, T)],
+    ) -> CreateInteractionResponseFollowup {
+        CreateInteractionResponseFollowup::default()
+            .content(prompt)
+            .components(vec![CreateActionRow::SelectMenu(CreateSelectMenu::new(
+                "choice",
+                CreateSelectMenuKind::String {
+                    options: choices
+                        .iter()
+                        .map(|choice| {
+                            CreateSelectMenuOption::new(choice.0.to_string(), choice.1.to_string())
+                        })
+                        .collect::<Vec<_>>(),
+                },
+            ))])
     }
 
-    fn _confirm(prompt: &str, r: &mut CreateInteractionResponseFollowup) {
-        r.content(prompt).components(|c| {
-            c.create_action_row(|r| {
-                r.create_button(|b| b.style(ButtonStyle::Danger).label("Yes").custom_id("yes"))
-                    .create_button(|b| b.style(ButtonStyle::Primary).label("No").custom_id("no"))
-            })
-        });
+    fn _confirm(prompt: &str) -> CreateInteractionResponseFollowup {
+        CreateInteractionResponseFollowup::default()
+            .content(prompt)
+            .components(vec![CreateActionRow::Buttons(vec![
+                CreateButton::new("yes")
+                    .style(ButtonStyle::Danger)
+                    .label("Yes"),
+                CreateButton::new("no")
+                    .style(ButtonStyle::Primary)
+                    .label("No"),
+            ])])
+    }
+}
+
+impl IntoInteraction for serenity::all::Interaction {
+    fn into_interaction(self) -> serenity::all::Interaction {
+        self
+    }
+}
+
+impl IntoInteraction for serenity::all::CommandInteraction {
+    fn into_interaction(self) -> serenity::all::Interaction {
+        serenity::all::Interaction::Command(self)
+    }
+}
+
+impl IntoInteraction for serenity::all::ComponentInteraction {
+    fn into_interaction(self) -> serenity::all::Interaction {
+        serenity::all::Interaction::Component(self)
+    }
+}
+
+impl IntoInteraction for serenity::all::ModalInteraction {
+    fn into_interaction(self) -> serenity::all::Interaction {
+        serenity::all::Interaction::Modal(self)
     }
 }

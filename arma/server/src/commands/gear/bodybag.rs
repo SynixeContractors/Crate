@@ -42,7 +42,7 @@ fn command_store(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             LockerStore {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 items,
                 reason: "bodybag".to_string(),
             }

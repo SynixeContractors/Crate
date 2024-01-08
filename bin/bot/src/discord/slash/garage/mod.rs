@@ -1,16 +1,12 @@
 use serenity::{
-    builder::CreateApplicationCommand,
-    model::prelude::{
-        application_command::ApplicationCommandInteraction, command::CommandOptionType,
-    },
-    prelude::Context,
+    all::{CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType},
+    builder::{CreateCommand, CreateCommandOption},
+    client::Context,
 };
-
-use serenity::model::application::interaction::application_command::CommandDataOption;
 use synixe_events::garage::db::Response;
 use synixe_proc::events_request_2;
 
-use crate::discord::interaction::{Generic, Interaction};
+use crate::discord::interaction::Interaction;
 
 use self::enums::Command;
 
@@ -21,136 +17,140 @@ mod purchase;
 mod spawn;
 
 #[allow(clippy::too_many_lines)]
-pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("garage")
+pub fn register() -> CreateCommand {
+    CreateCommand::new("garage")
         .description("Interact with the garage")
-        .create_option(|option| {
-            option
-                .name("view")
-                .description("View the garage inventory")
-                .kind(CommandOptionType::SubCommand)
-        })
-        .create_option(|option| {
-            option
-                .name("purchase_addon")
-                .description("purchase an addon asset")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("vehicle")
-                        .description("The vehcile to attach the addon to")
-                        .kind(CommandOptionType::String)
-                        .set_autocomplete(true)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("addon")
-                        .description("The addon to asset purchase")
-                        .kind(CommandOptionType::String)
-                        .set_autocomplete(true)
-                        .required(true)
-                })
-        })
-        .create_option(|option| {
-            option
-                .name("purchase_vehicle")
-                .description("purchase a vehicle asset")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("vehicle")
-                        .description("The asset to purchase")
-                        .kind(CommandOptionType::String)
-                        .set_autocomplete(true)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("color")
-                        .description("The color of the vehicle")
-                        .kind(CommandOptionType::String)
-                        .set_autocomplete(true)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("plate")
-                        .description("Custom plate for the vehicle")
-                        .kind(CommandOptionType::String)
-                        .max_length(10)
-                        .required(true)
-                })
-        })
-        .create_option(|option| {
-            option
-                .name("attach")
-                .description("Attach an asset to a vehicle")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("vehicle")
-                        .description("The vehicle in question")
-                        .kind(CommandOptionType::String)
-                        .set_autocomplete(true)
-                        .required(true)
-                })
-                .create_sub_option(|option| {
-                    option
-                        .name("addon")
-                        .description("The addon to attach")
-                        .kind(CommandOptionType::String)
-                        .set_autocomplete(true)
-                        .required(true)
-                })
-        })
-        .create_option(|option| {
-            option
-                .name("detach")
-                .description("Detach an asset from vehicle")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("vehicle")
-                        .description("The vehicle in question")
-                        .kind(CommandOptionType::String)
-                        .set_autocomplete(true)
-                        .required(true)
-                })
-        })
-        .create_option(|option| {
-            option
-                .name("spawn")
-                .description("Spawn a vehicle")
-                .kind(CommandOptionType::SubCommand)
-                .create_sub_option(|option| {
-                    option
-                        .name("vehicle")
-                        .description("The vehicle to spawn")
-                        .kind(CommandOptionType::String)
-                        .set_autocomplete(true)
-                        .required(true)
-                })
-        })
+        .add_option(CreateCommandOption::new(
+            CommandOptionType::SubCommand,
+            "view",
+            "View the garage inventory",
+        ))
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "purchase_addon",
+                "purchase an addon asset",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "vehicle",
+                    "The vehcile to attach the addon to",
+                )
+                .set_autocomplete(true)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "addon",
+                    "The addon to asset purchase",
+                )
+                .set_autocomplete(true)
+                .required(true),
+            ),
+        )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "purchase_vehicle",
+                "purchase a vehicle asset",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "vehicle",
+                    "The asset to purchase",
+                )
+                .set_autocomplete(true)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "color",
+                    "The color of the vehicle",
+                )
+                .set_autocomplete(true)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "plate",
+                    "Custom plate for the vehicle",
+                )
+                .max_length(10)
+                .required(true),
+            ),
+        )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "attach",
+                "Attach an asset to a vehicle",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "vehicle",
+                    "The vehicle in question",
+                )
+                .set_autocomplete(true)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(CommandOptionType::String, "addon", "The addon to attach")
+                    .set_autocomplete(true)
+                    .required(true),
+            ),
+        )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "detach",
+                "Detach an asset from vehicle",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "vehicle",
+                    "The vehicle in question",
+                )
+                .set_autocomplete(true)
+                .required(true),
+            ),
+        )
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::SubCommand, "spawn", "Spawn a vehicle")
+                .add_sub_option(
+                    CreateCommandOption::new(
+                        CommandOptionType::String,
+                        "vehicle",
+                        "The vehicle to spawn",
+                    )
+                    .set_autocomplete(true)
+                    .required(true),
+                ),
+        )
 }
 
-pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> serenity::Result<()> {
+pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
     let Some(subcommand) = command.data.options.first() else {
         return Ok(());
     };
-    if subcommand.kind == CommandOptionType::SubCommand {
+    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value {
         let Some(name) = Command::from_str(subcommand.name.as_str()) else {
             return Ok(());
         };
         return match name {
-            Command::View => view(ctx, command, &subcommand.options).await,
+            Command::View => view(ctx, command, options).await,
             Command::PurchaseVehicle | Command::PurchaseAddon => {
-                purchase::purchase(ctx, command, &subcommand.options).await
+                purchase::purchase(ctx, command, options).await
             }
-            Command::Attach => attachment::attach(ctx, command, &subcommand.options).await,
-            Command::Detach => attachment::detach(ctx, command, &subcommand.options).await,
-            Command::Spawn => spawn::spawn(ctx, command, &subcommand.options).await,
+            Command::Attach => attachment::attach(ctx, command, options).await,
+            Command::Detach => attachment::detach(ctx, command, options).await,
+            Command::Spawn => spawn::spawn(ctx, command, options).await,
         };
     }
     Ok(())
@@ -158,10 +158,10 @@ pub async fn run(ctx: &Context, command: &ApplicationCommandInteraction) -> sere
 
 async fn view(
     ctx: &Context,
-    command: &ApplicationCommandInteraction,
+    command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, Generic::Application(command), options);
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
 
     let Ok(Ok((Response::FetchStoredVehicles(Ok(vehicles)), _))) = events_request_2!(
         bootstrap::NC::get().await,

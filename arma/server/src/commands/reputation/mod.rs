@@ -32,7 +32,7 @@ fn command_friendly_shot(member: String, target: String, weapon: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             FriendlyShot {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
@@ -58,7 +58,7 @@ fn command_civilian_shot(member: String, target: String, weapon: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             CivilianShot {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
@@ -84,7 +84,7 @@ fn command_unarmed_shot(member: String, target: String, weapon: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             UnarmedShot {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
@@ -110,7 +110,7 @@ fn command_surrendering_shot(member: String, target: String, weapon: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             SurrenderingShot {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
@@ -136,7 +136,7 @@ fn command_captive_shot(member: String, target: String, weapon: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             CaptiveShot {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
@@ -162,7 +162,7 @@ fn command_unconscious_shot(member: String, target: String, weapon: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             UnconsciousShot {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
@@ -188,7 +188,7 @@ fn command_building_damaged(member: String, target: String, weapon: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             BuildingDamaged {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
                 weapon: weapon.to_string(),
             }
@@ -214,7 +214,7 @@ fn command_friendly_healed(member: String, target: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             FriendlyHealed {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
             }
         )
@@ -239,7 +239,7 @@ fn command_unfriendly_healed(member: String, target: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             FriendlyHealed {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
             }
         )
@@ -264,7 +264,7 @@ fn command_civilian_healed(member: String, target: String) {
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             CivilianHealed {
-                member: UserId(discord),
+                member: UserId::new(discord),
                 target: target.to_string(),
             }
         )

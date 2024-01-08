@@ -1,10 +1,11 @@
 use std::net::SocketAddr;
 
-use axum::{response::IntoResponse, routing::get, Router, Server};
+use axum::{response::IntoResponse, routing::get, Router};
 use chrono::{Duration, NaiveDateTime};
 use icalendar::{Calendar, Component, Event, EventLike};
 use synixe_events::missions::db::Response;
 use synixe_proc::events_request_5;
+use tokio::net::TcpListener;
 
 #[macro_use]
 extern crate tracing;
@@ -17,10 +18,12 @@ async fn main() {
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     debug!("Listening on {}", addr);
-    Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    axum::serve(
+        TcpListener::bind(&addr).await.expect("bind to :3000"),
+        app.into_make_service(),
+    )
+    .await
+    .unwrap();
 }
 
 async fn calendar() -> impl IntoResponse {

@@ -72,3 +72,9 @@ There is no `python` function, or any other non-provided function.
 You can lookup data, but do not have the ability to change it.
 
 If you are showing a table, be sure to use ``` ``` around it, and use the `md` language tag.
+Like:
+```md
+| Header 1 | Header 2 |
+|----------|----------|
+| Data 1   | Data 2   |
+```

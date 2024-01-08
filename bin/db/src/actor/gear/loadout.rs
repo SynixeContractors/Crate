@@ -9,7 +9,7 @@ where
 {
     let query = sqlx::query!(
         "SELECT loadout FROM gear_loadouts WHERE member = $1 LIMIT 1",
-        member.0.to_string(),
+        member.to_string(),
     );
     query
         .fetch_optional(executor)
@@ -25,7 +25,7 @@ pub async fn store(
 ) -> Result<(), anyhow::Error> {
     let query = sqlx::query!(
         "INSERT INTO gear_loadouts (member, loadout) VALUES ($1, $2) ON CONFLICT (member) DO UPDATE SET loadout = $2",
-        member.0.to_string(),
+        member.to_string(),
         loadout,
     );
     query.execute(&mut **executor).await?;
