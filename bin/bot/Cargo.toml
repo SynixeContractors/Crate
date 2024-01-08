@@ -11,7 +11,7 @@ synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 anyhow = { workspace = true }
-async-openai = "0.14.3"
+async-openai = "0.18.0"
 async-trait = { workspace = true }
 nats = { workspace = true }
 rand = "0.8.5"
