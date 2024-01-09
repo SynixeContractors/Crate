@@ -8,15 +8,16 @@ use serenity::{
     },
     builder::{
         CreateActionRow, CreateAutocompleteResponse, CreateButton, CreateCommand,
-        CreateCommandOption, CreateEmbed, CreateInteractionResponse, CreateMessage, CreateThread,
-        EditMessage,
+        CreateCommandOption, CreateEmbed, CreateInteractionResponse,
+        CreateInteractionResponseMessage, CreateMessage, CreateThread, EditMessage,
     },
     prelude::*,
 };
 use synixe_events::missions::db::Response;
 use synixe_meta::discord::{
-    channel::{LOOKING_TO_PLAY, SCHEDULE},
+    channel::{LOBBY, LOOKING_TO_PLAY, ONBOARDING, SCHEDULE},
     role::{MEMBER, MISSION_REVIEWER, STAFF},
+    GUILD,
 };
 use synixe_model::missions::{MissionRsvp, Rsvp, ScheduledMission};
 use synixe_proc::events_request_2;
@@ -207,6 +208,25 @@ pub async fn rsvp_button(ctx: &Context, component: &ComponentInteraction) -> ser
         error!("Failed to fetch scheduled mission for component");
         return Ok(());
     };
+    let Ok(member) = GUILD.member(&ctx, component.user.id).await else {
+        error!("Failed to fetch member for component");
+        return Ok(());
+    };
+    if member.roles.is_empty() {
+        if let Err(e) = component
+            .create_response(&ctx.http, CreateInteractionResponse::Message(
+                CreateInteractionResponseMessage::default()
+                    .content(format!(
+                        "You must be a member to RSVP. Head to <#{LOBBY}> and ask any questions you may have, or checkout <#{ONBOARDING}> to apply and get started!")
+                    )
+                    .ephemeral(true)
+            ))
+            .await
+        {
+            error!("Failed to create interaction response: {}", e);
+        }
+        return Ok(());
+    }
     match component.data.custom_id.as_str() {
         "rsvp_yes" => {
             let Ok(Ok((Response::AddMissionRsvp(Ok(())), _))) = events_request_2!(

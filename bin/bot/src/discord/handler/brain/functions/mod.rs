@@ -2,6 +2,7 @@ use async_openai::types::{ChatCompletionFunctions, ChatCompletionFunctionsArgs};
 use serenity::prelude::Context;
 
 pub mod bank;
+pub mod moderation;
 pub mod names;
 
 #[async_trait::async_trait]

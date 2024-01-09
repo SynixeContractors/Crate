@@ -35,6 +35,7 @@ impl Brain {
             functions: vec![
                 Box::new(functions::bank::GetBalance {}),
                 Box::new(functions::names::LookupId {}),
+                Box::new(functions::moderation::Timeout {}),
             ],
         }
     }
@@ -146,14 +147,11 @@ impl Brain {
                         continue;
                     } else if let Some(content) = response.content {
                         println!("ask content: {content}");
-                        return Some(
+                        return Some(if content.contains("| Ctirad Brodsky: ") {
+                            content.split_once("| Ctirad Brodsky: ")?.1.to_string()
+                        } else {
                             content
-                                .split_once("-_-|")?
-                                .1
-                                .split_once("|-_-")?
-                                .0
-                                .to_string(),
-                        );
+                        });
                     }
                 }
                 Err(e) => {
@@ -172,10 +170,7 @@ impl Brain {
                 name = nick.clone();
             }
         }
-        let mut content = format!(
-            "|{}| {}: -_-|{}|-_-",
-            message.timestamp, name, message.content
-        );
+        let mut content = format!("|{}| {}: {}", message.timestamp, name, message.content);
         for user in &message.mentions {
             if let Ok(member) = GUILD.member(&ctx, user.id).await {
                 if let Some(nick) = &member.nick {
