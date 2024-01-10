@@ -19,6 +19,6 @@ tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 
 # recruiting
-roux = "2.2.9"
+roux = "2.2.11"
 rust-embed = "8.2.0"
 scraper = "0.18.1"
