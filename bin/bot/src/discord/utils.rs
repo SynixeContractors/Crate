@@ -1,17 +1,45 @@
-use serenity::{model::prelude::UserId, prelude::Context};
+use std::sync::Arc;
+
+use serenity::{
+    futures::{stream::iter, StreamExt},
+    model::prelude::UserId,
+    prelude::Context,
+};
 use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_meta::discord::GUILD;
 use synixe_proc::events_request_2;
+use tokio::sync::Mutex;
 
+/// Finds users by nicknames or user IDs
 pub async fn find_members(
     ctx: &Context,
-    names: &[String],
+    names_or_ids: &[String],
 ) -> Result<(Vec<(String, UserId)>, Vec<String>), String> {
     let Ok(members) = GUILD.members(&ctx.http, None, None).await else {
         return Err("Failed to fetch members".to_string());
     };
-    let mut ids = Vec::with_capacity(names.len());
+    let ids = Arc::new(Mutex::new(Vec::with_capacity(names_or_ids.len())));
+    let names = iter(names_or_ids)
+        .filter(|v| async {
+            if let Ok(id) = v.parse::<u64>() {
+                if let Ok(member) = GUILD.member(&ctx.http, id).await {
+                    ids.lock()
+                        .await
+                        .push((member.display_name().to_string(), UserId::new(id)));
+                    false
+                } else {
+                    true
+                }
+            } else {
+                true
+            }
+        })
+        .collect::<Vec<_>>()
+        .await;
     let mut unknown = Vec::new();
+    let mut ids = Arc::try_unwrap(ids)
+        .expect("failed to unwrap Arc")
+        .into_inner();
     for name in names {
         let name = name.trim();
         // Handle the special snowflake

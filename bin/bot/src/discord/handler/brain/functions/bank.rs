@@ -4,6 +4,8 @@ use synixe_events::gear::db::Response;
 use synixe_meta::discord::BRODSKY;
 use synixe_proc::events_request_2;
 
+use crate::discord::utils::find_members;
+
 use super::BrainFunction;
 
 pub struct GetBalance {}
@@ -15,51 +17,51 @@ impl BrainFunction for GetBalance {
     }
 
     fn desc(&self) -> &'static str {
-        "Get's the balance of a member or the company, use names_lookup_members to get the member id. use 1028418063168708638 for company balance"
+        "Get's the balance of a member or the company. use 'Ctirad Brodsky' for company balance"
     }
 
     fn args(&self) -> serde_json::Value {
         json!({
             "type": "object",
             "properties": {
-                "members": {
+                "names": {
                     "type": "array",
-                    "description": "member discord ids to get the balance of, brodsky's id (1028418063168708638) returns the company's balance",
+                    "description": "names to get the balance of, 'Ctirad Brodsky' returns the company's balance",
                     "items": {
                         "type": "string",
-                        "description": "discord id of the member to get the balance of, numbers only"
+                        "description": "discord id or name of the member to get the balance of"
                     },
                 }
             }
         })
     }
 
-    async fn run(&self, _ctx: &Context, args: serde_json::Value) -> Option<serde_json::Value> {
-        let members = match args["members"]
+    async fn run(&self, ctx: &Context, args: serde_json::Value) -> Option<serde_json::Value> {
+        let names = args["names"]
             .as_array()?
             .iter()
             .map(|v| {
-                let id = v.as_str().unwrap_or_default();
-                if id.trim().is_empty() {
-                    Ok(BRODSKY)
-                } else {
-                    let Ok(id) = id.parse() else {
-                        return Err(serde_json::Value::String(
-                            "invalid id, only accepts IDS, not names".to_string(),
-                        ));
-                    };
-                    Ok(UserId::new(id))
-                }
+                v.as_str()
+                    .map(std::string::ToString::to_string)
+                    .or_else(|| v.as_u64().map(|v| v.to_string()))
+                    .expect("name is string or u64")
             })
-            .collect::<Result<Vec<_>, serde_json::Value>>()
-        {
+            .collect::<Vec<_>>();
+        let (found, _) = match find_members(ctx, &names).await {
             Ok(members) => members,
-            Err(e) => return Some(e),
+            Err(e) => {
+                error!("failed to find members: {}", e);
+                return Some(json!({
+                    "error": e,
+                }));
+            }
         };
+
+        info!("found members: {:?}", found);
 
         let mut responses = Vec::new();
 
-        for member in members {
+        for (_, member) in found {
             let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,

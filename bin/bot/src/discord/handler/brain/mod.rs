@@ -34,7 +34,6 @@ impl Brain {
             conversations: RwLock::new(HashMap::new()),
             functions: vec![
                 Box::new(functions::bank::GetBalance {}),
-                Box::new(functions::names::LookupId {}),
                 Box::new(functions::moderation::Timeout {}),
             ],
         }

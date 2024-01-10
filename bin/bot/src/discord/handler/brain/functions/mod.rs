@@ -3,7 +3,6 @@ use serenity::prelude::Context;
 
 pub mod bank;
 pub mod moderation;
-pub mod names;
 
 #[async_trait::async_trait]
 pub trait BrainFunction: 'static + Send + Sync {

@@ -1,5 +1,5 @@
 use serde_json::json;
-use serenity::{all::UserId, prelude::Context};
+use serenity::prelude::Context;
 use synixe_meta::discord::{channel::LOG, GUILD};
 use time::{Duration, OffsetDateTime};
 
@@ -44,23 +44,17 @@ impl BrainFunction for Timeout {
 
     async fn run(&self, ctx: &Context, args: serde_json::Value) -> Option<serde_json::Value> {
         info!("running moderation function: {:?}", args);
-        let mut ids = Vec::new();
         let names = args["names"]
             .as_array()?
             .iter()
-            .filter(|v| {
-                let v = v
-                    .as_u64()
-                    .or_else(|| v.as_str().and_then(|v| v.parse::<u64>().ok()));
-                v.map_or(true, |id| {
-                    ids.push(UserId::new(id));
-                    false
-                })
+            .map(|v| {
+                v.as_str()
+                    .map(std::string::ToString::to_string)
+                    .or_else(|| v.as_u64().map(|v| v.to_string()))
+                    .expect("name is string or u64")
             })
-            .map(|v| v.as_str().expect("valid name string").to_owned())
             .collect::<Vec<_>>();
-        info!("searching for members: {:?}", names);
-        let (searched, _) = match find_members(ctx, &names).await {
+        let (found, _) = match find_members(ctx, &names).await {
             Ok(members) => members,
             Err(e) => {
                 error!("failed to find members: {}", e);
@@ -69,11 +63,7 @@ impl BrainFunction for Timeout {
                 }));
             }
         };
-        for (_, id) in searched {
-            ids.push(id);
-        }
-        info!("found {} members for moderation", ids.len());
-        for id in ids {
+        for (_, id) in found {
             let Ok(mut member) = GUILD.member(&ctx, id).await else {
                 error!("failed to get member: {}", id);
                 continue;
