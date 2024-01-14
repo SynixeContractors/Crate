@@ -20,5 +20,5 @@ tracing = { workspace = true }
 
 # recruiting
 roux = "2.2.11"
-rust-embed = "8.2.0"
+rust-embed = { workspace = true }
 scraper = "0.18.1"

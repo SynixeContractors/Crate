@@ -1,5 +1,5 @@
 use serde_json::json;
-use serenity::{model::prelude::UserId, prelude::Context};
+use serenity::prelude::Context;
 use synixe_events::gear::db::Response;
 use synixe_meta::discord::BRODSKY;
 use synixe_proc::events_request_2;
@@ -17,7 +17,7 @@ impl BrainFunction for GetBalance {
     }
 
     fn desc(&self) -> &'static str {
-        "Get's the balance of a member or the company. use 'Ctirad Brodsky' for company balance"
+        "Get balance of a member or company. use 'Ctirad Brodsky' for company balance"
     }
 
     fn args(&self) -> serde_json::Value {
@@ -26,10 +26,9 @@ impl BrainFunction for GetBalance {
             "properties": {
                 "names": {
                     "type": "array",
-                    "description": "names to get the balance of, 'Ctirad Brodsky' returns the company's balance",
+                    "description": "names to get the balance of, 'Ctirad Brodsky' for company",
                     "items": {
                         "type": "string",
-                        "description": "discord id or name of the member to get the balance of"
                     },
                 }
             }

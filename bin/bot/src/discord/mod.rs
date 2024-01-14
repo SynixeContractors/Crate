@@ -1,5 +1,6 @@
 use serenity::prelude::*;
 
+mod chat;
 mod handler;
 pub mod interaction;
 mod menu;
@@ -11,7 +12,7 @@ pub async fn build() -> Client {
     let token = std::env::var("DISCORD_TOKEN").expect("token");
     Client::builder(token, GatewayIntents::all())
         .event_handler(handler::Handler {
-            brain: handler::Brain::new(),
+            chat: chat::Chat::new().await,
         })
         .await
         .expect("Error creating client")

@@ -10,16 +10,13 @@ use crate::{
     discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY},
 };
 
-use super::{menu, slash};
+use super::{chat::Chat, menu, slash};
 
-mod brain;
 mod missions;
 // pub mod recruiting;
 
-pub use self::brain::Brain;
-
 pub struct Handler {
-    pub brain: Brain,
+    pub chat: Chat,
 }
 
 #[async_trait]
@@ -275,39 +272,6 @@ impl EventHandler for Handler {
         if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, LOBBY].contains(&message.channel_id) {
             if message.author.bot {
                 return;
-            }
-
-            if self.brain.awake() {
-                if message.content.is_empty() {
-                    return;
-                }
-                if message
-                    .mentions
-                    .iter()
-                    .any(|user| user.id == ctx.cache.current_user().id)
-                {
-                    let typing = message.channel_id.start_typing(&ctx.http);
-                    if let Some(reply) = self.brain.ask(&ctx, &message).await {
-                        match message.reply_ping(&ctx.http, reply).await {
-                            Ok(reply) => self.brain.observe(&ctx, &reply).await,
-                            Err(e) => error!("Cannot send message: {}", e),
-                        }
-                    }
-                    typing.stop();
-                } else if rand::thread_rng().gen_range(0..100) < 4 {
-                    let typing = message.channel_id.start_typing(&ctx.http);
-                    if let Some(reply) = self.brain.ask(&ctx, &message).await {
-                        match message.reply_ping(&ctx.http, reply).await {
-                            Ok(reply) => self.brain.observe(&ctx, &reply).await,
-                            Err(e) => error!("Cannot send message: {}", e),
-                        }
-                    } else {
-                        warn!("No reply could be generated");
-                    }
-                    typing.stop();
-                } else {
-                    self.brain.observe(&ctx, &message).await;
-                }
             }
         }
     }

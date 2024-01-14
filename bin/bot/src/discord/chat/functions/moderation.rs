@@ -16,7 +16,7 @@ impl BrainFunction for Timeout {
     }
 
     fn desc(&self) -> &'static str {
-        "Timeout a user for being innapropriate or breaking the rules"
+        "timeout a user for being toxic or offensive"
     }
 
     fn args(&self) -> serde_json::Value {
@@ -25,18 +25,18 @@ impl BrainFunction for Timeout {
             "properties": {
                 "names": {
                     "type": "array",
-                    "description": "name of the users to impose timeout on",
+                    "description": "name of the users",
                     "items": {
                         "type": "string",
                     },
                 },
                 "duration": {
                     "type": "number",
-                    "description": "duration of the timeout in minutes, under 5 for minor offenses (innapropriate behaviour, joke too far), 20+ for major offenses, 60+ for severe offenses (hate speech)",
+                    "description": "duration of the timeout in minutes, under 5 for minor offenses (joke too far), 20+ for major offenses, 60+ for severe offenses (hate speech)",
                 },
                 "reason": {
                     "type": "string",
-                    "description": "reason for the timeout",
+                    "description": "reason for the timeout (sent to user and staff)",
                 },
             }
         })
