@@ -21,5 +21,4 @@ GVAR(brodskyChat) = radioChannelCreate [
     "Brodsky",
     [player]
 ];
-GVAR(brodskyChat) enableChannel false;
 publicVariable QGVAR(brodskyChat);

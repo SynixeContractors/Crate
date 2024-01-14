@@ -20,3 +20,5 @@ player addEventHandler ["Respawn", {
 player call GVAR(disableScore);
 
 [player] call FUNC(noDefaultFace);
+
+GVAR(brodskyChat) enableChannel false;
