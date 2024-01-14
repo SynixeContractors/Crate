@@ -2,6 +2,8 @@
 
 params ["_id", "_plate", "_class", "_state"];
 
+if !(isServer) exitWith {};
+
 if (count allPlayers == 0) exitWith {
     EXTCALL("garage:spawn",[ARR_2(_id,"NoPlayers")]);
 };
@@ -82,6 +84,8 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     _vehicle setDir (getDir _spawn);
     _vehicle setVariable [QGVAR(plate), _plate, true];
     _vehicle setPlateNumber _plate;
+    [_vehicle, _plate, "0.5", "ffd731"] call ace_tagging_fnc_stencilVehicle;
+    _vehicle setVariable ["ace_tagging_canTag", false, true];
     [{
         _this call EFUNC(common,objectState_load);
     }, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;
