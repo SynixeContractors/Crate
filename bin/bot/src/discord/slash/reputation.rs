@@ -158,7 +158,7 @@ async fn update(
         .say(
             ctx,
             format!(
-                "**Manual Update**\n<@{}> updated reputation by {} due to <{}>\n> {}",
+                "**Manual Update**\n<@{}> updated reputation by {} due to <@{}>\n> {}",
                 command.user.id, real_amount, member, reason
             ),
         )
