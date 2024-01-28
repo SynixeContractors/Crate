@@ -15,7 +15,7 @@ async-openai = "0.14.3"
 async-trait = { workspace = true }
 nats = { workspace = true }
 rand = "0.8.5"
-regex = "1.10.2"
+regex = "1.10.3"
 reqwest = { workspace = true, features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

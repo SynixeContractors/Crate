@@ -35,6 +35,7 @@ impl Aar {
     ///
     /// Returns an error if the message is not a valid AAR.
     pub fn from_message(content: &str) -> Result<Self, String> {
+        let content = strip_ansi_escapes::strip_str(content.replace("```ansi", ""));
         let content = content.trim_matches('`');
         let lower = content.to_lowercase();
         let Ok(regex) = Regex::new(r"(?m)(\d+)(?:.+?)(no|light|medium|heavy)") else {
@@ -660,5 +661,33 @@ Payment Request
 ```",
         );
         assert!(aar.is_err()); // Duplicate Brett Harrison
+    }
+
+    #[test]
+    fn test_parse_color() {
+        let aar = Aar::from_message(
+            r"```ansi
+Contract: Safety
+Date: 2023-03-25
+OL: Thomas Watson
+ELs: Jake King
+
+Contractors: [2;33mBrett Harrison[0m, [2;33mPrince Singh[0m, [2;31mTobias Jennings[0m, [2;31mChaplain Yi[0m, [2;31mArsey Johnson[0m, [2;31mAlex Drakulich[0m, [2;32mThomas Watson[0m, [2;32mGary McLean[0m, [2;32mAnthony Collins[0m, [2;32mVerdel Ricksin[0m, [2;34mAndrew Munson[0m, [2;34mChris Gibson[0m, [2;34mNorman Lennox[0m, [2;34mLeroy Nimrod[0m
+Assets Deployed: 2x Land Rover
+Assets Lost: N/A
+Casualties: Thomas Watson, Chaplain Yi, Brett Harrison, Prince Singh, Arsey Johnson, Gary McLean
+
+AAR: Contractors split into two teams between Mandalaria and Barawas (Yellow and Blue, respectively). At Barawas, Blue team took heavy contact, requiring assistance from a mobilized Yellow team (that at the time was checking Kouble Maimatara). After the end of the firefight, Yellow moved to Mimi, to check the area for any ISAS activity, before returning to to Mandalari. At 0800, Blue was experiencing no contact, while Yellow was awaiting the arrival of the convoy to Mandalari. The convoy was taken out by RPG fire, and contractors engaged the sparse contact that remained after the main force retreated. Afterwards, Yellow sent a two man team to patrol Kouble Maimatara, ending up surrounding and KIA. The rest of Synixe contractors assaulted the town to upend the ISAS fighters that were in the town, and recover the bodies of the 2 man team. After 20 or so minutes of heavy combat, where contractors were assaulted from all directions, ISAS retreated from the town, only after the number of KIA contractors tripled (All but one of Yellow was KIA, One of Blue was KIA). Bodies were secured, and the remainder of the contractors RTB'd.
+
+Operation Partial Success
+
+Payment Request
+50 No Combat
+10 Light Combat
+10 Medium Combat
+30 Heavy Combat
+```",
+        );
+        assert!(aar.is_ok());
     }
 }
