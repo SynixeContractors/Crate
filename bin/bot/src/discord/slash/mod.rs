@@ -50,7 +50,24 @@ pub async fn requires_roles<'a>(
                     .map(|option| format!(
                         "{}: `{}`\n",
                         option.name.clone(),
-                        option.value.as_str().unwrap_or("Non-Displayable"),
+                        match &option.value {
+                            CommandDataOptionValue::Autocomplete { .. } =>
+                                "Autocomplete".to_string(),
+                            CommandDataOptionValue::Boolean(b) => b.to_string(),
+                            CommandDataOptionValue::Integer(i) => i.to_string(),
+                            CommandDataOptionValue::Number(n) => n.to_string(),
+                            CommandDataOptionValue::String(s) => s.clone(),
+                            CommandDataOptionValue::SubCommand(_) => "SubCommand".to_string(),
+                            CommandDataOptionValue::SubCommandGroup(_) =>
+                                "SubCommandGroup".to_string(),
+                            CommandDataOptionValue::Attachment(a) => format!("Attachment: {a}"),
+                            CommandDataOptionValue::Channel(c) => format!("<#{c}>"),
+                            CommandDataOptionValue::Mentionable(m) => m.to_string(),
+                            CommandDataOptionValue::Role(r) => format!("<@&{r}>"),
+                            CommandDataOptionValue::User(u) => format!("<@{u}>"),
+                            CommandDataOptionValue::Unknown(uk) => format!("Unknown: {uk}"),
+                            _ => "Unrecognized".to_string(),
+                        }
                     ))
                     .collect::<Vec<_>>()
                     .join(" ")
