@@ -470,7 +470,11 @@ async fn new_autocomplete(
     };
     // Show unplayed when no search term is provided
     if focus.value.is_empty() {
-        missions.retain(|m| m.play_count.unwrap_or_default() == 0);
+        missions.retain(|m| {
+            m.play_count.unwrap_or_default() == 0
+                && !m.id.to_lowercase().starts_with("tt30")
+                && !m.id.to_lowercase().starts_with("tra30")
+        });
     }
     if missions.len() > 25 {
         missions.truncate(25);
