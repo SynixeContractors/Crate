@@ -239,9 +239,7 @@ async fn trial_autocomplete(
         .into_iter()
         .filter(|c| c.name.to_lowercase().contains(&focus.value.to_lowercase()))
         .collect();
-    if certs.len() > 25 {
-        certs.truncate(25);
-    }
+    certs.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();

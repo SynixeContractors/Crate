@@ -476,9 +476,7 @@ async fn new_autocomplete(
                 && !m.id.to_lowercase().starts_with("tra30")
         });
     }
-    if missions.len() > 25 {
-        missions.truncate(25);
-    }
+    missions.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();

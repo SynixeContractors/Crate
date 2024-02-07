@@ -193,9 +193,7 @@ async fn repaint_autocomplete(
             error!("failed to fetch item list");
             return Ok(());
         };
-        if items.len() > 25 {
-            items.truncate(25);
-        }
+        items.truncate(25);
         if let Err(e) = autocomplete
             .create_response(&ctx.http, {
                 let mut f = CreateAutocompleteResponse::default();
@@ -233,9 +231,7 @@ async fn repaint_autocomplete(
             error!("failed to fetch item list");
             return Ok(());
         };
-        if colors.len() > 25 {
-            colors.truncate(25);
-        }
+        colors.truncate(25);
         if let Err(e) = autocomplete
             .create_response(&ctx.http, {
                 let mut f = CreateAutocompleteResponse::default();
@@ -364,9 +360,7 @@ async fn ugl_autocomplete(
             error!("failed to fetch item list");
             return Ok(());
         };
-        if items.len() > 25 {
-            items.truncate(25);
-        }
+        items.truncate(25);
         if let Err(e) = autocomplete
             .create_response(&ctx.http, {
                 let mut f = CreateAutocompleteResponse::default();
@@ -406,9 +400,7 @@ async fn ugl_autocomplete(
             error!("failed to fetch item list");
             return Ok(());
         };
-        if ugls.len() > 25 {
-            ugls.truncate(25);
-        }
+        ugls.truncate(25);
         if let Err(e) = autocomplete
             .create_response(&ctx.http, {
                 let mut f = CreateAutocompleteResponse::default();

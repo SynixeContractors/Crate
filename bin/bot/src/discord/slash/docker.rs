@@ -89,9 +89,7 @@ async fn container_autocomplete(
             .contains(&name)
             || c.id().to_lowercase().contains(&name)
     });
-    if containers.len() > 25 {
-        containers.truncate(25);
-    }
+    containers.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();

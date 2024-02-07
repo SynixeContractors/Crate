@@ -136,10 +136,7 @@ async fn autocomplete_vehicle(
         Command::PurchaseAddon => vehicles.retain(|v| v.addons.unwrap_or_default() > 0),
         _ => {}
     }
-
-    if vehicles.len() > 25 {
-        vehicles.truncate(25);
-    }
+    vehicles.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
@@ -223,10 +220,7 @@ async fn autocomplete_addon(
         error!("Failed to fetch addons");
         return Ok(());
     };
-
-    if addons.len() > 25 {
-        addons.truncate(25);
-    }
+    addons.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
@@ -282,10 +276,7 @@ async fn autocomplete_shop(
             assets.into_iter().filter(|a| a.base == Some(id)).collect()
         }
     };
-
-    if assets.len() > 25 {
-        assets.truncate(25);
-    }
+    assets.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();

@@ -157,9 +157,7 @@ async fn load_autocomplete(
         error!("failed to fetch mission list");
         return Ok(());
     };
-    if missions.len() > 25 {
-        missions.truncate(25);
-    }
+    missions.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
