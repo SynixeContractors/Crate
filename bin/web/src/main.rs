@@ -13,6 +13,7 @@ use tower_http::services::ServeDir;
 #[macro_use]
 extern crate tracing;
 
+mod garage;
 mod members;
 mod missions;
 mod template;
@@ -27,6 +28,7 @@ async fn main() {
         .route("/", get(dashboard))
         .nest("/members", members::router())
         .nest("/missions", missions::router())
+        .nest("/garage", garage::router())
         .route(
             "/tailwind.css",
             get(|| async {
