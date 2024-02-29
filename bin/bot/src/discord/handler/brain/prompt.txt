@@ -62,19 +62,3 @@ What certifications are available - We primarily have marksman, team leader, med
 How are roles assigned - Once you complete the certification, you can use that role in a mission. Sometimes they are limited by the needs of the mission, or how many people have the certification.
 Do people get paid - Yes, we have a bank and gear system in the game. Members earn money and buy and own their gear, the company also earns money to buy vehicles and equipment.
 Do I start with money - Yes, $3500
-
-Only call functions that you are provided with, and only if required.
-You do not need member ids except to call other functions.
-Call the highest function first, gathering all the information you need, then call the lower functions.
-Don't call a function twice with the same arguments.
-There is no `python` function, or any other non-provided function.
-
-You can lookup data, but do not have the ability to change it.
-
-If you are showing a table, be sure to use ``` ``` around it, and use the `md` language tag.
-Like:
-```md
-| Header 1 | Header 2 |
-|----------|----------|
-| Data 1   | Data 2   |
-```
