@@ -1,6 +1,8 @@
+use std::sync::atomic::AtomicU32;
+
 use rand::Rng;
-use serenity::{async_trait, model::prelude::*, prelude::*};
-use synixe_events::{discord::publish::Publish, publish};
+use serenity::{all::CreateMessage, async_trait, model::prelude::*, prelude::*};
+use synixe_events::{discord::publish::Publish, missions::db::Response, publish};
 use synixe_meta::discord::channel::{AARS, BOT, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC};
 use synixe_proc::events_request_2;
 use uuid::Uuid;
@@ -20,6 +22,8 @@ pub use self::brain::Brain;
 
 pub struct Handler {
     pub brain: Brain,
+    pub subcon_counter: AtomicU32,
+    pub subcon_message: RwLock<Option<Message>>,
 }
 
 #[async_trait]
@@ -245,6 +249,7 @@ impl EventHandler for Handler {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     async fn message(&self, ctx: Context, message: Message) {
         if message.channel_id == AARS {
             missions::validate_aar(&ctx, message).await;
@@ -270,6 +275,72 @@ impl EventHandler for Handler {
                     .expect("Cannot send message");
             }
             return;
+        }
+
+        if message.channel_id == LOOKING_TO_PLAY {
+            if message.author.id == ctx.cache.current_user().id && !message.embeds.is_empty() {
+                self.subcon_counter
+                    .store(0, std::sync::atomic::Ordering::Relaxed);
+                self.subcon_message.write().await.replace(message.clone());
+            } else {
+                let since = self
+                    .subcon_counter
+                    .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                if since % 15 == 0 {
+                    // delete subcon message and move here
+                    let Ok(Ok((Response::FetchScheduledMessage(ev), _))) = events_request_2!(
+                        bootstrap::NC::get().await,
+                        synixe_events::missions::db,
+                        FetchScheduledMessage {
+                            channel: message.channel_id,
+                            message: message.id,
+                        }
+                    )
+                    .await
+                    else {
+                        error!("Cannot fetch scheduled message");
+                        return;
+                    };
+                    if let Ok(Some(mission)) = ev {
+                        if let Some(subcon_message) = self.subcon_message.read().await.as_ref() {
+                            if let Err(e) = subcon_message.delete(&ctx.http).await {
+                                error!("Cannot delete subcon message: {}", e);
+                            }
+                            let Ok(new_message) = LOOKING_TO_PLAY
+                                .send_message(
+                                    &ctx,
+                                    CreateMessage::new()
+                                        .content(subcon_message.content.clone())
+                                        .embeds(
+                                            subcon_message
+                                                .embeds
+                                                .iter()
+                                                .map(|embed| embed.clone().into())
+                                                .collect::<Vec<_>>(),
+                                        ),
+                                )
+                                .await
+                            else {
+                                error!("Cannot send subcon message");
+                                return;
+                            };
+                            if let Err(e) = events_request_2!(
+                                bootstrap::NC::get().await,
+                                synixe_events::missions::db,
+                                SetScheduledMesssage {
+                                    channel: LOOKING_TO_PLAY,
+                                    message: new_message.id,
+                                    scheduled: mission.id,
+                                }
+                            )
+                            .await
+                            {
+                                error!("Cannot set scheduled message: {}", e);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, LOBBY].contains(&message.channel_id) {

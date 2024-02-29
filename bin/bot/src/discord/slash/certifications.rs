@@ -17,7 +17,10 @@ use synixe_meta::discord::{
 };
 use synixe_proc::events_request_2;
 
-use crate::{discord::interaction::Interaction, get_option, get_option_user};
+use crate::{
+    discord::interaction::{Confirmation, Interaction},
+    get_option, get_option_user,
+};
 
 use super::AllowPublic;
 
@@ -176,6 +179,27 @@ async fn trial(
     let Some(notes) = get_option!(options, "notes", String) else {
         return interaction.reply("Invalid notes").await;
     };
+    let trainee_roles = GUILD.member(&ctx.http, *trainee).await.map_or_else(
+        |e| {
+            error!("Failed to fetch trainee: {}", e);
+            Vec::new()
+        },
+        |m| m.roles,
+    );
+    let missing = cert
+        .roles_required
+        .iter()
+        .filter(|r| !trainee_roles.iter().any(|tr| &tr.to_string() == *r))
+        .collect::<Vec<_>>();
+    if !missing.is_empty() && interaction.confirm(
+            &format!(
+                "The trainee is missing the following roles: {}\nDo you want to submit the trial anyway?",
+                missing.iter().map(|r| format!("<@&{r}>")).collect::<Vec<_>>().join(", ")
+            )
+        ).await? != Confirmation::Yes {
+        interaction.reply("Trial not submitted").await?;
+        return Ok(());
+    }
     interaction.reply("Submitting trial...").await?;
     match events_request_2!(
         bootstrap::NC::get().await,

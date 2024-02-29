@@ -1,3 +1,5 @@
+use std::sync::atomic::AtomicU32;
+
 use serenity::prelude::*;
 
 mod handler;
@@ -12,6 +14,8 @@ pub async fn build() -> Client {
     Client::builder(token, GatewayIntents::all())
         .event_handler(handler::Handler {
             brain: handler::Brain::new(),
+            subcon_counter: AtomicU32::new(0),
+            subcon_message: RwLock::new(None),
         })
         .await
         .expect("Error creating client")
