@@ -554,18 +554,6 @@ async fn subcon(
     else {
         return interaction.reply("Failed to post mission").await;
     };
-    tokio::time::sleep(Duration::from_millis(500)).await;
-    if channel
-        .create_thread_from_message(
-            &ctx,
-            sched.id,
-            CreateThread::new(&scheduled.name).kind(ChannelType::PublicThread),
-        )
-        .await
-        .is_err()
-    {
-        return interaction.reply("Failed to create thread").await;
-    };
     if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,

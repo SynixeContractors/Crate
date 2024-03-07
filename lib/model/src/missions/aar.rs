@@ -14,6 +14,9 @@ use super::MissionType;
 #[derive(Debug)]
 /// After action report
 pub struct Aar {
+    /// AAR content
+    content: String,
+    /// Mission type
     typ: MissionType,
     /// Mission pretty name
     mission: String,
@@ -147,6 +150,7 @@ impl Aar {
         };
 
         Ok(Self {
+            content: content.to_string(),
             typ: MissionType::from_str(mission_type)?,
             mission: (*mission_name).to_string(),
             date,
@@ -154,6 +158,12 @@ impl Aar {
             outcome,
             payment,
         })
+    }
+
+    #[must_use]
+    /// Returns the AAR content.
+    pub fn content(&self) -> &str {
+        &self.content
     }
 
     #[must_use]

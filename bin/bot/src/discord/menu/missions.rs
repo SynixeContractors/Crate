@@ -4,7 +4,7 @@ use serenity::{
     prelude::Context,
 };
 use synixe_events::{missions::db::Response, reputation};
-use synixe_meta::discord::role::STAFF;
+use synixe_meta::discord::{channel::AARS, role::STAFF};
 use synixe_model::missions::{
     aar::{Aar, PaymentType},
     MissionType,
@@ -245,6 +245,15 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
                         .await?;
                 }
             }
+            AARS.say(
+                &ctx,
+                format!(
+                    "```ansi{}\n\n{}```",
+                    aar.content(),
+                    aar.show_math(payment, current_rep)
+                ),
+            )
+            .await?;
             interaction.reply("Mission Paid").await?;
             if let Err(e) = message
                 .react(&ctx.http, ReactionType::Unicode("✅".to_string()))

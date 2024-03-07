@@ -34,8 +34,10 @@ pub const MISSION_MAKING: ChannelId = ChannelId::new(700_901_938_123_767_828);
 pub const MOD_SUGGESTIONS: ChannelId = ChannelId::new(1_020_494_672_818_360_411);
 
 // Departments
+/// Leadership
+pub const LEADERSHIP: ChannelId = ChannelId::new(833_129_840_193_699_860);
 /// AARs, for after action reports
-pub const AARS: ChannelId = ChannelId::new(833_129_840_193_699_860);
+pub const AARS: ChannelId = ChannelId::new(1_215_445_421_351_239_770);
 
 // Administration
 /// Staff discussions

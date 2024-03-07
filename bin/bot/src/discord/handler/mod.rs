@@ -4,7 +4,7 @@ use rand::Rng;
 use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, missions::db::Response, publish};
 use synixe_meta::discord::channel::{
-    AARS, BOT, GAME_LOG, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC,
+    BOT, GAME_LOG, LEADERSHIP, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC,
 };
 use synixe_proc::{events_request_2, events_request_5};
 use uuid::Uuid;
@@ -255,7 +255,7 @@ impl EventHandler for Handler {
 
     #[allow(clippy::too_many_lines)]
     async fn message(&self, ctx: Context, message: Message) {
-        if message.channel_id == AARS {
+        if message.channel_id == LEADERSHIP {
             missions::validate_aar(&ctx, message).await;
             return;
         }
@@ -351,7 +351,7 @@ impl EventHandler for Handler {
         new: Option<Message>,
         event: MessageUpdateEvent,
     ) {
-        if event.channel_id == AARS {
+        if event.channel_id == LEADERSHIP {
             #[allow(clippy::single_match_else)]
             let message = match new {
                 Some(message) => message,
