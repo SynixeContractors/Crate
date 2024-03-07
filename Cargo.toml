@@ -21,21 +21,21 @@ members = [
 ]
 
 [workspace.dependencies]
-anyhow = "1.0.79"
+anyhow = "1.0.80"
 # arma-rs = "1.9.3"
 arma-rs = { git = "https://github.com/brettmayson/arma-rs", features = ["uuid", "serde_json"] }
 async-trait = "0.1.77"
 axum = "0.7.4"
 nats = { version = "0.24.1" }
-serde = { version = "1.0.196", features = ["derive"] }
-serde_json = "1.0.112"
-serenity = { git = "https://github.com/serenity-rs/serenity", rev = "6ae86f66e6c78a0b3490eff52557a115f863690c", default-features = false, features = ["rustls_backend"] }
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.114"
+serenity = { git = "https://github.com/serenity-rs/serenity", rev = "50654dbc18b60b58105c108b165d832c434fd5a5", default-features = false, features = ["rustls_backend"] }
 # sqlx = { version = "0.7.1" }
-sqlx = { git = "https://github.com/launchbadge/sqlx", ref = "e1ac3881734293cb33674a8b0b1d983132b9c2b1"}
-strum = "0.26.0"
-time = "0.3.31"
-tokio = "1.35.1"
+sqlx = { git = "https://github.com/launchbadge/sqlx", ref = "d005111494a5202d64d5c0442a542f94a2c1983c"}
+strum = "0.26.1"
+time = "0.3.34"
+tokio = "1.36.0"
 tracing = { version = "0.1.40", features = ["log"] }
 tracing-subscriber = "0.3.18"
 uuid = "1.7.0"
-reqwest = { version = "0.11.23", features = ["rustls-tls"] }
+reqwest = { version = "0.11.24", features = ["rustls-tls"] }

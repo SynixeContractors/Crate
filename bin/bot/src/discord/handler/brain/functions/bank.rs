@@ -1,5 +1,5 @@
 use serde_json::json;
-use serenity::{model::prelude::UserId, prelude::Context};
+use serenity::prelude::Context;
 use synixe_events::gear::db::Response;
 use synixe_meta::discord::BRODSKY;
 use synixe_proc::events_request_2;
