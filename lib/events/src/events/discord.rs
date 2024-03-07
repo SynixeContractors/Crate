@@ -4,6 +4,7 @@
 pub mod write {
     use serde::{Deserialize, Serialize};
     use serenity::{
+        all::MessageId,
         builder::CreateEmbed,
         model::prelude::{ChannelId, ReactionType, RoleId, UserId},
     };
@@ -101,7 +102,7 @@ pub mod write {
         struct GameAudit {
             /// The message to audit
             message: DiscordMessage,
-        } => (Result<(), String>)
+        } => (Result<(ChannelId, MessageId), String>)
     });
 }
 

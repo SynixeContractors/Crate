@@ -2,7 +2,7 @@
 
 /// Database events
 pub mod db {
-    use serenity::model::prelude::UserId;
+    use serenity::{all::MessageId, model::prelude::UserId};
     use synixe_proc::events_requests;
     use time::OffsetDateTime;
 
@@ -116,12 +116,22 @@ pub mod db {
         } => (Result<Option<Option<f64>>, String>)
         /// Update reputation
         struct UpdateReputation {
-            /// The player who removed the reputation
+            /// Staff member updating the reputation
+            staff: UserId,
+            /// The player who caused the reputation
             member: UserId,
             /// The amount of reputation to remove
             reputation: i32,
             /// The reason for the reputation
             reason: String,
+        } => (Result<(), String>)
+
+        // Admin events
+
+        /// Delete a reputation event
+        struct DeleteByMessage {
+            /// The message to delete
+            message: MessageId,
         } => (Result<(), String>)
     });
 }

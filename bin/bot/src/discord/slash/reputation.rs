@@ -4,7 +4,7 @@ use serenity::{
     client::Context,
 };
 use synixe_events::reputation;
-use synixe_meta::discord::{channel::GAME_LOG, role::STAFF};
+use synixe_meta::discord::role::STAFF;
 use synixe_proc::events_request_2;
 use time::OffsetDateTime;
 
@@ -145,6 +145,7 @@ async fn update(
         bootstrap::NC::get().await,
         synixe_events::reputation::db,
         UpdateReputation {
+            staff: command.user.id,
             member: *member,
             reputation: real_amount,
             reason: reason.to_string(),
@@ -153,18 +154,6 @@ async fn update(
     .await
     else {
         return interaction.reply("Failed to update reputation").await;
-    };
-    if let Err(e) = GAME_LOG
-        .say(
-            ctx,
-            format!(
-                "**Manual Update**\n<@{}> updated reputation by {} due to <@{}>\n> {}",
-                command.user.id, real_amount, member, reason
-            ),
-        )
-        .await
-    {
-        error!("Failed to send game log message: {:?}", e);
     };
     interaction
         .reply(format!("Updated {real_amount} reputation"))

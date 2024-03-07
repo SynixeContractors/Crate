@@ -1,10 +1,13 @@
 use nats::asynk::Message;
-use serenity::{builder::CreateMessage, model::prelude::ChannelId};
+use serenity::{all::MessageId, builder::CreateMessage, model::prelude::ChannelId};
 use synixe_events::{
     discord::write::{self, DiscordMessage},
     respond,
 };
-use synixe_meta::discord::GUILD;
+use synixe_meta::discord::{
+    channel::{GAME_LOG, LOG},
+    GUILD,
+};
 
 use crate::ArcCacheAndHttp;
 
@@ -109,26 +112,38 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             }
         }
         write::Request::Audit { message } => {
-            audit(client, msg, message, synixe_meta::discord::channel::LOG).await;
+            let Ok(()) = respond!(msg, write::Response::Audit(Ok(()))).await else {
+                error!("Failed to respond to NATS");
+                return;
+            };
+            audit(client, message, LOG).await;
         }
         write::Request::GameAudit { message } => {
-            audit(
-                client,
+            let message = audit(client, message, GAME_LOG).await;
+            if let Some(message) = message {
+                if let Err(e) =
+                    respond!(msg, write::Response::GameAudit(Ok((GAME_LOG, message)))).await
+                {
+                    error!("Failed to respond to NATS: {}", e);
+                }
+            } else if let Err(e) = respond!(
                 msg,
-                message,
-                synixe_meta::discord::channel::GAME_LOG,
+                write::Response::GameAudit(Err(String::from("Failed to send message")))
             )
-            .await;
+            .await
+            {
+                error!("Failed to respond to NATS: {}", e);
+            }
         }
     }
 }
 
-async fn audit(client: ArcCacheAndHttp, msg: Message, message: DiscordMessage, channel: ChannelId) {
-    let Ok(()) = respond!(msg, write::Response::Audit(Ok(()))).await else {
-        error!("Failed to respond to NATS");
-        return;
-    };
-    if let Err(e) = channel
+async fn audit(
+    client: ArcCacheAndHttp,
+    message: DiscordMessage,
+    channel: ChannelId,
+) -> Option<MessageId> {
+    if let Ok(m) = channel
         .send_message(
             client.as_ref(),
             match message.content {
@@ -138,9 +153,8 @@ async fn audit(client: ArcCacheAndHttp, msg: Message, message: DiscordMessage, c
         )
         .await
     {
-        error!("Failed to send message: {}", e);
-        if let Err(e) = respond!(msg, write::Response::Audit(Err(e.to_string()))).await {
-            error!("Failed to respond to NATS: {}", e);
-        }
+        Some(m.id)
+    } else {
+        None
     }
 }

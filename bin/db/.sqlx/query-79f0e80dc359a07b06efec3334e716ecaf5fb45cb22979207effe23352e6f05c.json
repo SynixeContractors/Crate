@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'unfriendly_healed', 1, $2, $3)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Jsonb",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "79f0e80dc359a07b06efec3334e716ecaf5fb45cb22979207effe23352e6f05c"
+}

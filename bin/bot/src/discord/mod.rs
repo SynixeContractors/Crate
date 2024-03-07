@@ -15,7 +15,6 @@ pub async fn build() -> Client {
         .event_handler(handler::Handler {
             brain: handler::Brain::new(),
             subcon_counter: AtomicU32::new(0),
-            subcon_message: RwLock::new(None),
         })
         .await
         .expect("Error creating client")

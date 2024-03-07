@@ -463,6 +463,35 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
+            Self::FetchUpcomingChannel { channel } => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::missions::ScheduledMission,
+                    Response::FetchUpcomingChannel,
+                    "SELECT
+                        s.id,
+                        s.mission,
+                        s.schedule_message_id,
+                        s.start,
+                        m.name,
+                        m.summary,
+                        m.briefing,
+                        m.type as \"typ: MissionType\"
+                    FROM
+                        missions_schedule s
+                    INNER JOIN
+                        missions m ON m.id = s.mission
+                    WHERE
+                        s.start > NOW() AND
+                        s.schedule_message_id like $1
+                    ORDER BY
+                        s.start ASC",
+                    format!("{}:%", channel),
+                )?;
+                Ok(())
+            }
             Self::FetchMissionCounts { members } => {
                 let mut counts = HashMap::new();
                 for member in members {

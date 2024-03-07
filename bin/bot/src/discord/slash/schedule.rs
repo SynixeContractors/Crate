@@ -3,8 +3,9 @@ use std::time::Duration;
 use regex::{Captures, Regex};
 use serenity::{
     all::{
-        ButtonStyle, ChannelType, CommandData, CommandDataOption, CommandDataOptionValue,
-        CommandInteraction, CommandOptionType, ComponentInteraction, ReactionType,
+        ButtonStyle, ChannelId, ChannelType, CommandData, CommandDataOption,
+        CommandDataOptionValue, CommandInteraction, CommandOptionType, ComponentInteraction,
+        Message, ReactionType,
     },
     builder::{
         CreateActionRow, CreateAutocompleteResponse, CreateButton, CreateCommand,
@@ -814,88 +815,8 @@ async fn post(
         .await?;
     match confirm {
         Confirmation::Yes => {
-            let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) = events_request_2!(
-                bootstrap::NC::get().await,
-                synixe_events::missions::db,
-                FetchMissionRsvps {
-                    scheduled: scheduled.id
-                }
-            )
-            .await
-            else {
-                return interaction.reply("Failed to fetch rsvps").await;
-            };
             let channel = get_option!(options, "channel", Channel).map_or_else(|| SCHEDULE, |c| *c);
-            let Ok(sched) = channel
-                .send_message(
-                    &ctx,
-                    CreateMessage::default()
-                        .embed(make_post_embed(scheduled, &rsvps))
-                        .components(vec![rsvp_buttons()]),
-                )
-                .await
-            else {
-                return interaction.reply("Failed to post mission").await;
-            };
-            tokio::time::sleep(Duration::from_millis(500)).await;
-            let Ok(sched_thread) = channel
-                .create_thread_from_message(
-                    &ctx,
-                    sched.id,
-                    CreateThread::new(&scheduled.name).kind(ChannelType::PublicThread),
-                )
-                .await
-            else {
-                return interaction.reply("Failed to create thread").await;
-            };
-            tokio::time::sleep(Duration::from_millis(100)).await;
-            if let Some(content) = scheduled.briefing().get("old") {
-                if let Err(e) = sched_thread
-                    .say(
-                        &ctx,
-                        content
-                            .replace("            <br/>", "\n")
-                            .replace("<font color='#D81717'>", "")
-                            .replace("<font color='#1D69F6'>", "")
-                            .replace("<font color='#993399'>", "")
-                            .replace("<font color='#663300'>", "")
-                            .replace("<font color='#139120'>", "")
-                            .replace("</font color>", "") // felix you scoundrel
-                            .replace("</font>", ""),
-                    )
-                    .await
-                {
-                    error!("Failed to post mission description: {}", e);
-                }
-            } else {
-                for section in briefing_messages(scheduled) {
-                    if let Err(e) = sched_thread
-                        .send_message(&ctx, CreateMessage::default().content(section))
-                        .await
-                    {
-                        error!("Failed to post mission description: {}", e);
-                    }
-                }
-            }
-            if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request_2!(
-                bootstrap::NC::get().await,
-                synixe_events::missions::db,
-                SetScheduledMesssage {
-                    scheduled: scheduled.id,
-                    channel,
-                    message: sched.id,
-                }
-            )
-            .await
-            {
-                interaction
-                    .reply(format!("Posted `{}`", scheduled.mission))
-                    .await?;
-            } else {
-                interaction
-                    .reply(format!("Failed to post `{}`", scheduled.mission))
-                    .await?;
-            }
+            post_mission(ctx, channel, scheduled, Some(interaction), true).await;
         }
         Confirmation::No => {
             interaction.reply("Cancelled mission posting").await?;
@@ -1059,6 +980,123 @@ fn briefing_messages(mission: &ScheduledMission) -> Vec<String> {
         sections.push(section.trim_end_matches('\n').to_string());
     }
     sections
+}
+
+#[allow(clippy::too_many_lines)]
+pub async fn post_mission<'a>(
+    ctx: &'a Context,
+    channel: ChannelId,
+    scheduled: &ScheduledMission,
+    interaction: Option<Interaction<'a>>,
+    thread: bool,
+) -> Option<Message> {
+    let Ok(Ok((Response::FetchMissionRsvps(Ok(rsvps)), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        FetchMissionRsvps {
+            scheduled: scheduled.id
+        }
+    )
+    .await
+    else {
+        if let Some(mut interaction) = interaction {
+            if let Err(e) = interaction.reply("Failed to fetch rsvps").await {
+                error!("Failed to fetch rsvps: {}", e);
+            }
+        }
+        return None;
+    };
+    let Ok(sched) = channel
+        .send_message(
+            &ctx,
+            CreateMessage::default()
+                .embed(make_post_embed(scheduled, &rsvps))
+                .components(vec![rsvp_buttons()]),
+        )
+        .await
+    else {
+        if let Some(mut interaction) = interaction {
+            if let Err(e) = interaction.reply("Failed to post mission").await {
+                error!("Failed to post mission: {}", e);
+            }
+        }
+        return None;
+    };
+    tokio::time::sleep(Duration::from_millis(500)).await;
+    if thread {
+        let Ok(sched_thread) = channel
+            .create_thread_from_message(
+                &ctx,
+                sched.id,
+                CreateThread::new(&scheduled.name).kind(ChannelType::PublicThread),
+            )
+            .await
+        else {
+            if let Some(mut interaction) = interaction {
+                if let Err(e) = interaction.reply("Failed to create thread").await {
+                    error!("Failed to create thread: {}", e);
+                }
+            }
+            return None;
+        };
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        if let Some(content) = scheduled.briefing().get("old") {
+            if let Err(e) = sched_thread
+                .say(
+                    &ctx,
+                    content
+                        .replace("            <br/>", "\n")
+                        .replace("<font color='#D81717'>", "")
+                        .replace("<font color='#1D69F6'>", "")
+                        .replace("<font color='#993399'>", "")
+                        .replace("<font color='#663300'>", "")
+                        .replace("<font color='#139120'>", "")
+                        .replace("</font color>", "") // felix you scoundrel
+                        .replace("</font>", ""),
+                )
+                .await
+            {
+                error!("Failed to post mission description: {}", e);
+            }
+        } else {
+            for section in briefing_messages(scheduled) {
+                if let Err(e) = sched_thread
+                    .send_message(&ctx, CreateMessage::default().content(section))
+                    .await
+                {
+                    error!("Failed to post mission description: {}", e);
+                }
+            }
+        }
+    }
+    if let Ok(Ok((Response::SetScheduledMesssage(Ok(())), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        SetScheduledMesssage {
+            scheduled: scheduled.id,
+            channel,
+            message: sched.id,
+        }
+    )
+    .await
+    {
+        if let Some(mut interaction) = interaction {
+            if let Err(e) = interaction
+                .reply(format!("Posted `{}`", scheduled.mission))
+                .await
+            {
+                error!("Failed to post mission: {}", e);
+            }
+        }
+    } else if let Some(mut interaction) = interaction {
+        if let Err(e) = interaction
+            .reply(format!("Failed to post `{}`", scheduled.mission))
+            .await
+        {
+            error!("Failed to post mission: {}", e);
+        }
+    }
+    Some(sched)
 }
 
 #[cfg(test)]

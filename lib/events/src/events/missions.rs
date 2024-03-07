@@ -114,6 +114,12 @@ pub mod db {
         /// Fetch the current mission
         struct FetchCurrentMission {} => (Result<Option<ScheduledMission>, String>)
 
+        /// Fetch upcoming missions in a specific channel
+        struct FetchUpcomingChannel {
+            /// The channel to fetch.
+            channel: ChannelId,
+        } => (Result<Vec<ScheduledMission>, String>)
+
         /// Fetch the counts of missions attended for members
         struct FetchMissionCounts {
             /// The members to fetch.

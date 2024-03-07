@@ -1,10 +1,12 @@
 use std::sync::atomic::AtomicU32;
 
 use rand::Rng;
-use serenity::{all::CreateMessage, async_trait, model::prelude::*, prelude::*};
+use serenity::{async_trait, model::prelude::*, prelude::*};
 use synixe_events::{discord::publish::Publish, missions::db::Response, publish};
-use synixe_meta::discord::channel::{AARS, BOT, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC};
-use synixe_proc::events_request_2;
+use synixe_meta::discord::channel::{
+    AARS, BOT, GAME_LOG, LOBBY, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC,
+};
+use synixe_proc::{events_request_2, events_request_5};
 use uuid::Uuid;
 
 use crate::{
@@ -12,7 +14,10 @@ use crate::{
     discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY},
 };
 
-use super::{menu, slash};
+use super::{
+    menu,
+    slash::{self, schedule::post_mission},
+};
 
 mod brain;
 mod missions;
@@ -23,7 +28,6 @@ pub use self::brain::Brain;
 pub struct Handler {
     pub brain: Brain,
     pub subcon_counter: AtomicU32,
-    pub subcon_message: RwLock<Option<Message>>,
 }
 
 #[async_trait]
@@ -261,6 +265,14 @@ impl EventHandler for Handler {
         //     return;
         // }
 
+        if message.content.as_str() == "!exec mission-bump" {
+            if let Err(e) = message.delete(&ctx.http).await {
+                error!("Cannot delete message: {}", e);
+            };
+            move_channel_missions(&ctx, message.channel_id).await;
+            return;
+        }
+
         if message.channel_id == BOT && message.content.as_str() == "!exec active" {
             if let Err(e) = events_request_2!(
                 bootstrap::NC::get().await,
@@ -281,64 +293,12 @@ impl EventHandler for Handler {
             if message.author.id == ctx.cache.current_user().id && !message.embeds.is_empty() {
                 self.subcon_counter
                     .store(0, std::sync::atomic::Ordering::Relaxed);
-                self.subcon_message.write().await.replace(message.clone());
             } else {
                 let since = self
                     .subcon_counter
                     .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                if since % 15 == 0 {
-                    // delete subcon message and move here
-                    let Ok(Ok((Response::FetchScheduledMessage(ev), _))) = events_request_2!(
-                        bootstrap::NC::get().await,
-                        synixe_events::missions::db,
-                        FetchScheduledMessage {
-                            channel: message.channel_id,
-                            message: message.id,
-                        }
-                    )
-                    .await
-                    else {
-                        error!("Cannot fetch scheduled message");
-                        return;
-                    };
-                    if let Ok(Some(mission)) = ev {
-                        if let Some(subcon_message) = self.subcon_message.read().await.as_ref() {
-                            if let Err(e) = subcon_message.delete(&ctx.http).await {
-                                error!("Cannot delete subcon message: {}", e);
-                            }
-                            let Ok(new_message) = LOOKING_TO_PLAY
-                                .send_message(
-                                    &ctx,
-                                    CreateMessage::new()
-                                        .content(subcon_message.content.clone())
-                                        .embeds(
-                                            subcon_message
-                                                .embeds
-                                                .iter()
-                                                .map(|embed| embed.clone().into())
-                                                .collect::<Vec<_>>(),
-                                        ),
-                                )
-                                .await
-                            else {
-                                error!("Cannot send subcon message");
-                                return;
-                            };
-                            if let Err(e) = events_request_2!(
-                                bootstrap::NC::get().await,
-                                synixe_events::missions::db,
-                                SetScheduledMesssage {
-                                    channel: LOOKING_TO_PLAY,
-                                    message: new_message.id,
-                                    scheduled: mission.id,
-                                }
-                            )
-                            .await
-                            {
-                                error!("Cannot set scheduled message: {}", e);
-                            }
-                        }
-                    }
+                if (since + 1) % 15 == 0 {
+                    move_channel_missions(&ctx, message.channel_id).await;
                 }
             }
         }
@@ -409,6 +369,77 @@ impl EventHandler for Handler {
                 }
             };
             missions::validate_aar(&ctx, message).await;
+        }
+    }
+
+    async fn message_delete(
+        &self,
+        _ctx: Context,
+        channel_id: ChannelId,
+        message_id: MessageId,
+        _guild_id: Option<GuildId>,
+    ) {
+        if channel_id == GAME_LOG {
+            if let Err(e) = events_request_5!(
+                bootstrap::NC::get().await,
+                synixe_events::reputation::db,
+                DeleteByMessage {
+                    message: message_id,
+                }
+            )
+            .await
+            {
+                error!("Cannot delete reputation event: {}", e);
+            }
+        }
+    }
+}
+
+async fn move_channel_missions(ctx: &Context, channel: ChannelId) {
+    // delete subcon message and move here
+    let Ok(Ok((Response::FetchUpcomingChannel(Ok(evs)), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        FetchUpcomingChannel { channel }
+    )
+    .await
+    else {
+        error!("Cannot fetch scheduled message");
+        return;
+    };
+    for mission in evs {
+        let Some(message_id) = &mission.schedule_message_id else {
+            continue;
+        };
+        let (_channel, message_id) = message_id.split_once(':').expect("Invalid message id");
+        let Ok(subcon_message) = LOOKING_TO_PLAY
+            .message(
+                &ctx.http,
+                MessageId::new(message_id.parse().expect("invalid message id")),
+            )
+            .await
+        else {
+            continue;
+        };
+        if let Err(e) = subcon_message.delete(&ctx.http).await {
+            error!("Cannot delete subcon message: {}", e);
+        }
+        let Some(new_mission) = post_mission(ctx, channel, &mission, None, false).await else {
+            error!("Cannot post mission");
+            return;
+        };
+        if let Err(e) = events_request_2!(
+            bootstrap::NC::get().await,
+            synixe_events::missions::db,
+            SetScheduledMesssage {
+                channel: LOOKING_TO_PLAY,
+                message: new_mission.id,
+                scheduled: mission.id,
+            }
+        )
+        .await
+        {
+            error!("Cannot set scheduled message: {}", e);
         }
     }
 }
