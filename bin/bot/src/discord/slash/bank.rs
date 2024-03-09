@@ -152,7 +152,7 @@ async fn transfer(
             .as_ref()
             .expect("member should always exist on guild commands")
             .roles,
-        ShouldAsk::Deny,
+        ShouldAsk::Yes(("bank transfer", options)),
         &mut interaction,
     )
     .await?;
