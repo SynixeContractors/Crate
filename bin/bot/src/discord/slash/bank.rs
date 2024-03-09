@@ -6,7 +6,7 @@ use serenity::{
 use synixe_events::gear::db::Response;
 use synixe_meta::discord::{
     channel::LOG,
-    role::{ACTIVE, JUNIOR, MEMBER, STAFF},
+    role::{ACTIVE, STAFF},
     BRODSKY, GUILD,
 };
 use synixe_proc::events_request_2;
