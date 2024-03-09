@@ -146,7 +146,7 @@ async fn transfer(
 
     super::requires_roles(
         command.user.id,
-        &[JUNIOR, MEMBER, ACTIVE],
+        &[ACTIVE],
         &command
             .member
             .as_ref()
