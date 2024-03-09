@@ -4,7 +4,11 @@ use serenity::{
     client::Context,
 };
 use synixe_events::gear::db::Response;
-use synixe_meta::discord::{channel::LOG, role::{ACTIVE, JUNIOR, MEMBER, STAFF}, BRODSKY, GUILD};
+use synixe_meta::discord::{
+    channel::LOG,
+    role::{ACTIVE, JUNIOR, MEMBER, STAFF},
+    BRODSKY, GUILD,
+};
 use synixe_proc::events_request_2;
 
 use crate::{discord::interaction::Interaction, get_option, get_option_user};
