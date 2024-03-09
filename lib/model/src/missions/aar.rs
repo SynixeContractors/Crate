@@ -295,8 +295,8 @@ impl Aar {
         }
         math.push_str(&format!(
             "Reputation | {}{:03.0}/h x {:03} = {}\n",
-            if reputation < 0f32 { "" } else { " " },
-            reputation.clamp(-300f32, 300f32) / 2f32,
+            if reputation < 0f32 { "-" } else { " " },
+            reputation.abs().clamp(-300f32, 300f32) / 2f32,
             self.payment.total(),
             bootstrap::format::money(
                 (reputation.clamp(-300f32, 300f32) / 120f32 * self.payment.total() as f32).ceil()
