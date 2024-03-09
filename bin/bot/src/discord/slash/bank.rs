@@ -4,7 +4,7 @@ use serenity::{
     client::Context,
 };
 use synixe_events::gear::db::Response;
-use synixe_meta::discord::{channel::LOG, role::STAFF, BRODSKY, GUILD};
+use synixe_meta::discord::{channel::LOG, role::{ACTIVE, JUNIOR, MEMBER, STAFF}, BRODSKY, GUILD};
 use synixe_proc::events_request_2;
 
 use crate::{discord::interaction::Interaction, get_option, get_option_user};
@@ -128,7 +128,7 @@ async fn balance(
         .await
 }
 
-#[allow(clippy::cast_possible_truncation)]
+#[allow(clippy::cast_possible_truncation, clippy::too_many_lines)]
 async fn transfer(
     ctx: &Context,
     command: &CommandInteraction,
@@ -139,6 +139,20 @@ async fn transfer(
     let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
     };
+
+    super::requires_roles(
+        command.user.id,
+        &[JUNIOR, MEMBER, ACTIVE],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Deny,
+        &mut interaction,
+    )
+    .await?;
+
     if user != &synixe_meta::discord::BRODSKY && GUILD.member(&ctx, user).await?.user.bot {
         return interaction.reply("You can't transfer money to a bot").await;
     }
