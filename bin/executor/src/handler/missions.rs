@@ -8,6 +8,7 @@ use synixe_events::{
     publish, respond,
 };
 use synixe_meta::discord::{channel::ONTOPIC, GUILD};
+use synixe_model::missions::Rsvp;
 use synixe_proc::events_request_5;
 
 use super::Handler;
@@ -58,6 +59,40 @@ impl Handler for Request {
                             }
                         }
                         for (text, scheduled, minutes) in posts {
+                            let (pings, ping_message) = if [180].contains(&minutes) {
+                                if let Ok(Ok((
+                                    synixe_events::missions::db::Response::FetchMissionRsvps(Ok(
+                                        rsvps,
+                                    )),
+                                    _,
+                                ))) = events_request_5!(
+                                    bootstrap::NC::get().await,
+                                    synixe_events::missions::db,
+                                    FetchMissionRsvps {
+                                        scheduled: scheduled.id,
+                                    }
+                                )
+                                .await
+                                {
+                                    (
+                                        rsvps
+                                            .iter()
+                                            .filter_map(|rsvp| {
+                                                if rsvp.state == Rsvp::Maybe {
+                                                    Some(rsvp.member.clone())
+                                                } else {
+                                                    None
+                                                }
+                                            })
+                                            .collect(),
+                                        String::from("Update your RSVP!\n"),
+                                    )
+                                } else {
+                                    (Vec::new(), String::new())
+                                }
+                            } else {
+                                (Vec::new(), String::new())
+                            };
                             if let Some(text) = text {
                                 if let Err(e) = events_request_5!(
                                     bootstrap::NC::get().await,
@@ -66,7 +101,7 @@ impl Handler for Request {
                                         channel: ONTOPIC,
                                         message: DiscordMessage {
                                             content: DiscordContent::Text(format!(
-                                                "**{}** starts in {text}{}",
+                                                "**{}** starts in {text}{}{}",
                                                 scheduled.name,
                                                 {
                                                     if let Some((channel, message)) = scheduled.message() {
@@ -74,6 +109,11 @@ impl Handler for Request {
                                                     } else {
                                                         String::new()
                                                     }
+                                                },
+                                                if pings.is_empty() {
+                                                    String::new()
+                                                } else {
+                                                    format!("\n\n{}{}", ping_message, pings.iter().map(|p| format!("<@{p}>")).collect::<Vec<_>>().join(" "))
                                                 }
                                             )),
                                             reactions: Vec::new(),
