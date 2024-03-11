@@ -17,8 +17,6 @@ pub mod db {
             id: Uuid,
             /// The color of the asset
             color: Option<String>,
-            /// name/plate of the asset
-            plate: Option<String>,
             /// The member purchasing the asset
             member: UserId,
         },
@@ -40,7 +38,19 @@ pub mod db {
         pub state: Option<serde_json::Value>,
     }
 
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    /// A fetched plate
+    pub struct FetchedPlate {
+        /// The plate
+        pub plate: String,
+    }
+
     events_requests!(db.garage {
+        /// Get all plates
+        struct FetchPlates {
+            /// Filter the plates with a wildcard
+            search: Option<String>,
+        } => (Result<Vec<FetchedPlate>, String>)
         /// Get all vehicles in the garage
         struct FetchStoredVehicles {
             /// Filter the list of vehicles by stored status
@@ -82,7 +92,7 @@ pub mod db {
         struct PurchaseShopAsset {
             /// The asset to purchase
             order: ShopOrder,
-        } => (Result<(), String>)
+        } => (Result<Option<String>, String>)
         /// Attach an addon to a vehicle
         struct AttachAddon {
             /// The vehicle to attach the addon to

@@ -27,6 +27,11 @@
         "ordinal": 4,
         "name": "cost",
         "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "plate_template",
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -39,7 +44,8 @@
       true,
       false,
       false,
-      false
+      false,
+      true
     ]
   },
   "hash": "ac18f515bc1da9fcbc5e9dfd53eda2f2d4620fb1f3a1c25fe0be8bd90ad181b7"

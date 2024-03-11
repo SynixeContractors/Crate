@@ -35,6 +35,8 @@ pub struct ShopAsset {
     pub class: String,
     /// if the asset can be attached
     pub base: Option<Uuid>,
+    /// plat template
+    pub plate_template: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -30,12 +30,6 @@ pub async fn purchase(
     )
     .await?;
 
-    let Some(plate) = get_option!(options, "plate", String) else {
-        return interaction
-            .reply("Required option not provided: plate")
-            .await;
-    };
-
     let kind = options
         .iter()
         .rev()
@@ -58,13 +52,12 @@ pub async fn purchase(
 
     match kind.name.as_str() {
         "vehicle" => {
-            let Ok(Ok((Response::PurchaseShopAsset(Ok(())), _))) = events_request_2!(
+            let Ok(Ok((Response::PurchaseShopAsset(Ok(plate)), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 PurchaseShopAsset {
                     order: ShopOrder::Vehicle {
                         id,
-                        plate: Some(plate.clone()),
                         color: get_option!(options, "color", String).cloned(),
                         member: command
                             .member
@@ -81,12 +74,18 @@ pub async fn purchase(
             };
             audit(format!(
                 "Vehicle `{}` purchased by <@{}>",
-                plate, command.user.id,
+                plate.expect("vehicle purchase must have plate"),
+                command.user.id,
             ));
             interaction.reply("**Vehicle Purchased**\n\n").await
         }
         "addon" => {
-            let Ok(Ok((Response::PurchaseShopAsset(Ok(())), _))) = events_request_2!(
+            let Some(vehicle) = get_option!(options, "vehicle", String) else {
+                return interaction
+                    .reply("Required option not provided: vehicle")
+                    .await;
+            };
+            let Ok(Ok((Response::PurchaseShopAsset(Ok(_)), _))) = events_request_2!(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 PurchaseShopAsset {
@@ -107,7 +106,7 @@ pub async fn purchase(
             };
             audit(format!(
                 "Addon `{}` purchased for `{}` by <@{}>",
-                id, plate, command.user.id,
+                id, vehicle, command.user.id,
             ));
             interaction.reply("**Addon Purchased**\n\n").await
         }

@@ -73,15 +73,6 @@ pub fn register() -> CreateCommand {
                 )
                 .set_autocomplete(true)
                 .required(true),
-            )
-            .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::String,
-                    "plate",
-                    "Custom plate for the vehicle",
-                )
-                .max_length(10)
-                .required(true),
             ),
         )
         .add_option(

@@ -1,5 +1,8 @@
 use async_trait::async_trait;
-use synixe_events::garage::db::{Request, Response};
+use synixe_events::{
+    garage::db::{FetchedPlate, Request, Response},
+    respond,
+};
 
 use super::Handler;
 
@@ -13,6 +16,24 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
+            Self::FetchPlates { search } => {
+                let search = search.clone().unwrap_or_default();
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    FetchedPlate,
+                    Response::FetchPlates,
+                    "SELECT
+                        plate
+                    FROM
+                        garage_vehicles
+                    WHERE
+                        LOWER(plate) LIKE LOWER($1)",
+                    format!("{search}"),
+                )?;
+                Ok(())
+            }
             Self::FetchStoredVehicles { stored, plate } => {
                 let plate = plate.clone().unwrap_or_default();
                 fetch_as_and_respond!(
@@ -86,7 +107,8 @@ impl Handler for Request {
                         s.name,
                         s.cost,
                         s.class,
-                        s.base
+                        s.base,
+                        s.plate_template
                     FROM
                         garage_addons a
                     INNER JOIN
@@ -153,34 +175,29 @@ impl Handler for Request {
                 Ok(())
             }
             Self::PurchaseShopAsset { order } => match order {
-                synixe_events::garage::db::ShopOrder::Vehicle {
-                    id,
-                    color,
-                    plate,
-                    member,
-                } => {
-                    execute_and_respond!(
-                            msg,
-                            *db,
-                            cx,
-                            Response::PurchaseShopAsset,
-                            "INSERT INTO garage_purchases (id, plate, color, member) VALUES ($1, $2, $3, $4)",
-                            id,
-                            plate.as_ref(),
-                            color.as_ref(),
-                            member.to_string(),
-                        )
+                synixe_events::garage::db::ShopOrder::Vehicle { id, color, member } => {
+                    let query = sqlx::query!(
+                        "INSERT INTO garage_purchases (id, color, member, plate) VALUES ($1, $2, $3, generate_plate($1)) RETURNING plate",
+                        id,
+                        color.as_ref(),
+                        member.to_string(),
+                    );
+                    respond!(
+                        msg,
+                        Response::PurchaseShopAsset(Ok(query.fetch_one(&*db).await?.plate))
+                    )
+                    .await?;
+                    Ok(())
                 }
                 synixe_events::garage::db::ShopOrder::Addon { id, member } => {
-                    execute_and_respond!(
-                        msg,
-                        *db,
-                        cx,
-                        Response::PurchaseShopAsset,
+                    let query = sqlx::query!(
                         "INSERT INTO garage_purchases (id, member) VALUES ($1, $2)",
                         id,
                         member.to_string(),
-                    )
+                    );
+                    query.execute(&*db).await?;
+                    respond!(msg, Response::PurchaseShopAsset(Ok(None))).await?;
+                    Ok(())
                 }
             },
             Self::FetchVehicleInfo { plate } => {

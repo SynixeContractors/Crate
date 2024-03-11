@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO garage_purchases (id, color, member, plate) VALUES ($1, $2, $3, generate_plate($1)) RETURNING plate",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "plate",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "250b11090a0c18f3e9c18c1dfd13f6909657c5a1e95f3d1a084e5e374d40b3d0"
+}

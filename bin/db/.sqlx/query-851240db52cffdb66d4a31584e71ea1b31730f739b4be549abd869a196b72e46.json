@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n                        plate\n                    FROM\n                        garage_vehicles\n                    WHERE\n                        LOWER(plate) LIKE LOWER($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "plate",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "851240db52cffdb66d4a31584e71ea1b31730f739b4be549abd869a196b72e46"
+}
