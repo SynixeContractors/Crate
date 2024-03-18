@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
 use axum::{response::IntoResponse, routing::get, Router};
-use chrono::{Duration, NaiveDateTime};
+use chrono::{DateTime, Duration};
 use icalendar::{Calendar, Component, Event, EventLike};
 use synixe_events::missions::db::Response;
 use synixe_proc::events_request_5;
@@ -38,7 +38,8 @@ async fn calendar() -> impl IntoResponse {
     };
     let mut calendar = Calendar::new();
     for scheduled in schedule {
-        let start = NaiveDateTime::from_timestamp_opt(scheduled.start.unix_timestamp(), 0).unwrap();
+        let start =
+            DateTime::from_timestamp(scheduled.start.unix_timestamp(), 0).expect("valid timestamp");
         let briefing = scheduled.briefing();
         calendar.push(
             Event::new()
@@ -51,12 +52,12 @@ async fn calendar() -> impl IntoResponse {
                     ),
                 )
                 .starts(start)
-                .ends(start + chrono::Duration::minutes(150i64))
+                .ends(start + chrono::Duration::try_minutes(150i64).expect("duration valid"))
                 .done(),
         );
     }
     calendar
         .name("Synixe Contractors")
-        .ttl(&Duration::hours(1))
+        .ttl(&Duration::try_hours(1).expect("duration valid"))
         .to_string()
 }
