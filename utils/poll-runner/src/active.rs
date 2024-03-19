@@ -99,9 +99,9 @@ pub async fn menu() {
         let option = Select::new()
             .with_prompt("Select Action")
             .items(if keys.len() >= 3 {
-                &["Close Poll", "Manage Keys", "Delete"]
+                &["Close Poll", "Manage Keys", "Delete", "Done"]
             } else {
-                &["Close Poll (Unavailable)", "Manage Keys", "Delete"]
+                &["Close Poll (Unavailable)", "Manage Keys", "Delete", "Done"]
             })
             .interact()
             .unwrap();
@@ -338,6 +338,7 @@ pub async fn menu() {
                     .unwrap();
                 }
             }
+            3 => return,
             _ => unreachable!(),
         }
     }

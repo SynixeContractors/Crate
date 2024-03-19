@@ -25,7 +25,7 @@ pub fn generate_key(
     let mut rng = rand::thread_rng();
     let key = rsa::RsaPrivateKey::new(&mut rng, 512).unwrap();
     let mut shards = ssss::gen_shares(
-        &SsssConfig::default(),
+        SsssConfig::default().set_num_shares(staff.len() as u8),
         key.to_pkcs1_der().unwrap().as_bytes(),
     )
     .unwrap();

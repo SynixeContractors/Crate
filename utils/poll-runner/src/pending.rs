@@ -83,16 +83,16 @@ pub async fn menu() {
         .collect::<Vec<_>>();
         let option = Select::new()
             .with_prompt("Select Action")
-            .items(if keys.len() >= 5 {
-                &["Open Poll", "Manage Keys", "Delete"]
+            .items(if keys.len() >= 4 {
+                &["Open Poll", "Manage Keys", "Delete", "Done"]
             } else {
-                &["Open Poll (Unavailable)", "Manage Keys", "Delete"]
+                &["Open Poll (Unavailable)", "Manage Keys", "Delete", "Done"]
             })
             .interact()
             .unwrap();
         match option {
             0 => {
-                if keys.len() < 5 {
+                if keys.len() < 4 {
                     println!("Not enough keys");
                     continue;
                 }
@@ -265,6 +265,7 @@ pub async fn menu() {
                     .unwrap();
                 }
             }
+            3 => return,
             _ => unreachable!(),
         }
     }
