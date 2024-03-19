@@ -3,19 +3,19 @@ use std::collections::HashMap;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use bootstrap::{DB, NC};
 use dialoguer::Select;
-use rsa::{
-    pkcs1::{DecodeRsaPrivateKey, EncodeRsaPublicKey},
-    pkcs8::{DecodePrivateKey, DecodePublicKey},
-    RsaPrivateKey,
-};
-use synixe_events::discord::{
-    info,
-    write::{self, DiscordContent, DiscordMessage},
-};
-use synixe_meta::discord::role::{ACTIVE, MEMBER, STAFF};
+use rsa::pkcs8::DecodePrivateKey;
+use serde::{Deserialize, Serialize};
+use synixe_events::discord::info;
+use synixe_meta::discord::role::STAFF;
 use synixe_poll_runner::encrypt;
 use synixe_proc::events_request_5;
 use uuid::Uuid;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Results {
+    participants: Vec<String>,
+    results: HashMap<String, u32>,
+}
 
 #[allow(clippy::unused_async)]
 #[allow(clippy::too_many_lines)]
@@ -71,7 +71,7 @@ pub async fn menu() {
         if selection == active.len() {
             return;
         }
-        let (id, title, description) = &active[selection];
+        let (id, title, _) = &active[selection];
         let keys = sqlx::query!(
             r#"
             SELECT staff, shard, private_key
@@ -198,19 +198,54 @@ pub async fn menu() {
                     message.push_str(&format!("{title}: {count}\n"));
                 }
                 message.push_str("\nWinning option: ");
-                let (id, _) = results.first().unwrap();
-                let title = &options
+                let (winning_id, _) = results.first().unwrap();
+                let winning_title = &options
                     .iter()
-                    .find(|(option_id, _)| &option_id == id)
+                    .find(|(option_id, _)| &option_id == winning_id)
                     .unwrap()
                     .1;
-                message.push_str(title);
+                message.push_str(winning_title);
                 message.push_str("\n\nParticipants:\n");
-                for member in members {
+                for member in &members {
                     let (member, _) = member.split_once(':').unwrap();
                     message.push_str(&format!("<@{member}>\n"));
                 }
                 println!("{message}");
+                sqlx::query!(
+                    r#"
+                    INSERT INTO voting_results (poll_id, title, data)
+                    VALUES ($1, $2, $3)
+                    "#,
+                    id,
+                    title,
+                    serde_json::to_value(&Results {
+                        participants: members
+                            .iter()
+                            .map(|member| {
+                                let (member, _) = member.split_once(':').unwrap();
+                                member.to_string()
+                            })
+                            .collect(),
+                        results: results
+                            .iter()
+                            .map(|(id, count)| {
+                                (
+                                    options
+                                        .iter()
+                                        .find(|(option_id, _)| &option_id == id)
+                                        .unwrap()
+                                        .1
+                                        .clone(),
+                                    *count,
+                                )
+                            })
+                            .collect()
+                    })
+                    .unwrap()
+                )
+                .execute(&*db)
+                .await
+                .unwrap();
                 sqlx::query!(
                     r#"
                     DELETE FROM voting_polls

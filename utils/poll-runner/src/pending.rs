@@ -102,17 +102,16 @@ pub async fn menu() {
                         events_request_5!(
                             NC::get().await,
                             synixe_events::discord::info,
-                            MembersByRole { role: STAFF }
+                            MembersByRole { role: MEMBER }
                         )
                         .await
                     else {
-                        println!("Failed to get staff");
+                        println!("Failed to get members");
                         return;
                     };
                     members
                         .into_iter()
-                        // .filter(|member| member.roles.iter().any(|role| role == &BOT))
-                        .filter(|member| member.user.id == 307_524_009_854_107_648)
+                        .filter(|member| member.roles.iter().any(|role| role == &ACTIVE))
                         .for_each(|member| {
                             participants.insert(member.user.id, member);
                         });

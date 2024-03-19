@@ -35,7 +35,7 @@ CREATE TABLE voting_vote_box (
 );
 
 CREATE TABLE voting_results (
-    poll_id UUID PRIMARY KEY REFERENCES voting_polls(id) ON DELETE CASCADE,
+    poll_id UUID PRIMARY KEY,
     title TEXT NOT NULL,
     data JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
