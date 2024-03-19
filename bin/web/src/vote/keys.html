@@ -10,17 +10,22 @@
 </head>
 
 <body>
-    <div class="container mx-auto">
+    <div class="container px-4 sm:px-0">
         <h1 class="text-3xl font-bold text-center mt-8">
-            Generate a Public and Private Key
+            Public and Private Key for Polls
         </h1>
-        <div class="flex flex-col justify-center mt-8">
+        <p class="text-lg text-center mt-4 sm:w-1/2 mx-auto">
+            A new public and private key will be generated each time you visit this page.
+            Make sure to save the private key to a safe place, and send the public key to #staff.
+            If your key is lost, the poll may not be able to be decrypted.
+        </p>
+        <div class="flex flex-col justify-center mt-8 sm:w-1/2 mx-auto">
             <div class="flex flex-col">
                 <label for="publicKey" class="text-lg font-bold">
                     Public Key
                 </label>
                 <input type="text" id="publicKey" class="border border-gray-300 p-2" readonly />
-                <button id="copyPublicKey" class="bg-blue-500 text-white p-2 mt-2">
+                <button id="copyPublicKey" class="bg-blue-500 hover:bg-blue-700 text-white p-2 mt-2">
                     Copy
                 </button>
             </div>
@@ -29,7 +34,7 @@
                     Private Key
                 </label>
                 <input type="text" id="privateKey" class="border border-gray-300 p-2" readonly />
-                <button id="copyPrivateKey" class="bg-blue-500 text-white p-2 mt-2">
+                <button id="copyPrivateKey" class="bg-blue-500 hover:bg-blue-700 text-white p-2 mt-2">
                     Copy
                 </button>
             </div>
