@@ -16,33 +16,46 @@ pub async fn check_steam_forums() {
     let candidates = {
         let mut candidates = Vec::new();
 
-        let selector_post: Selector = scraper::Selector::parse("a.forum_topic_overlay").unwrap();
-        let selector_title: Selector = scraper::Selector::parse("div.topic").unwrap();
-        let selector_content: Selector = scraper::Selector::parse(".forum_op .content").unwrap();
+        let selector_post: Selector =
+            scraper::Selector::parse("a.forum_topic_overlay").expect("Invalid post selector");
+        let selector_title: Selector =
+            scraper::Selector::parse("div.topic").expect("Invalid title selector");
+        let selector_content: Selector =
+            scraper::Selector::parse(".forum_op .content").expect("Invalid content selector");
 
         let page = reqwest::get(STEAM_FORUM)
             .await
-            .unwrap()
+            .expect("Failed to get steam page")
             .text()
             .await
-            .unwrap();
+            .expect("Failed to get steam page text");
 
         let mut posts = Vec::new();
 
         for post in Html::parse_document(&page).select(&selector_post) {
-            posts.push(post.value().attr("href").unwrap().to_string());
+            posts.push(
+                post.value()
+                    .attr("href")
+                    .expect("Invalid post link")
+                    .to_string(),
+            );
         }
         for url in posts {
             if has_seen(url.clone()).await {
                 continue;
             }
-            let post = reqwest::get(&url).await.unwrap().text().await.unwrap();
+            let post = reqwest::get(&url)
+                .await
+                .expect("Failed to get post")
+                .text()
+                .await
+                .expect("Failed to get post text");
             seen(url.clone()).await;
             let document = Html::parse_document(&post);
             let content = document
                 .select(&selector_content)
                 .next()
-                .unwrap()
+                .expect("Invalid content selector")
                 .text()
                 .collect::<Vec<_>>()
                 .join(" ")
@@ -51,7 +64,7 @@ pub async fn check_steam_forums() {
             let title = document
                 .select(&selector_title)
                 .next()
-                .unwrap()
+                .expect("Invalid title selector")
                 .text()
                 .collect::<Vec<_>>()
                 .join(" ")

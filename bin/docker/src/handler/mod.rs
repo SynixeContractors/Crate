@@ -16,7 +16,7 @@ pub async fn start() {
             &format!("synixe-docker-{}", *DOCKER_SERVER),
         )
         .await
-        .unwrap();
+        .expect("should be able to subscribe to docker events");
     while let Some(msg) = sub.next().await {
         let nats = nats.clone();
         synixe_events::handler!(

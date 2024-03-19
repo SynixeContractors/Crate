@@ -11,7 +11,7 @@ pub async fn start() {
     let sub = nats
         .queue_subscribe("synixe.executor.>", "synixe-executor")
         .await
-        .unwrap();
+        .expect("should be able to subscribe to executor events");
     while let Some(msg) = sub.next().await {
         let nats = nats.clone();
         synixe_events::handler!(

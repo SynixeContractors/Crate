@@ -158,7 +158,7 @@ impl Brain {
         let mut name = message.author.name.clone();
         if let Ok(author) = GUILD.member(&ctx, message.author.id).await {
             if let Some(nick) = &author.nick {
-                name = nick.clone();
+                name.clone_from(nick);
             }
         }
         let mut content = format!("|{}| {}: {}", message.timestamp, name, message.content);

@@ -19,7 +19,12 @@ pub async fn items(
                     row.pretty,
                     row.roles
                         .map(|r| r.into_iter().filter(|r| !r.is_empty()).collect()),
-                    Price::new(row.base.unwrap(), row.cost, row.end_date, row.global),
+                    Price::new(
+                        row.base.expect("base must exists"),
+                        row.cost,
+                        row.end_date,
+                        row.global,
+                    ),
                 ),
             )
         })

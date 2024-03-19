@@ -3,6 +3,9 @@ name = "synixe-events"
 version = "0.1.0"
 edition = "2021"
 
+[lints]
+workspace = true
+
 [dependencies]
 synixe-model = { path = "../model", features = ["campaigns", "certifications", "gear", "garage", "mission-schedule"] }
 synixe-meta = { path = "../meta" }

@@ -102,8 +102,13 @@ async fn cast(Path((ticket, option)): Path<(String, String)>) -> Html<String> {
     let Some(public_key) = public_key else {
         return Html("Error, poll not active".to_string());
     };
-    let public_key = RsaPublicKey::from_pkcs1_der(&STANDARD.decode(public_key).unwrap()).unwrap();
-    let option = Uuid::parse_str(&option).unwrap();
+    let public_key = RsaPublicKey::from_pkcs1_der(
+        &STANDARD
+            .decode(public_key)
+            .expect("should be able to decode public key"),
+    )
+    .expect("should be able to decode public key");
+    let option = Uuid::parse_str(&option).expect("should be able to parse option");
     let Ok(Ok((Response::Vote(Ok(())), _))) = events_request_5!(
         NC::get().await,
         synixe_events::voting::db,
@@ -132,9 +137,11 @@ pub struct TicketData {
 
 impl TicketData {
     pub fn from_path(data: &str) -> Self {
-        let data = URL_SAFE.decode(data.as_bytes()).unwrap();
+        let data = URL_SAFE
+            .decode(data.as_bytes())
+            .expect("should be able to decode ticket");
         let poll_length = data[0] as usize;
-        let poll = Uuid::from_slice(&data[1..poll_length + 1]).unwrap();
+        let poll = Uuid::from_slice(&data[1..=poll_length]).expect("should be able to parse uuid");
         let data = data[poll_length + 1..].to_vec();
         Self { poll, data }
     }

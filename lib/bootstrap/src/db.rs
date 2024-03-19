@@ -26,32 +26,7 @@ impl DB {
                                 .expect("Expected the DATABASE_URL in the environment"),
                         )
                         .await
-                        .unwrap(),
-                ));
-                INIT = true;
-            }
-            SINGLETON.assume_init_ref().clone()
-        }
-    }
-
-    /// Gets a reference to the database pool.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the database pool can not be initialized.
-    pub async fn get_custom(url: &str) -> DBPool {
-        static mut SINGLETON: MaybeUninit<DBPool> = MaybeUninit::uninit();
-        static mut INIT: bool = false;
-
-        unsafe {
-            if !INIT {
-                SINGLETON.write(Arc::new(
-                    PgPoolOptions::new()
-                        .min_connections(1)
-                        .max_connections(5)
-                        .connect(url)
-                        .await
-                        .unwrap(),
+                        .expect("should be able to create the database pool"),
                 ));
                 INIT = true;
             }

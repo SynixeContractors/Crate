@@ -21,7 +21,7 @@ async fn main() {
         app.into_make_service(),
     )
     .await
-    .unwrap();
+    .expect("failed to serve");
 }
 
 async fn balance(Path(id): Path<u64>) -> impl IntoResponse {

@@ -184,7 +184,7 @@ impl Handler for Request {
                 subcon,
             } => {
                 let date = date
-                    .with_time(Time::from_hms(0, 0, 0).unwrap())
+                    .with_time(Time::from_hms(0, 0, 0).expect("valid time"))
                     .assume_utc();
                 fetch_one_as_and_respond!(
                     msg,

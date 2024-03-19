@@ -1,6 +1,3 @@
-#![deny(clippy::pedantic)]
-#![warn(clippy::nursery, clippy::all)]
-
 use synixe_events::global::Publish;
 use tokio_simple_scheduler::{Job, Scheduler};
 

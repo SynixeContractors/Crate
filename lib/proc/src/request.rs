@@ -45,7 +45,7 @@ struct Request {
 }
 
 impl Parse for Request {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         let nats = input.parse()?;
         let comma1 = input.parse()?;
         let path = input.parse()?;

@@ -1,6 +1,3 @@
-#![deny(clippy::pedantic)]
-#![warn(clippy::nursery, clippy::all)]
-
 use rust_embed::RustEmbed;
 
 #[macro_use]

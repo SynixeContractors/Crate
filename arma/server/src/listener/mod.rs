@@ -1,5 +1,3 @@
-#![deny(clippy::unwrap_used)]
-
 use crate::SERVER_ID;
 
 include!("../../../../lib/common/listener.rs");

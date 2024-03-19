@@ -629,7 +629,7 @@ Operation Successful.
 Payment request: 60 No Combat 30 Light Combat 45 Medium Combat 15 Heavy Combat```",
         );
         assert!(aar.is_ok());
-        let aar = aar.unwrap();
+        let aar = aar.expect("aar should be ok");
         println!("0");
         println!("{}", aar.show_math(PaymentType::Defensive, 0f32));
         println!("1");

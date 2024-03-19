@@ -1,6 +1,3 @@
-#![deny(clippy::pedantic)]
-#![warn(clippy::nursery, clippy::all)]
-
 use proc_macro::TokenStream;
 
 mod publish;

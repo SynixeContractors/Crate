@@ -45,7 +45,9 @@ impl Handler for Request {
                         .await
                         .map_err(Into::into);
                 };
-                let loadout_items = Loadout::from_arma(l).unwrap().classes();
+                let loadout_items = Loadout::from_arma(l)
+                    .expect("should be valid loadout")
+                    .classes();
                 match_with_return!(
                     actor::gear::loadout::balance(loadout_items, &*db),
                     LoadoutBalance,

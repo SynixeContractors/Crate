@@ -91,21 +91,23 @@ impl Handler for Request {
                         let cert = certs
                             .iter()
                             .find(|cert| cert.id == trial.certification)
-                            .unwrap();
+                            .expect("Certification not found");
                         if let Err(e) = events_request_5!(
                             bootstrap::NC::get().await,
                             synixe_events::discord::write,
                             EnsureRoles {
-                                member: UserId::new(trial.trainee.parse().unwrap()),
+                                member: UserId::new(
+                                    trial.trainee.parse().expect("Invalid user id")
+                                ),
                                 roles: cert
                                     .roles_granted
                                     .iter()
-                                    .map(|r| RoleId::new(r.parse().unwrap()))
+                                    .map(|r| RoleId::new(r.parse().expect("Invalid role id")))
                                     .collect(),
                             }
                         )
                         .await
-                        .unwrap()
+                        .expect("Failed to ensure roles")
                         {
                             error!("Failed to ensure roles for trial {}: {}", trial.id, e);
                         }

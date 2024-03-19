@@ -83,7 +83,7 @@ impl From<Primary> for Container {
 #[derive(Debug, Serialize, Deserialize, Display, EnumString, IntoStaticStr, EnumIter)]
 /// Reynold Server, DO New York
 pub enum Reynold {
-    /// TeamSpeak 3
+    /// `TeamSpeak` 3
     /// Used for voice chat
     #[strum(serialize = "TeamSpeak 3")]
     TeamSpeak,

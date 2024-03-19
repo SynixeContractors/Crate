@@ -1,29 +1,31 @@
 use bootstrap::DB;
-use dialoguer::{Confirm, Input, Select};
+use dialoguer::Select;
 use sqlx::query;
+
+use crate::input;
 
 #[allow(clippy::unused_async)]
 pub async fn menu() {
     let db = DB::get().await;
-    let name: String = Input::new().with_prompt("Poll Name").interact().unwrap();
-    let description: String = Input::new()
-        .with_prompt("Poll Description")
-        .interact()
-        .unwrap();
+    let name = input::text("Name");
+    let description = input::text("Description");
     let mut options: Vec<String> = Vec::new();
     loop {
-        let option = Select::new().with_prompt("Create Options").items(&{
-            let mut items = options
-                .iter()
-                .map(std::string::String::as_str)
-                .collect::<Vec<&str>>();
-            items.push("Add Option");
-            items.push("Done");
-            items
-        });
-        let selection = option.interact().unwrap();
+        let selection = Select::new()
+            .with_prompt("Create Options")
+            .items(&{
+                let mut items = options
+                    .iter()
+                    .map(std::string::String::as_str)
+                    .collect::<Vec<&str>>();
+                items.push("Add Option");
+                items.push("Done");
+                items
+            })
+            .interact()
+            .expect("should be able to select option");
         if selection == options.len() {
-            let option: String = Input::new().with_prompt("Option").interact().unwrap();
+            let option = input::text("Option");
             options.push(option);
         } else if selection == options.len() + 1 {
             break;
@@ -36,7 +38,7 @@ pub async fn menu() {
     println!("Description: {description}");
     println!("Options: {options:?}");
     println!("====");
-    if !Confirm::new().with_prompt("Continue?").interact().unwrap() {
+    if !input::confirm("Continue?") {
         return;
     }
     let id = query!(
@@ -50,7 +52,7 @@ pub async fn menu() {
     )
     .fetch_one(&*db)
     .await
-    .unwrap()
+    .expect("should be able to create poll")
     .id;
     for option in options {
         query!(
@@ -63,7 +65,7 @@ pub async fn menu() {
         )
         .execute(&*db)
         .await
-        .unwrap();
+        .expect("should be able to create option");
     }
     println!("Poll Created");
 }

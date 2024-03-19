@@ -1,6 +1,3 @@
-#![deny(clippy::pedantic, clippy::unwrap_used)]
-#![warn(clippy::nursery, clippy::all)]
-
 use std::sync::Arc;
 
 #[macro_use]

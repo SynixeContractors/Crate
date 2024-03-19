@@ -3,6 +3,9 @@ name = "synixe-meta"
 version = "0.1.0"
 edition = "2021"
 
+[lints]
+workspace = true
+
 [dependencies]
 serenity = { workspace = true }
 strum = { workspace = true, features = ["derive"] }

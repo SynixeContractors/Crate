@@ -19,7 +19,7 @@ pub async fn start() {
     let sub = nats
         .queue_subscribe("synixe.db.>", "synixe-db")
         .await
-        .unwrap();
+        .expect("should be able to subscribe to db events");
     while let Some(msg) = sub.next().await {
         let nats = nats.clone();
         synixe_events::handler!(

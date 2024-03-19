@@ -1,15 +1,14 @@
 use std::collections::HashMap;
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use bootstrap::{DB, NC};
+use bootstrap::DB;
 use dialoguer::Select;
 use rsa::pkcs8::DecodePrivateKey;
 use serde::{Deserialize, Serialize};
-use synixe_events::discord::info;
-use synixe_meta::discord::role::STAFF;
 use synixe_poll_runner::encrypt;
-use synixe_proc::events_request_5;
 use uuid::Uuid;
+
+use crate::{db, discord, input};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Results {
@@ -21,23 +20,9 @@ pub struct Results {
 #[allow(clippy::too_many_lines)]
 pub async fn menu() {
     let db = DB::get().await;
-    let staff = {
-        let mut staff = HashMap::new();
-        let Ok(Ok((info::Response::MembersByRole(Ok(members)), _))) = events_request_5!(
-            NC::get().await,
-            synixe_events::discord::info,
-            MembersByRole { role: STAFF }
-        )
+    let staff = discord::get_staff()
         .await
-        else {
-            println!("Failed to get staff");
-            return;
-        };
-        for member in members {
-            staff.insert(member.user.id, member);
-        }
-        staff
-    };
+        .expect("should be able to get staff over nats");
     loop {
         let active = sqlx::query!(
             r#"
@@ -48,7 +33,7 @@ pub async fn menu() {
         )
         .fetch_all(&*db)
         .await
-        .unwrap()
+        .expect("should be able to get active polls")
         .into_iter()
         .map(|poll| (poll.id, poll.title, poll.description))
         .collect::<Vec<_>>();
@@ -67,7 +52,7 @@ pub async fn menu() {
                 items
             })
             .interact()
-            .unwrap();
+            .expect("should be able to select poll");
         if selection == active.len() {
             return;
         }
@@ -82,7 +67,7 @@ pub async fn menu() {
         )
         .fetch_all(&*db)
         .await
-        .unwrap()
+        .expect("should be able to get keys")
         .into_iter()
         .filter_map(|key| {
             if let Some(private_key) = key.private_key {
@@ -96,196 +81,46 @@ pub async fn menu() {
             }
         })
         .collect::<Vec<_>>();
-        let option = Select::new()
-            .with_prompt("Select Action")
-            .items(if keys.len() >= 3 {
+        let option = input::select(
+            if keys.len() >= 3 {
                 &["Close Poll", "Manage Keys", "Delete", "Done"]
             } else {
                 &["Close Poll (Unavailable)", "Manage Keys", "Delete", "Done"]
-            })
-            .interact()
-            .unwrap();
+            },
+            "Active Poll Menu",
+        );
         match option {
-            0 => {
-                if keys.len() < 3 {
-                    println!("Not enough keys");
-                    continue;
-                }
-                let private_key = encrypt::rebuild_key({
-                    keys.into_iter()
-                        .map(|(_, shard, private_key)| {
-                            (
-                                shard,
-                                rsa::RsaPrivateKey::from_pkcs8_der(
-                                    &STANDARD.decode(private_key.as_bytes()).unwrap(),
-                                )
-                                .unwrap(),
-                            )
-                        })
-                        .collect()
-                });
-                println!("Collecting votes...");
-                let votes = sqlx::query!(
-                    r#"
-                    SELECT encrypted_vote
-                    FROM voting_vote_box
-                    WHERE poll_id = $1
-                    "#,
-                    id
-                )
-                .fetch_all(&*db)
-                .await
-                .unwrap()
-                .into_iter()
-                .map(|vote| {
-                    let vote = vote.encrypted_vote;
-                    let vote = STANDARD.decode(vote.as_bytes()).unwrap();
-                    let vote = encrypt::decrypt(&vote, &private_key);
-                    Uuid::from_slice(&vote).unwrap()
-                })
-                .collect::<Vec<_>>();
-                println!("Collecting members...");
-                let members = sqlx::query!(
-                    r#"
-                    SELECT encrypted_ticket
-                    FROM voting_ticket_box
-                    WHERE poll_id = $1
-                    "#,
-                    id
-                )
-                .fetch_all(&*db)
-                .await
-                .unwrap()
-                .into_iter()
-                .map(|ticket| {
-                    let ticket = ticket.encrypted_ticket;
-                    let ticket = STANDARD.decode(ticket.as_bytes()).unwrap();
-                    let ticket = encrypt::decrypt(&ticket, &private_key);
-                    String::from_utf8(ticket).unwrap()
-                })
-                .collect::<Vec<_>>();
-                println!("Collection options...");
-                let options = sqlx::query!(
-                    r#"
-                    SELECT id, title
-                    FROM voting_options
-                    WHERE poll_id = $1
-                    "#,
-                    id
-                )
-                .fetch_all(&*db)
-                .await
-                .unwrap()
-                .into_iter()
-                .map(|option| (option.id, option.title))
-                .collect::<Vec<_>>();
-                let mut results = HashMap::new();
-                for (id, _) in &options {
-                    results.insert(id, 0);
-                }
-                for vote in votes {
-                    *results.get_mut(&vote).unwrap() += 1;
-                }
-                let mut results = results.into_iter().collect::<Vec<_>>();
-                results.sort_by(|(_, a), (_, b)| b.cmp(a));
-                let mut message = format!("Results for {title}:\n");
-                for (id, count) in &results {
-                    let title = &options
-                        .iter()
-                        .find(|(option_id, _)| &option_id == id)
-                        .unwrap()
-                        .1;
-                    message.push_str(&format!("{title}: {count}\n"));
-                }
-                message.push_str("\nWinning option: ");
-                let (winning_id, _) = results.first().unwrap();
-                let winning_title = &options
-                    .iter()
-                    .find(|(option_id, _)| &option_id == winning_id)
-                    .unwrap()
-                    .1;
-                message.push_str(winning_title);
-                message.push_str("\n\nParticipants:\n");
-                for member in &members {
-                    let (member, _) = member.split_once(':').unwrap();
-                    message.push_str(&format!("<@{member}>\n"));
-                }
-                println!("{message}");
-                sqlx::query!(
-                    r#"
-                    INSERT INTO voting_results (poll_id, title, data)
-                    VALUES ($1, $2, $3)
-                    "#,
-                    id,
-                    title,
-                    serde_json::to_value(&Results {
-                        participants: members
-                            .iter()
-                            .map(|member| {
-                                let (member, _) = member.split_once(':').unwrap();
-                                member.to_string()
-                            })
-                            .collect(),
-                        results: results
-                            .iter()
-                            .map(|(id, count)| {
-                                (
-                                    options
-                                        .iter()
-                                        .find(|(option_id, _)| &option_id == id)
-                                        .unwrap()
-                                        .1
-                                        .clone(),
-                                    *count,
-                                )
-                            })
-                            .collect()
-                    })
-                    .unwrap()
-                )
-                .execute(&*db)
-                .await
-                .unwrap();
-                sqlx::query!(
-                    r#"
-                    DELETE FROM voting_polls
-                    WHERE id = $1
-                    "#,
-                    id
-                )
-                .execute(&*db)
-                .await
-                .unwrap();
+            "Close Poll" | "Close Poll (Unavailable)" => {
+                close_poll(keys, *id, title.clone()).await;
             }
-            1 => {
-                let option = Select::new().with_prompt("Select Action").items(&{
-                    let mut items = staff
-                        .iter()
-                        .map(|(id, member)| {
-                            if keys.iter().any(|(staff, _, _)| staff == &id.to_string()) {
-                                format!("{} - Remove Key", member.display_name())
-                            } else {
-                                format!("{} - Add Key", member.display_name())
-                            }
-                        })
-                        .collect::<Vec<_>>();
-                    items.push("Done".to_string());
-                    items
-                });
-                let selection = option.interact().unwrap();
+            "Manage Keys" => {
+                let selection = Select::new()
+                    .with_prompt("Select Action")
+                    .items(&{
+                        let mut items = staff
+                            .iter()
+                            .map(|(id, member)| {
+                                if keys.iter().any(|(staff, _, _)| staff == &id.to_string()) {
+                                    format!("{} - Remove Key", member.display_name())
+                                } else {
+                                    format!("{} - Add Key", member.display_name())
+                                }
+                            })
+                            .collect::<Vec<_>>();
+                        items.push("Done".to_string());
+                        items
+                    })
+                    .interact()
+                    .expect("should be able to select action");
                 if selection == staff.len() {
                     continue;
                 }
-                let (staff_id, member) = staff.iter().nth(selection).unwrap();
+                let (staff_id, member) = staff.iter().nth(selection).expect("should have staff");
                 if keys
                     .iter()
                     .any(|(staff, _, _)| staff == &staff_id.to_string())
                 {
-                    if dialoguer::Confirm::new()
-                        .with_prompt(format!("Remove key for {}?", member.display_name()))
-                        .interact()
-                        .unwrap()
-                    {
+                    if input::confirm(&format!("Remove key for {}?", member.display_name())) {
                         sqlx::query!(
                             r#"
                             DELETE FROM voting_keys
@@ -296,13 +131,11 @@ pub async fn menu() {
                         )
                         .execute(&*db)
                         .await
-                        .unwrap();
+                        .expect("should be able to delete key");
                     }
                 } else {
-                    let key: String = dialoguer::Input::new()
-                        .with_prompt(format!("Enter private key for {}", member.display_name()))
-                        .interact()
-                        .unwrap();
+                    let key =
+                        input::text(&format!("Enter private key for {}", member.display_name()));
                     if key.is_empty() {
                         continue;
                     }
@@ -317,15 +150,11 @@ pub async fn menu() {
                     )
                     .execute(&*db)
                     .await
-                    .unwrap();
+                    .expect("should be able to update key");
                 }
             }
-            2 => {
-                if dialoguer::Confirm::new()
-                    .with_prompt("Are you sure?")
-                    .interact()
-                    .unwrap()
-                {
+            "Delete" => {
+                if input::confirm("Are you sure you want to delete this poll?") {
                     sqlx::query!(
                         r#"
                         DELETE FROM voting_polls
@@ -335,11 +164,105 @@ pub async fn menu() {
                     )
                     .execute(&*db)
                     .await
-                    .unwrap();
+                    .expect("should be able to delete poll");
                 }
             }
-            3 => return,
+            "Done" => return,
             _ => unreachable!(),
         }
     }
+}
+
+async fn close_poll(keys: Vec<(String, String, String)>, id: Uuid, title: String) {
+    let db = DB::get().await;
+    if keys.len() < 3 {
+        println!("Not enough keys");
+        return;
+    }
+    let private_key = encrypt::rebuild_key({
+        keys.into_iter()
+            .map(|(_, shard, private_key)| {
+                (
+                    shard,
+                    rsa::RsaPrivateKey::from_pkcs8_der(
+                        &STANDARD
+                            .decode(private_key.as_bytes())
+                            .expect("should be able to decode private key"),
+                    )
+                    .expect("should be able to decode private key"),
+                )
+            })
+            .collect()
+    });
+    println!("Collecting votes...");
+    let votes = db::votes(id, &private_key).await;
+    println!("Collecting members...");
+    let members = db::members(id, &private_key).await;
+    println!("Collection options...");
+    let options = db::options(id).await;
+    let mut results = HashMap::new();
+    for (id, _) in &options {
+        results.insert(id, 0);
+    }
+    for vote in votes {
+        *results.get_mut(&vote).expect("should be able to get vote") += 1;
+    }
+    let mut results = results.into_iter().collect::<Vec<_>>();
+    results.sort_by(|(_, a), (_, b)| b.cmp(a));
+    let mut message = format!("Results for {title}:\n");
+    for (id, count) in &results {
+        let title = &options
+            .iter()
+            .find(|(option_id, _)| &option_id == id)
+            .expect("should be able to find option")
+            .1;
+        message.push_str(&format!("{title}: {count}\n"));
+    }
+    message.push_str("\nWinning option: ");
+    let (winning_id, _) = results.first().expect("should have results");
+    let winning_title = &options
+        .iter()
+        .find(|(option_id, _)| &option_id == winning_id)
+        .expect("should be able to find option")
+        .1;
+    message.push_str(winning_title);
+    message.push_str("\n\nParticipants:\n");
+    for member in &members {
+        let (member, _) = member.split_once(':').expect("should be able to split");
+        message.push_str(&format!("<@{member}>\n"));
+    }
+    println!("{message}");
+    sqlx::query!(
+        r#"INSERT INTO voting_results (poll_id, title, data) VALUES ($1, $2, $3)"#,
+        id,
+        title,
+        serde_json::to_value(&Results {
+            participants: members
+                .iter()
+                .map(|member| {
+                    let (member, _) = member.split_once(':').expect("should be able to split");
+                    member.to_string()
+                })
+                .collect(),
+            results: results
+                .iter()
+                .map(|(id, count)| {
+                    (
+                        options
+                            .iter()
+                            .find(|(option_id, _)| &option_id == id)
+                            .expect("should be able to find option")
+                            .1
+                            .clone(),
+                        *count,
+                    )
+                })
+                .collect()
+        })
+        .expect("should be able to serialize results")
+    )
+    .execute(&*db)
+    .await
+    .expect("should be able to insert results");
+    db::delete(id).await;
 }

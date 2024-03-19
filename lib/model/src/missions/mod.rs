@@ -94,15 +94,19 @@ impl From<MissionType> for i32 {
     }
 }
 
-impl ToString for MissionType {
-    fn to_string(&self) -> String {
-        match self {
-            Self::Contract => "Contract".to_string(),
-            Self::SubContract => "Subcontract".to_string(),
-            Self::Training => "Training".to_string(),
-            Self::Special => "Special".to_string(),
-            Self::Other => "Other".to_string(),
-        }
+impl Display for MissionType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Contract => "Contract".to_string(),
+                Self::SubContract => "Subcontract".to_string(),
+                Self::Training => "Training".to_string(),
+                Self::Special => "Special".to_string(),
+                Self::Other => "Other".to_string(),
+            }
+        )
     }
 }
 
@@ -151,9 +155,7 @@ impl ScheduledMission {
     /// Get the channel and message id for the schedule message
     pub fn message(&self) -> Option<(ChannelId, MessageId)> {
         if let Some(msg) = &self.schedule_message_id {
-            let Some((channel, message)) = msg.split_once(':') else {
-                return None;
-            };
+            let (channel, message) = msg.split_once(':')?;
             let channel = ChannelId::from(channel.parse::<u64>().ok()?);
             let message = MessageId::from(message.parse::<u64>().ok()?);
             Some((channel, message))

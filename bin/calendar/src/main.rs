@@ -23,7 +23,7 @@ async fn main() {
         app.into_make_service(),
     )
     .await
-    .unwrap();
+    .expect("should start server");
 }
 
 async fn calendar() -> impl IntoResponse {
@@ -44,13 +44,12 @@ async fn calendar() -> impl IntoResponse {
         calendar.push(
             Event::new()
                 .summary(&scheduled.name)
-                .description(
-                    briefing.get("old").unwrap_or(
-                        briefing
-                            .get("mission")
-                            .unwrap_or(&"No briefing available.".to_string()),
-                    ),
-                )
+                .description(&briefing.get("old").cloned().unwrap_or_else(|| {
+                    briefing
+                        .get("mission")
+                        .cloned()
+                        .unwrap_or_else(|| "No briefing available.".to_string())
+                }))
                 .starts(start)
                 .ends(start + chrono::Duration::try_minutes(150i64).expect("duration valid"))
                 .done(),

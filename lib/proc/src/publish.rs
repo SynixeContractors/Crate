@@ -59,7 +59,7 @@ struct Definitions {
 }
 
 impl Parse for Definitions {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         let path = input.parse::<Expr>()?.to_token_stream().to_string();
         let content;
         braced!(content in input);
@@ -77,7 +77,7 @@ struct Definition {
 }
 
 impl Parse for Definition {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
             body: input.parse::<ItemStruct>()?,

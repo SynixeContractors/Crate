@@ -12,12 +12,11 @@ fn main() {
     let mut cmd = std::process::Command::new(NPM_COMMAND);
     cmd.arg("install");
     let output = cmd.output().expect("Failed to run npm");
-    if !output.status.success() {
-        panic!(
-            "Failed to run npm: {}",
-            String::from_utf8_lossy(&output.stderr)
-        );
-    }
+    assert!(
+        output.status.success(),
+        "Failed to run npm: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let mut cmd = std::process::Command::new(NPX_COMMAND);
     cmd.arg("tailwindcss")
         .arg("-i")
@@ -27,12 +26,11 @@ fn main() {
         .arg("-o")
         .arg("tailwind.css");
     let output = cmd.output().expect("Failed to run npx tailwind");
-    if !output.status.success() {
-        panic!(
-            "Failed to run npx tailwind: {}",
-            String::from_utf8_lossy(&output.stderr)
-        );
-    }
+    assert!(
+        output.status.success(),
+        "Failed to run npx tailwind: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     println!("cargo:rerun-if-changed=templates/");
     println!("cargo:rerun-if-changed=tailwind.config.js");
     println!("cargo:rerun-if-changed=pacakge.json");

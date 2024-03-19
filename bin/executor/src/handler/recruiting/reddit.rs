@@ -26,35 +26,46 @@ pub async fn check_reddit_findaunit() {
         let mut candidates = Vec::new();
 
         let selector_post: Selector =
-            scraper::Selector::parse("a[data-click-id='comments']").unwrap();
-        let selector_title: Selector = scraper::Selector::parse("h1").unwrap();
-        let selector_content: Selector =
-            scraper::Selector::parse("div[data-click-id='text']").unwrap();
+            scraper::Selector::parse("a[data-click-id='comments']").expect("Invalid post selector");
+        let selector_title: Selector =
+            scraper::Selector::parse("h1").expect("Invalid title selector");
+        let selector_content: Selector = scraper::Selector::parse("div[data-click-id='text']")
+            .expect("Invalid content selector");
 
         let page = reqwest::get(REDDIT_FINDAUNIT)
             .await
-            .unwrap()
+            .expect("Failed to get reddit page")
             .text()
             .await
-            .unwrap();
+            .expect("Failed to get reddit page text");
 
         let mut posts = Vec::new();
 
         for post in Html::parse_document(&page).select(&selector_post) {
-            posts.push(post.value().attr("href").unwrap().to_string());
+            posts.push(
+                post.value()
+                    .attr("href")
+                    .expect("Invalid post link")
+                    .to_string(),
+            );
         }
         for url in posts {
             if has_seen(url.clone()).await {
                 continue;
             }
             let full_url = format!("https://reddit.com{url}");
-            let post = reqwest::get(&full_url).await.unwrap().text().await.unwrap();
+            let post = reqwest::get(&full_url)
+                .await
+                .expect("Failed to get post")
+                .text()
+                .await
+                .expect("Failed to get post text");
             seen(url).await;
             let document = Html::parse_document(&post);
             let content = document
                 .select(&selector_content)
                 .next()
-                .unwrap()
+                .expect("Invalid content selector")
                 .text()
                 .collect::<Vec<_>>()
                 .join(" ")
@@ -63,7 +74,7 @@ pub async fn check_reddit_findaunit() {
             let title = document
                 .select(&selector_title)
                 .next()
-                .unwrap()
+                .expect("Invalid title selector")
                 .text()
                 .collect::<Vec<_>>()
                 .join(" ")
@@ -127,14 +138,14 @@ pub async fn post_reddit_findaunit() {
     let Ok(client) = client else { return };
     match client.submit_richtext(
         "[A3][Recruiting][EU/NA/SA][Semi-milsim][18+]- Synixe Contractors - PMC - Persistent Gear - Manage your own kit",
-        std::str::from_utf8(crate::Assets::get("reddit-findaunit.json").unwrap().data.as_ref()).unwrap(),
+        std::str::from_utf8(crate::Assets::get("reddit-findaunit.json").expect("reddit post json missing").data.as_ref()).expect("Invalid json"),
         "findaunit"
     ).await {
         Ok(_) => {
             tokio::time::sleep(Duration::from_secs(30)).await;
             let submitted = User::new(&std::env::var("REDDIT_USERNAME").expect("REDDIT_USERNAME not set")).submitted(None).await;
             let link = if let Ok(submissions) = submitted {
-                let post = submissions.data.children.first().unwrap();
+                let post = submissions.data.children.first().expect("No submissions");
                 format!("https://reddit.com/r/{}/comments/{}", post.data.subreddit, post.data.id)
             } else {
                 error!("Error getting reddit submissions: {:?}", submitted);
@@ -182,13 +193,18 @@ pub async fn reply(msg: Message, url: &str) {
     let comment_id = url
         .trim_start_matches("https://reddit.com/r/FindAUnit/comments/")
         .split_once('/')
-        .unwrap()
+        .expect("Invalid url")
         .0;
     debug!("Comment ID: {}", comment_id);
     match client
         .comment(
-            std::str::from_utf8(crate::Assets::get("reddit-reply.md").unwrap().data.as_ref())
-                .unwrap(),
+            std::str::from_utf8(
+                crate::Assets::get("reddit-reply.md")
+                    .expect("missing reddit reply")
+                    .data
+                    .as_ref(),
+            )
+            .expect("Invalid markdown"),
             &format!("t3_{comment_id}"),
         )
         .await

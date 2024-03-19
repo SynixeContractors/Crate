@@ -1,6 +1,3 @@
-#![deny(clippy::pedantic)]
-#![warn(clippy::nursery, clippy::all)]
-
 use std::net::SocketAddr;
 
 use axum::{
@@ -38,7 +35,7 @@ async fn main() {
         app.into_make_service(),
     )
     .await
-    .unwrap();
+    .expect("should start server");
 }
 
 async fn check_token(req: Request<Body>, next: Next) -> Result<Response, StatusCode> {
@@ -47,7 +44,7 @@ async fn check_token(req: Request<Body>, next: Next) -> Result<Response, StatusC
         warn!("Missing X-Token header");
         return Err(StatusCode::UNAUTHORIZED);
     };
-    if token_header.to_str().unwrap() == token {
+    if token_header.to_str().expect("valid header") == token {
         Ok(next.run(req).await)
     } else {
         warn!("Invalid X-Token header");

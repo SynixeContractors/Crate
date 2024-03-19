@@ -1,5 +1,7 @@
 //! Meta data for Arma 3
 
+use std::fmt::Display;
+
 /// Arma 3 DLCs
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DLC {
@@ -35,7 +37,7 @@ pub enum DLC {
     Contact,
     /// Global Mobilization - 1042220
     GlobalMobilization,
-    /// PrairieFire - 1227700
+    /// Prairie Fire - 1227700
     PrairieFire,
     /// CSLA - 1294440
     CSLA,
@@ -101,29 +103,33 @@ impl From<DLC> for u32 {
     }
 }
 
-impl ToString for DLC {
-    fn to_string(&self) -> String {
-        match self {
-            Self::Maps => "Maps".to_string(),
-            Self::TacticalGuide => "Tactical Guide".to_string(),
-            Self::Zeus => "Zeus".to_string(),
-            Self::Karts => "Karts".to_string(),
-            Self::Helicopters => "Helicopters".to_string(),
-            Self::Bundle1 => "Bundle 1".to_string(),
-            Self::Marksman => "Marksman".to_string(),
-            Self::Apex => "Apex".to_string(),
-            Self::LawsOfWar => "Laws of War".to_string(),
-            Self::Jets => "Jets".to_string(),
-            Self::Bundle2 => "Bundle 2".to_string(),
-            Self::Malden => "Malden".to_string(),
-            Self::TacOps => "Tac-Ops".to_string(),
-            Self::Tanks => "Tanks".to_string(),
-            Self::Contact => "Contact".to_string(),
-            Self::GlobalMobilization => "Global Mobilization".to_string(),
-            Self::PrairieFire => "S.O.G. Prairie Fire".to_string(),
-            Self::CSLA => "CSLA Iron Curtain".to_string(),
-            Self::ArtOfWar => "Art of War".to_string(),
-            Self::WesternSahara => "Western Sahara".to_string(),
-        }
+impl Display for DLC {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Maps => "Maps".to_string(),
+                Self::TacticalGuide => "Tactical Guide".to_string(),
+                Self::Zeus => "Zeus".to_string(),
+                Self::Karts => "Karts".to_string(),
+                Self::Helicopters => "Helicopters".to_string(),
+                Self::Bundle1 => "Bundle 1".to_string(),
+                Self::Marksman => "Marksman".to_string(),
+                Self::Apex => "Apex".to_string(),
+                Self::LawsOfWar => "Laws of War".to_string(),
+                Self::Jets => "Jets".to_string(),
+                Self::Bundle2 => "Bundle 2".to_string(),
+                Self::Malden => "Malden".to_string(),
+                Self::TacOps => "Tac-Ops".to_string(),
+                Self::Tanks => "Tanks".to_string(),
+                Self::Contact => "Contact".to_string(),
+                Self::GlobalMobilization => "Global Mobilization".to_string(),
+                Self::PrairieFire => "S.O.G. Prairie Fire".to_string(),
+                Self::CSLA => "CSLA Iron Curtain".to_string(),
+                Self::ArtOfWar => "Art of War".to_string(),
+                Self::WesternSahara => "Western Sahara".to_string(),
+            }
+        )
     }
 }

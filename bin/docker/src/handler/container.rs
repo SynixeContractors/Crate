@@ -62,7 +62,8 @@ async fn handle(
     action: Action,
     reason: &str,
 ) -> Result<(), anyhow::Error> {
-    let docker = Docker::connect_with_socket_defaults().unwrap();
+    let docker =
+        Docker::connect_with_socket_defaults().expect("should be able to connect to docker");
     if container.dc() != *DOCKER_SERVER {
         debug!(
             "ignoring container {} on {}",
