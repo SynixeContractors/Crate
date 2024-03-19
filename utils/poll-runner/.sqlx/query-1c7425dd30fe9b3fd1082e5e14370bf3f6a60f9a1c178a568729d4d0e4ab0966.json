@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        INSERT INTO voting_keys (poll_id, staff, public_key)\n                        VALUES ($1, $2, $3)\n                        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1c7425dd30fe9b3fd1082e5e14370bf3f6a60f9a1c178a568729d4d0e4ab0966"
+}

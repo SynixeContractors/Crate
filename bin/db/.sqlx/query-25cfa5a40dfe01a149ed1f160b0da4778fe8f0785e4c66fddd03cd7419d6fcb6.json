@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    INSERT INTO voting_ticket_box (poll_id, encrypted_ticket)\n                    VALUES ($1, $2)\n                    ON CONFLICT (poll_id, encrypted_ticket) DO NOTHING\n                    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "25cfa5a40dfe01a149ed1f160b0da4778fe8f0785e4c66fddd03cd7419d6fcb6"
+}

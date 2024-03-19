@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT staff, shard, private_key\n            FROM voting_keys\n            WHERE poll_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "staff",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "shard",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "private_key",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "be6fb533ac058a32f9d5abb39cae94940774c22c199b866ebf70aa1dff821a8a"
+}

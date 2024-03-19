@@ -67,6 +67,9 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
                         {
                             error!("Failed to respond to NATS: {}", e);
                         }
+                    } else if let Err(e) = respond!(msg, write::Response::UserMessage(Ok(()))).await
+                    {
+                        error!("Failed to respond to NATS: {}", e);
                     }
                 }
                 Err(e) => {

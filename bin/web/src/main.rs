@@ -1,21 +1,18 @@
-use std::net::SocketAddr;
-
 use axum::{
     http,
     response::Html,
     routing::{get, get_service},
-    Router, Server,
+    Router,
 };
-use template::Template;
 use tera::Context;
 use tower_http::services::ServeDir;
 
+mod template;
+mod vote;
+use template::Template;
+
 #[macro_use]
 extern crate tracing;
-
-mod members;
-mod missions;
-mod template;
 
 #[tokio::main]
 async fn main() {
@@ -25,8 +22,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(dashboard))
-        .nest("/members", members::router())
-        .nest("/missions", missions::router())
+        .nest("/vote", vote::router())
         .route(
             "/tailwind.css",
             get(|| async {
@@ -60,9 +56,8 @@ async fn main() {
             )
         });
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    debug!("Listening on {}", addr);
-    let _ = Server::bind(&addr).serve(app.into_make_service()).await;
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
 async fn dashboard() -> Html<String> {

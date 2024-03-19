@@ -1,0 +1,22 @@
+[package]
+name = "synixe-poll-runner"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bootstrap = { path = "../../lib/bootstrap", features = ["sqlx", "nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-meta = { path = "../../lib/meta" }
+synixe-proc = { path = "../../lib/proc" }
+
+aes-gcm = "0.10.3"
+base64 = "0.22.0"
+dialoguer = "0.11.0"
+rand = "0.8.5"
+rsa = { workspace = true }
+serenity = { workspace = true, features = ["model"] }
+sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "time", "uuid", "json"] }
+ssss = "0.2.0"
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+uuid = "1.8.0"

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    INSERT INTO voting_vote_box (poll_id, encrypted_vote)\n                    VALUES ($1, $2)\n                    ON CONFLICT (poll_id, encrypted_vote) DO NOTHING\n                    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e451a9b30a0e7258827c2fa1b46ac06490a40537921c9a39d4494ed2b0b8eb66"
+}

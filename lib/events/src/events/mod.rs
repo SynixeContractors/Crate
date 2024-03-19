@@ -11,6 +11,7 @@ pub mod missions;
 pub mod recruiting;
 pub mod reputation;
 pub mod servers;
+pub mod voting;
 
 /// Global events
 pub mod global {

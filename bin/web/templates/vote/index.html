@@ -1,0 +1,21 @@
+<!-- A simple tailwind page for voting in an poll. The poll has a title and description, the options are just short strings, the options are direct links to the cast page -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voting</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.2/dist/tailwind.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container mx-auto">
+      <h1 class="text-3xl font-bold text-center my-4">{{ title }}</h1>
+      <p class="text-lg text-center my-4">{{ description }}</p>
+        <div class="flex flex-col items-center">
+            {% for option in options %}
+            <a href="/vote/cast/{{ ticket }}/{{ option[0] }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-2">{{ option[1] }}</a>
+            {% endfor %}
+        </div>
+    </div>
+  </body>
+</html>

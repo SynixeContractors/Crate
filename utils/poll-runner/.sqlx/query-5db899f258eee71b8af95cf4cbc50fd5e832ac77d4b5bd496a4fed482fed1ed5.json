@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        UPDATE voting_keys SET private_key = $3\n                        WHERE poll_id = $1 AND staff = $2\n                        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5db899f258eee71b8af95cf4cbc50fd5e832ac77d4b5bd496a4fed482fed1ed5"
+}
