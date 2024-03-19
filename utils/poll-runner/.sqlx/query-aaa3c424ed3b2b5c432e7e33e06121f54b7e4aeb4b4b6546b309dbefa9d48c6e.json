@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM voting_keys WHERE poll_id = $1 AND staff = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "aaa3c424ed3b2b5c432e7e33e06121f54b7e4aeb4b4b6546b309dbefa9d48c6e"
+}

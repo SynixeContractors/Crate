@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE voting_keys SET shard = $1 WHERE poll_id = $2 AND staff = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "75ed209d60e2b0d99680dc778ea69a8ce5b365adbdea28e859d0331869437d66"
+}
