@@ -102,7 +102,7 @@ pub async fn menu() {
                         events_request_5!(
                             NC::get().await,
                             synixe_events::discord::info,
-                            MembersByRole { role: MEMBER }
+                            MembersByRole { role: STAFF }
                         )
                         .await
                     else {
