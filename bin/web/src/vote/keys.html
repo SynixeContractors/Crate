@@ -1,0 +1,79 @@
+<!-- a simple tailwind page to generate a public and private key, with the ability to copy to clipboard -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vote - Keys</title>
+    <link href="/tailwind.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-bold text-center mt-8">
+            Generate a Public and Private Key
+        </h1>
+        <div class="flex flex-col justify-center mt-8">
+            <div class="flex flex-col">
+                <label for="publicKey" class="text-lg font-bold">
+                    Public Key
+                </label>
+                <input type="text" id="publicKey" class="border border-gray-300 p-2" readonly />
+                <button id="copyPublicKey" class="bg-blue-500 text-white p-2 mt-2">
+                    Copy
+                </button>
+            </div>
+            <div class="flex flex-col mt-8">
+                <label for="privateKey" class="text-lg font-bold">
+                    Private Key
+                </label>
+                <input type="text" id="privateKey" class="border border-gray-300 p-2" readonly />
+                <button id="copyPrivateKey" class="bg-blue-500 text-white p-2 mt-2">
+                    Copy
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const publicKey = document.getElementById('publicKey');
+        const privateKey = document.getElementById('privateKey');
+        const copyPublicKey = document.getElementById('copyPublicKey');
+        const copyPrivateKey = document.getElementById('copyPrivateKey');
+
+        copyPublicKey.addEventListener('click', () => {
+            publicKey.select();
+            document.execCommand('copy');
+        });
+
+        copyPrivateKey.addEventListener('click', () => {
+            privateKey.select();
+            document.execCommand('copy');
+        });
+
+        crypto.subtle.generateKey(
+            {
+                name: 'RSA-OAEP',
+                modulusLength: 512,
+                publicExponent: new Uint8Array([1, 0, 1]),
+                hash: 'SHA-256',
+            },
+            true,
+            ['encrypt', 'decrypt']
+        )
+            .then((keyPair) => {
+                crypto.subtle.exportKey('spki', keyPair.publicKey)
+                    .then((spki) => {
+                        const publicKeyString = btoa(String.fromCharCode(...new Uint8Array(spki)));
+                        publicKey.value = publicKeyString;
+                    });
+                crypto.subtle.exportKey('pkcs8', keyPair.privateKey)
+                    .then((pkcs8) => {
+                        const privateKeyString = btoa(String.fromCharCode(...new Uint8Array(pkcs8)));
+                        privateKey.value = privateKeyString;
+                    });
+            })
+    </script>
+</body>
+
+</html>
