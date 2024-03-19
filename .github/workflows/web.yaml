@@ -1,0 +1,57 @@
+name: web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/web.yaml
+      - Cargo.toml
+      - bin/web/**
+      - lib/**
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: web
+
+      - run: cargo build --release
+        working-directory: ./bin/web
+
+      - run: cp target/release/synixe-web ./bin/web/synixe-web
+
+      - name: Build Image
+        working-directory: ./bin/web
+        run: docker build . -t web
+
+      - name: Tag Image
+        run: docker tag web ghcr.io/synixecontractors/apps-web:latest
+
+      - name: Push Image
+        run: docker push ghcr.io/synixecontractors/apps-web:latest
