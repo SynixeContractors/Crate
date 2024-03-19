@@ -14,7 +14,10 @@ use crate::template::Template;
 
 pub fn router() -> Router {
     Router::new()
-        .route("/keys", get(|| async { Html(include_str!("keys.html").to_string()) }))
+        .route(
+            "/keys",
+            get(|| async { Html(include_str!("keys.html").to_string()) }),
+        )
         .route("/:ticket", get(vote))
         .route("/cast/:ticket/:id", get(cast))
 }
