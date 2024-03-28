@@ -181,7 +181,7 @@ pub fn get_datetime(options: &[CommandDataOption]) -> OffsetDateTime {
                     .replace_month(month)
                     .expect("The month will be valid cause we check it above")
                     .weekday(),
-                Weekday::Saturday,
+                Weekday::Saturday | Weekday::Sunday
             ) {
                 16
             } else {
