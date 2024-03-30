@@ -51,6 +51,7 @@ impl EventHandler for Handler {
                     slash::missions::register(),
                     slash::reputation::register(),
                     slash::schedule::register(),
+                    slash::surveys::register(),
                 ],
             )
             .await
@@ -73,6 +74,7 @@ impl EventHandler for Handler {
                     "missions" => slash::missions::run(&ctx, &command).await,
                     "reputation" => slash::reputation::run(&ctx, &command).await,
                     "schedule" => slash::schedule::run(&ctx, &command).await,
+                    "surveys" => slash::surveys::run(&ctx, &command).await,
                     MENU_AAR_IDS => menu::missions::run_aar_ids(&ctx, &command).await,
                     MENU_AAR_PAY => menu::missions::run_aar_pay(&ctx, &command).await,
                     _ => Ok(()),
@@ -94,6 +96,7 @@ impl EventHandler for Handler {
                     "gear" => slash::gear::autocomplete(&ctx, &autocomplete).await,
                     "missions" => slash::missions::autocomplete(&ctx, &autocomplete).await,
                     "schedule" => slash::schedule::autocomplete(&ctx, &autocomplete).await,
+                    "surveys" => slash::surveys::autocomplete(&ctx, &autocomplete).await,
                     _ => Ok(()),
                 }
             }
@@ -102,6 +105,11 @@ impl EventHandler for Handler {
                     "matching component: {:?}",
                     component.data.custom_id.as_str()
                 );
+                if component.data.custom_id.starts_with("survey_submit:") {
+                    if let Err(e) = slash::surveys::submit_button(&ctx, &component).await {
+                        error!("Cannot handle survey submit: {}", e);
+                    }
+                }
                 match component.data.custom_id.as_str() {
                     "rsvp_yes" | "rsvp_maybe" | "rsvp_no" => {
                         slash::schedule::rsvp_button(&ctx, &component).await

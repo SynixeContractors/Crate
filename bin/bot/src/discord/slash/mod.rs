@@ -25,6 +25,7 @@ pub mod gear;
 pub mod missions;
 pub mod reputation;
 pub mod schedule;
+pub mod surveys;
 
 #[derive(Debug, Clone)]
 pub enum ShouldAsk<'a> {

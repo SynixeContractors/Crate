@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT id, title\n                        FROM surveys\n                        WHERE id NOT IN (\n                            SELECT survey_id FROM survey_entries GROUP BY survey_id\n                        )\n                        AND (SELECT COUNT(*) FROM survey_options WHERE survey_id = surveys.id) != 0\n                        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "1cdfa59a74b707a85cb168cd34251571de51cce9b71d1a4947d5e3c33c616711"
+}

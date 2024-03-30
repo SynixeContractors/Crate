@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT id, title\n                        FROM surveys\n                        WHERE title ILIKE $1\n                        AND (SELECT COUNT(*) FROM survey_options WHERE survey_id = surveys.id) != 0\n                        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "2766f7caaf6305a273c0a04f4a4a049c1814198648dab55c75c90026d9c1040a"
+}
