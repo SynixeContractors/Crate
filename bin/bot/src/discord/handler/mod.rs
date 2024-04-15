@@ -333,7 +333,7 @@ impl EventHandler for Handler {
                         }
                     }
                     typing.stop();
-                } else if rand::thread_rng().gen_range(0..100) < 4 {
+                } else { // if rand::thread_rng().gen_range(0..100) < 4 {
                     let typing = message.channel_id.start_typing(&ctx.http);
                     if let Some(reply) = self.brain.ask(&ctx, &message).await {
                         match message.reply_ping(&ctx.http, reply).await {
