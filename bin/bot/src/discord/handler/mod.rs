@@ -344,9 +344,9 @@ impl EventHandler for Handler {
                         warn!("No reply could be generated");
                     }
                     typing.stop();
-                } else {
-                    self.brain.observe(&ctx, &message).await;
-                }
+                } //else {
+                    //self.brain.observe(&ctx, &message).await;
+                //}
             }
         }
     }
