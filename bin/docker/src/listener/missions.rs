@@ -32,7 +32,7 @@ impl Listener for Publish {
             if *DOCKER_SERVER != "monterey-primary" {
                 return Ok(());
             }
-            if id == "$SUBCON$" {
+            if id.starts_with('$') {
                 return Ok(());
             }
             info!("Changing contracts server mission to `{}`", id);
