@@ -334,7 +334,9 @@ pub async fn rsvp_button(ctx: &Context, component: &ComponentInteraction) -> ser
         .edit_message(
             &ctx.http,
             message,
-            EditMessage::default().embed(make_post_embed(&scheduled, &rsvps)),
+            EditMessage::default()
+                .embed(make_post_embed(&scheduled, &rsvps))
+                .components(vec![rsvp_buttons()]),
         )
         .await
     {
