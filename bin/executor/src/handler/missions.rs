@@ -128,25 +128,25 @@ impl Handler for Request {
                             } else if let Some(event) = match minutes {
                                 // Warn the mission will change 80 minutes before it starts
                                 78..=82 => {
-                                    if scheduled.mission == "$SUBCON$" {
+                                    if scheduled.mission.starts_with('$') {
                                         None
                                     } else {
                                         Some(synixe_events::missions::publish::Publish::WarnChangeMission {
-                                        id: scheduled.mission.clone(),
-                                        mission_type: scheduled.typ,
-                                    })
+                                            id: scheduled.mission.clone(),
+                                            mission_type: scheduled.typ,
+                                        })
                                     }
                                 }
                                 // Change the mission 70 minutes before it starts
                                 68..=72 => {
-                                    if scheduled.mission == "$SUBCON$" {
+                                    if scheduled.mission.starts_with('$') {
                                         None
                                     } else {
                                         Some(synixe_events::missions::publish::Publish::ChangeMission {
-                                        id: scheduled.mission.clone(),
-                                        mission_type: scheduled.typ,
-                                        reason: "Scheduled".to_string(),
-                                    })
+                                            id: scheduled.mission.clone(),
+                                            mission_type: scheduled.typ,
+                                            reason: "Scheduled".to_string(),
+                                        })
                                     }
                                 }
                                 _ => None,

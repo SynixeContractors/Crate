@@ -373,7 +373,8 @@ impl Handler for Request {
                         (
                             LOWER(m.name) LIKE LOWER($1) OR
                             LOWER(m.id) LIKE LOWER($1)
-                        )
+                        ) AND
+                        m.id !~ '^\\$'
                     GROUP BY m.id
                     ORDER BY m.name ASC"#,
                     format!("%{search}%"),

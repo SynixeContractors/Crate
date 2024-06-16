@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                    SELECT\n                        COUNT(s.mission) as play_count,\n                        m.id,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM missions m\n                    LEFT JOIN missions_schedule s\n                        ON s.mission = m.id\n                    WHERE\n                        archived = FALSE AND\n                        (\n                            LOWER(m.name) LIKE LOWER($1) OR\n                            LOWER(m.id) LIKE LOWER($1)\n                        )\n                    GROUP BY m.id\n                    ORDER BY m.name ASC",
+  "query": "\n                    SELECT\n                        COUNT(s.mission) as play_count,\n                        m.id,\n                        m.name,\n                        m.summary,\n                        m.briefing,\n                        m.type as \"typ: MissionType\"\n                    FROM missions m\n                    LEFT JOIN missions_schedule s\n                        ON s.mission = m.id\n                    WHERE\n                        archived = FALSE AND\n                        (\n                            LOWER(m.name) LIKE LOWER($1) OR\n                            LOWER(m.id) LIKE LOWER($1)\n                        ) AND\n                        m.id !~ '^\\\\$'\n                    GROUP BY m.id\n                    ORDER BY m.name ASC",
   "describe": {
     "columns": [
       {
@@ -61,5 +61,5 @@
       false
     ]
   },
-  "hash": "036ef8ebce276542e6d0e6bf281ec6e7211e888217635f270ecca6dfc26c61be"
+  "hash": "128e167a5fc9b39ff5bbbe0c4c1a3413b4109df34b2a20292dbdd0c6ff37d2d7"
 }

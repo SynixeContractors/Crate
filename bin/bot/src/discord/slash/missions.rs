@@ -95,6 +95,9 @@ async fn load(
             .reply("Required option not provided: mission")
             .await;
     };
+    if mission_id.starts_with('$') {
+        return interaction.reply("Mission ID cannot start with `$`").await;
+    }
     let Ok(Ok((Response::FetchMissionList(Ok(missions)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
