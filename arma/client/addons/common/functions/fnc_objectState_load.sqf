@@ -152,5 +152,8 @@ private _fnc_addCargoForContainer = {
         case "collision": {
             _object setCollisionLight _y;
         };
+        case "captive": {
+            _object setVariable ["ace_captives_isHandcuffed", _y, true];
+        };
     };
 } forEach _state;
