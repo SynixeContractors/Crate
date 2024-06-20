@@ -42,7 +42,7 @@ if (behaviour _unit != "NORMAL") then {
 };
 if (vehicle _unit isNotEqualTo _unit) then {
     _state set ["vehicle", [
-        (vehicle _unit) getVariable [QWGVAR(campaigns,id), ""],
+        (vehicle _unit) getVariable [QEGVAR(campaigns,id), ""],
         call {
             if (driver vehicle _unit isEqualTo _unit) exitWith { "driver" };
             if (gunner vehicle _unit isEqualTo _unit) exitWith { "gunner" };
