@@ -12,6 +12,8 @@ class CfgPatches {
     };
 };
 
+class RscListNBox;
+
 #include "AceArsenalSorts.hpp"
 #include "Cfg3DEN.hpp"
 #include "CfgEventHandlers.hpp"

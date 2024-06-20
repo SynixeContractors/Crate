@@ -1,5 +1,4 @@
 class RscControlsGroupNoScrollbars;
-class RscListNBox;
 class ctrlButton;
 
 class ace_arsenal_display {

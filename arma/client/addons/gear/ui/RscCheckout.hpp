@@ -1,6 +1,5 @@
 class RscButtonMenuOk;
 class RscButtonMenuCancel;
-class RscListNBox;
 class RscText;
 class RscPicture;
 
