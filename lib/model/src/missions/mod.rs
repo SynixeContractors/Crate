@@ -45,7 +45,7 @@ pub struct Mission {
 )]
 /// Mission type
 pub enum MissionType {
-    /// Standard Friday & Saturday mission
+    /// Standard PMC mission
     #[default]
     Contract,
     /// Non-standard mission

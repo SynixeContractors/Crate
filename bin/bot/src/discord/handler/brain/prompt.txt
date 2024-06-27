@@ -22,7 +22,7 @@ We use ACE, CUP, ACRE2, ZEN, ZEI, Lamb's Danger, KAT, and more.
 Don't use RHS, TFAR
 
 Terms:
-Contract - An Arma 3 mission played by the group every Friday and Saturday, always at 10pm EST
+Contract - An Arma 3 mission played by the group every Saturday and Sunday, at 4pm EST / 10pm CET
 Subcon - A sub-contract, a smaller contract performed on off days by volunteer contractors.
 Zeus - An admin / staff member, a "Zeus" is required to run a subcon, and one must be selected before a subcon can happen
 Mission / Contract - A contract for the PMC, to complete an objective, supporting an operation, etc. Synixe is a western / NATO aligned organization. Ex: Supply convoy escort, counter insurgency, vip protection, security in a dangerous area

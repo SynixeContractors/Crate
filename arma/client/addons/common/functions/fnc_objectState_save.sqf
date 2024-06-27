@@ -50,16 +50,20 @@ if (_tex isNotEqualTo []) then {
 };
 
 // Damage
-private _hits = [];
-private _data = (getAllHitPointsDamage _object);
-{
-    private _damage = _data select 2 select _forEachIndex;
-    if (_damage != 0) then {
-        _hits pushBack [_x, _damage];
+if !(alive _object) then {
+    _state set ["dead", true];
+} else {
+    private _hits = [];
+    private _data = (getAllHitPointsDamage _object);
+    {
+        private _damage = _data select 2 select _forEachIndex;
+        if (_damage != 0) then {
+            _hits pushBack [_x, _damage];
+        };
+    } forEach (_data select 0);
+    if (_hits isNotEqualTo []) then {
+        _state set ["hits", _hits];
     };
-} forEach (_data select 0);
-if (_hits isNotEqualTo []) then {
-    _state set ["hits", _hits];
 };
 
 // Inventory
@@ -116,12 +120,6 @@ if !(_locked in [-1, 0]) then {
 // Terrain Object
 if (_object getVariable [QGVAR(terrain), ""] isNotEqualTo "") then {
     _state set ["terrain", _object getVariable [QGVAR(terrain), ""]];
-};
-
-// ACE Surrender
-private _captive = _object getVariable ["ace_captives_isHandcuffed", false];
-if (_captive) then {
-    _state set ["captive", _captive];
 };
 
 _state

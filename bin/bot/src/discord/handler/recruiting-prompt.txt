@@ -9,7 +9,7 @@ If not, simply write "Denied" and move on, no need to explain further.
 Criteria:
 Must be 18+, and have a microphone.
 We are located primarily in North and South America, and Europe
-We are looking for people who are in a compatible time zone, 10pm EST Friday and 4pm EST Saturday (saturday is better for europeans)
+We are looking for people who are in a compatible time zone, 4pm EST / 10pm CET Saturday and Sunday
 We use ACE, ACRE2, CUP, and airway management from KAT. We do not use RHS or TFAR.
 We require the Apex DLC, and Western Sahara CDLC.
 We are not looking for dedicated pilots, but we do occasionally need helicopter pilots.
@@ -29,4 +29,4 @@ Input: experienced zeus looking to return\nacross several accounts and many many
 Output: Denied.
 
 Input: looking for a unit\ni'm not really looking for a milsim unit. i don't enjoy ranking systems or having training sessions in a video game . i just want to do operations with some cool people. i prefer a modern setting. and i'd also like to join a pmc unit, if possible. please forgive me for being picky, lol
-Output: Accepted. Hey! Sounds like Synixe Contractors would be a good fit for you. We are a PMC unit with persistent gear, we earn money from contracts then buy and manager our own kit. We play every Friday and Saturday at 10pm EST, check out https://synixe.contractors for more information!
+Output: Accepted. Hey! Sounds like Synixe Contractors would be a good fit for you. We are a PMC unit with persistent gear, we earn money from contracts then buy and manager our own kit. We play every Saturday and Sunday at 4pm EST / 10pm CET, check out https://synixe.contractors for more information!

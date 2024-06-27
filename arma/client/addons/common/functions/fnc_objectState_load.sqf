@@ -75,7 +75,7 @@ private _fnc_addCargoForContainer = {
 
 {
     switch (_x) do {
-        case "alive": {
+        case "dead": {
             _object setDamage [1, false];
         };
         case "tex": {
@@ -151,9 +151,6 @@ private _fnc_addCargoForContainer = {
         };
         case "collision": {
             _object setCollisionLight _y;
-        };
-        case "captive": {
-            _object setVariable ["ace_captives_isHandcuffed", _y, true];
         };
     };
 } forEach _state;
