@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Client
         working-directory: arma/client
-        run: hemtt release --expsqfc
+        run: hemtt release
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -38,7 +38,7 @@ jobs:
 
       - name: Build Server
         working-directory: arma/server
-        run: hemtt release --expsqfc
+        run: hemtt release
 
       - name: Upload Client
         uses: actions/upload-artifact@v3
