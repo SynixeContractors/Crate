@@ -12,6 +12,12 @@
     }; \
 };
 
+#define TEXTURE_LAND "#(argb,8,8,3)color(0.581,0.441,0.293,1,co)"
+#define TEXTURE_HELI "#(argb,8,8,3)color(0.293,0.441,0.581,1,co)"
+#define TEXTURE_THING "#(argb,8,8,3)color(0.293,0.581,0.441,1,co)"
+#define TEXTURE_SEA "#(argb,8,8,3)color(0.441,0.293,0.581,1,co)"
+#define TEXTURE_PLANE "#(argb,8,8,3)color(0.581,0.293,0.441,1,co)"
+
 class CfgVehicles {
     class LandVehicle;
     class Car: LandVehicle {
@@ -34,87 +40,65 @@ class CfgVehicles {
         STORE_ACTION
     };
 
-    class Cage_Large_lxWS;
-    class Cage_Medium_lxWS;
-    class Cage_Small_lxWS;
+    class VR_Area_01_circle_4_grey_F;
+    class VR_Area_01_square_4x4_grey_F;
+    class VR_Area_01_square_2x2_grey_F;
 
-    class GVAR(land_large): Cage_Large_lxWS {
+    class GVAR(land_large): VR_Area_01_circle_4_grey_F {
         displayName = "Spawn (Land, Large)";
         editorCategory = "SynixeContractors";
         GVAR(size) = 9;
+        hiddenSelectionsTextures[] = {TEXTURE_LAND};
     };
-    class GVAR(land_medium): Cage_Medium_lxWS {
+    class GVAR(land_medium): VR_Area_01_square_4x4_grey_F {
         displayName = "Spawn (Land, Medium)";
         editorCategory = "SynixeContractors";
         GVAR(size) = 5;
+        hiddenSelectionsTextures[] = {TEXTURE_LAND};
     };
-    class GVAR(land_small): Cage_Small_lxWS {
-        displayName = "Spawn (Land, Small)";
-        editorCategory = "SynixeContractors";
-        GVAR(size) = 3;
-    };
-
-    class GVAR(sea_large): Cage_Large_lxWS {
+    class GVAR(sea_large): VR_Area_01_circle_4_grey_F {
         displayName = "Spawn (Sea, Large)";
         editorCategory = "SynixeContractors";
         GVAR(size) = 9;
+        hiddenSelectionsTextures[] = {TEXTURE_SEA};
     };
-    class GVAR(sea_medium): Cage_Medium_lxWS {
+    class GVAR(sea_medium): VR_Area_01_square_4x4_grey_F {
         displayName = "Spawn (Sea, Medium)";
         editorCategory = "SynixeContractors";
         GVAR(size) = 5;
-    };
-    class GVAR(sea_small): Cage_Small_lxWS {
-        displayName = "Spawn (Sea, Small)";
-        editorCategory = "SynixeContractors";
-        GVAR(size) = 3;
+        hiddenSelectionsTextures[] = {TEXTURE_SEA};
     };
 
-    class GVAR(heli_large): Cage_Large_lxWS {
+    class GVAR(heli_large): VR_Area_01_circle_4_grey_F {
         displayName = "Spawn (Heli, Large)";
         editorCategory = "SynixeContractors";
         GVAR(size) = 9;
-    };
-    class GVAR(heli_medium): Cage_Medium_lxWS {
-        displayName = "Spawn (Heli, Medium)";
-        editorCategory = "SynixeContractors";
-        GVAR(size) = 5;
-    };
-    class GVAR(heli_small): Cage_Small_lxWS {
-        displayName = "Spawn (Heli, Small)";
-        editorCategory = "SynixeContractors";
-        GVAR(size) = 3;
+        hiddenSelectionsTextures[] = {TEXTURE_HELI};
     };
 
-    class GVAR(plane_large): Cage_Large_lxWS {
+    class GVAR(plane_large): VR_Area_01_circle_4_grey_F {
         displayName = "Spawn (Plane, Large)";
         editorCategory = "SynixeContractors";
         GVAR(size) = 9;
-    };
-    class GVAR(plane_medium): Cage_Medium_lxWS {
-        displayName = "Spawn (Plane, Medium)";
-        editorCategory = "SynixeContractors";
-        GVAR(size) = 5;
-    };
-    class GVAR(plane_small): Cage_Small_lxWS {
-        displayName = "Spawn (Plane, Small)";
-        editorCategory = "SynixeContractors";
-        GVAR(size) = 3;
+        hiddenSelectionsTextures[] = {TEXTURE_PLANE};
     };
 
-    class GVAR(thing_large): Cage_Large_lxWS {
+    class GVAR(thing_large): VR_Area_01_circle_4_grey_F {
         displayName = "Spawn (Thing, Large)";
         editorCategory = "SynixeContractors";
-        GVAR(size) = 5;
+        GVAR(size) = 9;
+        hiddenSelectionsTextures[] = {TEXTURE_THING};
     };
-    class GVAR(thing_medium): Cage_Medium_lxWS {
+    class GVAR(thing_medium): VR_Area_01_square_4x4_grey_F {
         displayName = "Spawn (Thing, Medium)";
         editorCategory = "SynixeContractors";
-        GVAR(size) = 3;
+        GVAR(size) = 5;
+        hiddenSelectionsTextures[] = {TEXTURE_THING};
     };
-    class GVAR(thing_small): Cage_Small_lxWS {
+    class GVAR(thing_small): VR_Area_01_square_2x2_grey_F {
         displayName = "Spawn (Thing, Small)";
         editorCategory = "SynixeContractors";
-        GVAR(size) = 1;
+        GVAR(size) = 3;
+        hiddenSelectionsTextures[] = {TEXTURE_THING};
     };
 };
