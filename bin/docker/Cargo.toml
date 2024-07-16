@@ -15,9 +15,9 @@ synixe-proc = { path = "../../lib/proc" }
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-bollard = "0.16.0"
-lazy_static = "1.4.0"
+bollard = "0.16.1"
+lazy_static = "1.5.0"
 nats = { workspace = true }
-regex = "1.10.3"
+regex = "1.10.5"
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }

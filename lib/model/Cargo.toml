@@ -10,7 +10,7 @@ workspace = true
 bootstrap = { path = "../../lib/bootstrap" }
 
 arma-rs = { workspace = true, optional = true }
-regex = { version = "1.10.3", optional = true }
+regex = { version = "1.10.5", optional = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true, optional = true }
 serenity = { workspace = true, features = ["utils", "builder"], optional = true }
