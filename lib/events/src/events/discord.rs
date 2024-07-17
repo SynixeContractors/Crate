@@ -196,5 +196,7 @@ pub mod executions {
     events_requests!(execute.info {
         /// Update activity roles
         struct UpdateActivityRoles {} => (Result<(), String>)
+        /// Post weekly tips
+        struct PostWeeklyTips {} => (Result<(), String>)
     });
 }

@@ -82,6 +82,15 @@ async fn main() {
         UpdateActivityRoles
     );
 
+    // Tips
+    job!(
+        sched,
+        "Tips - post weekly tip",
+        "0 0 19 * * Sat,Sun",
+        synixe_events::discord::executions,
+        PostWeeklyTips
+    );
+
     sched.start().await;
 
     info!("Done!");
