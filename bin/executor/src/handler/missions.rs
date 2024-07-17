@@ -7,7 +7,10 @@ use synixe_events::{
     },
     publish, respond,
 };
-use synixe_meta::discord::{channel::ONTOPIC, GUILD};
+use synixe_meta::discord::{
+    channel::{LEADERSHIP, ONTOPIC},
+    GUILD,
+};
 use synixe_model::missions::Rsvp;
 use synixe_proc::events_request_5;
 
@@ -37,6 +40,35 @@ impl Handler for Request {
                         for mission in missions {
                             let num_minutes = (mission.start - now).whole_minutes() + 1;
                             match num_minutes {
+                                1438..=1442 => {
+                                    if let Err(e) = events_request_5!(
+                                        bootstrap::NC::get().await,
+                                        synixe_events::discord::write,
+                                        ChannelMessage {
+                                            channel: LEADERSHIP,
+                                            message: DiscordMessage {
+                                                content: DiscordContent::Text(format!(
+                                                    "**{}** starts in 24 hours. Remember to pick an Operation Lead if one has not been decided already{}",
+                                                    mission.name,
+                                                    {
+                                                        if let Some((channel, message)) = mission.message() {
+                                                            format!("\n\nhttps://discord.com/channels/{GUILD}/{channel}/{message}")
+                                                        } else {
+                                                            String::new()
+                                                        }
+                                                    },
+                                                )),
+                                                reactions: Vec::new(),
+                                            },
+                                            thread: None,
+                                        }
+                                    )
+                                    .await
+                                    {
+                                        error!("error posting to reddit: {:?}", e);
+                                    }
+                                }
+
                                 178..=182 => {
                                     posts.push((Some("3 hours!"), mission, num_minutes));
                                 }
