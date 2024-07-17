@@ -377,6 +377,22 @@ impl EventHandler for Handler {
             return;
         }
 
+        if message.channel_id == LOG && message.content.as_str() == "!exec weeklytips" {
+            if let Err(e) = events_request_2!(
+                bootstrap::NC::get().await,
+                synixe_events::discord::executions,
+                PostWeeklyTips {}
+            )
+            .await
+            {
+                message
+                    .reply_ping(&ctx, format!("Cannot post weekly tips: {e}"))
+                    .await
+                    .expect("Cannot send message");
+            }
+            return;
+        }
+
         if message.channel_id == LOOKING_TO_PLAY {
             if message.author.id == ctx.cache.current_user().id && !message.embeds.is_empty() {
                 self.subcon_counter
