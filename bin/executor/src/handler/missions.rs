@@ -7,7 +7,10 @@ use synixe_events::{
     },
     publish, respond,
 };
-use synixe_meta::discord::{channel::{LEADERSHIP, ONTOPIC}, GUILD};
+use synixe_meta::discord::{
+    channel::{LEADERSHIP, ONTOPIC},
+    GUILD,
+};
 use synixe_model::missions::Rsvp;
 use synixe_proc::events_request_5;
 
