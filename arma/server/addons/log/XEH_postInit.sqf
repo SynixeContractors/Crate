@@ -2,21 +2,23 @@
 
 addMissionEventHandler ["PlayerConnected", {
     params ["_id", "_uid", "_name", "_jip", "_owner", "_idstr"];
-    EXTCALL("log:connected",[ARR_2(_id,_name)]);
+    EXTCALL("log:connected",[ARR_2(_uid,_name)]);
 }];
 
 addMissionEventHandler ["PlayerDisconnected", {
     params ["_id", "_uid", "_name", "_jip", "_owner", "_idstr"];
-    EXTCALL("log:disconnected",[ARR_2(_id,_name)]);
+    EXTCALL("log:disconnected",[ARR_2(_uid,_name)]);
 }];
 
-addMissionEventHandler ["HandleChatMessage", {
-    params ["_channel", "_owner", "_from", "_text", "_person", "_name", "_strID", "_forcedDisplay", "_isPlayerMessage", "_sentenceType", "_chatMessageType"];
-    if (_channel > 5) exitWith {};
-    private _steam = getPlayerUID _person;
-    EXTCALL("log:chat",[ARR_2(_steam,_text)]);
-    false
-}];
+["synixe_log_chat", {
+    params ["_steam", "_name", "_channel", "_text"];
+    EXTCALL("log:chat",[ARR_2(_steam,_name,_channel,_text)]);
+}] call CBA_fnc_addEventHandler;
+
+["synixe_log_take", {
+    params ["_steam", "_name", "_container", "_item"];
+    EXTCALL("log:take",[ARR_2(_steam,_name,_container,_item)]);
+}] call CBA_fnc_addEventHandler;
 
 ["synixe_teams_roleUpdated", {
     params ["_unit", "_roles"];

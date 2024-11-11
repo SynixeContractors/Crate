@@ -238,7 +238,7 @@ fn command_unfriendly_healed(member: String, target: String) {
         let Ok(Ok((db::Response::UnfriendlyHealed(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
-            FriendlyHealed {
+            UnfriendlyHealed {
                 member: UserId::new(discord),
                 target: target.to_string(),
             }

@@ -8,6 +8,7 @@ pub fn group() -> Group {
         .command("connected", connected)
         .command("disconnected", disconnected)
         .command("chat", chat)
+        .command("take", take)
         .command("role", role)
 }
 
@@ -53,7 +54,7 @@ fn disconnected(steam: String, name: String) {
     });
 }
 
-fn chat(steam: String, name: String, message: String) {
+fn chat(steam: String, name: String, channel: String, message: String) {
     RUNTIME.spawn(async move {
         if let Err(e) = events_request_5!(
             bootstrap::NC::get().await,
@@ -63,8 +64,31 @@ fn chat(steam: String, name: String, message: String) {
                 steam,
                 action: "chat".to_string(),
                 data: serde_json::json!({
+                    "channel": channel,
                     "name": name,
                     "message": message,
+                }),
+            }
+        )
+        .await
+        {
+            error!("failed to log server event: {}", e);
+        }
+    });
+}
+
+fn take(steam: String, name: String, from: String, item: String) {
+    RUNTIME.spawn(async move {
+        if let Err(e) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::servers::db,
+            Log {
+                server: (*SERVER_ID).clone(),
+                steam,
+                action: "take".to_string(),
+                data: serde_json::json!({
+                    "name": name,
+                    "item": item,
                 }),
             }
         )

@@ -85,6 +85,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     _vehicle setVariable [QGVAR(plate), _plate, true];
     _vehicle setPlateNumber _plate;
     _vehicle setVariable ["ace_tagging_canTag", false, true];
+    _vehicle setVariable ["synixe", true, true];
     [{
         _this call EFUNC(common,objectState_load);
     }, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;
@@ -95,5 +96,5 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
 
     // this may still be having issues?
     // do it last just in case
-    [_vehicle, _plate, 0.5, "ffd731"] call ace_tagging_fnc_stencilVehicle;
+    [_vehicle, _plate, 0.4, "ffd731"] call ace_tagging_fnc_stencilVehicle;
 };

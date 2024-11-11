@@ -18,7 +18,9 @@ _unit addEventHandler ["Hit", {
     };
 
     if ([_unit] call FUNC(isUnarmed)) then {
-        [QGVAR(unarmed_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
+        if (_unit getVariable [QGVAR(unarmedSince), CBA_missionTime - 4] < CBA_missionTime - 2) then {
+            [QGVAR(unarmed_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
+        };
     };
 
     if (_unit getVariable ["ace_captives_isSurrendering", false]) then {
@@ -30,7 +32,7 @@ _unit addEventHandler ["Hit", {
     };
 
     if (_unit getVariable ["ACE_isUnconscious", false]) then {
-        if (_unit getVariable [QGVAR(unconsciousSince), CBA_missionTime] < CBA_missionTime - 3) then {
+        if (_unit getVariable [QGVAR(unconsciousSince), CBA_missionTime] < CBA_missionTime - 2) then {
             [QGVAR(unconscious_shot), [_discord, _unit, _weapon]] call CBA_fnc_serverEvent;
         };
     };
