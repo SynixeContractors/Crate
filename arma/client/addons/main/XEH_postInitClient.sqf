@@ -1,3 +1,5 @@
+#include "script_component.hpp"
+
 addMissionEventHandler ["HandleChatMessage", {
     params ["_channel", "_owner", "_from", "_text", "_person", "_name", "_strID", "_forcedDisplay", "_isPlayerMessage", "_sentenceType", "_chatMessageType"];
     if (_channel > 5) exitWith {};
