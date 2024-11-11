@@ -12,12 +12,12 @@ addMissionEventHandler ["PlayerDisconnected", {
 
 ["synixe_log_chat", {
     params ["_steam", "_name", "_channel", "_text"];
-    EXTCALL("log:chat",[ARR_2(_steam,_name,_channel,_text)]);
+    EXTCALL("log:chat",[ARR_4(_steam,_name,_channel,_text)]);
 }] call CBA_fnc_addEventHandler;
 
 ["synixe_log_take", {
     params ["_steam", "_name", "_container", "_item"];
-    EXTCALL("log:take",[ARR_2(_steam,_name,_container,_item)]);
+    EXTCALL("log:take",[ARR_4(_steam,_name,_container,_item)]);
 }] call CBA_fnc_addEventHandler;
 
 ["synixe_teams_roleUpdated", {
