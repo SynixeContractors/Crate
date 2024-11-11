@@ -6,7 +6,7 @@ params ["_object", "_state", ["_ace_cargo", true]];
 // Inventory
 clearMagazineCargoGlobal _object;
 clearWeaponCargoGlobal _object;
-clearitemCargoGlobal _object;
+clearItemCargoGlobal _object;
 clearBackpackCargoGlobal _object;
 // Magazines
 {
@@ -45,7 +45,7 @@ private _fnc_addCargoForContainer = {
     } forEach (_standard select 1);
 
     // Item Cargo
-    clearitemCargoGlobal _container;
+    clearItemCargoGlobal _container;
     {
         _container addItemCargoGlobal [_x, _standard select 2 select 1 select _forEachIndex];
     } forEach ((_standard select 2) select 0);
@@ -86,7 +86,7 @@ private _fnc_addCargoForContainer = {
         case "hits": {
             {
                 _object setHitPointDamage [_x select 0, _x select 1, false];
-            } foreach _y;
+            } forEach _y;
         };
         case "fuel": {
             _object setFuel _y;

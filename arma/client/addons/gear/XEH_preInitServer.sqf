@@ -61,7 +61,7 @@ if !(isMultiplayer) exitWith {};
     private _discord = _player getVariable [QEGVAR(discord,id), ""];
     if (_discord isEqualTo "") exitWith {};
     private _steam = getPlayerUID _player;
-    EXTCALL("gear:shop:enter", [ARR_3(_discord,_steam,_items)]);
+    EXTCALL("gear:shop:enter",[ARR_3(_discord,_steam,_items)]);
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_leave), {
@@ -76,7 +76,7 @@ if !(isMultiplayer) exitWith {};
     private _discord = _player getVariable [QEGVAR(discord,id), ""];
     if (_discord isEqualTo "") exitWith {};
     private _steam = getPlayerUID _player;
-    EXTCALL("gear:shop:leave", [ARR_4(_discord,_steam,str ([_loadout] call FUNC(loadout_clean)),_items)]);
+    EXTCALL("gear:shop:leave",[ARR_4(_discord,_steam,str ([_loadout] call FUNC(loadout_clean)),_items)]);
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_purchase), {
@@ -90,7 +90,7 @@ if !(isMultiplayer) exitWith {};
     private _discord = _player getVariable [QEGVAR(discord,id), ""];
     if (_discord isEqualTo "") exitWith {};
     private _steam = getPlayerUID _player;
-    EXTCALL("gear:shop:purchase", [ARR_3(_discord,_steam,_items)]);
+    EXTCALL("gear:shop:purchase",[ARR_3(_discord,_steam,_items)]);
 }] call CBA_fnc_addEventHandler;
 
 addMissionEventHandler ["ExtensionCallback", {

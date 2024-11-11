@@ -34,7 +34,7 @@ private _items = [_loadout] call FUNC(loadout_items);
 
 private _fnc_onConfirm = {
     params [["_ctrlButtonOK", controlNull, [controlNull]]];
-    private _display = ctrlparent _ctrlButtonOK;
+    private _display = ctrlParent _ctrlButtonOK;
     if (isNull _display) exitWith {};
 
     private _loadout = [player] call CBA_fnc_getLoadout;
@@ -47,7 +47,7 @@ if (_cost > GVAR(shop_balance)) then {
     (_display displayCtrl 1) ctrlEnable false;
     (_display displayCtrl 1001) ctrlSetText "Insufficient Funds";
 } else {
-    (_display displayCtrl 1) ctrlAddEventHandler ["buttonclick", _fnc_onConfirm];
+    (_display displayCtrl 1) ctrlAddEventHandler ["ButtonClick", _fnc_onConfirm];
     private _personal = [_items, 0] call FUNC(shop_items_cost);
     private _global = [_items, 1] call FUNC(shop_items_cost);
     (_display displayCtrl 1001) ctrlSetText format ["$%1 ($%2 Global)", _personal, _global];

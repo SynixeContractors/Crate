@@ -5,7 +5,7 @@ if !(GVAR(objects_ready)) exitWith {};
 if (GVAR(objects_stack) isEqualTo []) then {
     GVAR(objects_stack) = (allMissionObjects "All") - allUnits;
     {
-        EXTCALL("campaigns:objects:delete", [ARR_2(GVAR(key), _x)]);
+        EXTCALL("campaigns:objects:delete",[ARR_2(GVAR(key),_x)]);
         GVAR(objects_ids) = GVAR(objects_ids) - [_x];
     } forEach GVAR(objects_notSeen);
     GVAR(objects_notSeen) = +GVAR(objects_ids);
@@ -40,4 +40,4 @@ if (_state isEqualTo (_object getVariable [QGVAR(last), createHashMap])) exitWit
 _object setVariable [QGVAR(last), _state, true];
 _object setVariable [QGVAR(nextUpdate), time + 2, true];
 
-EXTCALL("campaigns:objects:save", [ARR_4(GVAR(key), _id, typeOf _object, _state)]);
+EXTCALL("campaigns:objects:save",[ARR_4(GVAR(key),_id,typeOf _object,_state)]);

@@ -30,7 +30,7 @@ if (count _waypoints > 1) then {
     {
         if (_forEachIndex != 0) then {
             private _waypointVars = createHashMap;
-            if !(wayPointVisible _x) then {
+            if !(waypointVisible _x) then {
                 _waypointVars set ["visible", false];
             };
             if (waypointDescription _x isNotEqualTo "") then {

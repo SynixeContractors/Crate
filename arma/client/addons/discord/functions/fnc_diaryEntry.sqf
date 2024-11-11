@@ -17,11 +17,7 @@ if !(player diarySubjectExists QGVAR(diary)) then {
 private _id = player getVariable [QGVAR(id), "Unknown"];
 private _roles = player getVariable [QGVAR(roles), []];
 
-private _roleText = if (_roles isEqualTo []) then {
-    ""
-} else {
-    "Roles:<br/>"
-};
+private _roleText = ["Roles:<br/>", ""] select (_roles isEqualTo []);
 {
     _roleText = format ["%1  - %2<br/>", _roleText, _x];
 } forEach _roles;

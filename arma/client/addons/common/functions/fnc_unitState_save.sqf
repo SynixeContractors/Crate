@@ -52,7 +52,7 @@ if (vehicle _unit isNotEqualTo _unit) then {
     ]];
 };
 
-if (missionnamespace getVariable ["ace_main", false]) then {
+if (missionNamespace getVariable ["ace_main", false]) then {
     if (_unit getVariable ["ace_captives_isSurrendering", false]) then {
         _state set ["ace_surrender", true];
     };

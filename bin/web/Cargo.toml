@@ -19,7 +19,7 @@ rsa = { workspace = true }
 serenity = { workspace = true, features = ["builder"] }
 tera = "1.20.0"
 tokio = { workspace = true, features = ["full"] }
-tower = { version = "0.4.13", features = ["util"] }
-tower-http = { version = "0.5.2", features = ["fs", "trace"] }
+tower = { version = "0.5.1", features = ["util"] }
+tower-http = { version = "0.6.1", features = ["fs", "trace"] }
 tracing = { workspace = true }
 uuid = { workspace = true }

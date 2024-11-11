@@ -19,7 +19,8 @@ members = [
 
     "arma/server",
 
-    "utils/poll-runner"
+    "utils/poll-runner",
+    "utils/reachout",
 ]
 
 [workspace.lints.clippy]
@@ -33,20 +34,20 @@ future_incompatible = "warn"
 nonstandard_style = "warn"
 
 [workspace.dependencies]
-anyhow = "1.0.86"
-arma-rs = { git = "https://github.com/brettmayson/arma-rs", features = ["uuid", "serde_json"] }
-async-trait = "0.1.81"
-axum = "0.7.5"
+anyhow = "1.0.93"
+arma-rs = { version = "1.11.10", features = ["uuid", "serde_json"] }
+async-trait = "0.1.83"
+axum = "0.7.7"
 nats = { version = "0.25.0" }
-reqwest = { version = "0.12.5", features = ["rustls-tls"] }
+reqwest = { version = "0.12.9", features = ["rustls-tls"] }
 rsa = "0.9.6"
-serde = { version = "1.0.204", features = ["derive"] }
-serde_json = "1.0.120"
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
 serenity = { version = "0.12.2", default_features = false, features = ["rustls_backend"] }
 sqlx = { version = "0.7.4" }
 strum = "0.26.3"
 time = "0.3.36"
-tokio = "1.38.1"
+tokio = "1.41.1"
 tracing = { version = "0.1.40", features = ["log"] }
 tracing-subscriber = "0.3.18"
-uuid = "1.10.0"
+uuid = "1.11.0"

@@ -1,6 +1,6 @@
 params ["_unit"];
 
-if (vehicle _unit == _unit) exitWith {
+if (isNull objectParent _unit) exitWith {
     currentWeapon _unit
 };
 

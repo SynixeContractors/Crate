@@ -20,8 +20,8 @@ synixe-proc = { path = "../../lib/proc" }
 anyhow = { workspace = true }
 arma-rs = { workspace = true }
 async-trait = { workspace = true }
-lazy_static = "1.4.0"
-log = "0.4.21"
+lazy_static = "1.5.0"
+log = "0.4.22"
 nats = { workspace = true }
 serde_json = { workspace = true }
 serenity = { workspace = true }

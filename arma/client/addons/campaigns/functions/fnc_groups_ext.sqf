@@ -9,6 +9,6 @@ switch (_func) do {
     };
     case "done": {
         GVAR(groups_ready) = true;
-        EXTCALL("campaigns:units:load", [GVAR(key)]);
+        EXTCALL("campaigns:units:load",[GVAR(key)]);
     };
 };

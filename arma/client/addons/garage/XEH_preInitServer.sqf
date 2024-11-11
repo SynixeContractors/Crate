@@ -32,5 +32,5 @@ addMissionEventHandler ["ExtensionCallback", {
 
     private _state = [_vehicle] call EFUNC(common,objectState_save);
 
-    EXTCALL("garage:store",[ARR_3(_plate, _state, _discord)]);
+    EXTCALL("garage:store",[ARR_3(_plate,_state,_discord)]);
 }] call CBA_fnc_addEventHandler;

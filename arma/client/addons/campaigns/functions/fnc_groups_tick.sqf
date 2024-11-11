@@ -5,7 +5,7 @@ if !(GVAR(groups_ready)) exitWith {};
 if (GVAR(groups_stack) isEqualTo []) then {
     GVAR(groups_stack) = allGroups;
     {
-        EXTCALL("campaigns:groups:delete", [ARR_2(GVAR(key), _x)]);
+        EXTCALL("campaigns:groups:delete",[ARR_2(GVAR(key),_x)]);
         GVAR(groups_ids) = GVAR(groups_ids) - [_x];
     } forEach GVAR(groups_notSeen);
     GVAR(groups_notSeen) = +GVAR(groups_ids);
@@ -36,4 +36,4 @@ if (_state isEqualTo (_group getVariable [QGVAR(last), createHashMap])) exitWith
 _group setVariable [QGVAR(last), _state, true];
 _group setVariable [QGVAR(nextUpdate), time + 2, true];
 
-EXTCALL("campaigns:groups:save", [ARR_3(GVAR(key), _id, _state)]);
+EXTCALL("campaigns:groups:save",[ARR_3(GVAR(key),_id,_state)]);

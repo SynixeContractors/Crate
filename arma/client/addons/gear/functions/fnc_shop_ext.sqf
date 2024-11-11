@@ -18,14 +18,14 @@ switch (_func) do {
                 _pretty = getText (configFile >> "CfgMagazines" >> _class >> "displayName");
             };
             if (_pretty != "") then {
-                EXTCALL("gear:shop:pretty", [ARR_2(_class, _pretty)]);
+                EXTCALL("gear:shop:pretty",[ARR_2(_class,_pretty)]);
             };
         };
     };
     case "items:publish": {
         GVAR(shop_items) = +GVAR(shop_items_importing);
         publicVariable QGVAR(shop_items);
-        INFO_1("Published shop items: %1", count GVAR(shop_items));
+        INFO_1("Published shop items: %1",count GVAR(shop_items));
     };
     case "items:err": {
         ERROR("Error importing shop items");

@@ -23,4 +23,4 @@ GVAR(markers_pfh) = [FUNC(markers_tick), 2] call CBA_fnc_addPerFrameHandler;
     _vehicle setVariable [QGVAR(ignore), true];
 }] call CBA_fnc_addEventHandler;
 
-EXTCALL("campaigns:objects:load", [GVAR(key)]);
+EXTCALL("campaigns:objects:load",[GVAR(key)]);

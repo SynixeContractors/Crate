@@ -5,7 +5,7 @@ if !(GVAR(units_ready)) exitWith {};
 if (GVAR(units_stack) isEqualTo []) then {
     GVAR(units_stack) = allUnits - allPlayers;
     {
-        EXTCALL("campaigns:units:delete", [ARR_2(GVAR(key), _x)]);
+        EXTCALL("campaigns:units:delete",[ARR_2(GVAR(key),_x)]);
         GVAR(units_ids) = GVAR(units_ids) - [_x];
     } forEach GVAR(units_notSeen);
     GVAR(units_notSeen) = +GVAR(units_ids);
@@ -42,4 +42,4 @@ if (_state isEqualTo (_unit getVariable [QGVAR(last), createHashMap])) exitWith 
 _unit setVariable [QGVAR(last), _state, true];
 _unit setVariable [QGVAR(nextUpdate), time + 2, true];
 
-EXTCALL("campaigns:units:save", [ARR_5(GVAR(key), _id, typeOf _unit, _groupId, _state)]);
+EXTCALL("campaigns:units:save",[ARR_5(GVAR(key),_id,typeOf _unit,_groupId,_state)]);
