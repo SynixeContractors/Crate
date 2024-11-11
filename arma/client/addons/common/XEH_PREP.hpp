@@ -10,3 +10,5 @@ PREP(unitState_save);
 
 PREP(getInventory);
 PREP(playerFromSteam);
+
+PREP(isDLCOwned);
