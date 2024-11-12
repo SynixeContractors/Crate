@@ -67,6 +67,7 @@ private _id = switch (_return) do {
     case "Tank": { 798390 };
     case "WS": { 1681170 };
     case "RF": { 2647760 };
+    case "EF": { 2647830 };
     default { 0 };
 };
 
