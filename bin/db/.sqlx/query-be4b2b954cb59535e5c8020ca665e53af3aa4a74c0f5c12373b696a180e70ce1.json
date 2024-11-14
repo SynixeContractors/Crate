@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                            SELECT DISTINCT ON (member)\n                                member as value\n                            FROM gear_bank_deposits\n                            WHERE\n                                id != '00000000-0000-0000-0000-000000000000'\n                                AND created > NOW() - '30 days'::Interval\n                            ORDER BY member, created DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "value",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "be4b2b954cb59535e5c8020ca665e53af3aa4a74c0f5c12373b696a180e70ce1"
+}
