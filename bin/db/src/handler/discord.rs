@@ -80,7 +80,7 @@ impl Handler for Request {
                             FROM gear_bank_deposits
                             WHERE
                                 id != '00000000-0000-0000-0000-000000000000'
-                                AND created > NOW() - '3 weeks'::Interval
+                                AND created > NOW() - '30 days'::Interval
                             ORDER BY member, created DESC"#,
                     )
                     .fetch_all(&*db)
