@@ -20,7 +20,7 @@ use crate::{db, discord, input};
 #[allow(clippy::too_many_lines)]
 pub async fn menu() {
     let db = DB::get().await;
-    let staff = discord::get_staff()
+    let staff = discord::get_keyholders()
         .await
         .expect("should be able to get staff over nats");
     loop {

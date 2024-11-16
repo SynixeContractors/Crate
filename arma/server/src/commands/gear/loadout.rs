@@ -70,7 +70,7 @@ fn command_store(discord: String, steam: String, loadout: String) {
             synixe_events::gear::db,
             LoadoutStore {
                 member: UserId::new(discord),
-                loadout: loadout.replace("\"\"", "\""),
+                loadout: loadout, //.replace("\"\"", "\""),
             }
         )
         .await
