@@ -25,7 +25,10 @@ private _config = configNull;
     _config = configFile >> _x >> _class;
     if (isClass _config) exitWith {};
 } forEach ["CfgWeapons","CfgVehicles","CfgGlasses"];
-if (isNull _config) exitWith {""};
+if (isNull _config) exitWith { 
+    INFO_1("DLC CHECK: %1 not found",_class);
+    true
+};
 
 if (getNumber (_config >> "itemInfo" >> "type") == 801) then {
     _config = configFile >> "CfgVehicles" >> getText (_config >> "itemInfo" >> "uniformClass")
