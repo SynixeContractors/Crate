@@ -2,6 +2,8 @@
 // Used under APL-SA License
 // Thanks POLPOX <3
 
+#include "script_component.hpp"
+
 params ["_class"];
 
 private _dlcList = [
