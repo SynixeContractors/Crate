@@ -10,17 +10,17 @@ addMissionEventHandler ["PlayerDisconnected", {
     EXTCALL("log:disconnected",[ARR_2(_uid,_name)]);
 }];
 
-["synixe_log_chat", {
+["crate_log_chat", {
     params ["_steam", "_name", "_channel", "_text"];
     EXTCALL("log:chat",[ARR_4(_steam,_name,_channel,_text)]);
 }] call CBA_fnc_addEventHandler;
 
-["synixe_log_take", {
+["crate_log_take", {
     params ["_steam", "_name", "_container", "_item"];
     EXTCALL("log:take",[ARR_4(_steam,_name,_container,_item)]);
 }] call CBA_fnc_addEventHandler;
 
-["synixe_teams_roleUpdated", {
+["crate_teams_roleUpdated", {
     params ["_unit", "_roles"];
     private _steam = getPlayerUID _unit;
     private _discord = _player getVariable [QEGVAR(discord,id), ""];

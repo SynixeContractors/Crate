@@ -2,4 +2,4 @@
 
 params ["_unit"];
 
-_unit setVariable [QGVAR(unarmedSince), CBA_missionTime, true];
+_unit setVariable [QGVAR(unarmedDelay), CBA_missionTime + 3, true];

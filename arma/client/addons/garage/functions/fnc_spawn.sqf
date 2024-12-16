@@ -36,6 +36,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     _vehicle setDir (markerDir _spawn);
     _vehicle setVariable [QGVAR(plate), _plate, true];
     _vehicle setPlateNumber _plate;
+    _vehicle setVariable ["crate", true, true];
     [{
         _this call EFUNC(common,objectState_load);
     }, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;
@@ -85,7 +86,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     _vehicle setVariable [QGVAR(plate), _plate, true];
     _vehicle setPlateNumber _plate;
     _vehicle setVariable ["ace_tagging_canTag", false, true];
-    _vehicle setVariable ["synixe", true, true];
+    _vehicle setVariable ["crate", true, true];
     [{
         _this call EFUNC(common,objectState_load);
     }, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;

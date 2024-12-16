@@ -5,16 +5,16 @@ addMissionEventHandler ["HandleChatMessage", {
     if (_channel > 5) exitWith {};
     if (_person != ace_player) exitWith {};
     private _steam = getPlayerUID _person;
-    ["synixe_log_chat", [_steam, _name, str _channel, _text]] call CBA_fnc_serverEvent;
+    ["crate_log_chat", [_steam, _name, str _channel, _text]] call CBA_fnc_serverEvent;
     false
 }];
 
 FUNC(onTake) = {
     params ["_unit", "_container", "_item"];
     if (_unit != ace_player) exitWith {};
-    if (_container getVariable ["synixe", false]) exitWith {};
+    if (_container getVariable ["crate", false]) exitWith {};
     private _steam = getPlayerUID _unit;
-    ["synixe_log_take", [_steam, name _unit, _container, _item]] call CBA_fnc_serverEvent;
+    ["crate_log_take", [_steam, name _unit, _container, _item]] call CBA_fnc_serverEvent;
 };
 
-["CAManBase", "Take", { FUNC(onTake) }] call CBA_fnc_addClassEventHandler;
+["CAManBase", "Take", { call FUNC(onTake) }] call CBA_fnc_addClassEventHandler;

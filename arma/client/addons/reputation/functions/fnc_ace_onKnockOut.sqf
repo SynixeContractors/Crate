@@ -2,4 +2,4 @@
 
 params ["_unit"];
 
-_unit setVariable [QGVAR(unconsciousSince), CBA_missionTime, true];
+_unit setVariable [QGVAR(unconsciousDelay), CBA_missionTime + 2, true];
