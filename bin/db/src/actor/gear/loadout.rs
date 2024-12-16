@@ -45,10 +45,10 @@ where
         .collect::<Vec<String>>();
 
     let query = sqlx::query!(
-        "SELECT gc.class, gc.cost
+        "SELECT gc.class, gc.personal
         FROM gear_cost gc
         INNER JOIN gear_items gi on gi.class = gc.class
-        WHERE gc.class=ANY($1) AND gi.global = false;",
+        WHERE gc.class=ANY($1);",
         &items
     );
 
@@ -60,7 +60,7 @@ where
             #[allow(clippy::cast_possible_wrap)]
             loadout
                 .get(&row.class)
-                .map(|quantity| row.cost * *quantity as i32)
+                .map(|quantity| row.personal * *quantity as i32)
         })
         .sum::<Option<i32>>();
 

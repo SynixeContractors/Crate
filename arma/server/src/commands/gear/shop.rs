@@ -121,7 +121,7 @@ fn command_leave(discord: String, steam: String, loadout: String, mut items: Has
             synixe_events::gear::db,
             ShopLeave {
                 member: UserId::new(discord),
-                loadout: loadout, // .replace("\"\"", "\""),
+                loadout, // .replace("\"\"", "\""),
                 items,
             }
         )

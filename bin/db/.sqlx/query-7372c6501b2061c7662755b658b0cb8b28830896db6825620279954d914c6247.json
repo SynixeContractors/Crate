@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT gc.class, gc.cost\n        FROM gear_cost gc\n        INNER JOIN gear_items gi on gi.class = gc.class\n        WHERE gc.class=ANY($1) AND gi.global = false;",
+  "query": "SELECT gc.class, gc.personal\n        FROM gear_cost gc\n        INNER JOIN gear_items gi on gi.class = gc.class\n        WHERE gc.class=ANY($1);",
   "describe": {
     "columns": [
       {
@@ -10,7 +10,7 @@
       },
       {
         "ordinal": 1,
-        "name": "cost",
+        "name": "personal",
         "type_info": "Int4"
       }
     ],
@@ -24,5 +24,5 @@
       false
     ]
   },
-  "hash": "89eb47b799b12ca853238b2ee85a5d60ff7f122826dff2b240c7fa888396b21c"
+  "hash": "7372c6501b2061c7662755b658b0cb8b28830896db6825620279954d914c6247"
 }

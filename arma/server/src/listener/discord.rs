@@ -20,12 +20,13 @@ impl Listener for Publish {
         };
         match &self {
             Self::MemberUpdate { member } => {
-                if let Some(steam) = STEAM_CACHE.read().await.get(&member.user.id.to_string()) {
+                let steam = STEAM_CACHE.read().await.get(&member.user.id.to_string()).cloned();
+                if let Some(steam) = steam {
                     if let Err(e) = context.callback_data(
                         "crate:discord",
                         "member:get:ok",
                         vec![
-                            arma_rs::Value::String(steam.to_string()),
+                            arma_rs::Value::String(steam),
                             arma_rs::Value::String(member.user.id.to_string()),
                             arma_rs::Value::Array(
                                 member

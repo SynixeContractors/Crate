@@ -1,12 +1,12 @@
 #include "script_component.hpp"
 
-/// Global Mode
-/// 0 - Include only non global
-/// 1 - Include only global
-/// 2 - Include all items
+/// Mode
+/// 0 - Personal Cost
+/// 1 - Company Cost
+/// 2 - Both
 params [
     ["_items", createHashMap, [createHashMap]],
-    ["_globalMode", 2, [0]],
+    ["_mode", 2, [0]],
     ["_newOnly", true, [true]]
 ];
 
@@ -17,12 +17,21 @@ private _cost = 0;
     private _need = if (GVAR(readOnly) || !_newOnly) then { _y } else { _y - ([_x] call FUNC(shop_item_owned)) };
     if (_need > 0) then {
         private _class = [_x] call FUNC(shop_item_listing);
-        ([_class, false] call FUNC(shop_item_price)) params ["_basePrice", "_currentPrice", "_global"];
-        if (
-            _globalMode == 2 || { _globalMode == (parseNumber _global) }
-        ) then {
-            _cost = _cost + (_currentPrice * _need);
-        };
+        ([_class, false] call FUNC(shop_item_price)) params ["_personal", "_company"];
+        _cost = switch (_mode) do {
+            case 0: {
+                _personal
+            };
+            case 1: {
+                _company
+            };
+            case 2: {
+                _personal + _company
+            };
+            default {
+                0
+            };
+        } * _need;
     };
 } forEach _items;
 

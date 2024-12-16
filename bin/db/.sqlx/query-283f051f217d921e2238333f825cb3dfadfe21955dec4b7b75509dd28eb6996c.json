@@ -1,40 +1,46 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT i.global, gear_item_base_cost(i.class) as base, c.cost, c.end_date FROM gear_items i, LATERAL gear_item_current_cost(i.class) c WHERE i.class = $1",
+  "query": "SELECT * FROM gear_item_base_cost($1), gear_item_current_cost($1)",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "global",
-        "type_info": "Bool"
+        "name": "personal",
+        "type_info": "Int4"
       },
       {
         "ordinal": 1,
-        "name": "base",
+        "name": "company",
         "type_info": "Int4"
       },
       {
         "ordinal": 2,
-        "name": "cost",
+        "name": "personal_current",
         "type_info": "Int4"
       },
       {
         "ordinal": 3,
+        "name": "company_current",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
         "name": "end_date",
         "type_info": "Timestamptz"
       }
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Varchar"
       ]
     },
     "nullable": [
-      false,
+      null,
+      null,
       null,
       null,
       null
     ]
   },
-  "hash": "4efaab44dd6e786c4182108767fa7d5d41160284492c6e6acb365b6eb7a6a3d9"
+  "hash": "283f051f217d921e2238333f825cb3dfadfe21955dec4b7b75509dd28eb6996c"
 }

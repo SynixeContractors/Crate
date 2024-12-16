@@ -24,9 +24,9 @@ members = [
 ]
 
 [workspace.lints.clippy]
-all = "deny"
-nursery = "deny"
-pedantic = "warn"
+all = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
 unwrap_used = "deny"
 
 [workspace.lints.rust]
@@ -43,8 +43,8 @@ reqwest = { version = "0.12.9", features = ["rustls-tls"] }
 rsa = "0.9.7"
 serde = { version = "1.0.216", features = ["derive"] }
 serde_json = "1.0.133"
-serenity = { version = "0.12.4", default_features = false, features = ["rustls_backend"] }
-sqlx = { version = "0.7.4" }
+serenity = { version = "0.12.4", default-features = false, features = ["rustls_backend"] }
+sqlx = { version = "0.8.2" }
 strum = "0.26.3"
 time = "0.3.37"
 tokio = "1.42.0"

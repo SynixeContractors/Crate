@@ -9,7 +9,7 @@ private _invalid = [];
 {
     private _need = _y - ([_x] call FUNC(shop_item_owned));
     if (_need > 0) then {
-        if (([_x] call FUNC(shop_item_price))#1 == -1) exitWith {
+        if (([_x] call FUNC(shop_item_price))#0 == -1) exitWith {
             _invalid pushBack _x;
         };
     };

@@ -151,17 +151,6 @@ impl Handler for Request {
                     reason,
                 )
             }
-            Self::BankPurchasesNew { member, items } => {
-                quick_transaction!(
-                    BankPurchasesNew,
-                    db,
-                    msg,
-                    cx,
-                    actor::gear::bank::purchase,
-                    member,
-                    items,
-                )
-            }
             Self::ShopGetAll {} => {
                 quick_transaction_return!(ShopGetAll, db, msg, cx, actor::gear::shop::items,)
             }
@@ -315,7 +304,7 @@ impl Handler for Request {
                 )
                 .await?;
                 // Purchase the new item
-                actor::gear::bank::shop_purchase_cost(
+                actor::gear::bank::shop_purchase_personal_cost(
                     member,
                     &{
                         let mut map = HashMap::new();

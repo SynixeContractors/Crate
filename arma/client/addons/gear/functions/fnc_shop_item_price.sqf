@@ -5,10 +5,10 @@ params [
     ["_lookup", true, [true]]
 ];
 
-if (_class == "") exitWith {[-1,-1,false]};
+if (_class == "") exitWith {[-1,-1,-1-1]};
 
 if (_lookup) then {
     _class = [_class] call FUNC(shop_item_listing);
 };
 
-(GVAR(shop_items) getOrDefault [_class, [0,[-1,-1,false]]]) select 1
+(GVAR(shop_items) getOrDefault [_class, [0,[-1,-1,-1-1]]])

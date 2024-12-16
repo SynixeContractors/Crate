@@ -7,39 +7,54 @@ use uuid::Uuid;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 /// Price information for an item
 pub struct Price {
-    base: i32,
-    current: Option<i32>,
+    personal: i32,
+    company: i32,
+    personal_current: Option<i32>,
+    company_current: Option<i32>,
     until: Option<OffsetDateTime>,
-    global: bool,
 }
 
 impl Price {
     #[must_use]
     /// Create a new price
     pub const fn new(
-        base: i32,
-        current: Option<i32>,
+        personal: i32,
+        company: i32,
+        personal_current: Option<i32>,
+        company_current: Option<i32>,
         until: Option<OffsetDateTime>,
-        global: bool,
     ) -> Self {
         Self {
-            base,
-            current,
+            personal,
+            company,
+            personal_current,
+            company_current,
             until,
-            global,
         }
     }
 
     #[must_use]
     /// Price of the item
-    pub fn price(&self) -> i32 {
-        self.current.unwrap_or(self.base)
+    pub fn personal(&self) -> i32 {
+        self.personal_current.unwrap_or(self.personal)
     }
 
     #[must_use]
     /// Is the item on sale?
-    pub const fn base(&self) -> bool {
-        self.current.is_none()
+    pub const fn personal_base(&self) -> i32 {
+        self.personal
+    }
+
+    #[must_use]
+    /// Price of the item for the company
+    pub fn company(&self) -> i32 {
+        self.company_current.unwrap_or(self.company)
+    }
+
+    #[must_use]
+    /// Is the item on sale for the company?
+    pub const fn company_base(&self) -> i32 {
+        self.company
     }
 
     #[must_use]
@@ -47,21 +62,16 @@ impl Price {
     pub const fn until(&self) -> Option<OffsetDateTime> {
         self.until
     }
-
-    #[must_use]
-    /// Is the item global?
-    pub const fn global(&self) -> bool {
-        self.global
-    }
 }
 
 #[cfg(feature = "arma-rs")]
 impl arma_rs::IntoArma for Price {
     fn to_arma(&self) -> arma_rs::Value {
         arma_rs::Value::Array(vec![
-            self.base.to_arma(),
-            self.current.to_arma(),
-            self.global.to_arma(),
+            self.personal_current.to_arma(),
+            self.company_current.to_arma(),
+            self.personal.to_arma(),
+            self.company.to_arma(),
         ])
     }
 }

@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO gear_bank_purchases\n                    (member, class, quantity, reason, personal, company)\n                    SELECT $1, $2, $3, $4, cost.personal_current, cost.company_current\n                    FROM gear_item_current_cost($2) AS cost",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Int4",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8d41df0fafcb7bb97ecfae45414abb58d192b1c95ccffdeda581bb09f7e376f9"
+}

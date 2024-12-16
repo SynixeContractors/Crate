@@ -17,7 +17,7 @@ if (GVAR(readOnly)) exitWith {
 private _loadout = [player] call CBA_fnc_getLoadout;
 private _items = [_loadout] call FUNC(loadout_items);
 private _items_new = [+_items] call FUNC(shop_items_removeOwned);
-private _cost = [_items_new] call FUNC(shop_items_cost);
+private _cost = [_items_new, 2] call FUNC(shop_items_cost);
 
 if (_cost == 0) then {
     [QGVAR(shop_leave), [player, _loadout, _items]] call CBA_fnc_serverEvent;

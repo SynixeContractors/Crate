@@ -80,27 +80,6 @@ pub async fn transfer(
     Ok(())
 }
 
-pub async fn purchase(
-    member: &UserId,
-    items: &[(String, i32, bool)],
-    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-) -> Result<(), anyhow::Error> {
-    for (class, quantity, is_loadout) in items {
-        // Prevent negative quantities
-        if *quantity > 0 {
-            let query = sqlx::query!(
-                "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost) VALUES ($1, $2, $3, $4, (SELECT cost FROM gear_item_current_cost($2)))",
-                member.to_string(),
-                class,
-                quantity,
-                is_loadout,
-            );
-            query.execute(&mut **executor).await?;
-        }
-    }
-    Ok(())
-}
-
 pub async fn shop_purchase(
     member: &UserId,
     items: &HashMap<String, i32>,
@@ -109,7 +88,10 @@ pub async fn shop_purchase(
 ) -> Result<(), anyhow::Error> {
     for (class, quantity) in items {
         let query = sqlx::query!(
-            "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost, reason) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), (SELECT cost FROM gear_item_current_cost($2)), $4)",
+            "INSERT INTO gear_bank_purchases
+                    (member, class, quantity, reason, personal, company)
+                    SELECT $1, $2, $3, $4, cost.personal_current, cost.company_current
+                    FROM gear_item_current_cost($2) AS cost",
             member.to_string(),
             class,
             quantity,
@@ -120,7 +102,7 @@ pub async fn shop_purchase(
     Ok(())
 }
 
-pub async fn shop_purchase_cost(
+pub async fn shop_purchase_personal_cost(
     member: &UserId,
     items: &HashMap<String, (i32, i32)>,
     reason: &str,
@@ -128,7 +110,7 @@ pub async fn shop_purchase_cost(
 ) -> Result<(), anyhow::Error> {
     for (class, (quantity, cost)) in items {
         let query = sqlx::query!(
-            "INSERT INTO gear_bank_purchases (member, class, quantity, global, cost, reason) VALUES ($1, $2, $3, (SELECT global FROM gear_items WHERE class LIKE $2::VARCHAR(255)), $4, $5)",
+            "INSERT INTO gear_bank_purchases (member, class, quantity, personal, reason) VALUES ($1, $2, $3, $4, $5)",
             member.to_string(),
             class,
             quantity,

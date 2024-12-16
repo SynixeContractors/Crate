@@ -9,7 +9,7 @@ _display displayAddEventHandler ["Unload", {
 [findDisplay 1127001] call ace_arsenal_fnc_buttonHide;
 
 private _header = _display displayCtrl IDC_RSCDISPLAYCHECKOUT_HEADER;
-_header lnbAddRow ["", "Item", "#", "Price", "Total"];
+_header lnbAddRow ["", "Item", "#", "Personal", "Company", "Total (Personal)", "Total (Company)"];
 _header ctrlEnable false;
 
 private _list = _display displayCtrl IDC_RSCDISPLAYCHECKOUT_ITEMS;
@@ -17,19 +17,19 @@ private _list = _display displayCtrl IDC_RSCDISPLAYCHECKOUT_ITEMS;
 private _loadout = [player] call CBA_fnc_getLoadout;
 private _items = [_loadout] call FUNC(loadout_items);
 {
-    _x params ["_item", "_price", "_need", "_total", "_global"];
-    if (_price != 0) then {
-        private _config = _item call CBA_fnc_getItemConfig;
-        private _name = getText (_config >> "displayName");
-        private _index = _list lnbAddRow [
-            "",
-            _name,
-            format ["%1", _need],
-            if (_global) then { format ["%1 (Global)", _price] } else { format ["%1", _price] },
-            format ["%1", _total]
-        ];
-        _list lnbSetPicture [[_index, 0], getText (_config >> "picture")];
-    };
+    _x params ["_item", "_need", "_personal", "_company", "_total_personal", "_total_company"];
+    private _config = _item call CBA_fnc_getItemConfig;
+    private _name = getText (_config >> "displayName");
+    private _index = _list lnbAddRow [
+        "",
+        _name,
+        format ["%1", _need],
+        if (_personal != 0) then { format ["$%1", _personal] } else { "" },
+        if (_company != 0) then { format ["$%1", _company] } else { "" },
+        if (_personal != 0) then { format ["$%1", _total_personal] } else { "" },
+        if (_company != 0) then { format ["$%1", _total_company] } else { "" }
+    ];
+    _list lnbSetPicture [[_index, 0], getText (_config >> "picture")];
 } forEach ([_items] call FUNC(shop_items_difference));
 
 private _fnc_onConfirm = {
@@ -49,6 +49,6 @@ if (_cost > GVAR(shop_balance)) then {
 } else {
     (_display displayCtrl 1) ctrlAddEventHandler ["ButtonClick", _fnc_onConfirm];
     private _personal = [_items, 0] call FUNC(shop_items_cost);
-    private _global = [_items, 1] call FUNC(shop_items_cost);
-    (_display displayCtrl 1001) ctrlSetText format ["$%1 ($%2 Global)", _personal, _global];
+    private _company = [_items, 1] call FUNC(shop_items_cost);
+    (_display displayCtrl 1001) ctrlSetText format ["$%1 ($%2 Company)", _personal, _company];
 };

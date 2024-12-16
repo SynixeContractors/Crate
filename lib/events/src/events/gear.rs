@@ -92,13 +92,6 @@ pub mod db {
             /// The reason for the transfer
             reason: String,
         } => (Result<(), String>)
-        /// Purchase an item from the shop
-        struct BankPurchasesNew {
-            /// The member's ID
-            member: UserId,
-            /// The item to purchase
-            items: Vec<(String, i32, bool)>,
-        } => (Result<(), String>)
 
         /// Get all items in the shop
         #[allow(clippy::type_complexity)]

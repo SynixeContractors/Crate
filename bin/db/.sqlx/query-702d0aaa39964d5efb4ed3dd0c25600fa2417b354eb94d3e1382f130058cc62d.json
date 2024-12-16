@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT SUM(gc.personal * gl.quantity)\n        FROM gear_locker gl\n        INNER JOIN gear_cost gc ON gc.class = gl.class\n        INNER JOIN gear_items gi on gc.class = gi.class\n        WHERE gl.member = $1 AND gc.priority = 0;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sum",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "702d0aaa39964d5efb4ed3dd0c25600fa2417b354eb94d3e1382f130058cc62d"
+}

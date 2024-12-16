@@ -65,11 +65,11 @@ where
     E: Executor<'a, Database = Postgres>,
 {
     let query = sqlx::query!(
-        "SELECT SUM(gc.cost * gl.quantity)
+        "SELECT SUM(gc.personal * gl.quantity)
         FROM gear_locker gl
         INNER JOIN gear_cost gc ON gc.class = gl.class
         INNER JOIN gear_items gi on gc.class = gi.class
-        WHERE gl.member = $1 AND gi.global = false AND gc.priority = 0;",
+        WHERE gl.member = $1 AND gc.priority = 0;",
         member.to_string(),
     );
     let res = query.fetch_one(executor).await?;
