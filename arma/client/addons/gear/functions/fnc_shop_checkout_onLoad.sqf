@@ -32,6 +32,19 @@ private _items = [_loadout] call FUNC(loadout_items);
     _list lnbSetPicture [[_index, 0], getText (_config >> "picture")];
 } forEach ([_items] call FUNC(shop_items_difference));
 
+private _personal = [_items, 0] call FUNC(shop_items_cost);
+private _company = [_items, 1] call FUNC(shop_items_cost);
+
+_list lnbAddRow [
+    "",
+    "Total",
+    "",
+    "",
+    "",
+    format ["$%1", _personal],
+    format ["$%1", _company]
+]; 
+
 private _fnc_onConfirm = {
     params [["_ctrlButtonOK", controlNull, [controlNull]]];
     private _display = ctrlParent _ctrlButtonOK;
@@ -42,13 +55,10 @@ private _fnc_onConfirm = {
     [[_items] call FUNC(shop_items_removeOwned)] call FUNC(shop_items_purchase);
 };
 
-private _cost = [_items, 0] call FUNC(shop_items_cost);
-if (_cost > GVAR(shop_balance)) then {
+if (_personal > GVAR(shop_balance)) then {
     (_display displayCtrl 1) ctrlEnable false;
     (_display displayCtrl 1001) ctrlSetText "Insufficient Funds";
 } else {
     (_display displayCtrl 1) ctrlAddEventHandler ["ButtonClick", _fnc_onConfirm];
-    private _personal = [_items, 0] call FUNC(shop_items_cost);
-    private _company = [_items, 1] call FUNC(shop_items_cost);
-    (_display displayCtrl 1001) ctrlSetText format ["$%1 ($%2 Company)", _personal, _company];
+    (_display displayCtrl 1001) ctrlSetText "Confirm Purchase";
 };

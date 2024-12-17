@@ -1,4 +1,5 @@
 use arma_rs::Group;
+use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_proc::events_request_5;
 
 use crate::{RUNTIME, SERVER_ID};
@@ -61,13 +62,29 @@ fn chat(steam: String, name: String, channel: String, message: String) {
             synixe_events::servers::db,
             Log {
                 server: (*SERVER_ID).clone(),
-                steam,
+                steam: steam.clone(),
                 action: "chat".to_string(),
                 data: serde_json::json!({
                     "channel": channel,
                     "name": name,
                     "message": message,
                 }),
+            }
+        )
+        .await
+        {
+            error!("failed to log server event: {}", e);
+        }
+        if let Err(e) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::discord::write,
+            GameAudit {
+                message: DiscordMessage {
+                    content: DiscordContent::Text(format!(
+                        "**Chat Message**\n<@{steam}> said \"{message}\""
+                    )),
+                    reactions: Vec::new(),
+                }
             }
         )
         .await
@@ -84,13 +101,29 @@ fn take(steam: String, name: String, from: String, item: String) {
             synixe_events::servers::db,
             Log {
                 server: (*SERVER_ID).clone(),
-                steam,
+                steam: steam.clone(),
                 action: "take".to_string(),
                 data: serde_json::json!({
                     "name": name,
                     "item": item,
                     "from": from,
                 }),
+            }
+        )
+        .await
+        {
+            error!("failed to log server event: {}", e);
+        }
+        if let Err(e) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::discord::write,
+            GameAudit {
+                message: DiscordMessage {
+                    content: DiscordContent::Text(format!(
+                        "**Item Taken**\n<@{steam}> took {item} from {from}"
+                    )),
+                    reactions: Vec::new(),
+                }
             }
         )
         .await

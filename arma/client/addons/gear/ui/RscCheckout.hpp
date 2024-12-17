@@ -4,7 +4,7 @@ class RscText;
 class RscPicture;
 
 #define OFFSET 6
-#define WIDTH 30
+#define WIDTH 50
 
 class GVAR(RscCheckout) {
     idd = IDD_RSCDISPLAYCHECKOUT;

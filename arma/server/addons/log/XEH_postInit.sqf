@@ -17,6 +17,7 @@ addMissionEventHandler ["PlayerDisconnected", {
 
 ["crate_log_take", {
     params ["_steam", "_name", "_container", "_item"];
+    private _container = [configOf _container] call BIS_fnc_displayName;
     EXTCALL("log:take",[ARR_4(_steam,_name,_container,_item)]);
 }] call CBA_fnc_addEventHandler;
 
