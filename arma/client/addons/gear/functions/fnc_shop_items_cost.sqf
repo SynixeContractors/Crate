@@ -18,7 +18,7 @@ private _cost = 0;
     if (_need > 0) then {
         private _class = [_x] call FUNC(shop_item_listing);
         ([_class, false] call FUNC(shop_item_price)) params ["_personal", "_company"];
-        _cost = switch (_mode) do {
+        private _price = switch (_mode) do {
             case 0: {
                 _personal
             };
@@ -31,7 +31,8 @@ private _cost = 0;
             default {
                 0
             };
-        } * _need;
+        };
+        _cost = _cost + (_price * _need);
     };
 } forEach _items;
 
