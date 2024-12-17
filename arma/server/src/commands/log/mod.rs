@@ -75,22 +75,7 @@ fn chat(steam: String, name: String, channel: String, message: String) {
         {
             error!("failed to log server event: {}", e);
         }
-        if let Err(e) = events_request_5!(
-            bootstrap::NC::get().await,
-            synixe_events::discord::write,
-            GameAudit {
-                message: DiscordMessage {
-                    content: DiscordContent::Text(format!(
-                        "**Chat Message**\n<@{steam}> said \"{message}\""
-                    )),
-                    reactions: Vec::new(),
-                }
-            }
-        )
-        .await
-        {
-            error!("failed to log server event: {}", e);
-        }
+        audit(steam, "Chat".to_string(), format!("said \"{message}\"")).await;
     });
 }
 
@@ -114,22 +99,12 @@ fn take(steam: String, name: String, from: String, item: String) {
         {
             error!("failed to log server event: {}", e);
         }
-        if let Err(e) = events_request_5!(
-            bootstrap::NC::get().await,
-            synixe_events::discord::write,
-            GameAudit {
-                message: DiscordMessage {
-                    content: DiscordContent::Text(format!(
-                        "**Item Taken**\n<@{steam}> took {item} from {from}"
-                    )),
-                    reactions: Vec::new(),
-                }
-            }
+        audit(
+            steam,
+            "Item Taken".to_string(),
+            format!("took {item} from {from}"),
         )
-        .await
-        {
-            error!("failed to log server event: {}", e);
-        }
+        .await;
     });
 }
 
@@ -154,4 +129,34 @@ fn role(steam: String, name: String, discord: String, role: String) {
             error!("failed to log server event: {}", e);
         }
     });
+}
+
+async fn audit(steam: String, header: String, message: String) {
+    let Ok(Ok((synixe_events::discord::db::Response::FromSteam(Ok(Some(discord))), _))) =
+        events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::discord::db,
+            FromSteam {
+                steam: steam.clone(),
+            }
+        )
+        .await
+    else {
+        error!("failed to get discord from steam");
+        return;
+    };
+    if let Err(e) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::discord::write,
+        GameAudit {
+            message: DiscordMessage {
+                content: DiscordContent::Text(format!("**{header}**\n<@{discord}> {message}")),
+                reactions: Vec::new(),
+            }
+        }
+    )
+    .await
+    {
+        error!("failed to log server event: {}", e);
+    }
 }
