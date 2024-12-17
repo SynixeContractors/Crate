@@ -20,7 +20,11 @@ impl Listener for Publish {
         };
         match &self {
             Self::MemberUpdate { member } => {
-                let steam = STEAM_CACHE.read().await.get(&member.user.id.to_string()).cloned();
+                let steam = STEAM_CACHE
+                    .read()
+                    .await
+                    .get(&member.user.id.to_string())
+                    .cloned();
                 if let Some(steam) = steam {
                     if let Err(e) = context.callback_data(
                         "crate:discord",
