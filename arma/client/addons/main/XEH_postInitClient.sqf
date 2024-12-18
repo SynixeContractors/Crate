@@ -13,7 +13,9 @@ FUNC(onTake) = {
     params ["_unit", "_container", "_item"];
     if (_unit != ace_player) exitWith {};
     if (_container getVariable ["crate", false]) exitWith {};
-    if (_container getVariable ["crate_owner", ""] == getPlayerUID _unit) exitWith {};
+    private _discordUnit = _unit getVariable [QEGVAR(discord,id), ""];
+    private _discordContainer = _container getVariable [QEGVAR(discord,id), ""];
+    if (_discordUnit != "" && _discordUnit == _discordContainer) exitWith {};
     if (_container == backpackContainer _unit) exitWith {};
     if (_container == uniformContainer _unit) exitWith {};
     if (_container == vestContainer _unit) exitWith {};

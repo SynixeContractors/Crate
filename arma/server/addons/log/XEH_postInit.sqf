@@ -27,3 +27,9 @@ addMissionEventHandler ["PlayerDisconnected", {
     private _discord = _player getVariable [QEGVAR(discord,id), ""];
     EXTCALL("log:role",[ARR_3(_steam,_discord,_roles)]);
 }] call CBA_fnc_addEventHandler;
+
+["ace_placedInBodyBag", {
+    params ["_unit", "_bodyBag"];
+    private _discord = _unit getVariable [QEGVAR(discord,id), ""];
+    _bodyBag setVariable [QEGVAR(discord,id), _discord, true];
+}] call CBA_fnc_addEventHandler;
