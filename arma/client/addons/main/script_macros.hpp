@@ -25,7 +25,9 @@
 #define EXT "crate_server"
 
 #define EXTCALL(function,args) private _ext_res = EXT callExtension [function, args]; \
-if ((_ext_res select 1) != 0) then { ERROR_2("Error calling %1: %2",function,(_ext_res select 1)); }
+if ((_ext_res select 1) != 0) then { \
+    ERROR_2("Error calling %1: %2",function,(_ext_res select 1)); \
+    ERROR_1("ARGS: %1",args); \
+}
 
-#define EXTFUNC(function) private _ext_res = EXT callExtension [function, []]; \
-if ((_ext_res select 1) != 0) then { ERROR_2("Error calling %1: %2",function,(_ext_res select 1)); }
+#define EXTFUNC(function) EXTCALL(function,[])
