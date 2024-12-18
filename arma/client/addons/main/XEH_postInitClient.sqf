@@ -13,8 +13,15 @@ FUNC(onTake) = {
     params ["_unit", "_container", "_item"];
     if (_unit != ace_player) exitWith {};
     if (_container getVariable ["crate", false]) exitWith {};
+    if (_container getVariable ["crate_owner", ""] == getPlayerUID _unit) exitWith {};
+    if (_container == backpackContainer _unit) exitWith {};
+    if (_container == uniformContainer _unit) exitWith {};
+    if (_container == vestContainer _unit) exitWith {};
+    if (_unit getVariable [QGVAR(shop_open), false]) exitWith {};
     private _steam = getPlayerUID _unit;
     ["crate_log_take", [_steam, name _unit, _container, _item]] call CBA_fnc_serverEvent;
 };
 
-["CAManBase", "Take", { call FUNC(onTake) }] call CBA_fnc_addClassEventHandler;
+// ["CAManBase", "Take", { call FUNC(onTake) }] call CBA_fnc_addClassEventHandler;
+// This is firing twice ?
+["synixe_contractors_Unit_Contractor_Shirt", "Take", { call FUNC(onTake) }] call CBA_fnc_addClassEventHandler;

@@ -70,3 +70,18 @@ fn store(ctx: Context, plate: String, state: HashMap<String, Value>, discord: St
         }
     });
 }
+
+#[test]
+fn test_spawn() {
+    let ext = crate::init().testing();
+    let id = Uuid::new_v4();
+    let res = "yes".to_string();
+    let (_, code) = ext.call(
+        "garage:spawn",
+        Some(vec![
+            "a5b93fbe-13f6-4f02-9398-1b3382a66108".to_string(),
+            res,
+        ]),
+    );
+    assert_eq!(code, 0);
+}

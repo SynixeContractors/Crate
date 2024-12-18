@@ -3,7 +3,7 @@ class RscButtonMenuCancel;
 class RscText;
 class RscPicture;
 
-#define OFFSET 6
+#define OFFSET -6
 #define WIDTH 50
 
 class GVAR(RscCheckout) {
@@ -48,7 +48,7 @@ class GVAR(RscCheckout) {
             y = QUOTE(Y_PART(2.5));
             w = QUOTE(W_PART(WIDTH));
             h = QUOTE(H_PART(1));
-            columns[] = {-0.01, 0.15, 0.08, 0.65, 0.8};
+            columns[] = {-0.01, 0.15, 0.08, 0.65, 0.65, 0.65, 0.65};
             colorBackground[] = {0.13,0.54,0.21,0.8};
         };
         class Items: GVAR(Header) {
