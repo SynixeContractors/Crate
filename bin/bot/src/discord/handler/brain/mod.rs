@@ -33,8 +33,8 @@ impl Brain {
             client: Client::new(),
             conversations: RwLock::new(HashMap::new()),
             functions: vec![
-                // Box::new(functions::bank::GetBalance {}),
-                // Box::new(functions::moderation::Timeout {}),
+                Box::new(functions::bank::GetBalance {}),
+                Box::new(functions::moderation::Timeout {}),
             ],
         }
     }
