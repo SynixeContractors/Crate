@@ -65,6 +65,14 @@ impl Brain {
                         .cloned()
                         .unwrap_or_default(),
                 )
+                .functions(if max_iter == 1 {
+                    Vec::new()
+                } else {
+                    self.functions
+                        .iter()
+                        .map(|f| f.to_openai())
+                        .collect::<Vec<_>>()
+                })
                 .build()
             else {
                 return None;

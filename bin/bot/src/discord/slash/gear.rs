@@ -206,7 +206,6 @@ async fn repaint_autocomplete(
         {
             error!("failed to create autocomplete response: {}", e);
         }
-        Ok(())
     } else if focus.name == "color" {
         let CommandDataOptionValue::SubCommand(options) = &autocomplete.data.options[0].value
         else {
@@ -247,10 +246,8 @@ async fn repaint_autocomplete(
         {
             error!("failed to create autocomplete response: {}", e);
         }
-        Ok(())
-    } else {
-        Ok(())
     }
+    Ok(())
 }
 
 async fn ugl(

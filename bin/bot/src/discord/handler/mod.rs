@@ -1,21 +1,17 @@
 use std::sync::atomic::AtomicU32;
 
-use bootstrap::format;
 use rand::Rng;
 use serenity::{
     all::{
-        CreateActionRow, CreateButton, CreateInteractionResponse, CreateInteractionResponseMessage,
-        CreateMessage,
+        CreateInteractionResponse, CreateInteractionResponseMessage,
     },
     async_trait,
-    futures::StreamExt,
     model::prelude::*,
     prelude::*,
 };
 use synixe_events::{discord::publish::Publish, missions::db::Response, publish};
 use synixe_meta::discord::{
     channel::{BOT, GAME_LOG, LEADERSHIP, LOBBY, LOG, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC},
-    GUILD,
 };
 use synixe_proc::{events_request_2, events_request_5};
 use uuid::Uuid;
