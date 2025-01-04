@@ -59,9 +59,9 @@ impl Handler for Request {
                         sqlx::query!(
                             r#"
                                 INSERT INTO
-                                    gear_bank_purchases (member, class, quantity, company)
+                                    gear_bank_purchases (member, class, quantity, personal, company)
                                 VALUES
-                                    ($1, $2, $3, (SELECT SUM(company_current + personal_current) FROM gear_item_current_cost($2)))
+                                    ($1, $2, $3, 0, (SELECT SUM(company_current + personal_current) FROM gear_item_current_cost($2)))
                             "#,
                             member.to_string(),
                             item.0,
