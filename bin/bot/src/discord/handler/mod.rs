@@ -2,16 +2,14 @@ use std::sync::atomic::AtomicU32;
 
 use rand::Rng;
 use serenity::{
-    all::{
-        CreateInteractionResponse, CreateInteractionResponseMessage,
-    },
+    all::{CreateInteractionResponse, CreateInteractionResponseMessage},
     async_trait,
     model::prelude::*,
     prelude::*,
 };
 use synixe_events::{discord::publish::Publish, missions::db::Response, publish};
-use synixe_meta::discord::{
-    channel::{BOT, GAME_LOG, LEADERSHIP, LOBBY, LOG, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC},
+use synixe_meta::discord::channel::{
+    BOT, GAME_LOG, LEADERSHIP, LOBBY, LOG, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC,
 };
 use synixe_proc::{events_request_2, events_request_5};
 use uuid::Uuid;
@@ -57,6 +55,7 @@ impl EventHandler for Handler {
                     slash::gear::register(),
                     slash::missions::register(),
                     slash::reputation::register(),
+                    slash::reset::register(),
                     slash::schedule::register(),
                     slash::surveys::register(),
                 ],
@@ -80,6 +79,7 @@ impl EventHandler for Handler {
                     "gear" => slash::gear::run(&ctx, &command).await,
                     "missions" => slash::missions::run(&ctx, &command).await,
                     "reputation" => slash::reputation::run(&ctx, &command).await,
+                    "reset" => slash::reset::run(&ctx, &command).await,
                     "schedule" => slash::schedule::run(&ctx, &command).await,
                     "surveys" => slash::surveys::run(&ctx, &command).await,
                     MENU_AAR_IDS => menu::missions::run_aar_ids(&ctx, &command).await,
@@ -102,6 +102,7 @@ impl EventHandler for Handler {
                     }
                     "gear" => slash::gear::autocomplete(&ctx, &autocomplete).await,
                     "missions" => slash::missions::autocomplete(&ctx, &autocomplete).await,
+                    "reset" => slash::reset::autocomplete(&ctx, &autocomplete).await,
                     "schedule" => slash::schedule::autocomplete(&ctx, &autocomplete).await,
                     "surveys" => slash::surveys::autocomplete(&ctx, &autocomplete).await,
                     _ => Ok(()),

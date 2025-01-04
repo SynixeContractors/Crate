@@ -24,6 +24,7 @@ pub mod garage;
 pub mod gear;
 pub mod missions;
 pub mod reputation;
+pub mod reset;
 pub mod schedule;
 pub mod surveys;
 

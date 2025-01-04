@@ -1,5 +1,7 @@
 //! Internal library for model definitions.
 
+pub mod reset;
+
 #[cfg(feature = "campaigns")]
 pub mod campaigns;
 #[cfg(feature = "missions")]
