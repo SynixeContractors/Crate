@@ -48,7 +48,7 @@ class GVAR(RscCheckout) {
             y = QUOTE(Y_PART(2.5));
             w = QUOTE(W_PART(WIDTH));
             h = QUOTE(H_PART(1));
-            columns[] = {-0.01, 0.15, 0.08, 0.65, 0.65, 0.65, 0.65};
+            columns[] = {-0.01, 0.15, 0.08, 0.6, 0.7, 0.8, 0.9};
             colorBackground[] = {0.13,0.54,0.21,0.8};
         };
         class Items: GVAR(Header) {
