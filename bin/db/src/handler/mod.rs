@@ -36,6 +36,7 @@ pub async fn start() {
             synixe_events::missions::db::Request,
             synixe_events::recruiting::db::Request,
             synixe_events::reputation::db::Request,
+            synixe_events::reset::db::Request,
             synixe_events::servers::db::Request,
             synixe_events::surveys::db::Request,
             synixe_events::voting::db::Request,
