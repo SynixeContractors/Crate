@@ -1,7 +1,6 @@
 use super::Handler;
 use async_trait::async_trait;
-use serde_json::{Number, Value};
-use std::collections::HashMap;
+use serde_json::Value;
 use synixe_events::{
     reset::db::{Request, Response},
     respond,
@@ -59,9 +58,9 @@ impl Handler for Request {
                         sqlx::query!(
                             r#"
                                 INSERT INTO
-                                    gear_bank_purchases (member, class, quantity, personal, company)
+                                    gear_bank_purchases (reason, member, class, quantity, personal, company)
                                 VALUES
-                                    ($1, $2, $3, 0, (SELECT SUM(company_current + personal_current) FROM gear_item_current_cost($2)))
+                                    ('kit reset', $1, $2, $3, 0, (SELECT SUM(company_current + personal_current) FROM gear_item_current_cost($2)))
                             "#,
                             member.to_string(),
                             item.0,
