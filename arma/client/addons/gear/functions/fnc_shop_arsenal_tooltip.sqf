@@ -34,7 +34,7 @@ if (_company != 0) then {
 };
 
 private _tooltip = if (GVAR(readOnly)) then {
-    format ["%1\nPrice: %2\nCompany: %3", _raw_class, _personal, _company]
+    format ["%1\n%2", _cost]
 } else {
     private _owned = [_raw_class] call FUNC(shop_item_owned);
     if (_owned > 0) then {

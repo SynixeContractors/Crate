@@ -9,17 +9,17 @@ switch (_func) do {
     case "items:set": {
         (parseSimpleArray _data) params ["_class", "_entry", "_pretty"];
         GVAR(shop_items_importing) set [_class, _entry];
-        if (isNil "_pretty") then {
-            private _pretty = getText (configFile >> "CfgWeapons" >> _class >> "displayName");
-            if (_pretty == "") then {
-                _pretty = getText (configFile >> "CfgVehicles" >> _class >> "displayName");
-            };
-            if (_pretty == "") then {
-                _pretty = getText (configFile >> "CfgMagazines" >> _class >> "displayName");
-            };
-            if (_pretty != "") then {
-                EXTCALL("gear:shop:pretty",[ARR_2(_class,_pretty)]);
-            };
+
+        private _newPretty = getText (configFile >> "CfgWeapons" >> _class >> "displayName");
+        if (_newPretty == "") then {
+            _newPretty = getText (configFile >> "CfgVehicles" >> _class >> "displayName");
+        };
+        if (_newPretty == "") then {
+            _newPretty = getText (configFile >> "CfgMagazines" >> _class >> "displayName");
+        };
+        if (_newPretty != "") then {
+            if (_pretty == _newPretty) exitWith {};
+            EXTCALL("gear:shop:pretty",[ARR_2(_class,_newPretty)]);
         };
     };
     case "items:publish": {
