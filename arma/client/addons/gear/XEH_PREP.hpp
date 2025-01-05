@@ -3,6 +3,7 @@ PREP(loadout_ext);
 PREP(shop_ext);
 
 PREP(bodybag_canStore);
+PREP(bodybag_contents);
 PREP(bodybag_store);
 
 PREP(loadout_clean);
