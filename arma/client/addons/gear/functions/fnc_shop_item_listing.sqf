@@ -6,7 +6,7 @@ private _ret = _class;
 
 // Check for shop listing
 private _shopClass = GVAR(shop_items) getOrDefault [_class, []];
-if !(_shopClass isEqualTo []) exitWith {
+if (_shopClass isNotEqualTo []) exitWith {
     _class
 };
 
@@ -17,7 +17,7 @@ if (count _launcherCheck > 0) then {
         _launcherCheck deleteAt (count _launcherCheck - 1);
         _launcherCheck = _launcherCheck joinString "_";
         private _shopClass = GVAR(shop_items) getOrDefault [_launcherCheck, []];
-        if !(_shopClass isEqualTo []) then {
+        if (_shopClass isNotEqualTo []) then {
             _ret = _launcherCheck;
         };
     };
@@ -27,7 +27,7 @@ if (count _launcherCheck > 0) then {
 private _parents = [configFile >> "CfgWeapons" >> _class, true] call BIS_fnc_returnParents;
 if (count _parents > 2) then {
     private _shopClass = GVAR(shop_items) getOrDefault [_parents select 1, []];
-    if !(_shopClass isEqualTo []) then {
+    if (_shopClass isNotEqualTo []) then {
         _ret = (_parents select 1);
     };
 };
@@ -37,7 +37,7 @@ private _nextClass = configFile >> "CfgWeapons" >> _class >> "MRT_SwitchItemNext
 if (isText (_nextClass)) then {
     private _next = getText _nextClass;
     private _shopClass = GVAR(shop_items) getOrDefault [_next, []];
-    if !(_shopClass isEqualTo []) then {
+    if (_shopClass isNotEqualTo []) then {
         _ret = _next;
     };
 };

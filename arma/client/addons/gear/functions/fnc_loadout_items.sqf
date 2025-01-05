@@ -13,7 +13,7 @@ private _items = createHashMap;
 
 _fnc_addItem = {
     params ["_item", ["_count", 1]];
-    if !(_item isEqualTo "") then {
+    if (_item isNotEqualTo "") then {
         if (_count isEqualType true) then {
             _count = 1;
         };
@@ -25,7 +25,7 @@ _fnc_addItem = {
 
 _fnc_addWeapon = {
     params ["_weaponArray"];
-    if !(_weaponArray isEqualTo []) then {
+    if (_weaponArray isNotEqualTo []) then {
         // weapon and attachements
         {
             private _item = _weaponArray select _x;
@@ -34,7 +34,7 @@ _fnc_addWeapon = {
         // magazines
         {
             private _mag = _weaponArray select _x;
-            if !(_mag isEqualTo []) then {
+            if (_mag isNotEqualTo []) then {
                 private _item = _mag select 0;
                 [_item] call _fnc_addItem;
             };
