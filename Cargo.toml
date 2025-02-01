@@ -38,7 +38,8 @@ anyhow = "1.0.94"
 arma-rs = { version = "1.11.11", features = ["uuid", "serde_json"] }
 async-trait = "0.1.86"
 axum = "0.8.1"
-nats = { version = "0.25.0" }
+# nats = { version = "0.25.0" }
+nats = { git = "https://github.com/nats-io/nats.rs" }
 reqwest = { version = "0.12.12", features = ["rustls-tls"] }
 rsa = "0.9.7"
 serde = { version = "1.0.216", features = ["derive"] }
