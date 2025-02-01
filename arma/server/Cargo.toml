@@ -21,7 +21,7 @@ anyhow = { workspace = true }
 arma-rs = { workspace = true }
 async-trait = { workspace = true }
 lazy_static = "1.5.0"
-log = "0.4.22"
+log = "0.4.25"
 nats = { workspace = true }
 serde_json = { workspace = true }
 serenity = { workspace = true }
