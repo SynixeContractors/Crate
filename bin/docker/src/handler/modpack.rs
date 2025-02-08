@@ -25,7 +25,7 @@ impl Handler for Request {
         let command = Command::new("rsync")
             .arg("-ur")
             .arg("--delete-after")
-            .arg("download@192.168.1.111:/home/download/mods/")
+            .arg("download@192.168.1.111:/")
             .arg(".")
             .current_dir("/arma/contracts/mods")
             .status()
