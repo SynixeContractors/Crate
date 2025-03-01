@@ -16,6 +16,8 @@ GVAR(units_ids) pushBackUnique _id;
 _unit setPosASL (_data getOrDefault ["pos", [0,0,0]]);
 _unit setVectorDirAndUp (_data getOrDefault ["rot", [[0,0,0],[0,0,0]]]);
 _unit setDir (_data getOrDefault ["dir", 0]);
-[_unit, _data, false] call EFUNC(common,unitState_load);
+[{
+    _this call EFUNC(common,unitState_load);
+}, [_unit, _data, false]] call CBA_fnc_execNextFrame;
 
 _unit setVariable [QGVAR(nextUpdate), time + 4];
