@@ -12,6 +12,6 @@ private _faces = configProperties [configFile >> "CfgIdentities"];
 private _count = count _faces;
 
 private _idx = round (ceil (((parseNumber getPlayerUID _unit) random [_count, _count]) * 10000) random _count);
-private _face = _faces select _idx;
+private _face = getText ((_faces select _idx) >> "face");
 
-_unit setFace getText (_face >> "face");
+[_unit, _face] remoteExec ["setFace", 0, _unit];
