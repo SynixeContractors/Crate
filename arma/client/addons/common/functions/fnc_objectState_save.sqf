@@ -28,6 +28,9 @@ if (inflamed _object) then {
 _state set ["fuel", fuel _object];
 _state set ["ace_fuel", _object getVariable ["ace_fuel_fuel", 0]];
 
+// Plate
+_state set ["plate", getPlateNumber _object];
+
 // ACE Cargo
 if (missionNamespace getVariable ["ace_cargo", false]) then {
     private _cargo = [];

@@ -94,6 +94,9 @@ private _fnc_addCargoForContainer = {
         case "fuelCargo": {
             _object setFuelCargo _y;
         };
+        case "plate": {
+            _object setPlateNumber _y;
+        };
         case "ammoCargo": {
             _object setAmmoCargo _y;
         };
