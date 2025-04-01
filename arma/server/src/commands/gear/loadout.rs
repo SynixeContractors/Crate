@@ -1,7 +1,10 @@
-use arma_rs::Group;
+use std::sync::Mutex;
+
+use arma_rs::{Context, ContextState, Group};
 use serenity::model::prelude::UserId;
 use synixe_events::gear::db;
 use synixe_proc::events_request_5;
+use uuid::Uuid;
 
 use crate::{CONTEXT, RUNTIME};
 
@@ -9,9 +12,22 @@ pub fn group() -> Group {
     Group::new()
         .command("get", command_get)
         .command("store", command_store)
+        .command("campaign", command_campaign)
+        .command("reset", command_reset)
 }
 
-fn command_get(discord: String, steam: String) {
+#[derive(Default)]
+pub struct Campaign {
+    pub id: Mutex<Option<Uuid>>,
+}
+
+impl Campaign {
+    pub fn get(&self) -> Option<Uuid> {
+        *self.id.lock().expect("failed to lock campaign state")
+    }
+}
+
+fn command_get(ctx: Context, discord: String, steam: String) {
     let Ok(discord) = discord.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -28,6 +44,7 @@ fn command_get(discord: String, steam: String) {
             synixe_events::gear::db,
             LoadoutGet {
                 member: UserId::new(discord),
+                campaign: ctx.group().get::<Campaign>().and_then(Campaign::get),
             }
         )
         .await
@@ -54,7 +71,7 @@ fn command_get(discord: String, steam: String) {
     });
 }
 
-fn command_store(discord: String, steam: String, loadout: String) {
+fn command_store(ctx: Context, discord: String, steam: String, loadout: String) {
     let Ok(discord) = discord.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -71,6 +88,7 @@ fn command_store(discord: String, steam: String, loadout: String) {
             LoadoutStore {
                 member: UserId::new(discord),
                 loadout, //.replace("\"\"", "\""),
+                campaign: ctx.group().get::<Campaign>().and_then(Campaign::get),
             }
         )
         .await
@@ -85,4 +103,30 @@ fn command_store(discord: String, steam: String, loadout: String) {
             error!("error sending loadout:store:ok: {:?}", e);
         }
     });
+}
+
+fn command_campaign(ctx: Context, campaign: Uuid) -> bool {
+    let state = ctx.group().get::<Campaign>().unwrap_or_else(|| {
+        ctx.group().set::<Campaign>(Campaign::default());
+        ctx.group()
+            .get::<Campaign>()
+            .expect("failed to get campaign state")
+    });
+    let mut state = state.id.lock().expect("failed to lock campaign state");
+    *state = Some(campaign);
+    debug!("set campaign to {}", campaign);
+    false
+}
+
+fn command_reset(ctx: Context) -> bool {
+    let state = ctx.group().get::<Campaign>().unwrap_or_else(|| {
+        ctx.group().set::<Campaign>(Campaign::default());
+        ctx.group()
+            .get::<Campaign>()
+            .expect("failed to get campaign state")
+    });
+    let mut state = state.id.lock().expect("failed to lock campaign state");
+    *state = None;
+    debug!("reset campaign to None");
+    false
 }

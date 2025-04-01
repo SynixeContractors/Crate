@@ -31,7 +31,7 @@ if !(isMultiplayer) exitWith {};
 
 [QGVAR(loadout_store), {
     if !(GVAR(enabled)) exitWith {};
-    if (GVAR(readOnly)) exitWith {};
+    if (GVAR(readOnly) && !EGVAR(campaigns,loadouts)) exitWith {};
     params [
         ["_player", objNull, [objNull]],
         ["_loadout", [], [[]]]

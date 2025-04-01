@@ -34,21 +34,21 @@ future_incompatible = "warn"
 nonstandard_style = "warn"
 
 [workspace.dependencies]
-anyhow = "1.0.94"
+anyhow = "1.0.97"
 arma-rs = { version = "1.11.11", features = ["uuid", "serde_json"] }
-async-trait = "0.1.86"
-axum = "0.8.1"
+async-trait = "0.1.88"
+axum = "0.8.3"
 # nats = { version = "0.25.0" }
 nats = { git = "https://github.com/nats-io/nats.rs" }
-reqwest = { version = "0.12.12", features = ["rustls-tls"] }
-rsa = "0.9.7"
-serde = { version = "1.0.216", features = ["derive"] }
-serde_json = "1.0.138"
+reqwest = { version = "0.12.15", features = ["rustls-tls"] }
+rsa = "0.9.8"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
 serenity = { version = "0.12.4", default-features = false, features = ["rustls_backend"] }
-sqlx = { version = "0.8.2" }
-strum = "0.26.3"
-time = "0.3.37"
-tokio = "1.43.0"
+sqlx = { version = "0.8.3" }
+strum = "0.27.1"
+time = "0.3.41"
+tokio = "1.44.1"
 tracing = { version = "0.1.41", features = ["log"] }
 tracing-subscriber = "0.3.19"
-uuid = "1.12.1"
+uuid = "1.16.0"

@@ -57,8 +57,8 @@ pub async fn deposit_search(
     let res = query.fetch_all(&mut **executor).await?;
     Ok(res
         .into_iter()
-        .filter(|row| id.map_or(true, |id| row.id() == id))
-        .filter(|row| reason.clone().map_or(true, |reason| row.reason() == reason))
+        .filter(|row| id.is_none_or(|id| row.id() == id))
+        .filter(|row| reason.clone().is_none_or(|reason| row.reason() == reason))
         .collect())
 }
 

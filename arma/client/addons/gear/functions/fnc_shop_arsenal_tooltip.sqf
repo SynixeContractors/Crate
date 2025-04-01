@@ -33,14 +33,14 @@ if (_company != 0) then {
     };
 };
 
+private _equipped = _items getOrDefault [_raw_class, 0];
 private _tooltip = if (GVAR(readOnly)) then {
-    format ["%1\n%2", _raw_class, _cost]
+    format ["%1\nEquipped: %2\n%3", _raw_class, _equipped, _cost]
 } else {
     private _owned = [_raw_class] call FUNC(shop_item_owned);
     if (_owned > 0) then {
         _color = COLOR_OWNED;
     };
-    private _equipped = _items getOrDefault [_raw_class, 0];
     format ["%1\nOwned: %2\nEquipped: %3\n%4", _raw_class, _owned, _equipped, _cost]
 };
 

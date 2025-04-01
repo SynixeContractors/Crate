@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO campaigns_loadouts (member, campaign, loadout) VALUES ($1, $2, $3) ON CONFLICT (member, campaign) DO UPDATE SET loadout = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ca41115f067db804023a319f8d89acf6c4a2c432eb6c77721e9c43dd5122e96a"
+}

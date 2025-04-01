@@ -14,6 +14,8 @@ pub mod db {
         struct LoadoutGet {
             /// The member's ID
             member: UserId,
+            /// The campaign ID, if any
+            campaign: Option<Uuid>,
         } => (Result<Option<String>, String>)
         /// Check if a post has been seen
         struct LoadoutStore {
@@ -21,6 +23,8 @@ pub mod db {
             member: UserId,
             /// The loadout to set
             loadout: String,
+            /// The campaign ID, if any
+            campaign: Option<Uuid>,
         } => (Result<(), String>)
         /// Get all items stored in a member's locker
         struct LoadoutBalance {

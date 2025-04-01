@@ -121,7 +121,7 @@ pub async fn execute(client: ArcCacheAndHttp) {
     }
 }
 
-#[allow(unwrap_used)]
+#[allow(clippy::unwrap_used)]
 fn pull() -> Result<PathBuf, String> {
     let result = std::panic::catch_unwind(|| {
         let tmp = std::env::temp_dir().join("synixe-crate-tips");

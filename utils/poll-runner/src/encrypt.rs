@@ -82,6 +82,7 @@ pub fn rebuild_key(shards: Vec<(String, RsaPrivateKey)>) -> RsaPrivateKey {
 /// - 1 byte for the length of the poll UUID
 /// - The poll UUID
 /// - The encrypted data
+///
 /// The ticket is then encoded using the URL safe base64 encoding.
 ///
 /// # Panics
@@ -138,6 +139,7 @@ pub fn encrypt(data: &[u8], key: &RsaPublicKey) -> Vec<u8> {
 /// - The encrypted password
 /// - The nonce of length [`NONCE_LENGTH`]
 /// - The encrypted data
+///
 /// The password is decrypted using the private key and used to decrypt the data.
 ///
 /// # Panics

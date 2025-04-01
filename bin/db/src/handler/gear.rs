@@ -22,10 +22,19 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
-            Self::LoadoutGet { member } => {
-                match_with_return!(actor::gear::loadout::get(member, &*db), LoadoutGet, msg, cx)
+            Self::LoadoutGet { member, campaign } => {
+                match_with_return!(
+                    actor::gear::loadout::get(member, campaign, &*db),
+                    LoadoutGet,
+                    msg,
+                    cx
+                )
             }
-            Self::LoadoutStore { member, loadout } => {
+            Self::LoadoutStore {
+                member,
+                campaign,
+                loadout,
+            } => {
                 quick_transaction!(
                     LoadoutStore,
                     db,
@@ -33,6 +42,7 @@ impl Handler for Request {
                     cx,
                     actor::gear::loadout::store,
                     member,
+                    campaign,
                     loadout,
                 )
             }
@@ -40,7 +50,7 @@ impl Handler for Request {
                 match_with_return!(actor::gear::locker::get(member, &*db), LockerGet, msg, cx)
             }
             Self::LoadoutBalance { member } => {
-                let Ok(Some(l)) = actor::gear::loadout::get(member, &*db).await else {
+                let Ok(Some(l)) = actor::gear::loadout::get(member, &None, &*db).await else {
                     return respond!(msg, Response::LoadoutBalance(Ok(0)))
                         .await
                         .map_err(Into::into);
@@ -162,6 +172,7 @@ impl Handler for Request {
                 // Store a blank loadout
                 actor::gear::loadout::store(
                     member,
+                    &None,
                     r#"[[],[],[],[],[],[],"","",[],["","","","","",""]]"#,
                     &mut tx,
                 )
@@ -188,7 +199,7 @@ impl Handler for Request {
                 // Take the items from the locker
                 actor::gear::locker::take(member, items, "shop leave", &mut tx).await?;
                 // Store the loadout
-                actor::gear::loadout::store(member, loadout, &mut tx).await?;
+                actor::gear::loadout::store(member, &None, loadout, &mut tx).await?;
                 tx.commit().await?;
                 respond!(msg, Response::ShopLeave(Ok(()))).await?;
                 Ok(())
