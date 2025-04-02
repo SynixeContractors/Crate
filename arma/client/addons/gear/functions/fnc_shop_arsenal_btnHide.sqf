@@ -2,7 +2,7 @@
 
 params ["_display"];
 
-if !(GVAR(enabled) && {!(GVAR(readOnly))}) exitWith {
+if (!(GVAR(enabled) && !(GVAR(readOnly))) || EGVAR(campaigns,loadouts)) exitWith {
     [_display] call ace_arsenal_fnc_buttonHide;
 };
 

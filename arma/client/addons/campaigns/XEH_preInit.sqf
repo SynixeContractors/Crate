@@ -23,10 +23,9 @@ ADDON = true;
     true,
     {
         if (!isServer) exitWith {};
-        diag_log format ["Campaign Loadout: %1", _this];
+        diag_log format ["Campaign Loadouts: %1", _this];
         if _this then {
             EXTCALL("gear:loadout:campaign",[GVAR(key)]);
-            EGVAR(gear,readOnly) = true;
         } else {
             EXTCALL("gear:loadout:reset",[]);
         };

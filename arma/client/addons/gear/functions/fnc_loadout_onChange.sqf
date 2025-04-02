@@ -1,7 +1,7 @@
 #include "script_component.hpp"
 
 if !(GVAR(enabled)) exitWith {};
-if (GVAR(readOnly) && !EGVAR(campaigns,loadouts)) exitWith {};
+if (GVAR(readOnly)) exitWith {};
 
 if !(GVAR(loadout_tracking)) exitWith {};
 if (player getVariable [QGVAR(shop_open), false]) exitWith {};

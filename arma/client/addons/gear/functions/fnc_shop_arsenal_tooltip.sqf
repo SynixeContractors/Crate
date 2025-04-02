@@ -34,7 +34,7 @@ if (_company != 0) then {
 };
 
 private _equipped = _items getOrDefault [_raw_class, 0];
-private _tooltip = if (GVAR(readOnly)) then {
+private _tooltip = if (GVAR(readOnly) || EGVAR(campaigns,loadouts)) then {
     format ["%1\nEquipped: %2\n%3", _raw_class, _equipped, _cost]
 } else {
     private _owned = [_raw_class] call FUNC(shop_item_owned);

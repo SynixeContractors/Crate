@@ -16,7 +16,7 @@ private _loadout = [player] call CBA_fnc_getLoadout;
 GVAR(shop_preLoadout) = _loadout;
 private _items = [_loadout] call FUNC(loadout_items);
 
-if (GVAR(readOnly)) then {
+if (GVAR(readOnly) || EGVAR(campaigns,loadouts)) then {
     [[], 0] call FUNC(shop_enter);
 } else {
     [QGVAR(shop_enter), [player, _items]] call CBA_fnc_serverEvent;
