@@ -3,10 +3,6 @@
 if !(GVAR(enabled)) exitWith {};
 if !(GVAR(shop_enabled)) exitWith {};
 
-if (EGVAR(campaigns,loadouts)) exitWith {
-    INFO("Using campaign loadouts, shop is disabled.");
-};
-
 private _action = [QGVAR(box), "Shop", "", {
     [_target] call FUNC(shop_open);
 }, {
