@@ -8,9 +8,11 @@ extern crate tracing;
 pub struct Assets;
 
 mod handler;
+mod scheduler;
 
 #[tokio::main]
 async fn main() {
     bootstrap::logger::init();
-    handler::start().await;
+    let mut sched = scheduler::create();
+    tokio::join!(handler::start(), sched.start());
 }

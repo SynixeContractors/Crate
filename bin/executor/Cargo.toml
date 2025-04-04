@@ -20,9 +20,10 @@ reqwest = { workspace = true }
 serenity = { workspace = true, features = ["builder"] }
 time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
+tokio-simple-scheduler = "0.1.2"
 tracing = { workspace = true }
 
 # recruiting
-roux = "2.2.13"
-rust-embed = "8.5.0"
-scraper = "0.21.0"
+roux = "2.2.14"
+rust-embed = "8.6.0"
+scraper = "0.23.1"

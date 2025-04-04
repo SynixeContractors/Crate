@@ -7,14 +7,13 @@ members = [
     "lib/model",
     "lib/proc",
 
-    "bin/api",
+    "bin/ai",
     "bin/bot",
     "bin/calendar",
     "bin/db",
     "bin/docker",
     "bin/executor",
     "bin/hooks",
-    "bin/scheduler",
     "bin/web",
 
     "arma/server",

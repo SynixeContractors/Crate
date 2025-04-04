@@ -40,16 +40,26 @@ if (unitCombatMode _unit != "YELLOW") then {
 if (behaviour _unit != "NORMAL") then {
     _state set ["behaviour", behaviour _unit];
 };
-if (vehicle _unit isNotEqualTo _unit) then {
+if !(isNull objectParent _unit) then {
+    private _vehicle = objectParent _unit;
     _state set ["vehicle", [
-        (vehicle _unit) getVariable [QEGVAR(campaigns,id), ""],
+        _vehicle getVariable [QEGVAR(campaigns,id), ""],
         call {
-            if (driver vehicle _unit isEqualTo _unit) exitWith { "driver" };
-            if (gunner vehicle _unit isEqualTo _unit) exitWith { "gunner" };
-            if (commander vehicle _unit isEqualTo _unit) exitWith { "commander" };
-            (vehicle _unit) getCargoIndex _unit
+            if (driver _vehicle isEqualTo _unit) exitWith { "driver" };
+            if (gunner _vehicle isEqualTo _unit) exitWith { "gunner" };
+            if (commander _vehicle isEqualTo _unit) exitWith { "commander" };
+            _vehicle getCargoIndex _unit
         }
     ]];
+};
+private _disableAI = [];
+{
+    if !(_unit checkAIFeature _x) then {
+        _disableAI pushBack _x;
+    };
+} forEach ["ALL","AUTOTARGET","MOVE","TARGET","TEAMSWITCH","WEAPONAIM","ANIM","FSM","AIMINGERROR","SUPPRESSION","CHECKVISIBLE","AUTOCOMBAT","COVER","PATH","MINEDETECTION","LIGHTS","NVG","RADIOPROTOCOL","FIREWEAPON"];
+if (count _disableAI > 0) then {
+    _state set ["disableAI", _disableAI];
 };
 
 if (missionNamespace getVariable ["ace_main", false]) then {

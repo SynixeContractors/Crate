@@ -1,19 +1,48 @@
 use synixe_events::global::Publish;
 use tokio_simple_scheduler::{Job, Scheduler};
 
-#[macro_use]
-extern crate tracing;
+macro_rules! job {
+    ($sched:expr, $name:expr, $cron:expr, $group:ty, $event:ident) => {
+        $sched.add(
+            Job::new($name, $cron, || {
+                Box::pin(async {
+                    info!("job `{}`", $name);
+                    if let Err(e) = synixe_proc::events_request_5!(
+                        bootstrap::NC::get().await,
+                        $group,
+                        $event {}
+                    )
+                    .await
+                    {
+                        error!("error during `{}`: {:?}", $name, e);
+                    }
+                })
+            })
+            .unwrap(),
+        );
+    };
+}
 
-#[macro_use]
-mod macros;
+macro_rules! event {
+    ($sched:expr, $name:expr, $cron:expr, $event:expr) => {
+        $sched.add(
+            Job::new($name, $cron, || {
+                Box::pin(async {
+                    info!("event `{}`", $name);
+                    if let Err(e) =
+                        synixe_events::publish!(bootstrap::NC::get().await, $event).await
+                    {
+                        error!("error during `{}`: {:?}", $name, e);
+                    }
+                })
+            })
+            .unwrap(),
+        );
+    };
+}
 
-#[tokio::main]
-async fn main() {
-    bootstrap::logger::init();
-
+pub fn create() -> Scheduler {
     let mut sched = Scheduler::default();
-
-    bootstrap::NC::get().await;
 
     // Global
     event!(
@@ -91,7 +120,5 @@ async fn main() {
         PostWeeklyTips
     );
 
-    sched.start().await;
-
-    info!("Done!");
+    sched
 }

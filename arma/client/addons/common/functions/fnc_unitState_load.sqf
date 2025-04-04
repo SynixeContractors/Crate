@@ -62,6 +62,11 @@ params ["_unit", "_state"];
                 };
             };
         };
+        case "disableAI": {
+            {
+                _unit disableAI _x;
+            } forEach _y;
+        };
         case "ace_surrender": {
             [_unit, true] call ACE_captives_fnc_setSurrendered;
         };

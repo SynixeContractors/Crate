@@ -10,20 +10,20 @@ NATS
 
 ### Example: Checking for a new missions from GitHub
 
-[Scheduler] Emits event every 20 minutes  
+[Executor:Scheduler] Emits event every 20 minutes  
 ↓  
-[Executor] Fetches JSON from GitHub, parses  
+[Executor:Handler] Fetches JSON from GitHub, parses  
 ↓  
 [DB] Stores the missions in the database
 
 ### Example: Post about upcoming missions
 
-[Scheduler] Emits event every 5 minutes  
+[Executor:Scheduler] Emits event every 5 minutes  
 ↓  
-[Executor] Requests scheduled missions from the database  
+[Executor:Handler] Requests scheduled missions from the database  
 ↓  
 [DB] Fetches scheduled missions  
 ↓  
-[Executor] Determines if a notification should be sent  
+[Executor:Handler] Determines if a notification should be sent  
 ↓  
 [Bot] Sends a notification to the Discord channel  
