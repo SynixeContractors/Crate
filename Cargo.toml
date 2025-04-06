@@ -7,7 +7,6 @@ members = [
     "lib/model",
     "lib/proc",
 
-    "bin/ai",
     "bin/bot",
     "bin/calendar",
     "bin/db",
