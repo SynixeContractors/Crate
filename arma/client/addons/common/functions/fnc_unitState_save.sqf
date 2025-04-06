@@ -57,7 +57,7 @@ private _disableAI = [];
     if !(_unit checkAIFeature _x) then {
         _disableAI pushBack _x;
     };
-} forEach ["ALL","AUTOTARGET","MOVE","TARGET","TEAMSWITCH","WEAPONAIM","ANIM","FSM","AIMINGERROR","SUPPRESSION","CHECKVISIBLE","AUTOCOMBAT","COVER","PATH","MINEDETECTION","LIGHTS","NVG","RADIOPROTOCOL","FIREWEAPON"];
+} forEach ["AUTOTARGET","MOVE","TARGET","TEAMSWITCH","WEAPONAIM","ANIM","FSM","AIMINGERROR","SUPPRESSION","CHECKVISIBLE","AUTOCOMBAT","COVER","PATH","MINEDETECTION","LIGHTS","NVG","RADIOPROTOCOL","FIREWEAPON"];
 if (count _disableAI > 0) then {
     _state set ["disableAI", _disableAI];
 };
