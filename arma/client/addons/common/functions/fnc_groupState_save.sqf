@@ -84,4 +84,9 @@ if (count _waypoints > 1) then {
     };
 };
 
+// Synixe Surrender
+if (_group getVariable ["synixe_surrender_disable", false]) then {
+    _state set ["synixe_surrender_disable", true];
+};
+
 _state

@@ -74,5 +74,8 @@ params ["_group", "_state"];
         case "current_wp": {
             _group setCurrentWaypoint [_group, _y];
         };
+        case "synixe_surrender_disable": {
+            _group setVariable ["synixe_surrender_disable", true, true];
+        };
     };
 } forEach _state;

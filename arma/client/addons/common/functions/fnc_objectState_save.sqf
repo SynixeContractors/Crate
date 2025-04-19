@@ -33,6 +33,10 @@ _state set ["plate", getPlateNumber _object];
 
 // ACE Cargo
 if (missionNamespace getVariable ["ace_cargo", false]) then {
+    private _cargoSpace = _object getVariable ["ace_cargo_space", -100];
+    if (_cargoSpace != -100) then {
+        _state set ["cargo_space", _cargoSpace];
+    };
     private _cargo = [];
     {
         _cargo pushBack (if (_x isEqualType "") then {
@@ -44,6 +48,11 @@ if (missionNamespace getVariable ["ace_cargo", false]) then {
     if (_cargo isNotEqualTo []) then {
         _state set ["cargo", _cargo];
     };
+};
+
+// ACE Captives
+if (_object getVariable ["ace_captives_isHandcuffed", false]) then {
+    _state set ["handcuffed", true];
 };
 
 // Textures
