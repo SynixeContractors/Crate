@@ -13,8 +13,8 @@ use serenity::{
 };
 use synixe_events::certifications::db::Response;
 use synixe_meta::discord::{
-    role::{JUNIOR, MEMBER},
     GUILD,
+    role::{JUNIOR, MEMBER},
 };
 use synixe_proc::events_request_2;
 
@@ -398,7 +398,8 @@ async fn list(
     }
     let mut content = String::new();
     for cert in certs {
-        write!(content,
+        write!(
+            content,
             "**{}**\n<{}>\n{}\n{}\n{}\n\n",
             cert.name,
             cert.link,

@@ -18,8 +18,7 @@ impl NC {
         NATS.get_or_init(|| async {
             Arc::new(
                 nats::asynk::connect(
-                    std::env::var("NATS_URL")
-                        .expect("Expected the NATS_URL in the environment"),
+                    std::env::var("NATS_URL").expect("Expected the NATS_URL in the environment"),
                 )
                 .await
                 .expect("Failed to connect to NATS"),

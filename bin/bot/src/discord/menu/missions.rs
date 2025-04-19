@@ -6,8 +6,8 @@ use serenity::{
 use synixe_events::{missions::db::Response, reputation};
 use synixe_meta::discord::{channel::AARS, role::STAFF};
 use synixe_model::missions::{
-    aar::{Aar, PaymentType},
     MissionType,
+    aar::{Aar, PaymentType},
 };
 use synixe_proc::events_request_2;
 use time::macros::offset;

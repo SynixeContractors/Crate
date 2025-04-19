@@ -29,7 +29,7 @@ fn connected(steam: String, name: String) {
         )
         .await
         {
-            error!("failed to log server event: {}", e);
+            error!("failed to log server event: {e}");
         }
     });
 }
@@ -50,7 +50,7 @@ fn disconnected(steam: String, name: String) {
         )
         .await
         {
-            error!("failed to log server event: {}", e);
+            error!("failed to log server event: {e}");
         }
     });
 }
@@ -73,7 +73,7 @@ fn chat(steam: String, name: String, channel: String, message: String) {
         )
         .await
         {
-            error!("failed to log server event: {}", e);
+            error!("failed to log server event: {e}");
         }
         audit(steam, "Chat".to_string(), format!("said \"{message}\"")).await;
     });
@@ -97,7 +97,7 @@ fn take(steam: String, name: String, from: String, item: String) {
         )
         .await
         {
-            error!("failed to log server event: {}", e);
+            error!("failed to log server event: {e}");
         }
         audit(
             steam,
@@ -126,7 +126,7 @@ fn role(steam: String, name: String, discord: String, role: String) {
         )
         .await
         {
-            error!("failed to log server event: {}", e);
+            error!("failed to log server event: {e}");
         }
     });
 }
@@ -157,6 +157,6 @@ async fn audit(steam: String, header: String, message: String) {
     )
     .await
     {
-        error!("failed to log server event: {}", e);
+        error!("failed to log server event: {e}");
     }
 }

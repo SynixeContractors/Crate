@@ -85,7 +85,7 @@ pub const CERT_ENGI_EOD: RoleId = RoleId::new(1_038_406_394_925_301_792);
 mod tests {
     #[test]
     fn seniority() {
-        use super::{seniority_pass, JUNIOR, MEMBER, RECRUIT, STAFF};
+        use super::{JUNIOR, MEMBER, RECRUIT, STAFF, seniority_pass};
 
         assert!(seniority_pass(RECRUIT, RECRUIT));
         assert!(seniority_pass(JUNIOR, RECRUIT));

@@ -1,10 +1,9 @@
 use proc_macro::TokenStream;
 use quote::ToTokens;
 use syn::{
-    braced,
+    Attribute, Expr, ItemStruct, Result, TypeParen, braced,
     parse::{Parse, ParseStream},
     token::FatArrow,
-    Attribute, Expr, ItemStruct, Result, TypeParen,
 };
 
 pub fn requests(item: TokenStream) -> TokenStream {

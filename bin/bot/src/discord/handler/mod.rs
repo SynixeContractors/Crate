@@ -263,8 +263,9 @@ impl EventHandler for Handler {
             return;
         }
         if event.guild_id == synixe_meta::discord::GUILD {
+            let nats = bootstrap::NC::get().await;
             if let Err(e) = publish!(
-                bootstrap::NC::get().await,
+                nats,
                 Publish::MemberUpdate {
                     member: event.clone()
                 }
@@ -426,7 +427,7 @@ impl EventHandler for Handler {
                         }
                     }
                     typing.stop();
-                } else if rand::thread_rng().gen_range(0..100) < 4 {
+                } else if rand::rng().random_range(0..100) < 4 {
                     let typing = message.channel_id.start_typing(&ctx.http);
                     if let Some(reply) = self.brain.ask(&ctx, &message).await {
                         match message.reply_ping(&ctx.http, reply).await {

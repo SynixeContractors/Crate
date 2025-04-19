@@ -11,8 +11,9 @@ use synixe_events::{
 use synixe_proc::events_request_5;
 
 use super::{
+    IGNORE, PING,
     candidate::{Candidate, Source},
-    has_seen, seen, IGNORE, PING,
+    has_seen, seen,
 };
 
 const REDDIT_FINDAUNIT: &str =

@@ -3,8 +3,9 @@ use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_proc::events_request_5;
 
 use super::{
+    IGNORE, PING,
     candidate::{Candidate, Source},
-    has_seen, seen, IGNORE, PING,
+    has_seen, seen,
 };
 
 const STEAM_FORUM: &str = "https://steamcommunity.com/app/107410/discussions/21/";

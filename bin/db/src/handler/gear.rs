@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use arma_rs::{loadout::Loadout, FromArma};
+use arma_rs::{FromArma, loadout::Loadout};
 use async_trait::async_trait;
 use synixe_events::{
     gear::db::{Request, Response},

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Write;
 
 use base64::{engine::general_purpose::STANDARD, Engine};
 use bootstrap::DB;
@@ -216,7 +217,7 @@ async fn close_poll(keys: Vec<(String, String, String)>, id: Uuid, title: String
             .find(|(option_id, _)| &option_id == id)
             .expect("should be able to find option")
             .1;
-        message.push_str(&format!("{title}: {count}\n"));
+        writeln!(message, "{title}: {count}",).expect("should be able to write to message");
     }
     message.push_str("\nWinning option: ");
     let (winning_id, _) = results.first().expect("should have results");
@@ -229,7 +230,7 @@ async fn close_poll(keys: Vec<(String, String, String)>, id: Uuid, title: String
     message.push_str("\n\nParticipants:\n");
     for member in &members {
         let (member, _) = member.split_once(':').expect("should be able to split");
-        message.push_str(&format!("<@{member}>\n"));
+        writeln!(message, "<@{member}>",).expect("should be able to write to message");
     }
     println!("{message}");
     sqlx::query!(

@@ -11,7 +11,7 @@ use serenity::{
 };
 use synixe_meta::discord::channel::LOG;
 use time::{Date, OffsetDateTime, PrimitiveDateTime, Time, Weekday};
-use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt, PrimitiveDateTimeExt};
+use time_tz::{OffsetDateTimeExt, PrimitiveDateTimeExt, timezones::db::america::NEW_YORK};
 
 use crate::{bot::Bot, cache_http::CacheAndHttp};
 

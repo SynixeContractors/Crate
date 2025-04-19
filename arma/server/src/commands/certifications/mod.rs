@@ -16,7 +16,7 @@ fn auto(discord: String, certification: Uuid, passed: bool) {
         return;
     };
     RUNTIME.spawn(async move {
-        debug!("certification auto for {}", discord);
+        debug!("certification auto for {discord}");
         let _ = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::certifications::db,

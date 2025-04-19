@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use axum::{response::IntoResponse, routing::get, Router};
+use axum::{Router, response::IntoResponse, routing::get};
 use chrono::{DateTime, Duration};
 use icalendar::{Calendar, Component, Event, EventLike};
 use synixe_events::missions::db::Response;

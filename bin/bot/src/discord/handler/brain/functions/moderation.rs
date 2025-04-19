@@ -1,6 +1,6 @@
 use serde_json::json;
 use serenity::{model::Timestamp, prelude::Context};
-use synixe_meta::discord::{channel::LOG, GUILD};
+use synixe_meta::discord::{GUILD, channel::LOG};
 use time::{Duration, OffsetDateTime};
 
 use crate::discord::utils::find_members;

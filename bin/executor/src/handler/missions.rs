@@ -8,8 +8,8 @@ use synixe_events::{
     publish, respond,
 };
 use synixe_meta::discord::{
-    channel::{LEADERSHIP, ONTOPIC},
     GUILD,
+    channel::{LEADERSHIP, ONTOPIC},
 };
 use synixe_model::missions::Rsvp;
 use synixe_proc::events_request_5;
@@ -183,12 +183,14 @@ impl Handler for Request {
                                 }
                                 _ => None,
                             } {
-                                if let Err(e) = publish!(bootstrap::NC::get().await, event).await {
+                                let nats = bootstrap::NC::get().await;
+                                if let Err(e) = publish!(nats, event).await {
                                     error!("Failed to publish discord message: {}", e);
                                 }
                             }
+                            let nats = bootstrap::NC::get().await;
                             if let Err(e) = publish!(
-                                bootstrap::NC::get().await,
+                                nats,
                                 synixe_events::missions::publish::Publish::StartingSoon {
                                     scheduled,
                                     minutes,

@@ -103,8 +103,7 @@ impl Listener for Publish {
                     } else {
                         format!(
                             "Your cert for {} expires in {} days. Please contact an instructor to schedule a re-certification.",
-                            cert.name,
-                            days,
+                            cert.name, days,
                         )
                     };
                     let Ok(dm) = trial

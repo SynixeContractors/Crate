@@ -22,7 +22,7 @@ pub fn group() -> Group {
 fn command_friendly_shot(member: String, target: String, weapon: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -48,7 +48,7 @@ fn command_friendly_shot(member: String, target: String, weapon: String) {
 fn command_civilian_shot(member: String, target: String, weapon: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -74,7 +74,7 @@ fn command_civilian_shot(member: String, target: String, weapon: String) {
 fn command_unarmed_shot(member: String, target: String, weapon: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -100,7 +100,7 @@ fn command_unarmed_shot(member: String, target: String, weapon: String) {
 fn command_surrendering_shot(member: String, target: String, weapon: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -126,7 +126,7 @@ fn command_surrendering_shot(member: String, target: String, weapon: String) {
 fn command_captive_shot(member: String, target: String, weapon: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -152,7 +152,7 @@ fn command_captive_shot(member: String, target: String, weapon: String) {
 fn command_unconscious_shot(member: String, target: String, weapon: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -178,7 +178,7 @@ fn command_unconscious_shot(member: String, target: String, weapon: String) {
 fn command_building_damaged(member: String, target: String, weapon: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -204,7 +204,7 @@ fn command_building_damaged(member: String, target: String, weapon: String) {
 fn command_friendly_healed(member: String, target: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -229,7 +229,7 @@ fn command_friendly_healed(member: String, target: String) {
 fn command_unfriendly_healed(member: String, target: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -254,7 +254,7 @@ fn command_unfriendly_healed(member: String, target: String) {
 fn command_civilian_healed(member: String, target: String) {
     if *SERVER_ID != "primary-main" {
         return;
-    };
+    }
     let Ok(discord) = member.parse::<u64>() else {
         error!("failed to parse discord id");
         return;

@@ -67,11 +67,11 @@ fn load(campaign: Uuid) {
                     object.data.to_arma(),
                 ],
             ) {
-                error!("error sending objects:load: {:?}", e);
+                error!("error sending objects:load: {e:?}");
             }
         }
         if let Err(e) = context.callback_null("crate:campaigns:objects", "done") {
-            error!("error sending objects:done: {:?}", e);
+            error!("error sending objects:done: {e:?}");
         }
     });
 }

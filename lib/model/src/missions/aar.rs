@@ -2,7 +2,7 @@
 
 use std::{
     collections::{HashMap, HashSet},
-    fmt::Display,
+    fmt::{Display, Write},
     str::FromStr,
 };
 
@@ -228,7 +228,11 @@ impl Aar {
     }
 
     #[must_use]
-    #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_precision_loss,
+        clippy::too_many_lines
+    )]
     /// Show the math for the payments
     /// Example:
     /// ```txt
@@ -245,8 +249,9 @@ impl Aar {
     pub fn show_math(&self, payment_type: PaymentType, reputation: f32) -> String {
         let mut math = String::new();
         if self.payment.no_combat > 0 {
-            math.push_str(&format!(
-                "No Combat  |  {:03}/h x {:03} = {}\n",
+            writeln!(
+                math,
+                "No Combat  |  {:03}/h x {:03} = {}",
                 payment_type.no_combat(),
                 self.payment.no_combat,
                 bootstrap::format::money(
@@ -254,11 +259,13 @@ impl Aar {
                         as i32,
                     true
                 )
-            ));
+            )
+            .expect("should be able to write to string");
         }
         if self.payment.light_combat > 0 {
-            math.push_str(&format!(
-                "Light      |  {:03}/h x {:03} = {}\n",
+            writeln!(
+                math,
+                "Light      |  {:03}/h x {:03} = {}",
                 payment_type.light_combat(),
                 self.payment.light_combat,
                 bootstrap::format::money(
@@ -266,11 +273,13 @@ impl Aar {
                         .ceil() as i32,
                     true
                 )
-            ));
+            )
+            .expect("should be able to write to string");
         }
         if self.payment.medium_combat > 0 {
-            math.push_str(&format!(
-                "Medium     |  {:03}/h x {:03} = {}\n",
+            writeln!(
+                math,
+                "Medium     |  {:03}/h x {:03} = {}",
                 payment_type.medium_combat(),
                 self.payment.medium_combat,
                 bootstrap::format::money(
@@ -279,11 +288,13 @@ impl Aar {
                         .ceil() as i32,
                     true
                 )
-            ));
+            )
+            .expect("should be able to write to string");
         }
         if self.payment.heavy_combat > 0 {
-            math.push_str(&format!(
-                "Heavy      |  {:03}/h x {:03} = {}\n",
+            writeln!(
+                math,
+                "Heavy      |  {:03}/h x {:03} = {}",
                 payment_type.heavy_combat(),
                 self.payment.heavy_combat,
                 bootstrap::format::money(
@@ -291,10 +302,12 @@ impl Aar {
                         .ceil() as i32,
                     true
                 )
-            ));
+            )
+            .expect("should be able to write to string");
         }
-        math.push_str(&format!(
-            "Reputation | {}{:03.0}/h x {:03} = {}\n",
+        writeln!(
+            math,
+            "Reputation | {}{:03.0}/h x {:03} = {}",
             if reputation < 0f32 { "-" } else { " " },
             reputation.abs().clamp(-300f32, 300f32) / 2f32,
             self.payment.total(),
@@ -303,16 +316,20 @@ impl Aar {
                     as i32,
                 true
             )
-        ));
-        math.push_str(&format!(
-            "{}    |  x{:.1}        = {}\n",
+        )
+        .expect("should be able to write to string");
+        writeln!(
+            math,
+            "{}    |  x{:.1}        = {}",
             self.outcome,
             self.outcome.contractor_multiplier(),
             bootstrap::format::money(self.contractor_payment(payment_type, reputation), true)
-        ));
+        )
+        .expect("should be able to write to string");
         math.push('\n');
-        math.push_str(&format!(
-            "Group      |  {:06}/h x {:03} = {}\n",
+        writeln!(
+            math,
+            "Group      |  {:06}/h x {:03} = {}",
             payment_type.employer(),
             self.payment.total(),
             bootstrap::format::money(
@@ -320,9 +337,11 @@ impl Aar {
                     as i32,
                 true
             )
-        ));
-        math.push_str(&format!(
-            "Reputation | {}{:06}/h x {:03} = {}\n",
+        )
+        .expect("should be able to write to string");
+        writeln!(
+            math,
+            "Reputation | {}{:06}/h x {:03} = {}",
             if reputation < 0f32 { "-" } else { " " },
             reputation.abs() as i32 * 200 / 2,
             self.payment.total(),
@@ -330,13 +349,16 @@ impl Aar {
                 (self.payment.total() as f32 / 60f32 * reputation * 200f32 / 2f32).ceil() as i32,
                 true
             )
-        ));
-        math.push_str(&format!(
-            "{}    |  x{:.1}           = {}\n",
+        )
+        .expect("should be able to write to string");
+        writeln!(
+            math,
+            "{}    |  x{:.1}           = {}",
             self.outcome,
             self.outcome.employer_multiplier(),
             bootstrap::format::money(self.employer_payment(payment_type, reputation), true)
-        ));
+        )
+        .expect("should be able to write to string");
         math
     }
 }

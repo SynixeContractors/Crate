@@ -1,12 +1,12 @@
 use std::net::SocketAddr;
 
 use axum::{
+    Router,
     body::Body,
     http::{Request, StatusCode},
     middleware::{self, Next},
     response::Response,
     routing::post,
-    Router,
 };
 use tokio::net::TcpListener;
 

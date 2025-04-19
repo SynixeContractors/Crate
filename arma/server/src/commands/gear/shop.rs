@@ -34,12 +34,12 @@ fn command_items() {
         else {
             error!("failed to fetch shop items over nats");
             if let Err(e) = context.callback_null("crate:gear:shop", "items:err") {
-                error!("error sending shop:items:err: {:?}", e);
+                error!("error sending shop:items:err: {e:?}");
             }
             return;
         };
         if let Err(e) = context.callback_null("crate:gear:shop", "items:clear") {
-            error!("error sending shop:items:clear: {:?}", e);
+            error!("error sending shop:items:clear: {e:?}");
         }
         for (class, (pretty, roles, price)) in items {
             if let Err(e) = context.callback_data(
@@ -54,18 +54,18 @@ fn command_items() {
                     pretty.to_arma(),
                 ],
             ) {
-                error!("error sending shop:items:set: {:?}", e);
+                error!("error sending shop:items:set: {e:?}");
             }
         }
         if let Err(e) = context.callback_null("crate:gear:shop", "items:publish") {
-            error!("error sending shop:items:publish: {:?}", e);
+            error!("error sending shop:items:publish: {e:?}");
         }
     });
 }
 
 fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>) {
     let Ok(discord) = discord.parse::<u64>() else {
-        error!("invalid discord id: {}", discord);
+        error!("invalid discord id: {discord}");
         return;
     };
     clean_items(&mut items);
@@ -88,7 +88,7 @@ fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>
         else {
             error!("failed to enter shop over nats");
             if let Err(e) = context.callback_data("crate:gear:shop", "enter:err", vec![steam]) {
-                error!("error sending shop:enter:err: {:?}", e);
+                error!("error sending shop:enter:err: {e:?}");
             }
             return;
         };
@@ -97,15 +97,15 @@ fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>
             "enter:ok",
             vec![steam.to_arma(), locker.to_arma(), balance.to_arma()],
         ) {
-            error!("error sending shop:enter:ok: {:?}", e);
+            error!("error sending shop:enter:ok: {e:?}");
         }
-        debug!("shop entered for {}", discord);
+        debug!("shop entered for {discord}");
     });
 }
 
 fn command_leave(discord: String, steam: String, loadout: String, mut items: HashMap<String, i32>) {
     let Ok(discord) = discord.parse::<u64>() else {
-        error!("invalid discord id: {}", discord);
+        error!("invalid discord id: {discord}");
         return;
     };
     clean_items(&mut items);
@@ -129,21 +129,21 @@ fn command_leave(discord: String, steam: String, loadout: String, mut items: Has
         else {
             error!("failed to leave shop over nats");
             if let Err(e) = context.callback_data("crate:gear:shop", "leave:err", vec![steam]) {
-                error!("error sending shop:leave:err: {:?}", e);
+                error!("error sending shop:leave:err: {e:?}");
             }
             return;
         };
         if let Err(e) = context.callback_data("crate:gear:shop", "leave:ok", vec![steam.to_arma()])
         {
-            error!("error sending shop:leave:ok: {:?}", e);
+            error!("error sending shop:leave:ok: {e:?}");
         }
-        debug!("shop left for {}", discord);
+        debug!("shop left for {discord}");
     });
 }
 
 fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i32>) {
     let Ok(discord) = discord.parse::<u64>() else {
-        error!("invalid discord id: {}", discord);
+        error!("invalid discord id: {discord}");
         return;
     };
     clean_items(&mut items);
@@ -153,7 +153,7 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
             error!("command received before context was initialized");
             return;
         };
-        debug!("purchasing for {}: {:?}", discord, items);
+        debug!("purchasing for {discord}: {items:?}");
         let Ok(Ok((db::Response::ShopPurchase(Ok((locker, balance))), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
@@ -166,7 +166,7 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
         else {
             error!("failed to purchase items over nats");
             if let Err(e) = context.callback_data("crate:gear:shop", "purchase:err", vec![steam]) {
-                error!("error sending shop:purchase:err: {:?}", e);
+                error!("error sending shop:purchase:err: {e:?}");
             }
             return;
         };
@@ -175,9 +175,9 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
             "purchase:ok",
             vec![steam.to_arma(), locker.to_arma(), balance.to_arma()],
         ) {
-            error!("error sending shop:purchase:ok: {:?}", e);
+            error!("error sending shop:purchase:ok: {e:?}");
         }
-        debug!("shop purchase for {}", discord);
+        debug!("shop purchase for {discord}");
     });
 }
 

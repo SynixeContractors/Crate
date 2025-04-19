@@ -42,7 +42,7 @@ impl Listener for Publish {
                             ),
                         ],
                     ) {
-                        error!("error sending member:get:ok: {:?}", e);
+                        error!("error sending member:get:ok: {e:?}");
                     }
                 }
                 Ok(())

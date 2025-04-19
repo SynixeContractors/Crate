@@ -1,7 +1,7 @@
 #[cfg(feature = "sqlx")]
 mod db;
 #[cfg(feature = "sqlx")]
-pub use db::{DBPool, DB};
+pub use db::{DB, DBPool};
 
 #[cfg(feature = "nats")]
 mod nc;

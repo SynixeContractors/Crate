@@ -29,7 +29,7 @@ impl Listener for Publish {
                         "set_date",
                         vec![arma_rs::Value::Number(*minutes as f64)],
                     ) {
-                        error!("error sending set_date: {:?}", e);
+                        error!("error sending set_date: {e:?}");
                     }
                 }
                 match minutes {
@@ -42,7 +42,7 @@ impl Listener for Publish {
                                 scheduled.name
                             ))],
                         ) {
-                            error!("error sending brodsky_say: {:?}", e);
+                            error!("error sending brodsky_say: {e:?}");
                         }
                     }
                     -1..=1 => {
@@ -54,12 +54,12 @@ impl Listener for Publish {
                                 scheduled.name
                             ))],
                         ) {
-                            error!("error sending brodsky_say: {:?}", e);
+                            error!("error sending brodsky_say: {e:?}");
                         }
                         if *SERVER_ID == "primary-main" {
                             #[allow(clippy::cast_precision_loss)]
                             if let Err(e) = context.callback_null("crate:missions", "intro_text") {
-                                error!("error sending intro_text: {:?}", e);
+                                error!("error sending intro_text: {e:?}");
                             }
                         }
                     }
@@ -89,7 +89,7 @@ impl Listener for Publish {
                         "[Mission] You will be disconnected. Server is changing mission: {id}"
                     ))],
                 ) {
-                    error!("error sending brodsky_say: {:?}", e);
+                    error!("error sending brodsky_say: {e:?}");
                 }
                 if let Err(e) = context.callback_data(
                     "crate:global",
@@ -99,7 +99,7 @@ impl Listener for Publish {
                             .to_string(),
                     )],
                 ) {
-                    error!("error sending brodsky_say: {:?}", e);
+                    error!("error sending brodsky_say: {e:?}");
                 }
                 Ok(())
             }
@@ -114,7 +114,7 @@ impl Listener for Publish {
                         "[Mission] Restart in 10 minutes! Mission Starting: {id}"
                     ))],
                 ) {
-                    error!("error sending brodsky_say: {:?}", e);
+                    error!("error sending brodsky_say: {e:?}");
                 }
                 Ok(())
             }

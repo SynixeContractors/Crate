@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use serenity::{
-    futures::{stream::iter, StreamExt},
+    futures::{StreamExt, stream::iter},
     model::prelude::UserId,
     prelude::Context,
 };

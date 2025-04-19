@@ -1,12 +1,13 @@
+use std::sync::LazyLock;
+
 #[macro_use]
 extern crate tracing;
 
 mod handler;
 mod listener;
 
-lazy_static::lazy_static! {
-    static ref DOCKER_SERVER: String = std::env::var("CRATE_DOCKER_SERVER").expect("CRATE_DOCKER_SERVER not set");
-}
+static DOCKER_SERVER: LazyLock<String> =
+    LazyLock::new(|| std::env::var("CRATE_DOCKER_SERVER").expect("CRATE_DOCKER_SERVER not set"));
 
 #[tokio::main]
 async fn main() {

@@ -29,9 +29,8 @@ macro_rules! event {
             Job::new($name, $cron, || {
                 Box::pin(async {
                     info!("event `{}`", $name);
-                    if let Err(e) =
-                        synixe_events::publish!(bootstrap::NC::get().await, $event).await
-                    {
+                    let nats = bootstrap::NC::get().await;
+                    if let Err(e) = synixe_events::publish!(nats, $event).await {
                         error!("error during `{}`: {:?}", $name, e);
                     }
                 })

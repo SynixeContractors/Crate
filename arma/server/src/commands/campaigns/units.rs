@@ -66,11 +66,11 @@ fn load(campaign: Uuid) {
                     unit.data.to_arma(),
                 ],
             ) {
-                error!("error sending campaigns:units:load: {:?}", e);
+                error!("error sending campaigns:units:load: {e:?}");
             }
         }
         if let Err(e) = context.callback_null("crate:campaigns:units", "done") {
-            error!("error sending campaigns:units:done: {:?}", e);
+            error!("error sending campaigns:units:done: {e:?}");
         }
     });
 }

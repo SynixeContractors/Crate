@@ -1,7 +1,7 @@
 [package]
 name = "synixe-calendar"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [lints]
 workspace = true
@@ -13,8 +13,8 @@ synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 axum = { workspace = true }
-chrono = "0.4.38"
-icalendar = "0.16.9"
+chrono = "0.4.40"
+icalendar = "0.16.13"
 nats = { workspace = true }
 time = { workspace = true }
 time-tz = "2.0.0"

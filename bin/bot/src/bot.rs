@@ -13,7 +13,10 @@ impl Bot {
     ///
     /// Panics if the bot does not exists
     pub fn get() -> Arc<ShardMessenger> {
-        unsafe { SINGLETON.assume_init_ref().clone() }
+        #[allow(static_mut_refs)]
+        unsafe {
+            SINGLETON.assume_init_ref().clone()
+        }
     }
 
     /// Initializes the Bot cache and http

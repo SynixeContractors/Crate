@@ -1,7 +1,7 @@
 [package]
 name = "synixe-executor"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [lints]
 workspace = true
@@ -25,5 +25,5 @@ tracing = { workspace = true }
 
 # recruiting
 roux = "2.2.14"
-rust-embed = "8.6.0"
+rust-embed = "8.7.0"
 scraper = "0.23.1"

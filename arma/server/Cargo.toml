@@ -1,7 +1,7 @@
 [package]
 name = "synixe-arma-server"
 version = "0.2.0"
-edition = "2021"
+edition = "2024"
 
 [lints]
 workspace = true
@@ -20,8 +20,7 @@ synixe-proc = { path = "../../lib/proc" }
 anyhow = { workspace = true }
 arma-rs = { workspace = true }
 async-trait = { workspace = true }
-lazy_static = "1.5.0"
-log = "0.4.25"
+log = "0.4.27"
 nats = { workspace = true }
 serde_json = { workspace = true }
 serenity = { workspace = true }
@@ -30,4 +29,4 @@ uuid = { workspace = true }
 
 [dev-dependencies]
 nats = { workspace = true }
-rand = "0.8.5"
+rand = "0.9.1"

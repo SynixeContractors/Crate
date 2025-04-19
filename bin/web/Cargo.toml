@@ -1,7 +1,7 @@
 [package]
 name = "synixe-web"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [lints]
 workspace = true
@@ -19,7 +19,7 @@ rsa = { workspace = true }
 serenity = { workspace = true, features = ["builder"] }
 tera = "1.20.0"
 tokio = { workspace = true, features = ["full"] }
-tower = { version = "0.5.1", features = ["util"] }
-tower-http = { version = "0.6.1", features = ["fs", "trace"] }
+tower = { version = "0.5.2", features = ["util"] }
+tower-http = { version = "0.6.2", features = ["fs", "trace"] }
 tracing = { workspace = true }
 uuid = { workspace = true }

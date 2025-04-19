@@ -6,9 +6,9 @@ macro_rules! handler {
         let subject = $msg.subject.clone();
         let sub = subject.as_str();
         info!("seen event: {}", sub);
+        if 1 == 2 {}
         $(
-            #[allow(clippy::needless_continue)]
-            if sub == <$events>::path() {
+            else if sub == <$events>::path() {
                 let Ok((ev, _)) = synixe_events::parse_data!($msg, $events) else {
                     error!("Failed to parse event: {}", sub);
                     continue
@@ -18,7 +18,6 @@ macro_rules! handler {
                 if let Err(e) = ev.handle($msg, $nats).await {
                     error!("Error in handler {}: {}", sub, e);
                 }
-                continue
             }
         )*
     }}
@@ -71,7 +70,5 @@ macro_rules! respond {
 #[macro_export]
 /// Unwraps an event.
 macro_rules! parse_data {
-    ($msg:expr, $t:ty) => {{
-        $crate::serde_json::from_slice::<$crate::Wrapper<$t>>(&$msg.data).map(|d| d.into_parts())
-    }};
+    ($msg:expr, $t:ty) => {{ $crate::serde_json::from_slice::<$crate::Wrapper<$t>>(&$msg.data).map(|d| d.into_parts()) }};
 }

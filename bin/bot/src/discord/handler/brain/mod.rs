@@ -3,12 +3,12 @@ mod functions;
 use std::{collections::HashMap, sync::atomic::AtomicBool};
 
 use async_openai::{
+    Client,
     config::OpenAIConfig,
     types::{
         ChatCompletionRequestMessage, ChatCompletionRequestMessageArgs,
         CreateChatCompletionRequestArgs, Role,
     },
-    Client,
 };
 use serenity::{
     model::prelude::{ChannelId, Message},
@@ -143,7 +143,6 @@ impl Brain {
                                     .expect("prompt is valid"),
                             );
                         }
-                        continue;
                     } else if let Some(content) = response.content {
                         println!("ask content: {content}");
                         return Some(if content.contains("| Ctirad Brodsky: ") {

@@ -5,8 +5,8 @@ use synixe_events::{
     respond,
 };
 use synixe_meta::discord::{
-    channel::{GAME_LOG, LOG},
     GUILD,
+    channel::{GAME_LOG, LOG},
 };
 
 use crate::ArcCacheAndHttp;

@@ -1,11 +1,8 @@
-use std::mem::MaybeUninit;
+use std::sync::{Arc, OnceLock};
 
 use tera::Tera;
 
 pub struct Template;
-
-static mut SINGLETON: MaybeUninit<Tera> = MaybeUninit::uninit();
-static mut IS_INIT: bool = false;
 
 impl Template {
     /// Gets a reference to the Template singleton
@@ -13,22 +10,12 @@ impl Template {
     /// # Panics
     ///
     /// Panics if the bot does not exists
-    pub fn get<'a>() -> &'a Tera {
-        unsafe {
-            if !IS_INIT {
-                Self::init();
-            }
-            SINGLETON.assume_init_ref()
-        }
-    }
-
-    /// Initializes the Template singleton
-    pub fn init() {
-        unsafe {
-            SINGLETON = MaybeUninit::new(
-                Tera::new("templates/**/*.html").expect("Failed to load templates"),
-            );
-            IS_INIT = true;
-        }
+    pub fn get() -> Arc<Tera> {
+        static SINGLETON: OnceLock<Arc<Tera>> = OnceLock::new();
+        SINGLETON
+            .get_or_init(|| {
+                Arc::new(Tera::new("templates/**/*.html").expect("Failed to load templates"))
+            })
+            .clone()
     }
 }

@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap, sync::LazyLock};
 
-use arma_rs::{arma, Context, Extension};
+use arma_rs::{Context, Extension, arma};
 use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_proc::events_request_5;
 use tokio::sync::RwLock;
@@ -16,9 +16,8 @@ mod handler;
 mod listener;
 mod logger;
 
-static SERVER_ID: LazyLock<String> = LazyLock::new(|| {
-    std::env::var("CRATE_SERVER_ID").expect("CRATE_SERVER_ID not set")
-});
+static SERVER_ID: LazyLock<String> =
+    LazyLock::new(|| std::env::var("CRATE_SERVER_ID").expect("CRATE_SERVER_ID not set"));
 static RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()

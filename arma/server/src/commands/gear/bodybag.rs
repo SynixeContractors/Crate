@@ -23,11 +23,11 @@ fn command_store(
     net_id: String,
 ) {
     let Ok(discord) = discord.parse::<u64>() else {
-        error!("invalid discord id: {}", discord);
+        error!("invalid discord id: {discord}");
         return;
     };
     let Ok(instigator) = instigator.parse::<u64>() else {
-        error!("invalid instigator id: {}", instigator);
+        error!("invalid instigator id: {instigator}");
         return;
     };
     clean_items(&mut items);
@@ -37,7 +37,7 @@ fn command_store(
             error!("command received before context was initialized");
             return;
         };
-        debug!("storing bodybag items for {}: {:?}", discord, items);
+        debug!("storing bodybag items for {discord}: {items:?}");
         let Ok(Ok((db::Response::LockerStore(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
@@ -51,14 +51,14 @@ fn command_store(
         else {
             error!("failed to store bodybag items over nats");
             if let Err(e) = context.callback_data("crate:gear:bodybag", "store:err", vec![net_id]) {
-                error!("error sending bodybag:store:err: {:?}", e);
+                error!("error sending bodybag:store:err: {e:?}");
             }
             return;
         };
         if let Err(e) = context.callback_data("crate:gear:bodybag", "store:ok", vec![net_id]) {
-            error!("error sending bodybag:store:ok: {:?}", e);
+            error!("error sending bodybag:store:ok: {e:?}");
         }
-        debug!("lockerstore for {}", discord);
+        debug!("lockerstore for {discord}");
         if let Err(e) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::discord::write,
@@ -73,7 +73,7 @@ fn command_store(
         )
         .await
         {
-            error!("failed to send audit message over nats: {}", e);
+            error!("failed to send audit message over nats: {e}");
         }
     });
 }

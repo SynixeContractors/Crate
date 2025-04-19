@@ -119,8 +119,9 @@ async fn load(
             ))
             .await;
     }
+    let nats = bootstrap::NC::get().await;
     if let Err(e) = publish!(
-        bootstrap::NC::get().await,
+        nats,
         synixe_events::missions::publish::Publish::ChangeMission {
             id: missions[0].id.clone(),
             mission_type: missions[0].typ,

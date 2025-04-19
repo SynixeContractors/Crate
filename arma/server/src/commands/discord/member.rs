@@ -3,7 +3,7 @@ use serenity::model::prelude::UserId;
 use synixe_events::discord::{self, db, info};
 use synixe_proc::events_request_5;
 
-use crate::{audit, CONTEXT, RUNTIME, STEAM_CACHE};
+use crate::{CONTEXT, RUNTIME, STEAM_CACHE, audit};
 
 pub fn group() -> Group {
     Group::new()
@@ -38,7 +38,7 @@ fn command_get(steam: String, name: String) {
                 "member:get:err",
                 vec![arma_rs::Value::String(steam)],
             ) {
-                error!("error sending member:get:err: {:?}", e);
+                error!("error sending member:get:err: {e:?}");
             }
             return;
         };
@@ -63,7 +63,7 @@ fn command_get(steam: String, name: String) {
                     "member:get:needs_link",
                     vec![steam.clone()],
                 ) {
-                    error!("error sending member:get:needs_link: {:?}", e);
+                    error!("error sending member:get:needs_link: {e:?}");
                 }
                 return;
             };
@@ -83,7 +83,7 @@ fn command_get(steam: String, name: String) {
                     "member:get:err",
                     vec![arma_rs::Value::String(steam)],
                 ) {
-                    error!("error sending member:get:err: {:?}", e);
+                    error!("error sending member:get:err: {e:?}");
                 }
                 return;
             };
@@ -100,7 +100,7 @@ fn command_get(steam: String, name: String) {
                 "member:get:err",
                 vec![arma_rs::Value::String(steam)],
             ) {
-                error!("error sending member:get:err: {:?}", e);
+                error!("error sending member:get:err: {e:?}");
             }
             return;
         };
@@ -119,7 +119,7 @@ fn command_get(steam: String, name: String) {
                 "member:get:err",
                 vec![arma_rs::Value::String(steam)],
             ) {
-                error!("error sending member:get:err: {:?}", e);
+                error!("error sending member:get:err: {e:?}");
             }
             return;
         };
@@ -130,7 +130,7 @@ fn command_get(steam: String, name: String) {
                 "member:get:err",
                 vec![arma_rs::Value::String(steam)],
             ) {
-                error!("error sending member:get:err: {:?}", e);
+                error!("error sending member:get:err: {e:?}");
             }
             return;
         };
@@ -153,7 +153,7 @@ fn command_get(steam: String, name: String) {
                 ),
             ],
         ) {
-            error!("error sending member:get:ok: {:?}", e);
+            error!("error sending member:get:ok: {e:?}");
         }
     });
 }

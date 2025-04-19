@@ -1,6 +1,6 @@
 use serenity::{all::UserId, futures::StreamExt};
 use synixe_events::discord::db::Response;
-use synixe_meta::discord::{channel::LOG, role::ACTIVE, GUILD};
+use synixe_meta::discord::{GUILD, channel::LOG, role::ACTIVE};
 use synixe_proc::events_request_2;
 
 use crate::ArcCacheAndHttp;

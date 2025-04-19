@@ -11,7 +11,7 @@ use synixe_proc::events_request_5;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::{audit, RUNTIME};
+use crate::{RUNTIME, audit};
 
 #[derive(Default)]
 pub struct PendingSpawn(RwLock<HashMap<Uuid, Message>>);
@@ -37,7 +37,7 @@ fn spawn(ctx: Context, id: Uuid, res: String) {
             .parse::<synixe_events::garage::arma::SpawnResult>()
             .expect("Unable to parse bool");
         if let Err(e) = respond!(msg, Response::Spawn(Ok(res))).await {
-            error!("Unable to respond to CanSpawn: {}", e);
+            error!("Unable to respond to CanSpawn: {e}");
         }
     });
 }
@@ -66,7 +66,7 @@ fn store(ctx: Context, plate: String, state: HashMap<String, Value>, discord: St
         };
         audit(format!("Vehicle `{plate}` stored by <@{discord}>",)).await;
         if let Err(e) = ctx.callback_data("crate:garage", "store", vec![plate]) {
-            error!("error sending store: {:?}", e);
+            error!("error sending store: {e:?}");
         }
     });
 }

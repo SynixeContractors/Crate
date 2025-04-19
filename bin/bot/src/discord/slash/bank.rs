@@ -5,9 +5,9 @@ use serenity::{
 };
 use synixe_events::gear::db::Response;
 use synixe_meta::discord::{
+    BRODSKY, GUILD,
     channel::LOG,
     role::{ACTIVE, STAFF},
-    BRODSKY, GUILD,
 };
 use synixe_proc::events_request_2;
 

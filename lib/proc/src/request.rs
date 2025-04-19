@@ -1,8 +1,8 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
-    parse::{Parse, ParseStream},
     Expr, ExprStruct, Path, Result, Token,
+    parse::{Parse, ParseStream},
 };
 
 /// Request a response from a service

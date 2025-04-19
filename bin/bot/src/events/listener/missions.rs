@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use async_trait::async_trait;
 use serenity::{
     builder::{EditMessage, EditThread},
@@ -74,12 +76,13 @@ impl Listener for Publish {
                                 rsvp.member.parse().expect("only valid ids are stored"),
                             ));
                         } else {
-                            report.push_str(&format!(
-                                "<@{}>: {} ({})\n",
+                            writeln!(
+                                report,
+                                "<@{}>: {} ({})",
                                 rsvp.member,
                                 rsvp.state,
                                 rsvp.details.unwrap_or_default(),
-                            ));
+                            )?;
                         }
                     }
 

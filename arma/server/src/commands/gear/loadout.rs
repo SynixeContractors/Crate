@@ -38,7 +38,7 @@ fn command_get(ctx: Context, discord: String, steam: String) {
             error!("command received before context was initialized");
             return;
         };
-        debug!("fetching loadout for {}", discord);
+        debug!("fetching loadout for {discord}");
         let Ok(Ok((db::Response::LoadoutGet(Ok(loadout)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
@@ -51,21 +51,21 @@ fn command_get(ctx: Context, discord: String, steam: String) {
         else {
             error!("failed to fetch loadout over nats");
             if let Err(e) = context.callback_data("crate:gear:loadout", "get:err", vec![steam]) {
-                error!("error sending loadout:get:err: {:?}", e);
+                error!("error sending loadout:get:err: {e:?}");
             }
             return;
         };
         if let Some(loadout) = loadout {
-            debug!("found loadout for {}", discord);
+            debug!("found loadout for {discord}");
             if let Err(e) =
                 context.callback_data("crate:gear:loadout", "get:set", vec![steam, loadout])
             {
-                error!("error sending loadout:get:set: {:?}", e);
+                error!("error sending loadout:get:set: {e:?}");
             }
         } else {
-            debug!("no loadout found for {}", discord);
+            debug!("no loadout found for {discord}");
             if let Err(e) = context.callback_data("crate:gear:loadout", "get:empty", vec![steam]) {
-                error!("error sending loadout:get:empty: {:?}", e);
+                error!("error sending loadout:get:empty: {e:?}");
             }
         }
     });
@@ -95,12 +95,12 @@ fn command_store(ctx: Context, discord: String, steam: String, loadout: String) 
         else {
             error!("failed to save loadout over nats");
             if let Err(e) = context.callback_data("crate:gear:loadout", "store:err", vec![steam]) {
-                error!("error sending loadout:store:err: {:?}", e);
+                error!("error sending loadout:store:err: {e:?}");
             }
             return;
         };
         if let Err(e) = context.callback_data("crate:gear:loadout", "store:ok", vec![steam]) {
-            error!("error sending loadout:store:ok: {:?}", e);
+            error!("error sending loadout:store:ok: {e:?}");
         }
     });
 }
@@ -114,7 +114,7 @@ fn command_campaign(ctx: Context, campaign: Uuid) -> bool {
     });
     let mut state = state.id.lock().expect("failed to lock campaign state");
     *state = Some(campaign);
-    debug!("set campaign to {}", campaign);
+    debug!("set campaign to {campaign}");
     false
 }
 

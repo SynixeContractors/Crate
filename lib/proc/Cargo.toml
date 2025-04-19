@@ -1,7 +1,7 @@
 [package]
 name = "synixe-proc"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [lints]
 workspace = true
@@ -10,6 +10,6 @@ workspace = true
 proc-macro = true
 
 [dependencies]
-syn = { version = "2.0.87", features = ["full"] }
-quote = "1.0.37"
-proc-macro2 = "1.0.89"
+syn = { version = "2.0.100", features = ["full"] }
+quote = "1.0.40"
+proc-macro2 = "1.0.95"

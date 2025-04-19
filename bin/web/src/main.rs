@@ -1,8 +1,7 @@
 use axum::{
-    http,
+    Router, http,
     response::Html,
     routing::{get, get_service},
-    Router,
 };
 use tera::Context;
 use tower_http::services::ServeDir;

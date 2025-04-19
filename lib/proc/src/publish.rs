@@ -1,9 +1,8 @@
 use proc_macro::TokenStream;
 use quote::ToTokens;
 use syn::{
-    braced,
+    Attribute, Expr, ItemStruct, Result, braced,
     parse::{Parse, ParseStream},
-    Attribute, Expr, ItemStruct, Result,
 };
 
 pub fn publish(item: TokenStream) -> TokenStream {

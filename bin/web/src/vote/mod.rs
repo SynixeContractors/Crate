@@ -1,10 +1,10 @@
-use axum::{extract::Path, response::Html, routing::get, Router};
+use axum::{Router, extract::Path, response::Html, routing::get};
 use base64::{
-    engine::general_purpose::{STANDARD, URL_SAFE},
     Engine,
+    engine::general_purpose::{STANDARD, URL_SAFE},
 };
 use bootstrap::NC;
-use rsa::{pkcs1::DecodeRsaPublicKey, RsaPublicKey};
+use rsa::{RsaPublicKey, pkcs1::DecodeRsaPublicKey};
 use synixe_events::voting::db::Response;
 use synixe_proc::events_request_5;
 use tera::Context;

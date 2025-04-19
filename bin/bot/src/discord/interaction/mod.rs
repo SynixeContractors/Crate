@@ -54,7 +54,7 @@ impl<'a> Interaction<'a> {
         }
     }
 
-    async fn _followup(
+    async fn internal_followup(
         &mut self,
         content: CreateInteractionResponseFollowup,
     ) -> serenity::Result<()> {
@@ -115,7 +115,7 @@ impl<'a> Interaction<'a> {
     pub async fn reply(&mut self, content: impl Display + Send) -> serenity::Result<()> {
         self.initial().await?;
         debug!("replying to interaction: {}", content);
-        self._followup(
+        self.internal_followup(
             CreateInteractionResponseFollowup::default()
                 .content(content.to_string())
                 .components(vec![]),
@@ -131,7 +131,8 @@ impl<'a> Interaction<'a> {
     ) -> serenity::Result<Option<String>> {
         self.initial().await?;
         debug!("prompting for choice: {}", prompt);
-        self._followup(Self::_choice(prompt, choices)).await?;
+        self.internal_followup(Self::internal_choice(prompt, choices))
+            .await?;
         let Some(interaction) = self
             .message
             .as_ref()
@@ -141,7 +142,7 @@ impl<'a> Interaction<'a> {
             .next()
             .await
         else {
-            self._followup(
+            self.internal_followup(
                 CreateInteractionResponseFollowup::default()
                     .content("Didn't receive a response")
                     .components(vec![]),
@@ -161,7 +162,7 @@ impl<'a> Interaction<'a> {
     pub async fn confirm(&mut self, prompt: &str) -> serenity::Result<Confirmation> {
         self.initial().await?;
         debug!("prompting for confirmation: {}", prompt);
-        self._followup(Self::_confirm(prompt)).await?;
+        self.internal_followup(Self::_confirm(prompt)).await?;
         let Some(interaction) = self
             .message
             .as_ref()
@@ -171,7 +172,7 @@ impl<'a> Interaction<'a> {
             .next()
             .await
         else {
-            self._followup(
+            self.internal_followup(
                 CreateInteractionResponseFollowup::default()
                     .content("Didn't receive a response")
                     .components(vec![]),
@@ -191,7 +192,7 @@ impl<'a> Interaction<'a> {
 }
 
 impl Interaction<'_> {
-    fn _choice<T: ToString + Display>(
+    fn internal_choice<T: ToString + Display>(
         prompt: &str,
         choices: &[(String, T)],
     ) -> CreateInteractionResponseFollowup {

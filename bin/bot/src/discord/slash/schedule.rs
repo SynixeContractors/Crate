@@ -1,5 +1,5 @@
-use std::time::Duration;
 use std::fmt::Write;
+use std::time::Duration;
 
 use regex::{Captures, Regex};
 use serenity::{
@@ -17,14 +17,14 @@ use serenity::{
 };
 use synixe_events::missions::db::Response;
 use synixe_meta::discord::{
+    GUILD,
     channel::{LOBBY, LOOKING_TO_PLAY, ONBOARDING, SCHEDULE},
     role::{MEMBER, MISSION_REVIEWER, STAFF},
-    GUILD,
 };
 use synixe_model::missions::{MissionRsvp, Rsvp, ScheduledMission};
 use synixe_proc::events_request_2;
 use time::format_description;
-use time_tz::{timezones::db::america::NEW_YORK, OffsetDateTimeExt};
+use time_tz::{OffsetDateTimeExt, timezones::db::america::NEW_YORK};
 
 use crate::{
     discord::interaction::{Confirmation, Interaction},
@@ -851,11 +851,7 @@ fn make_post_embed(scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) -> Creat
                     .map(|r| format!("> <@{}>", r.member))
                     .collect::<Vec<_>>()
                     .join("\n");
-                if out.is_empty() {
-                    "-".to_string()
-                } else {
-                    out
-                }
+                if out.is_empty() { "-".to_string() } else { out }
             },
             true,
         )
@@ -867,11 +863,7 @@ fn make_post_embed(scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) -> Creat
                     .map(|r| format!("> <@{}>", r.member))
                     .collect::<Vec<_>>()
                     .join("\n");
-                if out.is_empty() {
-                    "-".to_string()
-                } else {
-                    out
-                }
+                if out.is_empty() { "-".to_string() } else { out }
             },
             true,
         )
@@ -883,11 +875,7 @@ fn make_post_embed(scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) -> Creat
                     .map(|r| format!("> <@{}>", r.member))
                     .collect::<Vec<_>>()
                     .join("\n");
-                if out.is_empty() {
-                    "-".to_string()
-                } else {
-                    out
-                }
+                if out.is_empty() { "-".to_string() } else { out }
             },
             true,
         )

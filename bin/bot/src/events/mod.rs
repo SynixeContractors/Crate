@@ -1,4 +1,4 @@
-use synixe_events::{discord, Evokable};
+use synixe_events::{Evokable, discord};
 
 use crate::ArcCacheAndHttp;
 

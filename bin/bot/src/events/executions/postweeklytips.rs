@@ -1,11 +1,11 @@
 use std::{ffi::OsStr, path::PathBuf};
 
 use async_openai::{
-    types::{ChatCompletionRequestMessageArgs, CreateChatCompletionRequestArgs, Role},
     Client,
+    types::{ChatCompletionRequestMessageArgs, CreateChatCompletionRequestArgs, Role},
 };
 use git2::Repository;
-use rand::seq::SliceRandom;
+use rand::seq::IndexedRandom;
 use serenity::all::{CreateAttachment, CreateMessage};
 use synixe_meta::discord::channel::{LEADERSHIP, LOG, ONTOPIC};
 use tokio::fs::File;
@@ -39,7 +39,7 @@ pub async fn execute(client: ArcCacheAndHttp) {
             .collect();
         let file = {
             paths
-                .choose(&mut rand::thread_rng())
+                .choose(&mut rand::rng())
                 .expect("no files in folder")
                 .as_ref()
                 .expect("File no longer exists")
@@ -86,7 +86,7 @@ pub async fn execute(client: ArcCacheAndHttp) {
             }
         } else {
             warn!("issues with chatgtp");
-        };
+        }
         // end ai stuff
 
         let message = format!("## Tip of the Week\n\n{message}");
@@ -117,7 +117,7 @@ pub async fn execute(client: ArcCacheAndHttp) {
         }
         if let Err(e) = channel.say(client.as_ref(), message).await {
             error!("Failed to send message to {}: {}", channel, e);
-        };
+        }
     }
 }
 

@@ -181,7 +181,8 @@ async fn view(
             "Out in the field"
         };
         #[allow(clippy::uninlined_format_args)]
-        write!(content,
+        write!(
+            content,
             "**{}**\nPlate: {}\n{}\n\n",
             vehicle.name, vehicle.plate, stored
         )?;
