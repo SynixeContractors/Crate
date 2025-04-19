@@ -353,7 +353,7 @@ impl EventHandler for Handler {
         if message.content.as_str() == "!exec mission-bump" {
             if let Err(e) = message.delete(&ctx.http).await {
                 error!("Cannot delete message: {}", e);
-            };
+            }
             move_channel_missions(&ctx, message.channel_id).await;
             return;
         }

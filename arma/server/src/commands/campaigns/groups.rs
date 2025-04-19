@@ -59,11 +59,11 @@ fn load(campaign: Uuid) {
                 "load",
                 vec![group.id.to_arma(), group.data.to_arma()],
             ) {
-                error!("error sending groups:load: {:?}", e);
+                error!("error sending groups:load: {e:?}");
             }
         }
         if let Err(e) = context.callback_null("crate:campaigns:groups", "done") {
-            error!("error sending groups:done: {:?}", e);
+            error!("error sending groups:done: {e:?}");
         }
     });
 }

@@ -1,4 +1,5 @@
 use std::time::Duration;
+use std::fmt::Write;
 
 use regex::{Captures, Regex};
 use serenity::{
@@ -597,13 +598,14 @@ async fn upcoming(
         Ok(Ok((Response::UpcomingSchedule(Ok(upcoming)), _))) => {
             let mut content = String::from("**Upcoming Missions**\n\n");
             for scheduled in upcoming {
-                content.push_str(&format!(
+                write!(
+                    content,
                     "**{}**\n<t:{}:F> - <t:{}:R>\n*{}*\n\n",
-                    scheduled.name,
+                    scheduled.mission,
                     scheduled.start.unix_timestamp(),
                     scheduled.start.unix_timestamp(),
                     scheduled.summary,
-                ));
+                )?;
             }
             interaction.reply(content).await?;
         }
@@ -912,7 +914,7 @@ fn briefing_messages(mission: &ScheduledMission) -> Vec<String> {
         let Some(content) = briefing.get(&title.to_lowercase()) else {
             continue;
         };
-        text.push_str(&format!("## {title}\n"));
+        writeln!(text, "## {title}").expect("valid format");
         text.push_str(content);
     }
 

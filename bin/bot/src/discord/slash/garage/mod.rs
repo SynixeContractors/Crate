@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use serenity::{
     all::{CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType},
     builder::{CreateCommand, CreateCommandOption},
@@ -179,10 +181,10 @@ async fn view(
             "Out in the field"
         };
         #[allow(clippy::uninlined_format_args)]
-        content.push_str(&format!(
+        write!(content,
             "**{}**\nPlate: {}\n{}\n\n",
             vehicle.name, vehicle.plate, stored
-        ));
+        )?;
     }
     interaction.reply(content).await
 }

@@ -9,6 +9,7 @@ workspace = true
 [dependencies]
 nats = { workspace = true, optional = true }
 sqlx = { workspace = true, optional = true, features = ["postgres"] }
+tokio = { workspace = true }
 tracing-subscriber = { workspace = true }
 
 reqwest = { workspace = true, optional = true }

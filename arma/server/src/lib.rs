@@ -1,6 +1,6 @@
 #![allow(clippy::needless_pass_by_value, clippy::significant_drop_tightening)]
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::LazyLock};
 
 use arma_rs::{arma, Context, Extension};
 use synixe_events::discord::write::{DiscordContent, DiscordMessage};
@@ -16,15 +16,18 @@ mod handler;
 mod listener;
 mod logger;
 
-lazy_static::lazy_static! {
-    static ref SERVER_ID: String = std::env::var("CRATE_SERVER_ID").expect("CRATE_SERVER_ID not set");
-    static ref RUNTIME: tokio::runtime::Runtime = tokio::runtime::Builder::new_multi_thread()
+static SERVER_ID: LazyLock<String> = LazyLock::new(|| {
+    std::env::var("CRATE_SERVER_ID").expect("CRATE_SERVER_ID not set")
+});
+static RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
+    tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
-        .expect("failed to initialize tokio runtime");
-    pub static ref CONTEXT: RwLock<Option<Context>> = RwLock::new(None);
-    pub static ref STEAM_CACHE: RwLock<HashMap<String, String>> = RwLock::new(HashMap::new());
-}
+        .expect("failed to initialize tokio runtime")
+});
+static CONTEXT: LazyLock<RwLock<Option<Context>>> = LazyLock::new(|| RwLock::new(None));
+static STEAM_CACHE: LazyLock<RwLock<HashMap<String, String>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
 
 async fn audit(message: String) {
     if let Err(e) = events_request_5!(
@@ -39,7 +42,7 @@ async fn audit(message: String) {
     )
     .await
     {
-        error!("failed to send audit message over nats: {}", e);
+        error!("failed to send audit message over nats: {e}");
     }
 }
 

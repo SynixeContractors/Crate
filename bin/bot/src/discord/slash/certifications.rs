@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fmt::Write;
 
 use serenity::{
     all::{
@@ -233,7 +234,7 @@ async fn trial(
                     .await?;
             }
         }
-    };
+    }
     Ok(())
 }
 
@@ -314,7 +315,8 @@ async fn view(
         )
         .await
         {
-            content.push_str(&format!(
+            write!(
+                content,
                 "**{}**\nSince: <t:{}:D>\n{}\n\n",
                 name,
                 cert.created.unix_timestamp(),
@@ -329,7 +331,7 @@ async fn view(
                 } else {
                     "No expiration".to_string()
                 }
-            ));
+            )?;
         }
     }
     interaction.reply(content).await
@@ -396,7 +398,7 @@ async fn list(
     }
     let mut content = String::new();
     for cert in certs {
-        content.push_str(&format!(
+        write!(content,
             "**{}**\n<{}>\n{}\n{}\n{}\n\n",
             cert.name,
             cert.link,
@@ -435,7 +437,7 @@ async fn list(
                 || "No expiration".to_string(),
                 |v| format!("Valid for {v} days")
             )
-        ));
+        )?;
     }
     interaction.reply(content).await
 }

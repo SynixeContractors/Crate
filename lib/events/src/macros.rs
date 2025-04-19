@@ -7,6 +7,7 @@ macro_rules! handler {
         let sub = subject.as_str();
         info!("seen event: {}", sub);
         $(
+            #[allow(clippy::needless_continue)]
             if sub == <$events>::path() {
                 let Ok((ev, _)) = synixe_events::parse_data!($msg, $events) else {
                     error!("Failed to parse event: {}", sub);

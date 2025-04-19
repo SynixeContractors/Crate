@@ -36,11 +36,11 @@ pub enum ShouldAsk<'a> {
     Deny,
 }
 
-pub async fn requires_roles<'a>(
+pub async fn requires_roles(
     user: UserId,
     needle: &[RoleId],
     haystack: &[RoleId],
-    ask: ShouldAsk<'a>,
+    ask: ShouldAsk<'_>,
     interaction: &mut Interaction<'_>,
 ) -> serenity::Result<()> {
     if !haystack.iter().any(|role| needle.contains(role)) {
@@ -115,7 +115,7 @@ pub async fn requires_roles<'a>(
                 message.reply(CacheAndHttp::get().as_ref(), format!("Denied by <@{}>", confirm_interaction.user.id)).await?;
                 interaction.reply("Denied").await?;
                 return Err(serenity::Error::Other("Denied"));
-            };
+            }
         } else {
             interaction
                 .reply("You do not have permission to use this command.")
@@ -126,7 +126,7 @@ pub async fn requires_roles<'a>(
     Ok(())
 }
 
-pub fn _get_option<'a>(
+pub fn macro_get_option<'a>(
     options: &'a [CommandDataOption],
     name: &str,
 ) -> Option<&'a CommandDataOptionValue> {
@@ -137,7 +137,7 @@ pub fn _get_option<'a>(
 #[macro_export]
 macro_rules! get_option {
     ($options:expr, $name:expr, $typ:ident) => {
-        match $crate::discord::slash::_get_option($options, $name) {
+        match $crate::discord::slash::macro_get_option($options, $name) {
             Some(serenity::all::CommandDataOptionValue::$typ(data)) => Some(data),
             _ => None,
         }
@@ -147,7 +147,7 @@ macro_rules! get_option {
 #[macro_export]
 macro_rules! get_option_user {
     ($options:expr, $name:expr) => {
-        match $crate::discord::slash::_get_option($options, $name) {
+        match $crate::discord::slash::macro_get_option($options, $name) {
             Some(serenity::all::CommandDataOptionValue::User(user)) => Some(user),
             _ => None,
         }

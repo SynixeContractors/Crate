@@ -68,7 +68,7 @@ impl Handler for Request {
                         },
                     );
                     let _ = respond!(msg, resp).await;
-                };
+                }
                 Ok(())
             }
             Self::GetSurvey { survey } => {

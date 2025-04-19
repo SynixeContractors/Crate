@@ -16,7 +16,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
     let Ok(aar) = aar else {
         if let Err(e) = message.reply(&ctx.http, format!(":confused: I couldn't parse that AAR. Please make sure you're using the template. \n > {}", aar.expect_err("checked for ok"))).await {
             error!("Error replying to message: {}", e);
-        };
+        }
         return;
     };
     if let Ok(Ok((Response::FindScheduledDate(Ok(scheduled)), _))) = events_request_2!(
@@ -33,13 +33,13 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
         let Some(scheduled) = scheduled else {
             if let Err(e) = message.reply(&ctx.http, ":confused: I couldn't find that mission on that date. Double check the date and mission name.").await {
                 error!("Error replying to message: {}", e);
-            };
+            }
             return;
         };
         if let Err(e) = find_members(ctx, aar.contractors()).await {
             if let Err(e) = message.reply(&ctx.http, e).await {
                 error!("Error replying to message: {}", e);
-            };
+            }
             return;
         }
         if let Err(e) = message
@@ -47,7 +47,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
             .await
         {
             error!("Error replying to message: {}", e);
-        };
+        }
         if let Ok(Ok((Response::SetScheduledAar(Ok(())), _))) = events_request_2!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
@@ -72,7 +72,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
     let Ok((_, unknown)) = find_members(ctx, aar.contractors()).await else {
         if let Err(e) = message.reply(&ctx.http, "Failed to find members").await {
             error!("Error replying to message: {}", e);
-        };
+        }
         return;
     };
     if !unknown.is_empty() {

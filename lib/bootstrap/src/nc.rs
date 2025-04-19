@@ -1,6 +1,7 @@
-use std::{mem::MaybeUninit, sync::Arc};
+use std::sync::Arc;
 
 use nats::asynk::Connection;
+use tokio::sync::OnceCell;
 
 type NatsConn = Arc<Connection>;
 
@@ -13,22 +14,18 @@ impl NC {
     ///
     /// Panics if the NATS connection can not be initialized.
     pub async fn get() -> NatsConn {
-        static mut SINGLETON: MaybeUninit<NatsConn> = MaybeUninit::uninit();
-        static mut INIT: bool = false;
-
-        unsafe {
-            if !INIT {
-                SINGLETON.write(Arc::new(
-                    nats::asynk::connect(
-                        std::env::var("NATS_URL")
-                            .expect("Expected the NATS_URL in the environment"),
-                    )
-                    .await
-                    .expect("Failed to connect to NATS"),
-                ));
-                INIT = true;
-            }
-            SINGLETON.assume_init_ref().clone()
-        }
+        static NATS: OnceCell<NatsConn> = OnceCell::const_new();
+        NATS.get_or_init(|| async {
+            Arc::new(
+                nats::asynk::connect(
+                    std::env::var("NATS_URL")
+                        .expect("Expected the NATS_URL in the environment"),
+                )
+                .await
+                .expect("Failed to connect to NATS"),
+            )
+        })
+        .await
+        .clone()
     }
 }

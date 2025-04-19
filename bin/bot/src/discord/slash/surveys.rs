@@ -149,7 +149,7 @@ async fn post(
             CreateMessage::default()
                 .add_embed(CreateEmbed::default().title(title).description(description))
                 .components(vec![CreateActionRow::Buttons(vec![CreateButton::new(
-                    format!("survey_submit:{}", id),
+                    format!("survey_submit:{id}"),
                 )
                 .style(ButtonStyle::Primary)
                 .label("Submit")])]),

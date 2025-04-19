@@ -41,7 +41,7 @@ impl Handler for Request {
                         state.to_arma(),
                     ],
                 ) {
-                    error!("error sending spawn: {:?}", e);
+                    error!("error sending spawn: {e:?}");
                 }
                 Ok(())
             }
