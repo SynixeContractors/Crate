@@ -122,7 +122,7 @@ private _fnc_addCargoForContainer = {
                     case 1: {
                         _data params ["_class", "_state"];
                         private _cargoVehicle = _class createVehicle [0,0,0];
-                        [_cargoVehicle, _state] call FUNC(loadState);
+                        [_cargoVehicle, _state] call FUNC(objectState_load);
                         [_cargoVehicle, _object, true] call ace_cargo_fnc_loadItem;
                     };
                 }
