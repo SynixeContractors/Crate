@@ -336,7 +336,7 @@ pub async fn rsvp_button(ctx: &Context, component: &ComponentInteraction) -> ser
             &ctx.http,
             message,
             EditMessage::default()
-                .embed(make_post_embed(&scheduled, &rsvps))
+                .embed(make_post_embed(ctx, &scheduled, &rsvps).await)
                 .components(vec![rsvp_buttons()]),
         )
         .await
@@ -550,7 +550,7 @@ async fn subcon(
         .send_message(
             &ctx,
             CreateMessage::default()
-                .embed(make_post_embed(&scheduled, &[]))
+                .embed(make_post_embed(ctx, &scheduled, &[]).await)
                 .components(vec![rsvp_buttons()]),
         )
         .await
@@ -818,7 +818,11 @@ async fn post(
     Ok(())
 }
 
-fn make_post_embed(scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) -> CreateEmbed {
+async fn make_post_embed(
+    ctx: &Context,
+    scheduled: &ScheduledMission,
+    rsvps: &[MissionRsvp],
+) -> CreateEmbed {
     let mut yes = Vec::new();
     let mut maybe = Vec::new();
     let mut no = Vec::new();
@@ -846,7 +850,8 @@ fn make_post_embed(scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) -> Creat
         .field(
             format!("🟩 Attending ({})", yes.len()),
             {
-                let out = yes
+                let out = alphabetical(ctx, &yes)
+                    .await
                     .iter()
                     .map(|r| format!("> <@{}>", r.member))
                     .collect::<Vec<_>>()
@@ -858,7 +863,8 @@ fn make_post_embed(scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) -> Creat
         .field(
             format!("🟨 Maybe ({})", maybe.len()),
             {
-                let out = maybe
+                let out = alphabetical(ctx, &maybe)
+                    .await
                     .iter()
                     .map(|r| format!("> <@{}>", r.member))
                     .collect::<Vec<_>>()
@@ -870,7 +876,8 @@ fn make_post_embed(scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) -> Creat
         .field(
             format!("🟥 Declined ({})", no.len()),
             {
-                let out = no
+                let out = alphabetical(ctx, &no)
+                    .await
                     .iter()
                     .map(|r| format!("> <@{}>", r.member))
                     .collect::<Vec<_>>()
@@ -879,6 +886,23 @@ fn make_post_embed(scheduled: &ScheduledMission, rsvps: &[MissionRsvp]) -> Creat
             },
             true,
         )
+}
+
+async fn alphabetical<'a>(ctx: &Context, rsvps: &'a [&'a MissionRsvp]) -> Vec<&'a MissionRsvp> {
+    let mut ret_rsvps = Vec::new();
+    for rsvp in rsvps {
+        if let Err(e) = GUILD
+            .member(ctx, rsvp.member.parse::<u64>().unwrap_or(0))
+            .await
+            .map(|m| {
+                ret_rsvps.push((m.display_name().to_string(), *rsvp));
+            })
+        {
+            error!("Failed to fetch member for rsvp: {} - {}", rsvp.member, e);
+        }
+    }
+    ret_rsvps.sort_by(|a, b| a.0.cmp(&b.0));
+    ret_rsvps.into_iter().map(|(_, rsvp)| rsvp).collect()
 }
 
 fn rsvp_buttons() -> CreateActionRow {
@@ -990,7 +1014,7 @@ pub async fn post_mission<'a>(
         .send_message(
             &ctx,
             CreateMessage::default()
-                .embed(make_post_embed(scheduled, &rsvps))
+                .embed(make_post_embed(ctx, scheduled, &rsvps).await)
                 .components(vec![rsvp_buttons()]),
         )
         .await

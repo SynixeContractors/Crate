@@ -18,8 +18,8 @@ pub fn router() -> Router {
             "/keys",
             get(|| async { Html(include_str!("keys.html").to_string()) }),
         )
-        .route("/:ticket", get(vote))
-        .route("/cast/:ticket/:id", get(cast))
+        .route("/{ticket}", get(vote))
+        .route("/cast/{ticket}/{id}", get(cast))
 }
 
 async fn vote(Path(ticket_raw): Path<String>) -> Html<String> {

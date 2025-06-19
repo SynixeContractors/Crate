@@ -1,4 +1,3 @@
-<!-- a simple tailwind page to generate a public and private key, with the ability to copy to clipboard -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,34 +8,36 @@
     <link href="/tailwind.css" rel="stylesheet" />
 </head>
 
-<body>
-    <div class="container px-4 sm:px-0">
+<body class="bg-gray-50">
+    <div class="container px-4 sm:px-0 max-w-3xl mx-auto">
         <h1 class="text-3xl font-bold text-center mt-8">
             Public and Private Key for Polls
         </h1>
-        <p class="text-lg text-center mt-4 sm:w-1/2 mx-auto">
-            A new public and private key will be generated each time you visit this page.
-            Make sure to save the private key to a safe place, and send the public key to #staff.
-            If your key is lost, the poll may not be able to be decrypted.
+        <p class="text-lg text-center mt-4 mx-auto">
+            These keys will be used to encrypt and decrypt poll responses. 
+            <strong class="text-red-600">Make sure to save the private key to a safe place</strong>, and send the public key to #staff.
+            If your private key is lost, the poll responses cannot be decrypted.
         </p>
-        <div class="flex flex-col justify-center mt-8 sm:w-1/2 mx-auto">
-            <div class="flex flex-col">
-                <label for="publicKey" class="text-lg font-bold">
-                    Public Key
+        <div class="flex flex-col justify-center mt-8 mx-auto">
+            <div class="flex flex-col p-4 bg-white rounded-lg shadow mb-6">
+                <label for="publicKey" class="text-lg font-bold mb-2">
+                    Public Key <span class="text-sm font-normal text-gray-500">(Share this)</span>
                 </label>
-                <input type="text" id="publicKey" class="border border-gray-300 p-2" readonly />
-                <button id="copyPublicKey" class="bg-blue-500 hover:bg-blue-700 text-white p-2 mt-2">
-                    Copy
+                <textarea id="publicKey" class="border border-gray-300 p-2 rounded h-24" readonly aria-label="Public key"></textarea>
+                <button id="copyPublicKey" class="bg-blue-500 hover:bg-blue-700 text-white p-2 mt-2 rounded focus:ring-2 focus:ring-blue-300 focus:outline-none">
+                    Copy Public Key
                 </button>
+                <div id="publicKeyCopiedMessage" class="text-green-600 mt-1 hidden">Copied to clipboard!</div>
             </div>
-            <div class="flex flex-col mt-8">
-                <label for="privateKey" class="text-lg font-bold">
-                    Private Key
+            <div class="flex flex-col p-4 bg-white rounded-lg shadow border-2 border-red-200">
+                <label for="privateKey" class="text-lg font-bold mb-2">
+                    Private Key <span class="text-sm font-normal text-red-500">(Keep this secret!)</span>
                 </label>
-                <input type="text" id="privateKey" class="border border-gray-300 p-2" readonly />
-                <button id="copyPrivateKey" class="bg-blue-500 hover:bg-blue-700 text-white p-2 mt-2">
-                    Copy
+                <textarea id="privateKey" class="border border-gray-300 p-2 rounded h-24" readonly aria-label="Private key"></textarea>
+                <button id="copyPrivateKey" class="bg-blue-500 hover:bg-blue-700 text-white p-2 mt-2 rounded focus:ring-2 focus:ring-blue-300 focus:outline-none">
+                    Copy Private Key
                 </button>
+                <div id="privateKeyCopiedMessage" class="text-green-600 mt-1 hidden">Copied to clipboard!</div>
             </div>
         </div>
     </div>
@@ -45,39 +46,63 @@
         const privateKey = document.getElementById('privateKey');
         const copyPublicKey = document.getElementById('copyPublicKey');
         const copyPrivateKey = document.getElementById('copyPrivateKey');
+        const regenerateKeys = document.getElementById('regenerateKeys');
+        const publicKeyCopiedMessage = document.getElementById('publicKeyCopiedMessage');
+        const privateKeyCopiedMessage = document.getElementById('privateKeyCopiedMessage');
+
+        // Modern clipboard API function
+        async function copyToClipboard(textElement, messageElement) {
+            try {
+                await navigator.clipboard.writeText(textElement.value);
+                messageElement.classList.remove('hidden');
+                setTimeout(() => {
+                    messageElement.classList.add('hidden');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy to clipboard');
+            }
+        }
 
         copyPublicKey.addEventListener('click', () => {
-            publicKey.select();
-            document.execCommand('copy');
+            copyToClipboard(publicKey, publicKeyCopiedMessage);
         });
 
         copyPrivateKey.addEventListener('click', () => {
-            privateKey.select();
-            document.execCommand('copy');
+            copyToClipboard(privateKey, privateKeyCopiedMessage);
         });
 
-        crypto.subtle.generateKey(
-            {
-                name: 'RSA-OAEP',
-                modulusLength: 512,
-                publicExponent: new Uint8Array([1, 0, 1]),
-                hash: 'SHA-256',
-            },
-            true,
-            ['encrypt', 'decrypt']
-        )
-            .then((keyPair) => {
-                crypto.subtle.exportKey('spki', keyPair.publicKey)
-                    .then((spki) => {
-                        const publicKeyString = btoa(String.fromCharCode(...new Uint8Array(spki)));
-                        publicKey.value = publicKeyString;
-                    });
-                crypto.subtle.exportKey('pkcs8', keyPair.privateKey)
-                    .then((pkcs8) => {
-                        const privateKeyString = btoa(String.fromCharCode(...new Uint8Array(pkcs8)));
-                        privateKey.value = privateKeyString;
-                    });
-            })
+        async function generateKeys() {
+            try {
+                publicKey.value = "Generating...";
+                privateKey.value = "Generating...";
+                
+                const keyPair = await crypto.subtle.generateKey(
+                    {
+                        name: 'RSA-OAEP',
+                        modulusLength: 2048,
+                        publicExponent: new Uint8Array([1, 0, 1]),
+                        hash: 'SHA-256',
+                    },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+                
+                const spki = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+                const publicKeyString = btoa(String.fromCharCode(...new Uint8Array(spki)));
+                publicKey.value = publicKeyString;
+                
+                const pkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+                const privateKeyString = btoa(String.fromCharCode(...new Uint8Array(pkcs8)));
+                privateKey.value = privateKeyString;
+            } catch (error) {
+                console.error('Key generation failed:', error);
+                publicKey.value = "Error generating keys";
+                privateKey.value = "Error generating keys";
+            }
+        }
+
+        generateKeys();
     </script>
 </body>
 
