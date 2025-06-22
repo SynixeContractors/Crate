@@ -14,6 +14,7 @@ use serenity::{
     client::Context,
 };
 use synixe_events::certifications::db::Response;
+use synixe_meta::discord::role::STAFF;
 use synixe_meta::discord::{
     GUILD,
     role::{JUNIOR, MEMBER},
@@ -21,6 +22,7 @@ use synixe_meta::discord::{
 use synixe_model::certifications::Certification;
 use synixe_proc::{events_request_2, events_request_5};
 
+use crate::discord::slash::ShouldAsk;
 use crate::{
     discord::interaction::{Confirmation, Interaction},
     get_option, get_option_user,
@@ -96,6 +98,28 @@ pub fn register() -> CreateCommand {
             ))
             .allow_public(),
         )
+        .add_option(CreateCommandOption::new(
+            CommandOptionType::SubCommand,
+            "list",
+            "List all certifications",
+        ))
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "first",
+                "Reapply the first kit command, only used by staff",
+            )
+            .add_sub_option(CreateCommandOption::new(
+                CommandOptionType::User,
+                "member",
+                "The member to view certifications for",
+            ))
+            .add_sub_option(CreateCommandOption::new(
+                CommandOptionType::String,
+                "certification",
+                "The certification to reapply the first kit for",
+            )),
+        )
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -109,6 +133,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
             "view" => view(ctx, command, values).await?,
             "list" => list(ctx, command, values, false).await?,
             "available" => list(ctx, command, values, true).await?,
+            "first" => first(ctx, command, values).await?,
             _ => unreachable!(),
         }
     }
@@ -125,7 +150,7 @@ pub async fn autocomplete(
     };
     if subcommand.kind() == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
-            "trial" => trial_autocomplete(ctx, autocomplete).await?,
+            "trial" | "first" => certifications_autocomplete(ctx, autocomplete).await?,
             _ => unreachable!(),
         }
     }
@@ -231,7 +256,7 @@ async fn trial(
     Ok(())
 }
 
-async fn trial_autocomplete(
+async fn certifications_autocomplete(
     ctx: &Context,
     autocomplete: &CommandInteraction,
 ) -> serenity::Result<()> {
@@ -436,6 +461,66 @@ async fn list(
     interaction.reply(content).await
 }
 
+async fn first(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    super::requires_roles(
+        command.user.id,
+        &[STAFF],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Deny,
+        &mut interaction,
+    )
+    .await?;
+    let Some(trainee) = get_option_user!(options, "member") else {
+        return interaction.reply("Invalid member").await;
+    };
+    if let Err(e) = synixe_meta::discord::channel::LOG
+        .say(
+            ctx,
+            format!(
+                "<@{}> is rerunning the first kit command for <@{}>",
+                command.user.id, trainee,
+            ),
+        )
+        .await
+    {
+        error!("Failed to send message: {}", e);
+    }
+    interaction.reply("Fetching certifications...").await?;
+    let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::certifications::db,
+        List {}
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fetch certifications").await;
+    };
+    if certs.is_empty() {
+        return interaction
+            .reply("You are not an instructor for any certifications")
+            .await;
+    }
+    let Some(cert) = get_option!(options, "certification", String) else {
+        return interaction.reply("Invalid certification").await;
+    };
+    let Some(cert) = certs.iter().find(|c| &c.id.to_string() == cert) else {
+        return interaction.reply("Invalid certification").await;
+    };
+    if let Err(e) = process_trial_first_kit(ctx, interaction, cert, trainee).await {
+        error!("Failed to process first kit: {}", e);
+    }
+    Ok(())
+}
+
 #[allow(clippy::too_many_lines)]
 async fn process_trial_first_kit(
     ctx: &Context,
@@ -536,7 +621,7 @@ async fn process_trial_first_kit(
                     .timeout(Duration::from_secs(60 * 60 * 24 * 7))
                     .await
                 else {
-                    let _ = m.reply(&ctx, "You have run out of time to select a kit, you will need to ask an admin for help.").await;
+                    let _ = m.reply(&ctx, "You have run out of time to select a kit, you will need to ask a staff member for help.").await;
                     return Ok(());
                 };
 
@@ -559,14 +644,18 @@ async fn process_trial_first_kit(
                         .create_response(
                             ctx,
                             CreateInteractionResponse::Message(
-                                CreateInteractionResponseMessage::default()
-                                    .content("Failed to give first kit, please contact an admin"),
+                                CreateInteractionResponseMessage::default().content(
+                                    "Failed to give first kit, please contact a staff member.",
+                                ),
                             ),
                         )
                         .await?;
                     error!("Failed to give first kit: {}", e);
                     let _ = m
-                        .reply(ctx, "Failed to give first kit, please contact an admin")
+                        .reply(
+                            ctx,
+                            "Failed to give first kit, please contact a staff member.",
+                        )
                         .await;
                     if let Err(e) = synixe_meta::discord::channel::LOG
                         .say(
