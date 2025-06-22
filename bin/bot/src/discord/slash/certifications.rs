@@ -104,16 +104,23 @@ pub fn register() -> CreateCommand {
                 "first",
                 "Reapply the first kit command, only used by staff",
             )
-            .add_sub_option(CreateCommandOption::new(
-                CommandOptionType::User,
-                "member",
-                "The member to view certifications for",
-            ))
-            .add_sub_option(CreateCommandOption::new(
-                CommandOptionType::String,
-                "certification",
-                "The certification to reapply the first kit for",
-            )),
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::User,
+                    "member",
+                    "The member to view certifications for",
+                )
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "certification",
+                    "The certification to reapply the first kit for",
+                )
+                .required(true)
+                .set_autocomplete(true),
+            ),
         )
 }
 
