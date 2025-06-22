@@ -98,11 +98,6 @@ pub fn register() -> CreateCommand {
             ))
             .allow_public(),
         )
-        .add_option(CreateCommandOption::new(
-            CommandOptionType::SubCommand,
-            "list",
-            "List all certifications",
-        ))
         .add_option(
             CreateCommandOption::new(
                 CommandOptionType::SubCommand,
