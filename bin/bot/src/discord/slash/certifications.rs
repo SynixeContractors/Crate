@@ -1,7 +1,7 @@
 use std::fmt::Write;
 use std::{collections::HashSet, time::Duration};
 
-use serenity::all::ComponentInteractionDataKind;
+use serenity::all::{ComponentInteractionDataKind, CreateInteractionResponseMessage};
 use serenity::{
     all::{
         CommandData, CommandDataOption, CommandDataOptionValue, CommandInteraction,
@@ -510,7 +510,9 @@ async fn process_trial_first_kit(
                     error!("Failed to give first kit: {}", e);
                     return interaction.reply("Failed to give first kit").await;
                 }
-                interaction.reply("First kit given").await?;
+                interaction
+                    .reply("Submitted trial. First kit given")
+                    .await?;
             } else {
                 let Ok(dm) = trainee.create_dm_channel(ctx).await else {
                     error!("Failed to create dm channel");
@@ -553,6 +555,15 @@ async fn process_trial_first_kit(
                 )
                 .await
                 {
+                    interaction
+                        .create_response(
+                            ctx,
+                            CreateInteractionResponse::Message(
+                                CreateInteractionResponseMessage::default()
+                                    .content("Failed to give first kit, please contact an admin"),
+                            ),
+                        )
+                        .await?;
                     error!("Failed to give first kit: {}", e);
                     let _ = m
                         .reply(ctx, "Failed to give first kit, please contact an admin")
@@ -573,6 +584,15 @@ async fn process_trial_first_kit(
                     }
                     return Ok(());
                 }
+                interaction
+                    .create_response(
+                        ctx,
+                        CreateInteractionResponse::Message(
+                            CreateInteractionResponseMessage::default()
+                                .content("Your first kit is waiting for you in your locker!"),
+                        ),
+                    )
+                    .await?;
             }
         }
         _ => (),
