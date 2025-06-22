@@ -74,9 +74,30 @@ async fn handle(
     }
     info!("{action} container {} ({reason})", container.key());
     let res = match action {
-        Action::Restart => docker.restart_container(container.id(), None).await,
-        Action::Start => docker.start_container::<String>(container.id(), None).await,
-        Action::Stop => docker.stop_container(container.id(), None).await,
+        Action::Restart => {
+            docker
+                .restart_container(
+                    container.id(),
+                    None::<bollard::query_parameters::RestartContainerOptions>,
+                )
+                .await
+        }
+        Action::Start => {
+            docker
+                .start_container(
+                    container.id(),
+                    None::<bollard::query_parameters::StartContainerOptions>,
+                )
+                .await
+        }
+        Action::Stop => {
+            docker
+                .stop_container(
+                    container.id(),
+                    None::<bollard::query_parameters::StopContainerOptions>,
+                )
+                .await
+        }
     };
     let audit = match res {
         Ok(()) => {

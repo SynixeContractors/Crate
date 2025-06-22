@@ -3,7 +3,7 @@
 /// Interact with the database.
 pub mod db {
     use serenity::model::prelude::UserId;
-    use synixe_model::certifications::{Certification, CertificationTrial};
+    use synixe_model::certifications::{Certification, CertificationFirstKit, CertificationTrial};
     use synixe_proc::events_requests;
     use uuid::Uuid;
 
@@ -45,6 +45,23 @@ pub mod db {
             /// The number of days before expiry to check
             days: i8,
         } => (Result<Vec<CertificationTrial>, String>)
+        /// Get the count of passed trials for a certification
+        struct PassedCount {
+            /// The certification to check
+            certification: Uuid,
+            /// The member to check
+            member: UserId,
+        } => (Result<Option<i64>, String>)
+        struct FirstKits {
+            /// certification to filter
+            certification: Option<Uuid>,
+        } => (Result<Vec<CertificationFirstKit>, String>)
+        struct GiveFirstKit {
+            /// The first kit to give
+            first_kit: Uuid,
+            /// The member to give the first kit to
+            member: UserId,
+        } => (Result<(), String>)
     });
 }
 

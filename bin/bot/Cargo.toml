@@ -16,7 +16,7 @@ synixe-model = { path = "../../lib/model", features = ["missions"] }
 anyhow = { workspace = true }
 async-openai = "0.14.3"
 async-trait = { workspace = true }
-git2 = "0.20.1"
+git2 = "0.20.2"
 nats = { workspace = true }
 rand = "0.9.1"
 regex = "1.11.1"

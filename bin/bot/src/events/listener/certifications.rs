@@ -52,20 +52,6 @@ impl Listener for Publish {
                             error!("Failed to send message: {}", e);
                         }
                     }
-                } else {
-                    let Ok(dm) = trial
-                        .trainee
-                        .parse::<UserId>()
-                        .expect("Failed to parse user id")
-                        .create_dm_channel(CacheAndHttp::get().as_ref())
-                        .await
-                    else {
-                        warn!("Failed to create DM channel for {}", trial.trainee);
-                        return Ok(());
-                    };
-                    if let Err(e) = dm.say(CacheAndHttp::get().as_ref(), format!("You failed your certification trial. Here are the notes from your instructor: \n > {}", trial.notes)).await {
-                        error!("Failed to send message: {}", e);
-                    }
                 }
                 Ok(())
             }

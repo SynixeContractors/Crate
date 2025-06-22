@@ -1,10 +1,12 @@
-use std::collections::HashSet;
 use std::fmt::Write;
+use std::{collections::HashSet, time::Duration};
 
+use serenity::all::ComponentInteractionDataKind;
 use serenity::{
     all::{
         CommandData, CommandDataOption, CommandDataOptionValue, CommandInteraction,
-        CommandOptionType,
+        CommandOptionType, CreateActionRow, CreateMessage, CreateSelectMenu, CreateSelectMenuKind,
+        CreateSelectMenuOption,
     },
     builder::{
         CreateAutocompleteResponse, CreateCommand, CreateCommandOption, CreateInteractionResponse,
@@ -16,7 +18,8 @@ use synixe_meta::discord::{
     GUILD,
     role::{JUNIOR, MEMBER},
 };
-use synixe_proc::events_request_2;
+use synixe_model::certifications::Certification;
+use synixe_proc::{events_request_2, events_request_5};
 
 use crate::{
     discord::interaction::{Confirmation, Interaction},
@@ -56,14 +59,6 @@ pub fn register() -> CreateCommand {
                     CommandOptionType::Boolean,
                     "passed",
                     "Did the trainee pass the trial?",
-                )
-                .required(true),
-            )
-            .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::String,
-                    "notes",
-                    "Notes about the trial, only shared between you and the trainee",
                 )
                 .required(true),
             ),
@@ -137,6 +132,7 @@ pub async fn autocomplete(
     Ok(())
 }
 
+#[allow(clippy::too_many_lines)]
 async fn trial(
     ctx: &Context,
     command: &CommandInteraction,
@@ -177,9 +173,6 @@ async fn trial(
     let Some(trainee) = get_option_user!(options, "trainee") else {
         return interaction.reply("Invalid trainee").await;
     };
-    let Some(notes) = get_option!(options, "notes", String) else {
-        return interaction.reply("Invalid notes").await;
-    };
     let trainee_roles = GUILD.member(&ctx.http, *trainee).await.map_or_else(
         |e| {
             error!("Failed to fetch trainee: {}", e);
@@ -214,8 +207,8 @@ async fn trial(
                 .id,
             trainee: *trainee,
             certification: cert.id,
-            notes: notes.clone(),
             passed: *passed,
+            notes: "Discord command".to_string(),
         }
     )
     .await
@@ -226,13 +219,13 @@ async fn trial(
                 .await?;
         }
         Ok(_) => {
-            if *passed {
-                interaction.reply("Submitted trial").await?;
-            } else {
-                interaction
-                    .reply("Submitted trial, the notes have been sent to the trainee")
-                    .await?;
-            }
+            interaction.reply("Submitted trial").await?;
+        }
+    }
+
+    if *passed {
+        if let Err(e) = process_trial_first_kit(ctx, interaction, cert, trainee).await {
+            error!("Failed to process first kit: {}", e);
         }
     }
     Ok(())
@@ -441,4 +434,148 @@ async fn list(
         )?;
     }
     interaction.reply(content).await
+}
+
+#[allow(clippy::too_many_lines)]
+async fn process_trial_first_kit(
+    ctx: &Context,
+    mut interaction: Interaction<'_>,
+    cert: &Certification,
+    trainee: &serenity::all::UserId,
+) -> serenity::Result<()> {
+    match events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::certifications::db,
+        PassedCount {
+            certification: cert.id,
+            member: *trainee,
+        }
+    )
+    .await
+    {
+        Err(e) => {
+            error!("Failed to check passed count: {}", e);
+            if let Err(e) = synixe_meta::discord::channel::LOG
+                .say(
+                    ctx,
+                    format!(
+                        "When submitting a trial for <@{}> in {}, the passed count could not be checked: {}",
+                        trainee,
+                        cert.name,
+                        e
+                    ),
+                )
+                .await
+            {
+                error!("Failed to send message: {}", e);
+            }
+            return Ok(());
+        }
+        Ok(Ok((Response::PassedCount(Ok(Some(count))), _))) => {
+            if count != 1 {
+                return Ok(());
+            }
+        }
+        _ => (),
+    }
+
+    // Check the number of first kits
+    match events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::certifications::db,
+        FirstKits {
+            certification: Some(cert.id),
+        }
+    )
+    .await
+    {
+        Err(e) => {
+            error!("Failed to check first kits: {}", e);
+        }
+        Ok(Ok((Response::FirstKits(Ok(kits)), _))) => {
+            if kits.is_empty() {
+                return Ok(());
+            }
+            if kits.len() == 1 {
+                if let Err(e) = events_request_5!(
+                    bootstrap::NC::get().await,
+                    synixe_events::certifications::db,
+                    GiveFirstKit {
+                        first_kit: kits[0].id,
+                        member: *trainee,
+                    }
+                )
+                .await
+                {
+                    error!("Failed to give first kit: {}", e);
+                    return interaction.reply("Failed to give first kit").await;
+                }
+                interaction.reply("First kit given").await?;
+            } else {
+                let Ok(dm) = trainee.create_dm_channel(ctx).await else {
+                    error!("Failed to create dm channel");
+                    return Ok(());
+                };
+                let m = dm.send_message(ctx, CreateMessage::default()
+                    .content(format!("You've passed your first trial for {}! Please select a first kit to receive.", cert.name))
+                    .components(vec![CreateActionRow::SelectMenu(CreateSelectMenu::new(
+                        "choice",
+                        CreateSelectMenuKind::String {
+                            options: kits
+                                .iter()
+                                .map(|kit| {
+                                    CreateSelectMenuOption::new(kit.name.clone(), kit.id.to_string()).description(kit.description.clone().unwrap_or_default())
+                                })
+                                .collect::<Vec<_>>(),
+                        },
+                    ).custom_id("first_kit_selection"))])).await?;
+                let Some(interaction) = m
+                    .await_component_interaction(&ctx.shard)
+                    .timeout(Duration::from_secs(60 * 60 * 24 * 7))
+                    .await
+                else {
+                    let _ = m.reply(&ctx, "You have run out of time to select a kit, you will need to ask an admin for help.").await;
+                    return Ok(());
+                };
+
+                let kit = match &interaction.data.kind {
+                    ComponentInteractionDataKind::StringSelect { values } => &values[0],
+                    _ => panic!("unexpected interaction data kind"),
+                };
+
+                if let Err(e) = events_request_5!(
+                    bootstrap::NC::get().await,
+                    synixe_events::certifications::db,
+                    GiveFirstKit {
+                        first_kit: kit.parse().expect("should be a valid first kit id"),
+                        member: *trainee,
+                    }
+                )
+                .await
+                {
+                    error!("Failed to give first kit: {}", e);
+                    let _ = m
+                        .reply(ctx, "Failed to give first kit, please contact an admin")
+                        .await;
+                    if let Err(e) = synixe_meta::discord::channel::LOG
+                        .say(
+                            ctx,
+                            format!(
+                                "When <@{}> selected a first kit for {}, the first kit could not be given: {}",
+                                trainee,
+                                cert.name,
+                                e
+                            ),
+                        )
+                        .await
+                    {
+                        error!("Failed to send message: {}", e);
+                    }
+                    return Ok(());
+                }
+            }
+        }
+        _ => (),
+    }
+    Ok(())
 }

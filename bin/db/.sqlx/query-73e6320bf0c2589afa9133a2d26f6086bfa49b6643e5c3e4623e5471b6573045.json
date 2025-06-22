@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            give_first_kit($1, $2)\n                    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "give_first_kit",
+        "type_info": "Void"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "73e6320bf0c2589afa9133a2d26f6086bfa49b6643e5c3e4623e5471b6573045"
+}

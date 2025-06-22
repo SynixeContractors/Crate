@@ -10,7 +10,7 @@ pub mod github;
 pub mod missions;
 pub mod recruiting;
 pub mod reputation;
-pub mod reset;
+// pub mod reset;
 pub mod servers;
 pub mod surveys;
 pub mod voting;

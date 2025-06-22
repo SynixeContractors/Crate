@@ -115,11 +115,19 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             }
         }
         write::Request::Audit { message } => {
-            let Ok(()) = respond!(msg, write::Response::Audit(Ok(()))).await else {
-                error!("Failed to respond to NATS");
-                return;
-            };
-            audit(client, message, LOG).await;
+            let message = audit(client, message, LOG).await;
+            if let Some(message) = message {
+                if let Err(e) = respond!(msg, write::Response::Audit(Ok((LOG, message)))).await {
+                    error!("Failed to respond to NATS: {}", e);
+                }
+            } else if let Err(e) = respond!(
+                msg,
+                write::Response::Audit(Err(String::from("Failed to send message")))
+            )
+            .await
+            {
+                error!("Failed to respond to NATS: {}", e);
+            }
         }
         write::Request::GameAudit { message } => {
             let message = audit(client, message, GAME_LOG).await;

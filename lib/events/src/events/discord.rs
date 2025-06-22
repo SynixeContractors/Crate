@@ -97,7 +97,7 @@ pub mod write {
         struct Audit {
             /// The message to audit
             message: DiscordMessage,
-        } => (Result<(), String>)
+        } => (Result<(ChannelId, MessageId), String>)
         /// Write a message to the game audit log
         struct GameAudit {
             /// The message to audit

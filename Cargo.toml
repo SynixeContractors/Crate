@@ -36,18 +36,18 @@ nonstandard_style = "warn"
 anyhow = "1.0.98"
 arma-rs = { version = "1.11.14", features = ["uuid", "serde_json"] }
 async-trait = "0.1.88"
-axum = "0.8.3"
+axum = "0.8.4"
 # nats = { version = "0.25.0" }
 nats = { git = "https://github.com/nats-io/nats.rs" }
-reqwest = { version = "0.12.15", features = ["rustls-tls"] }
+reqwest = { version = "0.12.20", features = ["rustls-tls"] }
 rsa = "0.9.8"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 serenity = { version = "0.12.4", default-features = false, features = ["rustls_backend"] }
-sqlx = { version = "0.8.5" }
+sqlx = { version = "0.8.6" }
 strum = "0.27.1"
 time = "0.3.41"
-tokio = "1.44.2"
+tokio = "1.45.1"
 tracing = { version = "0.1.41", features = ["log"] }
 tracing-subscriber = "0.3.19"
-uuid = "1.16.0"
+uuid = "1.17.0"

@@ -51,3 +51,19 @@ pub struct CertificationTrial {
     /// Created at
     pub created: OffsetDateTime,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
+/// A certification first kit object
+pub struct CertificationFirstKit {
+    /// Certification first kit id
+    pub id: Uuid,
+    /// Certification id
+    pub certification: Uuid,
+    /// Name
+    pub name: String,
+    /// Description
+    pub description: Option<String>,
+    /// Kit data (JSONB)
+    pub first_kit: serde_json::Value,
+}

@@ -326,3 +326,29 @@ pub async fn game_audit(message: String) -> Option<MessageId> {
     }
     None
 }
+
+pub async fn audit(message: String) -> Option<MessageId> {
+    match events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::discord::write,
+        Audit {
+            message: DiscordMessage {
+                content: DiscordContent::Text(message),
+                reactions: Vec::new(),
+            }
+        }
+    )
+    .await
+    {
+        Ok(Ok((synixe_events::discord::write::Response::Audit(Ok((_channel, message))), _))) => {
+            return Some(message);
+        }
+        Err(e) => {
+            error!("Failed to audit: {}", e);
+        }
+        _ => {
+            error!("Failed to audit: unknown error");
+        }
+    }
+    None
+}

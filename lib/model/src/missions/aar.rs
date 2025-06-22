@@ -406,6 +406,7 @@ impl Display for Outcome {
     }
 }
 
+#[allow(clippy::struct_field_names)]
 #[derive(Debug, Default)]
 /// The payment for a mission.
 pub struct Payment {

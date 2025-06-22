@@ -6,6 +6,8 @@ use synixe_events::{
     publish, respond,
 };
 
+use crate::handler::reputation::audit;
+
 use super::Handler;
 
 #[allow(clippy::too_many_lines)]
@@ -302,6 +304,88 @@ impl Handler for Request {
                         ORDER BY trainee, certification, created DESC"#,
                     f64::from(*days),
                 )?;
+                Ok(())
+            }
+            Self::PassedCount {
+                certification,
+                member,
+            } => {
+                fetch_one_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::PassedCount,
+                    r#"
+                        SELECT
+                            COUNT(*) AS "value!"
+                        FROM
+                            certifications_trials
+                        WHERE
+                            certification = $1
+                            AND trainee = $2
+                            AND passed IS TRUE"#,
+                    certification,
+                    member.to_string(),
+                )
+            }
+            Self::FirstKits { certification } => {
+                if let Some(certification) = certification {
+                    fetch_as_and_respond!(
+                        msg,
+                        *db,
+                        cx,
+                        synixe_model::certifications::CertificationFirstKit,
+                        Response::FirstKits,
+                        r#"
+                            SELECT
+                                id,
+                                certification,
+                                name,
+                                description,
+                                first_kit
+                            FROM
+                                certifications_first_kit
+                            WHERE
+                                (certification = $1)"#,
+                        certification,
+                    )?;
+                } else {
+                    fetch_as_and_respond!(
+                        msg,
+                        *db,
+                        cx,
+                        synixe_model::certifications::CertificationFirstKit,
+                        Response::FirstKits,
+                        r#"
+                            SELECT
+                                id,
+                                certification,
+                                name,
+                                description,
+                                first_kit
+                            FROM
+                                certifications_first_kit"#,
+                    )?;
+                }
+                Ok(())
+            }
+            Self::GiveFirstKit { first_kit, member } => {
+                let message = audit(format!(
+                    "Giving first kit {} to member <@{}>",
+                    first_kit, member
+                ))
+                .await;
+                sqlx::query!(
+                    r#"
+                        SELECT
+                            give_first_kit($1, $2)
+                    "#,
+                    member.to_string(),
+                    first_kit,
+                )
+                .execute(&*db)
+                .await?;
+                respond!(msg, Response::GiveFirstKit(Ok(()))).await?;
                 Ok(())
             }
         }
