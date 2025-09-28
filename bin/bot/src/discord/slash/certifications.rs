@@ -579,6 +579,8 @@ async fn smg(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()
         {
             error!("Failed to send message: {}", e);
         }
+    } else {
+        interaction.reply("You must acknowledge the SMG certification to receive the role").await?;
     }
     Ok(())
 }
