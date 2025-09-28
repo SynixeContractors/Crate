@@ -163,17 +163,17 @@ impl Brain {
     #[allow(clippy::significant_drop_tightening)] // false positive on conversations
     pub async fn observe(&self, ctx: &Context, message: &Message) {
         let mut name = message.author.name.clone();
-        if let Ok(author) = GUILD.member(&ctx, message.author.id).await {
-            if let Some(nick) = &author.nick {
-                name.clone_from(nick);
-            }
+        if let Ok(author) = GUILD.member(&ctx, message.author.id).await
+            && let Some(nick) = &author.nick
+        {
+            name.clone_from(nick);
         }
         let mut content = format!("|{}| {}: {}", message.timestamp, name, message.content);
         for user in &message.mentions {
-            if let Ok(member) = GUILD.member(&ctx, user.id).await {
-                if let Some(nick) = &member.nick {
-                    content = content.replace(&format!("<@{}>", user.id), nick);
-                }
+            if let Ok(member) = GUILD.member(&ctx, user.id).await
+                && let Some(nick) = &member.nick
+            {
+                content = content.replace(&format!("<@{}>", user.id), nick);
             }
         }
         content = content.replace("<@1028418063168708638>", "Ctirad Brodsky");

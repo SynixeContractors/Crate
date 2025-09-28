@@ -12,6 +12,7 @@ use tokio::fs::File;
 
 use crate::ArcCacheAndHttp;
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 pub async fn execute(client: ArcCacheAndHttp) {
     let Ok(files) = pull() else {

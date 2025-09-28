@@ -11,6 +11,7 @@ use synixe_meta::discord::{
 
 use crate::ArcCacheAndHttp;
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
     let Ok((ev, _)) = synixe_events::parse_data!(msg, write::Request) else {

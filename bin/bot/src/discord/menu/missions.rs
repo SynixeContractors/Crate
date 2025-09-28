@@ -74,6 +74,7 @@ pub fn aar_pay() -> CreateCommand {
     CreateCommand::new(MENU_AAR_PAY).kind(CommandType::Message)
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), &[]);
@@ -221,29 +222,29 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
             {
                 error!("Error replying to message: {}", e);
             }
-            if let Some((channel, message)) = scheduled.message() {
-                if let Some(mut thread) = channel.message(&ctx.http, message).await?.thread {
-                    let Ok((found, unknown)) = find_members(ctx, aar.contractors()).await else {
-                        return interaction.reply("Failed to find members").await;
-                    };
-                    thread
-                        .send_message(&ctx.http, {
-                            let mut found = found
-                                .into_iter()
-                                .map(|id| format!("<@{}>", id.1))
-                                .collect::<Vec<String>>();
-                            found.extend(unknown);
-                            CreateMessage::default().content(format!(
-                                "Contractors Paid: {}\n```{}```",
-                                found.join(", "),
-                                aar.show_math(payment, current_rep)
-                            ))
-                        })
-                        .await?;
-                    thread
-                        .edit_thread(&ctx.http, EditThread::default().locked(true).archived(true))
-                        .await?;
-                }
+            if let Some((channel, message)) = scheduled.message()
+                && let Some(mut thread) = channel.message(&ctx.http, message).await?.thread
+            {
+                let Ok((found, unknown)) = find_members(ctx, aar.contractors()).await else {
+                    return interaction.reply("Failed to find members").await;
+                };
+                thread
+                    .send_message(&ctx.http, {
+                        let mut found = found
+                            .into_iter()
+                            .map(|id| format!("<@{}>", id.1))
+                            .collect::<Vec<String>>();
+                        found.extend(unknown);
+                        CreateMessage::default().content(format!(
+                            "Contractors Paid: {}\n```{}```",
+                            found.join(", "),
+                            aar.show_math(payment, current_rep)
+                        ))
+                    })
+                    .await?;
+                thread
+                    .edit_thread(&ctx.http, EditThread::default().locked(true).archived(true))
+                    .await?;
             }
             AARS.say(
                 &ctx,

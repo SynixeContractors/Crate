@@ -196,6 +196,7 @@ pub async fn autocomplete(
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 pub async fn rsvp_button(ctx: &Context, component: &ComponentInteraction) -> serenity::Result<()> {
     let channel = component.channel_id;
@@ -346,6 +347,7 @@ pub async fn rsvp_button(ctx: &Context, component: &ComponentInteraction) -> ser
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 async fn new(
     ctx: &Context,
@@ -624,6 +626,7 @@ async fn upcoming(
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 pub async fn remove(
     ctx: &Context,
@@ -718,10 +721,10 @@ pub async fn remove(
             )
             .await
             {
-                if let Some((channel, message)) = &scheduled.message() {
-                    if let Err(e) = channel.delete_message(&ctx, message).await {
-                        error!("failed to delete schedule message: {}", e);
-                    }
+                if let Some((channel, message)) = &scheduled.message()
+                    && let Err(e) = channel.delete_message(&ctx, message).await
+                {
+                    error!("failed to delete schedule message: {}", e);
                 }
                 interaction
                     .reply(format!(
@@ -986,6 +989,7 @@ fn briefing_messages(mission: &ScheduledMission) -> Vec<String> {
     sections
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 pub async fn post_mission<'a>(
     ctx: &'a Context,
@@ -1003,10 +1007,10 @@ pub async fn post_mission<'a>(
     )
     .await
     else {
-        if let Some(mut interaction) = interaction {
-            if let Err(e) = interaction.reply("Failed to fetch rsvps").await {
-                error!("Failed to fetch rsvps: {}", e);
-            }
+        if let Some(mut interaction) = interaction
+            && let Err(e) = interaction.reply("Failed to fetch rsvps").await
+        {
+            error!("Failed to fetch rsvps: {}", e);
         }
         return None;
     };
@@ -1019,10 +1023,10 @@ pub async fn post_mission<'a>(
         )
         .await
     else {
-        if let Some(mut interaction) = interaction {
-            if let Err(e) = interaction.reply("Failed to post mission").await {
-                error!("Failed to post mission: {}", e);
-            }
+        if let Some(mut interaction) = interaction
+            && let Err(e) = interaction.reply("Failed to post mission").await
+        {
+            error!("Failed to post mission: {}", e);
         }
         return None;
     };
@@ -1036,10 +1040,10 @@ pub async fn post_mission<'a>(
             )
             .await
         else {
-            if let Some(mut interaction) = interaction {
-                if let Err(e) = interaction.reply("Failed to create thread").await {
-                    error!("Failed to create thread: {}", e);
-                }
+            if let Some(mut interaction) = interaction
+                && let Err(e) = interaction.reply("Failed to create thread").await
+            {
+                error!("Failed to create thread: {}", e);
             }
             return None;
         };
@@ -1084,21 +1088,19 @@ pub async fn post_mission<'a>(
     )
     .await
     {
-        if let Some(mut interaction) = interaction {
-            if let Err(e) = interaction
+        if let Some(mut interaction) = interaction
+            && let Err(e) = interaction
                 .reply(format!("Posted `{}`", scheduled.mission))
                 .await
-            {
-                error!("Failed to post mission: {}", e);
-            }
-        }
-    } else if let Some(mut interaction) = interaction {
-        if let Err(e) = interaction
-            .reply(format!("Failed to post `{}`", scheduled.mission))
-            .await
         {
             error!("Failed to post mission: {}", e);
         }
+    } else if let Some(mut interaction) = interaction
+        && let Err(e) = interaction
+            .reply(format!("Failed to post `{}`", scheduled.mission))
+            .await
+    {
+        error!("Failed to post mission: {}", e);
     }
     Some(sched)
 }

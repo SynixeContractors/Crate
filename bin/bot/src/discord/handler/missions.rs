@@ -5,6 +5,7 @@ use synixe_proc::events_request_2;
 
 use crate::discord::utils::find_members;
 
+#[allow(clippy::cognitive_complexity)]
 pub async fn validate_aar(ctx: &Context, message: Message) {
     if !(message.content.starts_with("```") || message.content.ends_with("```")) {
         return;
@@ -75,8 +76,8 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
         }
         return;
     };
-    if !unknown.is_empty() {
-        if let Err(e) = message
+    if !unknown.is_empty()
+        && let Err(e) = message
             .reply(
                 &ctx.http,
                 format!(
@@ -85,8 +86,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
                 ),
             )
             .await
-        {
-            error!("Error replying to message: {}", e);
-        }
+    {
+        error!("Error replying to message: {}", e);
     }
 }

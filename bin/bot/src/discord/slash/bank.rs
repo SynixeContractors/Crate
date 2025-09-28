@@ -132,6 +132,7 @@ async fn balance(
         .await
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::cast_possible_truncation, clippy::too_many_lines)]
 async fn transfer(
     ctx: &Context,
@@ -247,6 +248,7 @@ async fn transfer(
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::cast_possible_truncation)]
 async fn fine(
     ctx: &Context,

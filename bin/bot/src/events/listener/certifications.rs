@@ -19,38 +19,37 @@ impl Listener for Publish {
         match &self {
             Self::TrialSubmitted { trial } => {
                 info!("Trial submitted: {:?}", trial);
-                if trial.passed {
-                    if let Ok(Ok((Response::List(Ok(certs)), _))) =
+                if trial.passed
+                    && let Ok(Ok((Response::List(Ok(certs)), _))) =
                         events_request_5!(nats, synixe_events::certifications::db, List {}).await
-                    {
-                        let Some(cert) = certs.iter().find(|cert| cert.id == trial.certification)
-                        else {
-                            warn!("Certification not found: {}", trial.certification);
-                            return Ok(());
-                        };
-                        let member = GUILD
-                            .member(
-                                CacheAndHttp::get().as_ref(),
-                                trial.trainee.parse::<UserId>()?,
-                            )
+                {
+                    let Some(cert) = certs.iter().find(|cert| cert.id == trial.certification)
+                    else {
+                        warn!("Certification not found: {}", trial.certification);
+                        return Ok(());
+                    };
+                    let member = GUILD
+                        .member(
+                            CacheAndHttp::get().as_ref(),
+                            trial.trainee.parse::<UserId>()?,
+                        )
+                        .await?;
+                    for role in &cert.roles_granted {
+                        member
+                            .add_role(CacheAndHttp::get().as_ref(), role.parse::<RoleId>()?)
                             .await?;
-                        for role in &cert.roles_granted {
-                            member
-                                .add_role(CacheAndHttp::get().as_ref(), role.parse::<RoleId>()?)
-                                .await?;
-                        }
-                        if let Err(e) = synixe_meta::discord::channel::TRAINING
-                            .say(
-                                CacheAndHttp::get().as_ref(),
-                                format!(
-                                    "<@{}> has certified <@{}> in {}",
-                                    trial.instructor, trial.trainee, cert.name
-                                ),
-                            )
-                            .await
-                        {
-                            error!("Failed to send message: {}", e);
-                        }
+                    }
+                    if let Err(e) = synixe_meta::discord::channel::TRAINING
+                        .say(
+                            CacheAndHttp::get().as_ref(),
+                            format!(
+                                "<@{}> has certified <@{}> in {}",
+                                trial.instructor, trial.trainee, cert.name
+                            ),
+                        )
+                        .await
+                    {
+                        error!("Failed to send message: {}", e);
                     }
                 }
                 Ok(())

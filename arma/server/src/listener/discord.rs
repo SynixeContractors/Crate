@@ -25,8 +25,8 @@ impl Listener for Publish {
                     .await
                     .get(&member.user.id.to_string())
                     .cloned();
-                if let Some(steam) = steam {
-                    if let Err(e) = context.callback_data(
+                if let Some(steam) = steam
+                    && let Err(e) = context.callback_data(
                         "crate:discord",
                         "member:get:ok",
                         vec![
@@ -44,7 +44,6 @@ impl Listener for Publish {
                     ) {
                         error!("error sending member:get:ok: {e:?}");
                     }
-                }
                 Ok(())
             }
         }

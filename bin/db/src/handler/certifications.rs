@@ -370,9 +370,8 @@ impl Handler for Request {
                 Ok(())
             }
             Self::GiveFirstKit { first_kit, member } => {
-                let message = audit(format!(
-                    "Giving first kit {} to member <@{}>",
-                    first_kit, member
+                audit(format!(
+                    "Giving first kit {first_kit} to member <@{member}>"
                 ))
                 .await;
                 sqlx::query!(

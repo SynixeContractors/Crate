@@ -5,6 +5,7 @@ use synixe_proc::events_request_2;
 
 use crate::ArcCacheAndHttp;
 
+#[allow(clippy::cognitive_complexity)]
 pub async fn execute(client: ArcCacheAndHttp) {
     let Ok(Ok((Response::ActiveMembers(Ok(active)), _))) = events_request_2!(
         bootstrap::NC::get().await,

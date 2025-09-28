@@ -180,6 +180,7 @@ pub async fn post_reddit_findaunit() {
     }
 }
 
+#[allow(clippy::cognitive_complexity)]
 pub async fn reply(msg: Message, url: &str) {
     let client = Reddit::new(
         "Ctirad Brodsky (by /u/synixe)",

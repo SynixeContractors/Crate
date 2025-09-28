@@ -571,6 +571,7 @@ async fn smg(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 async fn process_trial_first_kit(
     ctx: &Context,

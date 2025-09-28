@@ -71,6 +71,7 @@ pub async fn autocomplete(
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 async fn load(
     ctx: &Context,

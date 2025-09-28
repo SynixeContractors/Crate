@@ -56,6 +56,7 @@ impl Handler for Request {
     }
 }
 
+#[allow(clippy::cognitive_complexity)]
 async fn handle(
     nats: std::sync::Arc<nats::asynk::Connection>,
     container: &Container,

@@ -113,10 +113,10 @@ impl EventHandler for Handler {
                     "matching component: {:?}",
                     component.data.custom_id.as_str()
                 );
-                if component.data.custom_id.starts_with("survey_submit:") {
-                    if let Err(e) = slash::surveys::submit_button(&ctx, &component).await {
-                        error!("Cannot handle survey submit: {}", e);
-                    }
+                if component.data.custom_id.starts_with("survey_submit:")
+                    && let Err(e) = slash::surveys::submit_button(&ctx, &component).await
+                {
+                    error!("Cannot handle survey submit: {}", e);
                 }
                 match component.data.custom_id.as_str() {
                     "rsvp_yes" | "rsvp_maybe" | "rsvp_no" => {
@@ -204,8 +204,8 @@ impl EventHandler for Handler {
         if new_member.user.bot {
             return;
         }
-        if new_member.guild_id == synixe_meta::discord::GUILD {
-            if let Err(e) = synixe_meta::discord::channel::LOBBY
+        if new_member.guild_id == synixe_meta::discord::GUILD
+            && let Err(e) = synixe_meta::discord::channel::LOBBY
                 .say(
                     &_ctx,
                     &format!(
@@ -217,7 +217,6 @@ impl EventHandler for Handler {
                 .await {
                 error!("Cannot send welcome message: {}", e);
             }
-        }
     }
 
     async fn guild_member_removal(
@@ -230,8 +229,8 @@ impl EventHandler for Handler {
         if kicked.bot {
             return;
         }
-        if guild_id == synixe_meta::discord::GUILD {
-            if let Err(e) = synixe_meta::discord::channel::LOG
+        if guild_id == synixe_meta::discord::GUILD
+            && let Err(e) = synixe_meta::discord::channel::LOG
                 .say(
                     &ctx,
                     &format!(
@@ -246,9 +245,8 @@ impl EventHandler for Handler {
                     ),
                 )
                 .await
-            {
-                error!("Cannot send leave message: {}", e);
-            }
+        {
+            error!("Cannot send leave message: {}", e);
         }
     }
 
@@ -317,8 +315,8 @@ impl EventHandler for Handler {
         if banned_user.bot {
             return;
         }
-        if guild_id == synixe_meta::discord::GUILD {
-            if let Err(e) = synixe_meta::discord::channel::LOG
+        if guild_id == synixe_meta::discord::GUILD
+            && let Err(e) = synixe_meta::discord::channel::LOG
                 .say(
                     &ctx,
                     &format!(
@@ -333,9 +331,8 @@ impl EventHandler for Handler {
                     ),
                 )
                 .await
-            {
-                error!("Cannot send ban message: {}", e);
-            }
+        {
+            error!("Cannot send ban message: {}", e);
         }
     }
 
@@ -399,7 +396,7 @@ impl EventHandler for Handler {
                 let since = self
                     .subcon_counter
                     .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                if (since + 1) % 15 == 0 {
+                if (since + 1).is_multiple_of(15) {
                     move_channel_missions(&ctx, message.channel_id).await;
                 }
             }
@@ -458,10 +455,10 @@ impl EventHandler for Handler {
             let message = match new {
                 Some(message) => message,
                 None => {
-                    if let Some(content) = event.content {
-                        if !(content.starts_with("```") || content.ends_with("```")) {
-                            return;
-                        }
+                    if let Some(content) = event.content
+                        && !(content.starts_with("```") || content.ends_with("```"))
+                    {
+                        return;
                     }
                     let Ok(message) = event.channel_id.message(&ctx.http, event.id).await else {
                         warn!("Cannot get message {}", event.id);
@@ -481,8 +478,8 @@ impl EventHandler for Handler {
         message_id: MessageId,
         _guild_id: Option<GuildId>,
     ) {
-        if channel_id == GAME_LOG {
-            if let Err(e) = events_request_5!(
+        if channel_id == GAME_LOG
+            && let Err(e) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::reputation::db,
                 DeleteByMessage {
@@ -490,13 +487,13 @@ impl EventHandler for Handler {
                 }
             )
             .await
-            {
-                error!("Cannot delete reputation event: {}", e);
-            }
+        {
+            error!("Cannot delete reputation event: {}", e);
         }
     }
 }
 
+#[allow(clippy::cognitive_complexity)]
 async fn move_channel_missions(ctx: &Context, channel: ChannelId) {
     // delete subcon message and move here
     let Ok(Ok((Response::FetchUpcomingChannel(Ok(evs)), _))) = events_request_2!(

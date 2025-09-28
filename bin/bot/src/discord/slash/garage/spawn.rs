@@ -14,6 +14,7 @@ use crate::{
     get_option,
 };
 
+#[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 pub async fn spawn(
     ctx: &Context,

@@ -68,11 +68,11 @@ impl BrainFunction for Timeout {
                 error!("failed to get member: {}", id);
                 continue;
             };
-            if let Some(until) = member.communication_disabled_until {
-                if until > Timestamp::now() {
-                    info!("user already timed out: {}", member.user.id);
-                    continue;
-                }
+            if let Some(until) = member.communication_disabled_until
+                && until > Timestamp::now()
+            {
+                info!("user already timed out: {}", member.user.id);
+                continue;
             }
             info!("timing out user: {}", member.user.id);
             if let Err(e) = member

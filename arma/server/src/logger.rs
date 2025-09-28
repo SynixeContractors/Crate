@@ -11,8 +11,8 @@ impl log::Log for ArmaLogger {
     }
 
     fn log(&self, record: &Record) {
-        if self.enabled(record.metadata()) {
-            if let Err(e) = self.context.callback_data(
+        if self.enabled(record.metadata())
+            && let Err(e) = self.context.callback_data(
                 "crate:log",
                 record.target(),
                 Some(vec![
@@ -22,7 +22,6 @@ impl log::Log for ArmaLogger {
             ) {
                 eprintln!("error sending log: {e:?}");
             }
-        }
     }
 
     fn flush(&self) {}

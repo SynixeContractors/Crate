@@ -172,6 +172,7 @@ async fn repaint(
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 async fn repaint_autocomplete(
     ctx: &Context,
     autocomplete: &CommandInteraction,
@@ -250,6 +251,7 @@ async fn repaint_autocomplete(
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 async fn ugl(
     ctx: &Context,
     command: &CommandInteraction,
@@ -336,6 +338,7 @@ async fn ugl(
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 async fn ugl_autocomplete(
     ctx: &Context,
     autocomplete: &CommandInteraction,
