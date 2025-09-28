@@ -125,7 +125,7 @@ pub fn register() -> CreateCommand {
         )
         .add_option(
             CreateCommandOption::new(
-                CommandOptionType::Boolean,
+                CommandOptionType::SubCommand,
                 "smg",
                 "Accept SMG certification acknowledgment",
             )
