@@ -14,7 +14,7 @@ use serenity::{
     client::Context,
 };
 use synixe_events::certifications::db::Response;
-use synixe_meta::discord::role::STAFF;
+use synixe_meta::discord::role::{ACK_SMG, STAFF};
 use synixe_meta::discord::{
     GUILD,
     role::{JUNIOR, MEMBER},
@@ -22,6 +22,7 @@ use synixe_meta::discord::{
 use synixe_model::certifications::Certification;
 use synixe_proc::{events_request_2, events_request_5};
 
+use crate::cache_http::CacheAndHttp;
 use crate::discord::slash::ShouldAsk;
 use crate::{
     discord::interaction::{Confirmation, Interaction},
@@ -122,6 +123,14 @@ pub fn register() -> CreateCommand {
                 .set_autocomplete(true),
             ),
         )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::Boolean,
+                "smg",
+                "Accept SMG certification acknowledgment",
+            )
+            .allow_public(),
+        )
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -136,6 +145,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
             "list" => list(ctx, command, values, false).await?,
             "available" => list(ctx, command, values, true).await?,
             "first" => first(ctx, command, values).await?,
+            "smg" => smg(ctx, command).await?,
             _ => unreachable!(),
         }
     }
@@ -250,10 +260,8 @@ async fn trial(
         }
     }
 
-    if *passed {
-        if let Err(e) = process_trial_first_kit(ctx, interaction, cert, trainee).await {
-            error!("Failed to process first kit: {}", e);
-        }
+    if *passed && let Err(e) = process_trial_first_kit(ctx, interaction, cert, trainee).await {
+        error!("Failed to process first kit: {}", e);
     }
     Ok(())
 }
@@ -519,6 +527,46 @@ async fn first(
     };
     if let Err(e) = process_trial_first_kit(ctx, interaction, cert, trainee).await {
         error!("Failed to process first kit: {}", e);
+    }
+    Ok(())
+}
+
+async fn smg(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), &[]);
+    let Some(member) = command.member.as_ref() else {
+        return interaction
+            .reply("This command can only be used in a server")
+            .await;
+    };
+    if member.roles.contains(&ACK_SMG) {
+        return interaction
+            .reply("You have already acknowledged the SMG certification")
+            .await;
+    }
+    super::requires_roles(
+        command.user.id,
+        &[MEMBER],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Deny,
+        &mut interaction,
+    )
+    .await?;
+    if matches!(interaction.confirm(
+        r"By requesting the SMG role, you acknowledge the following:
+
+1. SMGs are not considered standard rifles, you must always own a standard rifle before purchasing an SMG.
+2. SMGs are primarily indented to reduce your weight when carrying a lot of equipment, like a medic, engineer, or UAV operator.
+3. SMGs should only be taken by general contractors when the mission is appropriate for them, such as close quarters combat or urban environments.
+4. SMGs are subject to OL approval, and you may be required to switch to a standard rifle.
+"
+    ).await, Ok(Confirmation::Yes)) {
+        member
+            .add_role(CacheAndHttp::get().as_ref(), ACK_SMG)
+            .await?;
     }
     Ok(())
 }

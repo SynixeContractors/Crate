@@ -46,6 +46,10 @@ pub const MISSION_MAKER: RoleId = RoleId::new(973_300_919_015_997_491);
 /// Member is a mission reviewer
 pub const MISSION_REVIEWER: RoleId = RoleId::new(1_020_252_253_287_886_858);
 
+// Certifications - Acknowledge
+// Acknowledge - SMG
+pub const ACK_SMG: RoleId = RoleId::new(1_421_915_444_104_659_045);
+
 // Certifications - Generic
 /// Generic - Grenades
 pub const CERT_GRENADES: RoleId = RoleId::new(1_038_399_590_224_887_899);
@@ -62,6 +66,8 @@ pub const CERT_ELECTRONICS: RoleId = RoleId::new(932_077_564_124_602_388);
 
 /// Specialist - Marksman
 pub const CERT_MARKSMAN: RoleId = RoleId::new(780_137_008_411_705_375);
+/// Specialist - Sharpshooter
+pub const CERT_SHARPSHOOTER: RoleId = RoleId::new(1_383_855_363_064_856_708);
 /// Specialist - Medic
 pub const CERT_MEDIC: RoleId = RoleId::new(780_136_967_677_411_389);
 /// Specialist - Automatic Rifleman
