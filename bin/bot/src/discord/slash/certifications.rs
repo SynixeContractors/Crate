@@ -123,14 +123,11 @@ pub fn register() -> CreateCommand {
                 .set_autocomplete(true),
             ),
         )
-        .add_option(
-            CreateCommandOption::new(
-                CommandOptionType::SubCommand,
-                "smg",
-                "Accept SMG certification acknowledgment",
-            )
-            .allow_public(),
-        )
+        .add_option(CreateCommandOption::new(
+            CommandOptionType::SubCommand,
+            "smg",
+            "Accept SMG certification acknowledgment",
+        ))
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -567,6 +564,21 @@ async fn smg(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()
         member
             .add_role(CacheAndHttp::get().as_ref(), ACK_SMG)
             .await?;
+        interaction
+            .reply("You have acknowledged the SMG certification and have been given the role")
+            .await?;
+        if let Err(e) = synixe_meta::discord::channel::LOG
+            .say(
+                ctx,
+                format!(
+                    "<@{}> has acknowledged the SMG certification",
+                    command.user.id
+                ),
+            )
+            .await
+        {
+            error!("Failed to send message: {}", e);
+        }
     }
     Ok(())
 }
