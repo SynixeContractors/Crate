@@ -41,9 +41,10 @@ impl Listener for Publish {
                                     .collect(),
                             ),
                         ],
-                    ) {
-                        error!("error sending member:get:ok: {e:?}");
-                    }
+                    )
+                {
+                    error!("error sending member:get:ok: {e:?}");
+                }
                 Ok(())
             }
         }

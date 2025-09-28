@@ -19,9 +19,10 @@ impl log::Log for ArmaLogger {
                     format!("{}", record.level()).to_uppercase(),
                     format!("{}", record.args()),
                 ]),
-            ) {
-                eprintln!("error sending log: {e:?}");
-            }
+            )
+        {
+            eprintln!("error sending log: {e:?}");
+        }
     }
 
     fn flush(&self) {}
