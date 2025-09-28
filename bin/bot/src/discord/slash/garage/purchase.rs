@@ -1,7 +1,7 @@
 use serenity::all::{CommandDataOption, CommandInteraction};
 use serenity::client::Context;
 use synixe_events::garage::db::{Response, ShopOrder};
-use synixe_meta::discord::role::LEADERSHIP;
+use synixe_meta::discord::role::GARAGE;
 use synixe_proc::events_request_2;
 use uuid::Uuid;
 
@@ -19,7 +19,7 @@ pub async fn purchase(
     let mut interaction = Interaction::new(ctx, command.clone(), options);
     super::super::requires_roles(
         command.user.id,
-        &[LEADERSHIP],
+        &[GARAGE],
         &command
             .member
             .as_ref()

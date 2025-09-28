@@ -6,7 +6,7 @@ use synixe_events::garage::{
     arma::{Response, SpawnResult},
     db,
 };
-use synixe_meta::discord::{channel::LOG, role::LEADERSHIP};
+use synixe_meta::discord::{channel::LOG, role::GARAGE};
 use synixe_proc::{events_request_2, events_request_5};
 
 use crate::{
@@ -26,7 +26,7 @@ pub async fn spawn(
     let mut interaction = Interaction::new(ctx, command.clone(), options);
     super::super::requires_roles(
         command.user.id,
-        &[LEADERSHIP],
+        &[GARAGE],
         &command
             .member
             .as_ref()

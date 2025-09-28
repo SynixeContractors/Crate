@@ -31,8 +31,8 @@ pub fn seniority_pass(role: RoleId, bar: RoleId) -> bool {
 pub const DOCKER: RoleId = RoleId::new(1_066_950_087_441_399_919);
 /// Key holder during voting
 pub const KEY_HOLDER: RoleId = RoleId::new(1_306_713_960_690_749_481);
-/// Leadership - Ability to use trusted commands
-pub const LEADERSHIP: RoleId = RoleId::new(1_074_443_934_383_751_229);
+/// Garage - Ability to use garage commands
+pub const GARAGE: RoleId = RoleId::new(1_074_443_934_383_751_229);
 
 // Activity
 /// Member is active, recently played
