@@ -14,6 +14,8 @@ use crate::{
     get_option,
 };
 
+pub static SPAWN_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
 #[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 pub async fn spawn(
@@ -41,6 +43,8 @@ pub async fn spawn(
             .reply("Required option not provided: vehicle")
             .await;
     };
+    interaction.reply("Waiting for lock").await?;
+    let _lock = SPAWN_LOCK.lock().await;
     let Ok(Ok((db::Response::FetchVehicleInfo(Ok(info)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
