@@ -13,8 +13,7 @@ macro_rules! handler {
                     error!("Failed to parse event: {}", sub);
                     continue
                 };
-                debug!("Handling event: {}", ev.name());
-                info!("Handling event: {}", ev.name());
+                info!("Handling event: {:?}", ev);
                 if let Err(e) = ev.handle($msg, $nats).await {
                     error!("Error in handler {}: {}", sub, e);
                 }

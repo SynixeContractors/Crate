@@ -161,8 +161,15 @@ impl Handler for Request {
                     reason,
                 )
             }
-            Self::ShopGetAll {} => {
-                quick_transaction_return!(ShopGetAll, db, msg, cx, actor::gear::shop::items,)
+            Self::ShopGetAll { page } => {
+                quick_transaction_return!(
+                    ShopGetAll,
+                    db,
+                    msg,
+                    cx,
+                    actor::gear::shop::items,
+                    i64::from(*page),
+                )
             }
             Self::ShopGetPrice { item } => {
                 quick_transaction_return!(ShopGetPrice, db, msg, cx, actor::gear::shop::price, item,)

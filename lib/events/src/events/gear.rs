@@ -99,7 +99,9 @@ pub mod db {
 
         /// Get all items in the shop
         #[allow(clippy::type_complexity)]
-        struct ShopGetAll {} => (Result<HashMap<String, (Option<String>, Option<Vec<String>>, Price)>, String>)
+        struct ShopGetAll {
+            page: u32,
+        } => (Result<(HashMap<String, (Option<String>, Option<Vec<String>>, Price)>, bool), String>)
         /// Get the price of an item in the shop
         struct ShopGetPrice {
             /// The item to get the price of

@@ -25,19 +25,29 @@ fn command_items() {
             error!("command received before context was initialized");
             return;
         };
-        let Ok(Ok((db::Response::ShopGetAll(Ok(items)), _))) = events_request_5!(
-            bootstrap::NC::get().await,
-            synixe_events::gear::db,
-            ShopGetAll {}
-        )
-        .await
-        else {
-            error!("failed to fetch shop items over nats");
-            if let Err(e) = context.callback_null("crate:gear:shop", "items:err") {
-                error!("error sending shop:items:err: {e:?}");
+        let mut items = HashMap::new();
+        let mut page = 0;
+        loop {
+            let Ok(Ok((db::Response::ShopGetAll(Ok(to_add)), _))) = events_request_5!(
+                bootstrap::NC::get().await,
+                synixe_events::gear::db,
+                ShopGetAll { page }
+            )
+            .await
+            else {
+                error!("failed to fetch shop items over nats");
+                if let Err(e) = context.callback_null("crate:gear:shop", "items:err") {
+                    error!("error sending shop:items:err: {e:?}");
+                }
+                return;
+            };
+            items.extend(to_add.0);
+            if !to_add.1 {
+                break;
             }
-            return;
-        };
+            page += 1;
+        }
+
         if let Err(e) = context.callback_null("crate:gear:shop", "items:clear") {
             error!("error sending shop:items:clear: {e:?}");
         }
