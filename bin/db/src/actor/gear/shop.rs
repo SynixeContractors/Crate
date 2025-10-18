@@ -41,7 +41,7 @@ pub async fn items(
                 )
             })
             .collect(),
-        count != PER_PAGE,
+        count == PER_PAGE,
     ))
 }
 
