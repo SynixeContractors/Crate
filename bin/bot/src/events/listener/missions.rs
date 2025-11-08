@@ -110,8 +110,8 @@ impl Listener for Publish {
                             1 => {
                                 attending(member, "1st").await;
                             }
-                            2 => {
-                                attending(member, "2nd").await;
+                            4 => {
+                                attending(member, "4th").await;
                             }
                             16 => {
                                 attending(member, "16th").await;
