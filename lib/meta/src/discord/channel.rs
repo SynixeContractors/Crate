@@ -18,6 +18,8 @@ pub const OFFTOPIC: ChannelId = ChannelId::new(700_888_757_724_774_451);
 pub const LOOKING_TO_PLAY: ChannelId = ChannelId::new(785_233_960_983_724_054);
 /// Memes
 pub const MEMES: ChannelId = ChannelId::new(736_790_994_833_506_414);
+// Advisors, members with over 150 missions
+pub const ADVISORS: ChannelId = ChannelId::new(1_427_014_584_052_744_325);
 
 // Contracts
 /// See upcoming contracts and RSVP

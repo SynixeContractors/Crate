@@ -79,7 +79,7 @@ pub async fn autocomplete(
                         error!("Missing vehicle option");
                         return Ok(());
                     };
-                    vehicle.to_string()
+                    vehicle.clone()
                 })
                 .await
             }
@@ -193,7 +193,7 @@ async fn autocomplete_color(
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
             for color in colors {
-                f = f.add_string_choice(color.name.to_string(), color.name.to_string());
+                f = f.add_string_choice(color.name.clone(), color.name.clone());
             }
             CreateInteractionResponse::Autocomplete(f)
         })
@@ -225,7 +225,7 @@ async fn autocomplete_addon(
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
             for addon in addons {
-                f = f.add_string_choice(addon.name.to_string(), addon.id);
+                f = f.add_string_choice(addon.name.clone(), addon.id);
             }
             CreateInteractionResponse::Autocomplete(f)
         })

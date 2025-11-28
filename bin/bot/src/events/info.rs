@@ -20,7 +20,7 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
                         msg,
                         info::Response::Username(Ok(info::Username {
                             response: if let Some(nick) = member.nick.as_ref() {
-                                nick.to_string()
+                                nick.clone()
                             } else {
                                 member.user.name.clone()
                             },

@@ -7,8 +7,7 @@ use uuid::Uuid;
 
 use crate::discord::interaction::Interaction;
 use crate::discord::slash::ShouldAsk;
-use crate::discord::utils::audit;
-use crate::get_option;
+use crate::{audit, get_option};
 
 #[allow(clippy::too_many_lines)]
 pub async fn purchase(

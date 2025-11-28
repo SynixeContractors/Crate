@@ -10,7 +10,8 @@ use synixe_meta::discord::{channel::LOG, role::GARAGE};
 use synixe_proc::{events_request_2, events_request_5};
 
 use crate::{
-    discord::{interaction::Interaction, slash::ShouldAsk, utils::audit},
+    audit,
+    discord::{interaction::Interaction, slash::ShouldAsk},
     get_option,
 };
 
@@ -49,7 +50,7 @@ pub async fn spawn(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchVehicleInfo {
-            plate: plate.to_string(),
+            plate: plate.clone(),
         }
     )
     .await
@@ -72,7 +73,7 @@ pub async fn spawn(
         Spawn {
             class,
             state,
-            plate: plate.to_string(),
+            plate: plate.clone(),
         }
     )
     .await
@@ -88,7 +89,7 @@ pub async fn spawn(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 RetrieveVehicle {
-                    plate: plate.to_string(),
+                    plate: plate.clone(),
                     member: command.user.id,
                 }
             )

@@ -394,7 +394,7 @@ async fn new(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
-            search: Some(mission_id.to_string()),
+            search: Some(mission_id.clone()),
         }
     )
     .await
@@ -424,7 +424,7 @@ async fn new(
                 bootstrap::NC::get().await,
                 synixe_events::missions::db,
                 Schedule {
-                    mission: mission_id.to_string(),
+                    mission: mission_id.clone(),
                     date
                 }
             )

@@ -204,7 +204,7 @@ impl Interaction<'_> {
                     options: choices
                         .iter()
                         .map(|choice| {
-                            CreateSelectMenuOption::new(choice.0.to_string(), choice.1.to_string())
+                            CreateSelectMenuOption::new(choice.0.clone(), choice.1.to_string())
                         })
                         .collect::<Vec<_>>(),
                 },

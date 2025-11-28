@@ -5,9 +5,7 @@ use serenity::{
     model::prelude::UserId,
     prelude::Context,
 };
-use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_meta::discord::GUILD;
-use synixe_proc::events_request_2;
 use tokio::sync::Mutex;
 
 /// Finds users by nicknames or user IDs
@@ -56,23 +54,4 @@ pub async fn find_members(
             );
     }
     Ok((ids, unknown))
-}
-
-pub fn audit(message: String) {
-    tokio::spawn(async {
-        if let Err(e) = events_request_2!(
-            bootstrap::NC::get().await,
-            synixe_events::discord::write,
-            Audit {
-                message: DiscordMessage {
-                    content: DiscordContent::Text(message),
-                    reactions: vec![],
-                }
-            }
-        )
-        .await
-        {
-            error!("Failed to audit: {}", e);
-        }
-    });
 }

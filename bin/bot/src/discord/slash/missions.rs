@@ -103,7 +103,7 @@ async fn load(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchMissionList {
-            search: Some(mission_id.to_string()),
+            search: Some(mission_id.clone()),
         }
     )
     .await

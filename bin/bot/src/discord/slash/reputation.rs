@@ -148,7 +148,7 @@ async fn update(
             staff: command.user.id,
             member: *member,
             reputation: real_amount,
-            reason: reason.to_string(),
+            reason: reason.clone(),
         }
     )
     .await

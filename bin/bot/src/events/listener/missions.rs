@@ -122,6 +122,9 @@ impl Listener for Publish {
                             100 => {
                                 attending(member, "100th").await;
                             }
+                            150 => {
+                                attending(member, "150th").await;
+                            }
                             200 => {
                                 attending(member, "200th").await;
                             }
