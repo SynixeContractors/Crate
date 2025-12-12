@@ -19,6 +19,7 @@ pub async fn items(
         page * PER_PAGE,
     );
     let res = query.fetch_all(&mut **executor).await?;
+    #[allow(clippy::cast_possible_wrap)]
     let count = res.len() as i64;
     Ok((
         res.into_iter()

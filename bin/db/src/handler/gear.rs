@@ -260,7 +260,7 @@ impl Handler for Request {
                             Response::FamilySearch(Ok(res
                                 .into_iter()
                                 .map(|row| FamilyItem {
-                                    family: item.to_string(),
+                                    family: item.clone(),
                                     class: row.class,
                                     pretty: row.pretty.unwrap_or_default(),
                                 })
@@ -314,7 +314,7 @@ impl Handler for Request {
                     member,
                     &{
                         let mut map = HashMap::new();
-                        map.insert(original.to_string(), 1);
+                        map.insert(original.clone(), 1);
                         map
                     },
                     reason,
@@ -326,7 +326,7 @@ impl Handler for Request {
                     member,
                     &{
                         let mut map = HashMap::new();
-                        map.insert(new.to_string(), (1, *cost));
+                        map.insert(new.clone(), (1, *cost));
                         map
                     },
                     reason,

@@ -216,7 +216,7 @@ impl Handler for Request {
                     }
                     Err(e) => {
                         error!("error getting upcoming missions: {}", e);
-                        respond!(msg, Response::PostUpcomingMissions(Err(e.to_string())))
+                        respond!(msg, Response::PostUpcomingMissions(Err(e.clone())))
                             .await
                             .map_err(std::convert::Into::into)
                     }

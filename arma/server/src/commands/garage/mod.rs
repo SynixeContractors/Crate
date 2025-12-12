@@ -52,7 +52,7 @@ fn store(ctx: Context, plate: String, state: HashMap<String, Value>, discord: St
             bootstrap::NC::get().await,
             synixe_events::garage::db,
             StoreVehicle {
-                plate: plate.to_string(),
+                plate: plate.clone(),
                 member: UserId::new(discord),
                 state: serde_json::Value::Object(
                     state.into_iter().map(|(k, v)| (k, v.to_json())).collect()

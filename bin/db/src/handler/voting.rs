@@ -106,7 +106,7 @@ impl Handler for Request {
                     ON CONFLICT (poll_id, encrypted_ticket) DO NOTHING
                     "#,
                     poll,
-                    ticket.to_string(),
+                    ticket.clone(),
                 )
                 .execute(&*db)
                 .await

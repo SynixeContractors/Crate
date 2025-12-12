@@ -35,8 +35,8 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'friendly_fire', -1, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
-                        "weapon": weapon.to_string(),
+                        "target": target.clone(),
+                        "weapon": weapon.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -58,8 +58,8 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'civilian_shot', -2, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
-                        "weapon": weapon.to_string(),
+                        "target": target.clone(),
+                        "weapon": weapon.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -81,8 +81,8 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'unarmed_shot', -2, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
-                        "weapon": weapon.to_string(),
+                        "target": target.clone(),
+                        "weapon": weapon.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -104,8 +104,8 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'surrendering_shot', -2, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
-                        "weapon": weapon.to_string(),
+                        "target": target.clone(),
+                        "weapon": weapon.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -127,8 +127,8 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'captive_shot', -4, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
-                        "weapon": weapon.to_string(),
+                        "target": target.clone(),
+                        "weapon": weapon.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -150,8 +150,8 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'unconscious_shot', -1, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
-                        "weapon": weapon.to_string(),
+                        "target": target.clone(),
+                        "weapon": weapon.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -173,8 +173,8 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'building_damaged', -1, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
-                        "weapon": weapon.to_string(),
+                        "target": target.clone(),
+                        "weapon": weapon.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -190,7 +190,7 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'friendly_healed', 1, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
+                        "target": target.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -208,7 +208,7 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'unfriendly_healed', 1, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
+                        "target": target.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -224,7 +224,7 @@ impl Handler for Request {
                     "INSERT INTO reputation_events (member, event, reputation, data, message) VALUES ($1, 'civilian_healed', 2, $2, $3)",
                     member.to_string(),
                     serde_json::json!({
-                        "target": target.to_string(),
+                        "target": target.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -246,7 +246,7 @@ impl Handler for Request {
                     member.to_string(),
                     i32::from(*reputation),
                     serde_json::json!({
-                        "mission": mission.to_string(),
+                        "mission": mission.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )
@@ -279,7 +279,7 @@ impl Handler for Request {
                     member.to_string(),
                     i32::from(*reputation),
                     serde_json::json!({
-                        "reason": reason.to_string(),
+                        "reason": reason.clone(),
                     }),
                     message.map(|m| m.to_string()).unwrap_or_default(),
                 )

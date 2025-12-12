@@ -33,8 +33,8 @@ fn command_friendly_shot(member: String, target: String, weapon: String) {
             synixe_events::reputation::db,
             FriendlyShot {
                 member: UserId::new(discord),
-                target: target.to_string(),
-                weapon: weapon.to_string(),
+                target: target.clone(),
+                weapon: weapon.clone(),
             }
         )
         .await
@@ -59,8 +59,8 @@ fn command_civilian_shot(member: String, target: String, weapon: String) {
             synixe_events::reputation::db,
             CivilianShot {
                 member: UserId::new(discord),
-                target: target.to_string(),
-                weapon: weapon.to_string(),
+                target: target.clone(),
+                weapon: weapon.clone(),
             }
         )
         .await
@@ -85,8 +85,8 @@ fn command_unarmed_shot(member: String, target: String, weapon: String) {
             synixe_events::reputation::db,
             UnarmedShot {
                 member: UserId::new(discord),
-                target: target.to_string(),
-                weapon: weapon.to_string(),
+                target: target.clone(),
+                weapon: weapon.clone(),
             }
         )
         .await
@@ -111,8 +111,8 @@ fn command_surrendering_shot(member: String, target: String, weapon: String) {
             synixe_events::reputation::db,
             SurrenderingShot {
                 member: UserId::new(discord),
-                target: target.to_string(),
-                weapon: weapon.to_string(),
+                target: target.clone(),
+                weapon: weapon.clone(),
             }
         )
         .await
@@ -137,8 +137,8 @@ fn command_captive_shot(member: String, target: String, weapon: String) {
             synixe_events::reputation::db,
             CaptiveShot {
                 member: UserId::new(discord),
-                target: target.to_string(),
-                weapon: weapon.to_string(),
+                target: target.clone(),
+                weapon: weapon.clone(),
             }
         )
         .await
@@ -163,8 +163,8 @@ fn command_unconscious_shot(member: String, target: String, weapon: String) {
             synixe_events::reputation::db,
             UnconsciousShot {
                 member: UserId::new(discord),
-                target: target.to_string(),
-                weapon: weapon.to_string(),
+                target: target.clone(),
+                weapon: weapon.clone(),
             }
         )
         .await
@@ -189,8 +189,8 @@ fn command_building_damaged(member: String, target: String, weapon: String) {
             synixe_events::reputation::db,
             BuildingDamaged {
                 member: UserId::new(discord),
-                target: target.to_string(),
-                weapon: weapon.to_string(),
+                target: target.clone(),
+                weapon: weapon.clone(),
             }
         )
         .await
@@ -215,7 +215,7 @@ fn command_friendly_healed(member: String, target: String) {
             synixe_events::reputation::db,
             FriendlyHealed {
                 member: UserId::new(discord),
-                target: target.to_string(),
+                target: target.clone(),
             }
         )
         .await
@@ -240,7 +240,7 @@ fn command_unfriendly_healed(member: String, target: String) {
             synixe_events::reputation::db,
             UnfriendlyHealed {
                 member: UserId::new(discord),
-                target: target.to_string(),
+                target: target.clone(),
             }
         )
         .await
@@ -265,7 +265,7 @@ fn command_civilian_healed(member: String, target: String) {
             synixe_events::reputation::db,
             CivilianHealed {
                 member: UserId::new(discord),
-                target: target.to_string(),
+                target: target.clone(),
             }
         )
         .await

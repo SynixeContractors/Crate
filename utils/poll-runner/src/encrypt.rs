@@ -193,11 +193,11 @@ mod tests {
             map
         });
         let rebuilt_key = rebuild_key(vec![
-            (shards.get(&UserId::new(1)).unwrap().to_string(), user_1_key),
-            (shards.get(&UserId::new(2)).unwrap().to_string(), user_2_key),
-            (shards.get(&UserId::new(3)).unwrap().to_string(), user_3_key),
-            (shards.get(&UserId::new(4)).unwrap().to_string(), user_4_key),
-            (shards.get(&UserId::new(5)).unwrap().to_string(), user_5_key),
+            (shards.get(&UserId::new(1)).unwrap().to_owned(), user_1_key),
+            (shards.get(&UserId::new(2)).unwrap().to_owned(), user_2_key),
+            (shards.get(&UserId::new(3)).unwrap().to_owned(), user_3_key),
+            (shards.get(&UserId::new(4)).unwrap().to_owned(), user_4_key),
+            (shards.get(&UserId::new(5)).unwrap().to_owned(), user_5_key),
         ]);
         assert_eq!(key, rebuilt_key);
     }
