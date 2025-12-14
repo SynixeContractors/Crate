@@ -9,6 +9,7 @@ private _action = [QGVAR(box), "Shop", "", {
     GVAR(enabled)
         && {(player getVariable [QEGVAR(discord,id), ""]) != "" }
         && {!(player getVariable [QGVAR(shop_open), false])}
+        && {missionNamespace getVariable [QGVAR(shop_allowed), true]}
         && {count GVAR(shop_items) > 0}
 }] call ace_interact_menu_fnc_createAction;
 
@@ -18,3 +19,39 @@ private _action = [QGVAR(box), "Shop", "", {
         _x setVariable [QGVAR(has_action), true];
     };
 } forEach GVAR(shop_boxes);
+
+["shop", {
+    if (missionNamespace getVariable [QGVAR(shop_allowed), true]) then {
+        [QGVAR(shop_disable)] call CBA_fnc_globalEvent;
+    } else {
+        [QGVAR(shop_enable)] call CBA_fnc_globalEvent;
+    };
+}, "admin"] call CBA_fnc_registerChatCommand;
+
+[QGVAR(shop_disable), {
+    if (player getVariable [QGVAR(shop_open), false]) then {
+        systemChat "Shop disabled. Save changes and exit";
+    } else {
+        systemChat "Shop disabled";
+    };
+}] call CBA_fnc_addEventHandler;
+
+[QGVAR(shop_enable), {
+    systemChat "Shop enabled";
+}] call CBA_fnc_addEventHandler;
+
+["suppressors", {
+    if (missionNamespace getVariable [QGVAR(suppressors_allowed), false]) then {
+        [QGVAR(suppressors_disable)] call CBA_fnc_globalEvent;
+    } else {
+        [QGVAR(suppressors_enable)] call CBA_fnc_globalEvent;
+    };
+}, "admin"] call CBA_fnc_registerChatCommand;
+
+[QGVAR(suppressors_disable), {
+    systemChat "Suppressors disabled";
+}] call CBA_fnc_addEventHandler;
+
+[QGVAR(suppressors_enable), {
+    systemChat "Suppressors enabled";
+}] call CBA_fnc_addEventHandler;

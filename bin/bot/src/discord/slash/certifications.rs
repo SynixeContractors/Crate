@@ -186,7 +186,7 @@ pub async fn autocomplete(
     if subcommand.kind() == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
             "trial" | "first" | "instructor" => {
-                certifications_autocomplete(ctx, autocomplete).await?
+                certifications_autocomplete(ctx, autocomplete).await?;
             }
             _ => unreachable!(),
         }

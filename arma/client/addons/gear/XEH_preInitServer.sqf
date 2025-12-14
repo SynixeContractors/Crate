@@ -93,6 +93,24 @@ if !(isMultiplayer) exitWith {};
     EXTCALL("gear:shop:purchase",[ARR_3(_discord,_steam,_items)]);
 }] call CBA_fnc_addEventHandler;
 
+[QGVAR(shop_disable), {
+    missionNamespace setVariable [QGVAR(shop_allowed), false, true];
+}] call CBA_fnc_addEventHandler;
+
+[QGVAR(shop_enable), {
+    missionNamespace setVariable [QGVAR(shop_allowed), true, true];
+}] call CBA_fnc_addEventHandler;
+
+// ============= Suppressors
+
+[QGVAR(suppressors_disable), {
+    missionNamespace setVariable [EGVAR(suppressors_allowed), false, true];
+}] call CBA_fnc_addEventHandler;
+
+[QGVAR(suppressors_enable), {
+    missionNamespace setVariable [EGVAR(suppressors_allowed), true, true];
+}] call CBA_fnc_addEventHandler;
+
 addMissionEventHandler ["ExtensionCallback", {
     params ["_name", "_func", "_data"];
     switch (_name) do {
