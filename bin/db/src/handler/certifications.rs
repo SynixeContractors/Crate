@@ -85,8 +85,7 @@ impl Handler for Request {
                 member,
             } => {
                 audit(format!(
-                    "Adding member <@{}> as instructor for certification {}",
-                    member, certification
+                    "Adding member <@{member}> as instructor for certification {certification}"
                 ))
                 .await;
                 sqlx::query!(
