@@ -32,6 +32,11 @@
         "ordinal": 5,
         "name": "plate_template",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "fuel_capacity",
+        "type_info": "Int4"
       }
     ],
     "parameters": {
@@ -45,7 +50,8 @@
       false,
       false,
       false,
-      true
+      true,
+      false
     ]
   },
   "hash": "2379f1c0d3f5185fd909bc3f9c407e47fa7da19e77453cd686655d59ec676aa3"

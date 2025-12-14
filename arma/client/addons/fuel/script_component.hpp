@@ -1,4 +1,4 @@
-#define COMPONENT missions
+#define COMPONENT fuel
 #include "\synixe\crate_client\addons\main\script_mod.hpp"
 
 #ifdef DEBUG_ENABLED_MAIN

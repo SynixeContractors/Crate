@@ -35,8 +35,10 @@ pub struct ShopAsset {
     pub class: String,
     /// if the asset can be attached
     pub base: Option<Uuid>,
-    /// plat template
+    /// plate template
     pub plate_template: Option<String>,
+    /// fuel capacity in litres
+    pub fuel_capacity: i32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

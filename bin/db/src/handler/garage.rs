@@ -3,6 +3,7 @@ use synixe_events::{
     garage::db::{FetchedPlate, Request, Response},
     respond,
 };
+use synixe_proc::events_request_2;
 
 use super::Handler;
 
@@ -108,7 +109,8 @@ impl Handler for Request {
                         s.cost,
                         s.class,
                         s.base,
-                        s.plate_template
+                        s.plate_template,
+                        s.fuel_capacity
                     FROM
                         garage_addons a
                     INNER JOIN
@@ -182,11 +184,29 @@ impl Handler for Request {
                         color.as_ref(),
                         member.to_string(),
                     );
-                    respond!(
-                        msg,
-                        Response::PurchaseShopAsset(Ok(query.fetch_one(&*db).await?.plate))
+                    let plate = query.fetch_one(&*db).await?.plate;
+                    respond!(msg, Response::PurchaseShopAsset(Ok(plate.clone()))).await?;
+                    #[allow(clippy::cast_sign_loss)]
+                    let amount =
+                        sqlx::query!("SELECT fuel_capacity FROM garage_shop WHERE id = $1", id,)
+                            .fetch_one(&*db)
+                            .await?
+                            .fuel_capacity as u64;
+                    if amount == 0 {
+                        return Ok(());
+                    }
+                    events_request_5!(
+                        bootstrap::NC::get().await,
+                        synixe_events::gear::db,
+                        Fuel {
+                            member: *member,
+                            amount,
+                            plate,
+                            map: String::new()
+                        }
                     )
-                    .await?;
+                    .await
+                    .map_err(|e| anyhow::anyhow!(e))??;
                     Ok(())
                 }
                 synixe_events::garage::db::ShopOrder::Addon { id, member } => {

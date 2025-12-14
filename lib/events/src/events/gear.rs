@@ -177,6 +177,23 @@ pub mod db {
             /// Cost
             cost: i32,
         } => (Result<(), String>)
+
+        /// Fuel purchase
+        struct Fuel {
+            /// Member
+            member: UserId,
+            /// Amount of fuel purchased
+            amount: u64,
+            // Plate of the vehicle being fueled
+            plate: Option<String>,
+            // Map the fuel was purchased on
+            map: String,
+        } => (Result<i32, String>)
+        /// Get fuel prices for a map
+        struct FuelPrice {
+            /// Map to get prices for
+            map: String,
+        } => (Result<f64, String>)
     });
 }
 

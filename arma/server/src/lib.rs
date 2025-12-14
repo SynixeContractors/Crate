@@ -53,12 +53,13 @@ fn init() -> Extension {
         .command("uuid", command_uuid)
         .command("ping", ping)
         .group("campaigns", commands::campaigns::group())
+        .group("certifications", commands::certifications::group())
         .group("discord", commands::discord::group())
+        .group("fuel", commands::fuel::group())
         .group("garage", commands::garage::group())
         .group("gear", commands::gear::group())
         .group("log", commands::log::group())
         .group("reputation", commands::reputation::group())
-        .group("certifications", commands::certifications::group())
         .state(commands::garage::PendingSpawn::default())
         .finish();
 

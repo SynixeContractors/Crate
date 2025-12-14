@@ -8,7 +8,7 @@ use synixe_events::{
 };
 use synixe_model::gear::FamilyItem;
 
-use crate::actor;
+use crate::actor::{self, gear::fuel::prices_for_map};
 
 use super::Handler;
 
@@ -367,6 +367,32 @@ impl Handler for Request {
                     format!("family replace: {reason}"),
                 )
                 .await;
+                Ok(())
+            }
+            Self::Fuel {
+                member,
+                amount,
+                plate,
+                map,
+            } => {
+                #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
+                let price = (prices_for_map(map) * (*amount as f64)).ceil() as i32;
+                if let Err(e) = sqlx::query!(
+                    "INSERT INTO gear_bank_deposits (member, amount, reason, id) VALUES (0, $1, $2, '00000000-0000-0000-0000-000000000001')",
+                    price,
+                    format!("Fuel: {amount}l @ {:.2} by {member}{}", prices_for_map(map),
+                        plate.as_ref().map_or_else(String::new, |plate| format!(" on {plate}")))
+                )
+                .execute(&*db)
+                .await {
+                    return Err(anyhow::Error::new(e).context("Failed to record fuel purchase"));
+                }
+                respond!(msg, Response::Fuel(Ok(price))).await?;
+                Ok(())
+            }
+            Self::FuelPrice { map } => {
+                let price = prices_for_map(map);
+                respond!(msg, Response::FuelPrice(Ok(price))).await?;
                 Ok(())
             }
         }

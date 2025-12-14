@@ -3,6 +3,7 @@
 pub mod campaigns;
 pub mod certifications;
 pub mod discord;
+pub mod fuel;
 pub mod garage;
 pub mod gear;
 pub mod log;
