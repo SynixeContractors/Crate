@@ -31,6 +31,7 @@ use crate::{
 
 use super::AllowPublic;
 
+#[allow(clippy::too_many_lines)]
 pub fn register() -> CreateCommand {
     CreateCommand::new("certifications")
         .description("Certifications")
@@ -128,6 +129,30 @@ pub fn register() -> CreateCommand {
             "smg",
             "Accept SMG certification acknowledgment",
         ))
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "instructor",
+                "Add a member as an instructor of a cert",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::User,
+                    "member",
+                    "The member to add as an instructor",
+                )
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "certification",
+                    "The certification to add them to",
+                )
+                .required(true)
+                .set_autocomplete(true),
+            ),
+        )
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -143,6 +168,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
             "available" => list(ctx, command, values, true).await?,
             "first" => first(ctx, command, values).await?,
             "smg" => smg(ctx, command).await?,
+            "instructor" => instructor(ctx, command, values).await?,
             _ => unreachable!(),
         }
     }
@@ -159,7 +185,9 @@ pub async fn autocomplete(
     };
     if subcommand.kind() == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
-            "trial" | "first" => certifications_autocomplete(ctx, autocomplete).await?,
+            "trial" | "first" | "instructor" => {
+                certifications_autocomplete(ctx, autocomplete).await?
+            }
             _ => unreachable!(),
         }
     }
@@ -581,6 +609,83 @@ async fn smg(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()
         }
     } else {
         interaction.reply("You must acknowledge the SMG certification to receive the role").await?;
+    }
+    Ok(())
+}
+
+async fn instructor(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    super::requires_roles(
+        command.user.id,
+        &[STAFF],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Deny,
+        &mut interaction,
+    )
+    .await?;
+    let Some(member) = get_option_user!(options, "member") else {
+        return interaction.reply("Invalid member").await;
+    };
+    let Some(cert_str) = get_option!(options, "certification", String) else {
+        return interaction.reply("Invalid certification").await;
+    };
+    let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::certifications::db,
+        List {}
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fetch certifications").await;
+    };
+    let Some(cert) = certs.iter().find(|c| &c.id.to_string() == cert_str) else {
+        return interaction.reply("Invalid certification").await;
+    };
+    match events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::certifications::db,
+        AddInstructor {
+            certification: cert.id,
+            member: *member,
+        }
+    )
+    .await
+    {
+        Err(e) | Ok(Ok((Response::AddInstructor(Err(e)), _))) => {
+            interaction
+                .reply(format!("Failed to add instructor: {e}"))
+                .await?;
+        }
+        Ok(_) => {
+            let reply = format!("<@{}> is now an instructor for {}", member, cert.name);
+            let Ok(private_channel) = member.create_dm_channel(&ctx).await else {
+                error!("Unable to create DM channel for transfer notification");
+                return interaction
+                    .reply(&format!("{reply}, but I couldn't DM them"))
+                    .await;
+            };
+            if let Err(e) = private_channel
+                .say(
+                    &ctx,
+                    format!("You have been added as an instructor for {}", cert.name),
+                )
+                .await
+            {
+                error!("Unable to send DM to new instructor: {}", e);
+                return interaction
+                    .reply(&format!("{reply}, but I couldn't DM them"))
+                    .await;
+            }
+            interaction.reply(reply).await?;
+        }
     }
     Ok(())
 }

@@ -19,7 +19,10 @@ use synixe_meta::discord::{
 };
 use synixe_proc::events_request_2;
 
-use crate::{discord::interaction::{Confirmation, Interaction}, get_option, get_option_user};
+use crate::{
+    discord::interaction::{Confirmation, Interaction},
+    get_option, get_option_user,
+};
 
 use super::{AllowPublic, ShouldAsk};
 

@@ -80,6 +80,31 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
+            Self::AddInstructor {
+                certification,
+                member,
+            } => {
+                audit(format!(
+                    "Adding member <@{}> as instructor for certification {}",
+                    member, certification
+                ))
+                .await;
+                sqlx::query!(
+                    r#"
+                        INSERT INTO
+                            certifications_instructors
+                            (certification, member)
+                        VALUES
+                            ($1, $2)
+                        ON CONFLICT DO NOTHING"#,
+                    certification,
+                    member.to_string(),
+                )
+                .execute(&*db)
+                .await?;
+                respond!(msg, Response::AddInstructor(Ok(()))).await?;
+                Ok(())
+            }
             Self::Name { certification } => fetch_one_and_respond!(
                 msg,
                 *db,

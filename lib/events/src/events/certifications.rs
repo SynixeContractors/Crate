@@ -15,6 +15,13 @@ pub mod db {
             /// The member to list certifications for
             member: UserId,
         } => (Result<Vec<Certification>, String>)
+        /// Add an instructor to a certification
+        struct AddInstructor {
+            /// The certification to add the instructor to
+            certification: Uuid,
+            /// The member to add as an instructor
+            member: UserId,
+        } => (Result<(), String>)
         /// Get the name of a certification
         struct Name {
             /// The certification to get the name of

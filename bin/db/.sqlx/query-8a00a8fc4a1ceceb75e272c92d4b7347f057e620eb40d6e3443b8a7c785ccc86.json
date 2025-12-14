@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        INSERT INTO\n                            certifications_instructors\n                            (certification, member)\n                        VALUES\n                            ($1, $2)\n                        ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8a00a8fc4a1ceceb75e272c92d4b7347f057e620eb40d6e3443b8a7c785ccc86"
+}
