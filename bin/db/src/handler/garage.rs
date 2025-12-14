@@ -3,7 +3,7 @@ use synixe_events::{
     garage::db::{FetchedPlate, Request, Response},
     respond,
 };
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 
 use super::Handler;
 
