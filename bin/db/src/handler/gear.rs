@@ -18,7 +18,7 @@ impl Handler for Request {
     async fn handle(
         &self,
         msg: nats::asynk::Message,
-        _nats: std::sync::Arc<nats::asynk::Connection>,
+        nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
@@ -119,7 +119,7 @@ impl Handler for Request {
                 reason,
                 id,
             } => {
-                quick_transaction!(
+                let res = quick_transaction!(
                     BankDepositNew,
                     db,
                     msg,
@@ -129,7 +129,13 @@ impl Handler for Request {
                     *amount,
                     reason,
                     *id,
-                )
+                );
+                let member = member.to_owned();
+                let reason = reason.to_owned();
+                tokio::spawn(async move {
+                    actor::gear::bank::publish_balance(nats, member, reason).await;
+                });
+                res
             }
             Self::BankDepositSearch { member, id, reason } => {
                 quick_transaction_return!(
@@ -149,7 +155,7 @@ impl Handler for Request {
                 amount,
                 reason,
             } => {
-                quick_transaction!(
+                let res = quick_transaction!(
                     BankTransferNew,
                     db,
                     msg,
@@ -159,7 +165,25 @@ impl Handler for Request {
                     target,
                     *amount,
                     reason,
-                )
+                );
+                let source = *source;
+                let target = *target;
+                let nats = nats.clone();
+                tokio::spawn(async move {
+                    actor::gear::bank::publish_balance(
+                        nats.clone(),
+                        source,
+                        String::from("transfer source"),
+                    )
+                    .await;
+                    actor::gear::bank::publish_balance(
+                        nats,
+                        target,
+                        String::from("transfer target"),
+                    )
+                    .await;
+                });
+                res
             }
             Self::ShopGetAll { page } => {
                 quick_transaction_return!(
@@ -224,6 +248,8 @@ impl Handler for Request {
                 let locker = actor::gear::locker::get(member, &mut *tx).await?;
                 tx.commit().await?;
                 respond!(msg, Response::ShopPurchase(Ok((locker, balance)))).await?;
+                actor::gear::bank::publish_balance(nats, *member, String::from("shop purchase"))
+                    .await;
                 Ok(())
             }
             Self::SetPrettyName { item, pretty } => {
@@ -335,6 +361,12 @@ impl Handler for Request {
                 .await?;
                 tx.commit().await?;
                 respond!(msg, Response::FamilyReplace(Ok(()))).await?;
+                actor::gear::bank::publish_balance(
+                    nats,
+                    *member,
+                    format!("family replace: {reason}"),
+                )
+                .await;
                 Ok(())
             }
         }

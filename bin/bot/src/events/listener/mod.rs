@@ -3,6 +3,7 @@ use synixe_events::global::Publish;
 include!("../../../../../lib/common/listener.rs");
 
 mod certifications;
+mod gear;
 mod missions;
 
 #[allow(clippy::cognitive_complexity)]
@@ -18,6 +19,7 @@ pub async fn start() {
             msg.clone(),
             nats.clone(),
             synixe_events::certifications::publish::Publish,
+            synixe_events::gear::publish::Publish,
             synixe_events::missions::publish::Publish,
             synixe_events::global::Publish,
         );

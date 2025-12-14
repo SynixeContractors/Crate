@@ -179,3 +179,20 @@ pub mod db {
         } => (Result<(), String>)
     });
 }
+
+/// Inform services about gear.
+pub mod publish {
+    use synixe_proc::events_publish;
+
+    events_publish!(publish.gear {
+        /// A member's balance has changed
+        struct BalanceChanged {
+            /// The member's ID
+            member: serenity::model::prelude::UserId,
+            /// The new balance
+            new_balance: i32,
+            /// The reason for the change
+            reason: String,
+        }
+    });
+}

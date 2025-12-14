@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
+use synixe_events::publish;
 use synixe_meta::discord::BRODSKY;
 use synixe_model::gear::Deposit;
 use uuid::Uuid;
@@ -120,4 +121,41 @@ pub async fn shop_purchase_personal_cost(
         query.execute(&mut **executor).await?;
     }
     Ok(())
+}
+
+pub async fn publish_balance(
+    nats: std::sync::Arc<nats::asynk::Connection>,
+    member: UserId,
+    reason: String,
+) {
+    let db = bootstrap::DB::get().await;
+    let mut tx = db
+        .begin()
+        .await
+        .expect("should be able to begin transaction");
+    let Some(new_balance) = balance(&member, &mut *tx)
+        .await
+        .expect("should be able to get balance")
+    else {
+        tx.commit()
+            .await
+            .expect("should be able to commit transaction");
+        return;
+    };
+    if let Err(e) = publish!(
+        nats,
+        synixe_events::gear::publish::Publish::BalanceChanged {
+            member,
+            new_balance,
+            reason,
+        }
+    )
+    .await
+    {
+        tracing::error!(
+            "Failed to publish balance change for member {}: {}",
+            member,
+            e
+        );
+    }
 }
