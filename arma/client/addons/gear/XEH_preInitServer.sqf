@@ -104,11 +104,11 @@ if !(isMultiplayer) exitWith {};
 // ============= Suppressors
 
 [QGVAR(suppressors_disable), {
-    missionNamespace setVariable [EGVAR(suppressors_allowed), false, true];
+    missionNamespace setVariable [QGVAR(suppressors_allowed), false, true];
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(suppressors_enable), {
-    missionNamespace setVariable [EGVAR(suppressors_allowed), true, true];
+    missionNamespace setVariable [QGVAR(suppressors_allowed), true, true];
 }] call CBA_fnc_addEventHandler;
 
 addMissionEventHandler ["ExtensionCallback", {

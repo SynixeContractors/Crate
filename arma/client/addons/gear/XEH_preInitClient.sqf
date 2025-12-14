@@ -16,12 +16,13 @@ GVAR(loadout_tracking) = false;
     params ["_loadout"];
     [player, _loadout, false] call CBA_fnc_setLoadout;
     [{
+        private _loadout = _this select 0;
         if (count _loadout == 2) then {
             _loadout = _loadout select 0;
         };
         player addGoggles (_loadout select 7);
         GVAR(loadout_tracking) = true;
-    }] call CBA_fnc_execNextFrame;
+    }, [_loadout]] call CBA_fnc_execNextFrame;
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(loadout_track), {

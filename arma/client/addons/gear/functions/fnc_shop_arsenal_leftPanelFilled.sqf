@@ -13,7 +13,7 @@ private _items = [_loadout] call FUNC(loadout_items);
 for "_lbIndex" from 0 to (lbSize _ctrlPanel - 1) do {
     private _raw_class = _ctrlPanel lbData _lbIndex;
     if (_raw_class isNotEqualTo "") then {
-        ([_raw_class] call FUNC(shop_arsenal_tooltip)) params ["_tooltip", "_color"];
+        ([_items, _raw_class] call FUNC(shop_arsenal_tooltip)) params ["_tooltip", "_color"];
         _ctrlPanel lbSetTooltip [_lbIndex, _tooltip];
         _ctrlPanel lbSetColor [_lbIndex, _color];
     };

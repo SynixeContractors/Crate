@@ -7,7 +7,7 @@ ADDON = false;
 }] call CBA_fnc_addEventHandler;
 
 ["ace_refuel_tick", {
-    params ["_source", "_target" "_amount"];
+    params ["_source", "_target", "_amount"];
     [QGVAR(tick), [_source, _target, _amount]] call CBA_fnc_serverEvent;
 }] call CBA_fnc_addEventHandler;
 

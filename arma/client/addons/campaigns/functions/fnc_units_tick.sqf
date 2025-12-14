@@ -13,7 +13,7 @@ if (GVAR(units_stack) isEqualTo []) then {
 if (GVAR(units_stack) isEqualTo []) exitWith {};
 
 private _unit = GVAR(units_stack) deleteAt 0;
-if (_object isKindOf "Logic") exitWith {};
+if (_unit isKindOf "Logic") exitWith {};
 
 private _id = _unit getVariable [QGVAR(id), ""];
 if (_id == "") then {

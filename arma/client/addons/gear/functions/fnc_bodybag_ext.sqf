@@ -3,9 +3,9 @@
 params ["_func", "_data"];
 
 switch (_func) do {
+    (parseSimpleArray _data) params ["_netId"];
+    private _bodybag = objectFromNetId _netId;
     case "store:ok": {
-        (parseSimpleArray _data) params ["_netId"];
-        private _bodybag = objectFromNetId _netId;
         clearBackpackCargoGlobal _bodybag;
         clearItemCargoGlobal _bodybag;
         clearMagazineCargoGlobal _bodybag;
@@ -15,6 +15,6 @@ switch (_func) do {
     };
     case "store:err": {
         private _nearby = (getPosATL _bodybag) nearObjects ["CAManBase", 2];
-        [QGVAR(notify), "Bodybag Storage Failed", nearbyPlayers] call CBA_fnc_targetEvent;
+        [QGVAR(notify), "Bodybag Storage Failed", _nearby] call CBA_fnc_targetEvent;
     };
 };

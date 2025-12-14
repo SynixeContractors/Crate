@@ -58,7 +58,7 @@ private _disableAI = [];
         _disableAI pushBack _x;
     };
 } forEach ["AUTOTARGET","MOVE","TARGET","TEAMSWITCH","WEAPONAIM","ANIM","FSM","AIMINGERROR","SUPPRESSION","CHECKVISIBLE","AUTOCOMBAT","COVER","PATH","MINEDETECTION","LIGHTS","NVG","RADIOPROTOCOL","FIREWEAPON"];
-if (count _disableAI > 0) then {
+if (_disableAI isNotEqualTo []) then {
     _state set ["disableAI", _disableAI];
 };
 

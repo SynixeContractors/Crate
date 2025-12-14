@@ -13,7 +13,7 @@ if (GVAR(groups_stack) isEqualTo []) then {
 if (GVAR(groups_stack) isEqualTo []) exitWith {};
 
 private _group = GVAR(groups_stack) deleteAt 0;
-if (count units _group == 0 && { time > 30 }) exitWith {};
+if ((units _group isEqualTo []) && { time > 30 }) exitWith {};
 
 private _id = _group getVariable [QGVAR(id), ""];
 if (_id == "") then {

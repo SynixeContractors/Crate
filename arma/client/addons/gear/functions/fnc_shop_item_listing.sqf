@@ -12,7 +12,7 @@ if (_shopClass isNotEqualTo []) exitWith {
 
 // Handles CBA disposable rockets
 private _launcherCheck = _class splitString "_";
-if (count _launcherCheck > 0) then {
+if (_launcherCheck isNotEqualTo []) then {
     if ((toLower (_launcherCheck select -1)) isEqualTo "loaded") then {
         _launcherCheck deleteAt [-1];
         _launcherCheck = _launcherCheck joinString "_";

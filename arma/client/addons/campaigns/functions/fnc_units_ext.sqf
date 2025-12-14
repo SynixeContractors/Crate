@@ -1,6 +1,6 @@
 #include "script_component.hpp"
 
-params ["_func", "_args"];
+params ["_func", "_data"];
 
 switch (_func) do {
     case "load": {

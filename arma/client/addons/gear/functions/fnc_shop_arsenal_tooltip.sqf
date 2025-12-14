@@ -1,6 +1,6 @@
 #include "script_component.hpp"
 
-params ["_raw_class"];
+params ["_items", "_raw_class"];
 
 private _class = [_raw_class] call FUNC(shop_item_listing);
 

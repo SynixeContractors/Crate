@@ -4,7 +4,7 @@ params ["_id", "_plate", "_class", "_state"];
 
 if !(isServer) exitWith {};
 
-if (count allPlayers == 0) exitWith {
+if (allPlayers isEqualTo []) exitWith {
     EXTCALL("garage:spawn",[ARR_2(_id,"NoPlayers")]);
 };
 
@@ -27,7 +27,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     };
 
     // Check for any obstruction in the spawn area
-    if (count nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], 5] > 0) exitWith {
+    if (nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], 5] isNotEqualTo []) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"AreaBlocked")]);
     };
 
@@ -69,12 +69,12 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
         getNumber (configOf _x >> QGVAR(size)) > _objSize
     };
 
-    if (count _spawns == 0) exitWith {
+    if (_spawns isEqualTo []) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"NoSpawnArea")]);
     };
 
     private _spawn = _spawns findIf {
-        count nearestObjects [getPos _x, ["Land", "Air", "Ship", "Thing"], _objSize + 0.5] == 0
+        nearestObjects [getPos _x, ["Land", "Air", "Ship", "Thing"], _objSize + 0.5] isEqualTo []
     };
     if (_spawn == -1) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"AreaBlocked")]);
