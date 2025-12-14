@@ -24,6 +24,6 @@ tokio-simple-scheduler = "0.1.2"
 tracing = { workspace = true }
 
 # recruiting
-roux = "2.2.14"
-rust-embed = "8.7.2"
-scraper = "0.23.1"
+roux = "2.2.15"
+rust-embed = "8.9.0"
+scraper = "0.25.0"

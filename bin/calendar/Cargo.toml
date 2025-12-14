@@ -13,8 +13,8 @@ synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 axum = { workspace = true }
-chrono = "0.4.41"
-icalendar = "0.16.15"
+chrono = "0.4.42"
+icalendar = "0.17.6"
 nats = { workspace = true }
 time = { workspace = true }
 time-tz = "2.0.0"

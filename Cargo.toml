@@ -39,6 +39,7 @@ async-trait = "0.1.89"
 axum = "0.8.7"
 # nats = { version = "0.25.0" }
 nats = { git = "https://github.com/nats-io/nats.rs" }
+regex = "1.12.2"
 reqwest = { version = "0.12.25", features = ["rustls-tls"] }
 rsa = "0.9.8"
 serde = { version = "1.0.228", features = ["derive"] }
