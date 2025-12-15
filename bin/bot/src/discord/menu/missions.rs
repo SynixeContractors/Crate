@@ -249,7 +249,12 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
             AARS.say(
                 &ctx,
                 format!(
-                    "```ansi{}\n\n{}```",
+                    "```ansi{}{}\n\n{}```",
+                    if aar.content().starts_with('\n') {
+                        ""
+                    } else {
+                        "\n"
+                    },
                     aar.content(),
                     aar.show_math(payment, current_rep)
                 ),
