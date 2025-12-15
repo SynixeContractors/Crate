@@ -56,6 +56,9 @@ fn disconnected(steam: String, name: String) {
 }
 
 fn chat(steam: String, name: String, channel: String, message: String) {
+    if message.is_empty() {
+        return;
+    }
     RUNTIME.spawn(async move {
         if let Err(e) = events_request_5!(
             bootstrap::NC::get().await,
