@@ -83,6 +83,7 @@ fn chat(steam: String, name: String, channel: String, message: String) {
 }
 
 fn take(steam: String, name: String, from: String, item: String) {
+    return;
     RUNTIME.spawn(async move {
         if let Err(e) = events_request_5!(
             bootstrap::NC::get().await,
