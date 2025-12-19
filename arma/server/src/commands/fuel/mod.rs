@@ -39,6 +39,7 @@ fn started(ctx: Context, source: String, target: String, discord: String, plate:
         .as_ref()
         .write()
         .expect("Unable to lock fueling state");
+    info!("started fueling from {source} to {target} for discord id {discord}");
     fueling.insert((source, target), (0.0, UserId::new(discord), plate));
 }
 
@@ -54,6 +55,7 @@ fn tick(ctx: Context, source: String, target: String, amount: f64) {
     let entry = fueling
         .entry((source, target))
         .or_insert((0.0, BRODSKY, String::new()));
+    info!("tick fueling from {} to {}: +{}", entry.0, amount, amount);
     entry.0 += amount;
 }
 

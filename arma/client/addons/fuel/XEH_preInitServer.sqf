@@ -20,3 +20,16 @@ if !(isMultiplayer) exitWith {};
     params ["_source", "_target"];
     EXTCALL("fuel:finished",[ARR_3(netId _source,netId _target,worldName)]);
 }] call CBA_fnc_addEventHandler;
+
+addMissionEventHandler ["ExtensionCallback", {
+    params ["_name", "_func", "_data"];
+    if (_name != "crate:fuel") exitWith {};
+    if (_func != "price") exitWith {};
+    GVAR(diaryRecord) = player createDiaryRecord [
+        QEGVAR(discord,diary),
+        [
+            "Fuel Price",
+            format ["The fuel price in this region is %1 per litre.", _data]
+        ]
+    ];
+}];
