@@ -6,7 +6,7 @@ use synixe_events::{
     publish, respond,
 };
 
-use crate::handler::reputation::audit;
+use crate::audit;
 
 use super::Handler;
 

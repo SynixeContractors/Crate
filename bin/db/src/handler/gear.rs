@@ -8,7 +8,10 @@ use synixe_events::{
 };
 use synixe_model::gear::FamilyItem;
 
-use crate::actor::{self, gear::fuel::prices_for_map};
+use crate::{
+    actor::{self, gear::fuel::prices_for_map},
+    game_audit,
+};
 
 use super::Handler;
 
@@ -380,14 +383,28 @@ impl Handler for Request {
                 if let Err(e) = sqlx::query!(
                     "INSERT INTO gear_bank_deposits (member, amount, reason, id) VALUES (0, $1, $2, '00000000-0000-0000-0000-000000000001')",
                     price,
-                    format!("Fuel: {amount}l @ {:.2} by {member}{}", prices_for_map(map),
-                        plate.as_ref().map_or_else(String::new, |plate| format!(" on {plate}")))
+                    format!(
+                    "Fuel: {amount}l @ {:.2} by {member}{}",
+                    prices_for_map(map),
+                    plate
+                        .as_ref()
+                        .map_or_else(String::new, |plate| format!(" on {plate}"))
+                ),
                 )
                 .execute(&*db)
                 .await {
                     return Err(anyhow::Error::new(e).context("Failed to record fuel purchase"));
                 }
                 respond!(msg, Response::Fuel(Ok(price))).await?;
+                let _ = game_audit(format!(
+                    "**Fuel**\n{member} purchased {amount}l @ {:.2} (Total: ${}){}",
+                    prices_for_map(map),
+                    price,
+                    plate
+                        .as_ref()
+                        .map_or_else(String::new, |plate| format!(" on {plate}"))
+                ))
+                .await;
                 Ok(())
             }
             Self::FuelPrice { map } => {
