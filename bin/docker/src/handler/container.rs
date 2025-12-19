@@ -7,10 +7,10 @@ use synixe_events::{
     discord::write::{DiscordContent, DiscordMessage},
     respond,
 };
-use synixe_meta::docker::Container;
+use synixe_meta::docker::ArmaServer;
 use synixe_proc::events_request_5;
 
-use crate::DOCKER_SERVER;
+use crate::{CRATE_CONTAINER, CRATE_SERVER};
 
 use super::Handler;
 
@@ -38,19 +38,18 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        // TODO could use a macro for these 3 to reduce some code, but not really worth it
         match self {
-            Self::Restart { container, reason } => {
+            Self::Restart { server, reason } => {
                 respond!(msg, Response::Restart(Ok(()))).await?;
-                handle(nats, container, Action::Restart, reason).await
+                handle(nats, server, Action::Restart, reason).await
             }
-            Self::Start { container, reason } => {
+            Self::Start { server, reason } => {
                 respond!(msg, Response::Start(Ok(()))).await?;
-                handle(nats, container, Action::Start, reason).await
+                handle(nats, server, Action::Start, reason).await
             }
-            Self::Stop { container, reason } => {
+            Self::Stop { server, reason } => {
                 respond!(msg, Response::Stop(Ok(()))).await?;
-                handle(nats, container, Action::Stop, reason).await
+                handle(nats, server, Action::Stop, reason).await
             }
         }
     }
@@ -59,26 +58,21 @@ impl Handler for Request {
 #[allow(clippy::cognitive_complexity)]
 async fn handle(
     nats: std::sync::Arc<nats::asynk::Connection>,
-    container: &Container,
+    server: &ArmaServer,
     action: Action,
     reason: &str,
 ) -> Result<(), anyhow::Error> {
-    let docker =
-        Docker::connect_with_socket_defaults().expect("should be able to connect to docker");
-    if container.dc() != *DOCKER_SERVER {
-        debug!(
-            "ignoring container {} on {}",
-            container.id(),
-            container.dc()
-        );
+    if server != &CRATE_SERVER.1 {
         return Ok(());
     }
-    info!("{action} container {} ({reason})", container.key());
+    let docker =
+        Docker::connect_with_socket_defaults().expect("should be able to connect to docker");
+    info!("{action} container {:?} ({reason})", &CRATE_CONTAINER);
     let res = match action {
         Action::Restart => {
             docker
                 .restart_container(
-                    container.id(),
+                    &CRATE_CONTAINER,
                     None::<bollard::query_parameters::RestartContainerOptions>,
                 )
                 .await
@@ -86,7 +80,7 @@ async fn handle(
         Action::Start => {
             docker
                 .start_container(
-                    container.id(),
+                    &CRATE_CONTAINER,
                     None::<bollard::query_parameters::StartContainerOptions>,
                 )
                 .await
@@ -94,7 +88,7 @@ async fn handle(
         Action::Stop => {
             docker
                 .stop_container(
-                    container.id(),
+                    &CRATE_CONTAINER,
                     None::<bollard::query_parameters::StopContainerOptions>,
                 )
                 .await
@@ -102,11 +96,11 @@ async fn handle(
     };
     let audit = match res {
         Ok(()) => {
-            format!("container {action}: {} ({reason})", container.key())
+            format!("container {action}: {:?} ({reason})", &CRATE_CONTAINER)
         }
         Err(e) => {
-            error!("failed to {action} container {}: {e}", container.key());
-            format!("failed to {action} container {}: {e}", container.key())
+            error!("failed to {action} container {:?}: {e}", &CRATE_CONTAINER);
+            format!("failed to {action} container {:?}: {e}", &CRATE_CONTAINER)
         }
     };
     if let Err(e) = events_request_5!(

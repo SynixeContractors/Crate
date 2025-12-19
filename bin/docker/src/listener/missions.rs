@@ -6,11 +6,9 @@ use synixe_events::{
     discord::write::{DiscordContent, DiscordMessage},
     missions::publish::Publish,
 };
-use synixe_meta::docker::Primary;
+use synixe_meta::docker::ArmaServer;
 use synixe_model::missions::MissionType;
 use synixe_proc::events_request_5;
-
-use crate::DOCKER_SERVER;
 
 use super::Listener;
 
@@ -29,9 +27,6 @@ impl Listener for Publish {
             reason,
         } = &self
         {
-            if *DOCKER_SERVER != "monterey-primary" {
-                return Ok(());
-            }
             if id.starts_with('$') {
                 return Ok(());
             }
@@ -74,7 +69,7 @@ impl Listener for Publish {
                 nats,
                 synixe_events::containers::docker,
                 Restart {
-                    container: Primary::Arma3Contracts.into(),
+                    server: ArmaServer::Arma3Contracts,
                     reason: format!("Mission changed to `{id}`"),
                 }
             )

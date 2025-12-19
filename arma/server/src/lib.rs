@@ -16,8 +16,8 @@ mod handler;
 mod listener;
 mod logger;
 
-static SERVER_ID: LazyLock<String> =
-    LazyLock::new(|| std::env::var("CRATE_SERVER_ID").expect("CRATE_SERVER_ID not set"));
+static CRATE_SERVER: LazyLock<String> =
+    LazyLock::new(|| std::env::var("CRATE_SERVER").expect("CRATE_SERVER not set"));
 static RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -47,7 +47,7 @@ async fn audit(message: String) {
 
 #[arma]
 fn init() -> Extension {
-    info!("Initializing for server `{}`", *SERVER_ID);
+    info!("Initializing for server `{}`", *CRATE_SERVER);
     let ext = Extension::build()
         .command("id", command_id)
         .command("uuid", command_uuid)
@@ -99,7 +99,7 @@ fn ping() {
 }
 
 fn command_id() -> String {
-    SERVER_ID.clone()
+    CRATE_SERVER.clone()
 }
 
 fn command_uuid() -> Uuid {

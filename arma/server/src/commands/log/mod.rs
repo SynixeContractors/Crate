@@ -2,7 +2,7 @@ use arma_rs::Group;
 use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_proc::events_request_5;
 
-use crate::{RUNTIME, SERVER_ID};
+use crate::{CRATE_SERVER, RUNTIME};
 
 pub fn group() -> Group {
     Group::new()
@@ -19,7 +19,7 @@ fn connected(steam: String, name: String) {
             bootstrap::NC::get().await,
             synixe_events::servers::db,
             Log {
-                server: (*SERVER_ID).clone(),
+                server: (*CRATE_SERVER).clone(),
                 steam,
                 action: "connected".to_string(),
                 data: serde_json::json!({
@@ -40,7 +40,7 @@ fn disconnected(steam: String, name: String) {
             bootstrap::NC::get().await,
             synixe_events::servers::db,
             Log {
-                server: (*SERVER_ID).clone(),
+                server: (*CRATE_SERVER).clone(),
                 steam,
                 action: "disconnected".to_string(),
                 data: serde_json::json!({
@@ -64,7 +64,7 @@ fn chat(steam: String, name: String, channel: String, message: String) {
             bootstrap::NC::get().await,
             synixe_events::servers::db,
             Log {
-                server: (*SERVER_ID).clone(),
+                server: (*CRATE_SERVER).clone(),
                 steam: steam.clone(),
                 action: "chat".to_string(),
                 data: serde_json::json!({
@@ -89,7 +89,7 @@ fn take(steam: String, name: String, from: String, item: String) {
             bootstrap::NC::get().await,
             synixe_events::servers::db,
             Log {
-                server: (*SERVER_ID).clone(),
+                server: (*CRATE_SERVER).clone(),
                 steam: steam.clone(),
                 action: "take".to_string(),
                 data: serde_json::json!({
@@ -118,7 +118,7 @@ fn role(steam: String, name: String, discord: String, role: String) {
             bootstrap::NC::get().await,
             synixe_events::servers::db,
             Log {
-                server: (*SERVER_ID).clone(),
+                server: (*CRATE_SERVER).clone(),
                 steam,
                 action: "role".to_string(),
                 data: serde_json::json!({

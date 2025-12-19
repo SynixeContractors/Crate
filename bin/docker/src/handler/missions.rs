@@ -5,7 +5,7 @@ use synixe_events::{
 };
 use tokio::process::Command;
 
-use crate::DOCKER_SERVER;
+use crate::CRATE_CONTAINER;
 
 use super::Handler;
 
@@ -16,13 +16,10 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        if *DOCKER_SERVER != "monterey-primary" {
-            return Ok(());
-        }
         respond!(msg, Response::UpdateMissionList(Ok(()))).await?;
         let command = Command::new("git")
             .arg("pull")
-            .current_dir("/arma/contracts/mpmissions")
+            .current_dir(format!("/arma/{}/mpmissions", *CRATE_CONTAINER))
             .status()
             .await?;
         if !command.success() {

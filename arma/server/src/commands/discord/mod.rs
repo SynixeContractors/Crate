@@ -14,7 +14,7 @@ pub fn group() -> Group {
 
 //     #[test]
 //     fn fetch_brett() {
-//         std::env::set_var("CRATE_SERVER_ID", "test_get_brett");
+//         std::env::set_var("CRATE_SERVER", "test_get_brett");
 //         let ext = super::super::init().testing();
 //         unsafe {
 //             let (_, code) = ext.call(
@@ -49,7 +49,7 @@ pub fn group() -> Group {
 
 //     #[test]
 //     fn fetch_missing() {
-//         std::env::set_var("CRATE_SERVER_ID", "test_get_brett");
+//         std::env::set_var("CRATE_SERVER", "test_get_brett");
 //         let ext = super::super::init().testing();
 //         unsafe {
 //             let (_, code) = ext.call("discord:member:get", Some(vec![String::from("0123")]));

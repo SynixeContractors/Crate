@@ -1,9 +1,10 @@
 use arma_rs::{ContextState, IntoArma};
 use async_trait::async_trait;
 use synixe_events::garage::arma::Request;
+use synixe_meta::docker::ArmaServer;
 use uuid::Uuid;
 
-use crate::{CONTEXT, SERVER_ID};
+use crate::{CONTEXT, CRATE_SERVER};
 
 use super::Handler;
 
@@ -14,7 +15,7 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         _nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
-        if *SERVER_ID != "primary-main" {
+        if !ArmaServer::is_contracts(&CRATE_SERVER) {
             return Ok(());
         }
         match self {

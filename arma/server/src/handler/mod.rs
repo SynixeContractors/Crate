@@ -1,4 +1,4 @@
-use crate::SERVER_ID;
+use crate::CRATE_SERVER;
 
 include!("../../../../lib/common/handler.rs");
 
@@ -9,7 +9,7 @@ pub async fn start() {
     let nats = bootstrap::NC::get().await;
 
     let Ok(sub) = nats
-        .queue_subscribe("synixe.arma.>", &format!("arma-server-{}", *SERVER_ID))
+        .queue_subscribe("synixe.arma.>", &format!("arma-server-{}", *CRATE_SERVER))
         .await
     else {
         panic!("failed to subscribe to arma events");
