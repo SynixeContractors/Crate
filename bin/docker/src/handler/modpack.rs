@@ -3,11 +3,11 @@ use synixe_events::{
     containers::modpack::{Request, Response},
     respond,
 };
-use synixe_meta::docker::ArmaServer;
+use synixe_meta::docker::Primary;
 use synixe_proc::events_request_5;
 use tokio::process::Command;
 
-use crate::CRATE_CONTAINER;
+use crate::DOCKER_SERVER;
 
 use super::Handler;
 
@@ -18,13 +18,16 @@ impl Handler for Request {
         msg: nats::asynk::Message,
         nats: std::sync::Arc<nats::asynk::Connection>,
     ) -> Result<(), anyhow::Error> {
+        if *DOCKER_SERVER != "monterey-primary" {
+            return Ok(());
+        }
         respond!(msg, Response::Updated(Ok(()))).await?;
         let command = Command::new("rsync")
             .arg("-ur")
             .arg("--delete-after")
             .arg("download@192.168.1.111:/")
             .arg(".")
-            .current_dir(format!("/arma/{}/mods", *CRATE_CONTAINER))
+            .current_dir("/arma/contracts/mods")
             .status()
             .await?;
         if !command.success() {
@@ -35,7 +38,7 @@ impl Handler for Request {
             nats,
             synixe_events::containers::docker,
             Restart {
-                server: ArmaServer::Arma3Contracts,
+                container: Primary::Arma3Contracts.into(),
                 reason: "modpack updated".to_string(),
             }
         )
@@ -48,7 +51,7 @@ impl Handler for Request {
             nats,
             synixe_events::containers::docker,
             Restart {
-                server: ArmaServer::Arma3Training,
+                container: Primary::Arma3Training.into(),
                 reason: "modpack updated".to_string(),
             }
         )

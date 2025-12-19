@@ -10,7 +10,10 @@ An agent responsible for starting, stopping, and monitoring Docker containers.
 
 Requires /var/run/docker.sock to be mounted into the container.
 
-| ENV | Description |
+Set `CRATE_DOCKER_SERVER` to the ID of the Docker server.
+
+| Server | Role |
 | --- | --- |
-| `CRATE_SERVER` | The arma server being managed. |
-| `CRATE_CONTAINER` | The container name of the arma server being managed. |
+| `primary` | Runs Arma 3 Servers |
+| `secondary | Runs other game servers |
+| `reynold` | Runs TeamSpeak and monitoring services |

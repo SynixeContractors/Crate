@@ -1,4 +1,4 @@
-use crate::CRATE_SERVER;
+use crate::DOCKER_SERVER;
 
 include!("../../../../lib/common/handler.rs");
 
@@ -13,7 +13,7 @@ pub async fn start() {
     let sub = nats
         .queue_subscribe(
             "synixe.docker.>",
-            &format!("synixe-docker-{}", &*CRATE_SERVER.0),
+            &format!("synixe-docker-{}", *DOCKER_SERVER),
         )
         .await
         .expect("should be able to subscribe to docker events");

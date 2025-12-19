@@ -8,7 +8,7 @@ use serenity::{
 use strum::IntoEnumIterator;
 use synixe_meta::{
     discord::role::{DOCKER, MISSION_REVIEWER, STAFF},
-    docker::ArmaServer,
+    docker::Container,
 };
 use synixe_proc::events_request_30;
 
@@ -20,16 +20,20 @@ pub fn register() -> CreateCommand {
     CreateCommand::new("docker")
         .description("Interact with the docker containers")
         .add_option(
-            CreateCommandOption::new(CommandOptionType::SubCommand, "restart", "Restart a server")
-                .add_sub_option(
-                    CreateCommandOption::new(
-                        CommandOptionType::String,
-                        "server",
-                        "The server to restart",
-                    )
-                    .set_autocomplete(true)
-                    .required(true),
-                ),
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "restart",
+                "Restart a container",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "container",
+                    "The container to restart",
+                )
+                .set_autocomplete(true)
+                .required(true),
+            ),
         )
 }
 
@@ -69,21 +73,31 @@ async fn container_autocomplete(
     autocomplete: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let Some(name) = get_option!(options, "server", String) else {
-        warn!("No server provided");
+    let Some(name) = get_option!(options, "container", String) else {
+        warn!("No container provided");
         return Ok(());
     };
     let name = name.to_lowercase();
-    let mut containers = synixe_meta::docker::ArmaServer::iter()
-        .map(|server| (server.to_string().to_lowercase(), server))
-        .collect::<Vec<(String, ArmaServer)>>();
-    containers.retain(|c| c.0.contains(&name));
+    let mut containers = synixe_meta::docker::Primary::iter()
+        .map(std::convert::Into::into)
+        .collect::<Vec<Container>>();
+    // containers.append(&mut synixe_meta::docker::Reynold::iter().map(|c| c.into()).collect::<Vec<Container>>());
+    containers.retain(|c| {
+        c.name()
+            .unwrap_or_else(|| c.id())
+            .to_lowercase()
+            .contains(&name)
+            || c.id().to_lowercase().contains(&name)
+    });
     containers.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
-            for server in containers {
-                f = f.add_string_choice(server.0.clone(), server.0);
+            for container in containers {
+                f = f.add_string_choice(
+                    container.name().unwrap_or_else(|| container.id()),
+                    container.key(),
+                );
             }
             CreateInteractionResponse::Autocomplete(f)
         })
@@ -100,7 +114,7 @@ async fn restart(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
-    interaction.reply("Restarting server...").await?;
+    interaction.reply("Restarting container...").await?;
     super::requires_roles(
         command.user.id,
         &[MISSION_REVIEWER, STAFF, DOCKER],
@@ -113,27 +127,23 @@ async fn restart(
         &mut interaction,
     )
     .await?;
-    let server = get_option!(options, "server", String);
-    let Some(server) = server else {
-        error!("No server provided");
+    let container = get_option!(options, "container", String);
+    let Some(container) = container else {
+        error!("No container provided");
         return Ok(());
     };
-    let Ok(server) = ArmaServer::try_from(server.as_str()) else {
-        error!("Invalid server provided: {}", server);
-        interaction.reply("Invalid server provided").await?;
-        return Ok(());
-    };
+    let (dc, id) = container.split_once(':').expect("Invalid container");
     if let Err(e) = events_request_30!(
         bootstrap::NC::get().await,
         synixe_events::containers::docker,
         Restart {
-            server,
+            container: Container::new(id.to_string(), dc.to_string(), None,),
             reason: format!("Restarted by <@{}>", command.user.id),
         }
     )
     .await
     {
-        error!("Failed to restart server: {}", e);
+        error!("Failed to restart container: {}", e);
         interaction.reply("Failed to request restart").await?;
     } else {
         interaction.reply("Restart requested").await?;

@@ -1,10 +1,9 @@
 use arma_rs::Group;
 use serenity::model::prelude::UserId;
 use synixe_events::reputation::db;
-use synixe_meta::docker::ArmaServer;
 use synixe_proc::events_request_5;
 
-use crate::{CRATE_SERVER, RUNTIME};
+use crate::{RUNTIME, SERVER_ID};
 
 pub fn group() -> Group {
     Group::new()
@@ -21,7 +20,7 @@ pub fn group() -> Group {
 }
 
 fn command_friendly_shot(member: String, target: String, weapon: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {
@@ -47,7 +46,7 @@ fn command_friendly_shot(member: String, target: String, weapon: String) {
 }
 
 fn command_civilian_shot(member: String, target: String, weapon: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {
@@ -73,7 +72,7 @@ fn command_civilian_shot(member: String, target: String, weapon: String) {
 }
 
 fn command_unarmed_shot(member: String, target: String, weapon: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {
@@ -99,7 +98,7 @@ fn command_unarmed_shot(member: String, target: String, weapon: String) {
 }
 
 fn command_surrendering_shot(member: String, target: String, weapon: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {
@@ -125,7 +124,7 @@ fn command_surrendering_shot(member: String, target: String, weapon: String) {
 }
 
 fn command_captive_shot(member: String, target: String, weapon: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {
@@ -151,7 +150,7 @@ fn command_captive_shot(member: String, target: String, weapon: String) {
 }
 
 fn command_unconscious_shot(member: String, target: String, weapon: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {
@@ -177,7 +176,7 @@ fn command_unconscious_shot(member: String, target: String, weapon: String) {
 }
 
 fn command_building_damaged(member: String, target: String, weapon: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {
@@ -203,7 +202,7 @@ fn command_building_damaged(member: String, target: String, weapon: String) {
 }
 
 fn command_friendly_healed(member: String, target: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {
@@ -228,7 +227,7 @@ fn command_friendly_healed(member: String, target: String) {
 }
 
 fn command_unfriendly_healed(member: String, target: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {
@@ -253,7 +252,7 @@ fn command_unfriendly_healed(member: String, target: String) {
 }
 
 fn command_civilian_healed(member: String, target: String) {
-    if !ArmaServer::is_contracts(&CRATE_SERVER) {
+    if *SERVER_ID != "primary-main" {
         return;
     }
     let Ok(discord) = member.parse::<u64>() else {

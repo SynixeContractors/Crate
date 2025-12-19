@@ -1,9 +1,8 @@
 use async_trait::async_trait;
 use synixe_events::missions::publish::Publish;
-use synixe_meta::docker::ArmaServer;
 use synixe_model::missions::MissionType;
 
-use crate::{CONTEXT, CRATE_SERVER};
+use crate::{CONTEXT, SERVER_ID};
 
 use super::Listener;
 
@@ -23,7 +22,7 @@ impl Listener for Publish {
         };
         match &self {
             Self::StartingSoon { scheduled, minutes } => {
-                if ArmaServer::is_contracts(&CRATE_SERVER) {
+                if *SERVER_ID == "primary-main" {
                     #[allow(clippy::cast_precision_loss)]
                     if let Err(e) = context.callback_data(
                         "crate:missions",
@@ -57,7 +56,7 @@ impl Listener for Publish {
                         ) {
                             error!("error sending brodsky_say: {e:?}");
                         }
-                        if ArmaServer::is_contracts(&CRATE_SERVER) {
+                        if *SERVER_ID == "primary-main" {
                             #[allow(clippy::cast_precision_loss)]
                             if let Err(e) = context.callback_null("crate:missions", "intro_text") {
                                 error!("error sending intro_text: {e:?}");
@@ -75,7 +74,7 @@ impl Listener for Publish {
             } => {
                 match mission_type {
                     MissionType::Contract | MissionType::SubContract | MissionType::Special => {
-                        if !ArmaServer::is_contracts(&CRATE_SERVER) {
+                        if *SERVER_ID != "primary-main" {
                             info!("Ignoring mission change event for non-main server");
                             return Ok(());
                         }
