@@ -19,7 +19,7 @@ private _my_roles = player getVariable [QEGVAR(discord,roles), []];
 
 private _suppressors = missionNamespace getVariable [QGVAR(suppressors_allowed), false];
 _ret = _ret select {
-    private _type = getNumber (configFile >> "CfgWeapons" >> _data >> "ItemInfo" >> "type");
+    private _type = getNumber (configFile >> "CfgWeapons" >> _x >> "ItemInfo" >> "type");
     if (_type == 101) then {
         _suppressors
     } else {
