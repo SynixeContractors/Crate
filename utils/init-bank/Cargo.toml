@@ -1,0 +1,19 @@
+[package]
+name = "synixe-init-bank"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-meta = { path = "../../lib/meta" }
+synixe-proc = { path = "../../lib/proc" }
+synixe-model = { path = "../../lib/model" }
+
+serenity = { workspace = true, features = ["builder", "cache", "client", "collector", "gateway", "http", "model", "utils", "rustls_backend"] }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+uuid = { workspace = true }
