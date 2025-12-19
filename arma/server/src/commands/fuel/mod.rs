@@ -16,7 +16,7 @@ pub fn group() -> Group {
         .state(Fueling::default())
 }
 
-type FuelingState = RwLock<HashMap<(String, String), (u64, UserId, String)>>;
+type FuelingState = RwLock<HashMap<(String, String), (f64, UserId, String)>>;
 
 #[derive(Default)]
 pub struct Fueling(FuelingState);
@@ -39,10 +39,10 @@ fn started(ctx: Context, source: String, target: String, discord: String, plate:
         .as_ref()
         .write()
         .expect("Unable to lock fueling state");
-    fueling.insert((source, target), (0, UserId::new(discord), plate));
+    fueling.insert((source, target), (0.0, UserId::new(discord), plate));
 }
 
-fn tick(ctx: Context, source: String, target: String, amount: u64) {
+fn tick(ctx: Context, source: String, target: String, amount: f64) {
     let fueling = ctx
         .group()
         .get::<Fueling>()
@@ -53,7 +53,7 @@ fn tick(ctx: Context, source: String, target: String, amount: u64) {
         .expect("Unable to lock fueling state");
     let entry = fueling
         .entry((source, target))
-        .or_insert((0, BRODSKY, String::new()));
+        .or_insert((0.0, BRODSKY, String::new()));
     entry.0 += amount;
 }
 
@@ -71,12 +71,13 @@ fn finished(ctx: Context, source: String, target: String, map: String) {
         return;
     };
     RUNTIME.spawn(async move {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         let Ok(Ok((synixe_events::gear::db::Response::Fuel(Ok(spent)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             Fuel {
                 member: discord,
-                amount,
+                amount: amount.ceil() as u64,
                 plate: if plate.is_empty() { None } else { Some(plate) },
                 map,
             }

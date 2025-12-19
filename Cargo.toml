@@ -17,6 +17,7 @@ members = [
 
     "arma/server",
 
+    "utils/init-bank",
     "utils/poll-runner",
     #"utils/reachout",
 ]

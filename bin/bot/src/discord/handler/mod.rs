@@ -55,7 +55,7 @@ impl EventHandler for Handler {
                     slash::gear::register(),
                     slash::missions::register(),
                     slash::reputation::register(),
-                    // slash::reset::register(),
+                    slash::reset::register(),
                     slash::schedule::register(),
                     slash::surveys::register(),
                 ],
