@@ -8,7 +8,7 @@ FUNC(fuelType) = {
     if (_config == "") then {
         _config = switch (true) do {
             case (_vehicle isKindOf "Helicopter"): {
-                "avgas"
+                "jeta1"
             };
             case (_vehicle isKindOf "Plane"): {
                 "jeta1"
