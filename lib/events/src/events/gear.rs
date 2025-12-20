@@ -4,10 +4,51 @@
 pub mod db {
     use std::collections::HashMap;
 
+    use serde::{Deserialize, Serialize};
     use serenity::model::prelude::UserId;
     use synixe_model::gear::{Deposit, FamilyItem, Price};
     use synixe_proc::events_requests;
     use uuid::Uuid;
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+    pub enum FuelType {
+        Regular,
+        JetA1,
+        Avgas,
+    }
+
+    impl FuelType {
+        #[must_use]
+        pub fn as_str(&self) -> &'static str {
+            match self {
+                Self::Regular => "regular",
+                Self::JetA1 => "jeta1",
+                Self::Avgas => "avgas",
+            }
+        }
+
+        #[must_use]
+        pub fn multiplier(&self) -> f64 {
+            match self {
+                Self::Regular => 1.0,
+                Self::Avgas => 1.6,
+                Self::JetA1 => 2.0,
+            }
+        }
+    }
+
+    impl TryFrom<&str> for FuelType {
+        type Error = ();
+
+        fn try_from(value: &str) -> Result<Self, Self::Error> {
+            match value {
+                "regular" => Ok(Self::Regular),
+                "jeta1" => Ok(Self::JetA1),
+                "avgas" => Ok(Self::Avgas),
+                _ => Err(()),
+            }
+        }
+    }
 
     events_requests!(db.gear {
         /// Get a member's loadout
@@ -184,6 +225,8 @@ pub mod db {
             member: UserId,
             /// Amount of fuel purchased
             amount: u64,
+            /// Type of fuel purchased
+            fuel_type: FuelType,
             // Plate of the vehicle being fueled
             plate: Option<String>,
             // Map the fuel was purchased on

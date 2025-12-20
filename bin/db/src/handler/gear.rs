@@ -372,24 +372,27 @@ impl Handler for Request {
                 .await;
                 Ok(())
             }
+            #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
             Self::Fuel {
                 member,
                 amount,
+                fuel_type,
                 plate,
                 map,
             } => {
-                #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
-                let price = (prices_for_map(map) * (*amount as f64)).ceil() as i32;
+                let price_raw = prices_for_map(map) * (*amount as f64) * fuel_type.multiplier();
+                let price = price_raw.ceil() as i32;
                 if let Err(e) = sqlx::query!(
                     "INSERT INTO gear_bank_deposits (member, amount, reason, id) VALUES (0, $1, $2, '00000000-0000-0000-0000-000000000001')",
                     price,
                     format!(
-                    "Fuel: {amount}l @ {:.2} by {member}{}",
-                    prices_for_map(map),
-                    plate
-                        .as_ref()
-                        .map_or_else(String::new, |plate| format!(" on {plate}"))
-                ),
+                        "Fuel: {} {amount}l @ {:.2} by {member}{}",
+                        fuel_type.as_str(),
+                        prices_for_map(map) * fuel_type.multiplier(),
+                        plate
+                            .as_ref()
+                            .map_or_else(String::new, |plate| format!(" on {plate}"))
+                    ),
                 )
                 .execute(&*db)
                 .await {
@@ -397,8 +400,9 @@ impl Handler for Request {
                 }
                 respond!(msg, Response::Fuel(Ok(price))).await?;
                 let _ = game_audit(format!(
-                    "**Fuel**\n{member} purchased {amount}l @ {:.2} (Total: ${}){}",
-                    prices_for_map(map),
+                    "**Fuel**\n{member} purchased {} {amount}l @ {:.2} (Total: ${}){}",
+                    fuel_type.as_str(),
+                    prices_for_map(map) * fuel_type.multiplier(),
                     price,
                     plate
                         .as_ref()

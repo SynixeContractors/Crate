@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use synixe_events::{
-    garage::db::{FetchedPlate, Request, Response},
-    respond,
+    garage::db::{FetchedPlate, Request, Response}, gear::db::FuelType, respond
 };
 use synixe_proc::events_request_5;
 
@@ -201,6 +200,7 @@ impl Handler for Request {
                         Fuel {
                             member: *member,
                             amount,
+                            fuel_type: FuelType::Regular,
                             plate,
                             map: String::new()
                         }

@@ -2,6 +2,7 @@ use std::{collections::HashMap, sync::RwLock};
 
 use arma_rs::{Context, ContextState, Group};
 use serenity::all::UserId;
+use synixe_events::gear::db::FuelType;
 use synixe_meta::discord::BRODSKY;
 use synixe_proc::events_request_5;
 
@@ -16,7 +17,7 @@ pub fn group() -> Group {
         .state(Fueling::default())
 }
 
-type FuelingState = RwLock<HashMap<(String, String), (f64, UserId, String)>>;
+type FuelingState = RwLock<HashMap<(String, String), (f64, UserId, String, FuelType)>>;
 
 #[derive(Default)]
 pub struct Fueling(FuelingState);
@@ -26,7 +27,14 @@ impl Fueling {
     }
 }
 
-fn started(ctx: Context, source: String, target: String, discord: String, plate: String) {
+fn started(
+    ctx: Context,
+    source: String,
+    target: String,
+    discord: String,
+    plate: String,
+    fuel_type: String,
+) {
     let Ok(discord) = discord.parse::<u64>() else {
         error!("invalid discord id: {discord}");
         return;
@@ -39,8 +47,15 @@ fn started(ctx: Context, source: String, target: String, discord: String, plate:
         .as_ref()
         .write()
         .expect("Unable to lock fueling state");
+    let fuel_type = FuelType::try_from(fuel_type.as_str()).unwrap_or_else(|()| {
+        error!("invalid fuel type: {fuel_type}, defaulting to regular");
+        FuelType::Regular
+    });
     info!("started fueling from {source} to {target} for discord id {discord}");
-    fueling.insert((source, target), (0.0, UserId::new(discord), plate));
+    fueling.insert(
+        (source, target),
+        (0.0, UserId::new(discord), plate, fuel_type),
+    );
 }
 
 fn tick(ctx: Context, source: String, target: String, amount: f64) {
@@ -52,14 +67,16 @@ fn tick(ctx: Context, source: String, target: String, amount: f64) {
         .as_ref()
         .write()
         .expect("Unable to lock fueling state");
-    let entry = fueling
-        .entry((source, target))
-        .or_insert((0.0, BRODSKY, String::new()));
-    info!("tick fueling from {} to {}: +{}", entry.0, amount, amount);
+    let entry =
+        fueling
+            .entry((source, target))
+            .or_insert((0.0, BRODSKY, String::new(), FuelType::Regular));
+    info!("tick fueling from {}: +{}", entry.0, amount);
     entry.0 += amount;
 }
 
 fn finished(ctx: Context, source: String, target: String, map: String) {
+    info!("finished fueling from {source} to {target}");
     let fueling = ctx
         .group()
         .get::<Fueling>()
@@ -68,7 +85,9 @@ fn finished(ctx: Context, source: String, target: String, map: String) {
         .as_ref()
         .write()
         .expect("Unable to lock fueling state");
-    let Some((amount, discord, plate)) = fueling.remove(&(source.clone(), target.clone())) else {
+    let Some((amount, discord, plate, fuel_type)) =
+        fueling.remove(&(source.clone(), target.clone()))
+    else {
         error!("finished fueling called without started for {source} -> {target}");
         return;
     };
@@ -79,7 +98,8 @@ fn finished(ctx: Context, source: String, target: String, map: String) {
             synixe_events::gear::db,
             Fuel {
                 member: discord,
-                amount: amount.ceil() as u64,
+                amount: amount.round() as u64,
+                fuel_type,
                 plate: if plate.is_empty() { None } else { Some(plate) },
                 map,
             }
