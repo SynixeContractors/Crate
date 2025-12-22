@@ -14,7 +14,7 @@ synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
 
 anyhow = { workspace = true }
-async-openai = "0.14.3"
+async-openai = "0.30.1"
 async-trait = { workspace = true }
 git2 = "0.20.3"
 nats = { workspace = true }
