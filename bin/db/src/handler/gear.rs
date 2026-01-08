@@ -416,6 +416,28 @@ impl Handler for Request {
                 respond!(msg, Response::FuelPrice(Ok(price))).await?;
                 Ok(())
             }
+            #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
+            Self::Transport {
+                member,
+                cost,
+                plate,
+            } => {
+                if let Err(e) = sqlx::query!(
+                    "INSERT INTO gear_bank_deposits (member, amount, reason, id) VALUES (0, $1, $2, '00000000-0000-0000-0000-000000000002')",
+                    cost,
+                    format!(
+                        "Transport: {cost} by {member} on {plate}",
+                    ),
+                )
+                .execute(&*db)
+                .await {
+                    return Err(anyhow::Error::new(e).context("Failed to record fuel purchase"));
+                }
+                respond!(msg, Response::Transport(Ok(*cost))).await?;
+                let _ =
+                    game_audit(format!("**Transport**\n{member} paid {cost} on {plate}",)).await;
+                Ok(())
+            }
         }
     }
 }

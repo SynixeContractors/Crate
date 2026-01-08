@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                    SELECT\n                        a.id,\n                        s.name,\n                        s.cost,\n                        s.class,\n                        s.base,\n                        s.plate_template,\n                        s.fuel_capacity\n                    FROM\n                        garage_addons a\n                    INNER JOIN\n                        garage_shop s\n                    ON\n                        s.id = a.id\n                    WHERE\n                        s.base = (SELECT v.id FROM garage_vehicles v WHERE v.plate = $1)\n                        AND a.count > 0",
+  "query": "\n                    SELECT\n                        a.id,\n                        s.name,\n                        s.cost,\n                        s.class,\n                        s.base,\n                        s.plate_template,\n                        s.fuel_capacity,\n                        s.transport_cost\n                    FROM\n                        garage_addons a\n                    INNER JOIN\n                        garage_shop s\n                    ON\n                        s.id = a.id\n                    WHERE\n                        s.base = (SELECT v.id FROM garage_vehicles v WHERE v.plate = $1)\n                        AND a.count > 0",
   "describe": {
     "columns": [
       {
@@ -37,6 +37,11 @@
         "ordinal": 6,
         "name": "fuel_capacity",
         "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "transport_cost",
+        "type_info": "Int4"
       }
     ],
     "parameters": {
@@ -51,8 +56,9 @@
       false,
       true,
       true,
+      false,
       false
     ]
   },
-  "hash": "c64324639a6e1e03151228231bb8f29fc73ac5701109efd683f92db91998f453"
+  "hash": "d2d08fb9c5272c23c595aa2e92c084d6f3ef1c637c987f4527c29792f105bd9f"
 }

@@ -237,6 +237,16 @@ pub mod db {
             /// Map to get prices for
             map: String,
         } => (Result<f64, String>)
+
+        /// Transport vehicle
+        struct Transport {
+            /// Member
+            member: UserId,
+            /// Cost of the transport
+            cost: i32,
+            /// Plate of the vehicle being transported
+            plate: String,
+        } => (Result<i32, String>)
     });
 }
 

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                        *\n                    FROM\n                        garage_shop\n                    WHERE\n                        LOWER(name) LIKE LOWER($1)",
+  "query": "SELECT\n                                *\n                            FROM\n                                garage_shop\n                            WHERE\n                                class = $1",
   "describe": {
     "columns": [
       {
@@ -60,5 +60,5 @@
       false
     ]
   },
-  "hash": "e80f272afc1d4fdd2e7739e51881614b68153b1c5acc5eda13c8a38bf1e22f2f"
+  "hash": "b2482c8b0e463ee0ce3c2c3e24782fef660687bf55a6d8c53ac54c578f3f8f49"
 }

@@ -111,7 +111,8 @@ impl Handler for Request {
                         s.class,
                         s.base,
                         s.plate_template,
-                        s.fuel_capacity
+                        s.fuel_capacity,
+                        s.transport_cost
                     FROM
                         garage_addons a
                     INNER JOIN
@@ -144,20 +145,40 @@ impl Handler for Request {
                 Ok(())
             }
             Self::FetchShopAsset { asset } => {
-                fetch_one_as_and_respond!(
-                    msg,
-                    *db,
-                    cx,
-                    synixe_model::garage::ShopAsset,
-                    Response::FetchShopAsset,
-                    "SELECT
-                        *
-                    FROM
-                        garage_shop
-                    WHERE
-                        LOWER(name) LIKE LOWER($1)",
-                    format!("%{asset}%"),
-                )?;
+                match asset {
+                    synixe_events::garage::db::FetchAsset::ByName(name) => {
+                        fetch_one_as_and_respond!(
+                            msg,
+                            *db,
+                            cx,
+                            synixe_model::garage::ShopAsset,
+                            Response::FetchShopAsset,
+                            "SELECT
+                                *
+                            FROM
+                                garage_shop
+                            WHERE
+                                LOWER(name) LIKE LOWER($1)",
+                            format!("%{name}%"),
+                        )?;
+                    }
+                    synixe_events::garage::db::FetchAsset::ByClass(class) => {
+                        fetch_one_as_and_respond!(
+                            msg,
+                            *db,
+                            cx,
+                            synixe_model::garage::ShopAsset,
+                            Response::FetchShopAsset,
+                            "SELECT
+                                *
+                            FROM
+                                garage_shop
+                            WHERE
+                                class = $1",
+                            class,
+                        )?;
+                    }
+                }
                 Ok(())
             }
             Self::FetchVehicleColors { id } => {

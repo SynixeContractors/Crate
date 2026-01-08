@@ -11,7 +11,10 @@ use synixe_proc::{events_request_2, events_request_5};
 
 use crate::{
     audit,
-    discord::{interaction::Interaction, slash::ShouldAsk},
+    discord::{
+        interaction::{Confirmation, Interaction},
+        slash::ShouldAsk,
+    },
     get_option,
 };
 
@@ -67,6 +70,31 @@ pub async fn spawn(
     let Some(state) = info.state else {
         return interaction.reply("Vehicle state not found").await;
     };
+
+    let Ok(Ok((db::Response::FetchShopAsset(Ok(Some(asset))), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::garage::db,
+        FetchShopAsset {
+            asset: db::FetchAsset::ByClass(class.clone()),
+        }
+    )
+    .await
+    else {
+        error!("Failed to fetch asset info");
+        return interaction.reply("Failed to fetch asset info").await;
+    };
+    if asset.transport_cost != 0
+        && interaction
+            .confirm(&format!(
+                "Transport Cost: {}\n Are you sure you want to spawn this vehicle?",
+                bootstrap::format::money(asset.transport_cost, false)
+            ))
+            .await?
+            != Confirmation::Yes
+        {
+            return interaction.reply("Spawn cancelled").await;
+        }
+
     let Ok(Ok((Response::Spawn(Ok(response)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::arma,
@@ -111,6 +139,31 @@ pub async fn spawn(
                 "Vehicle `{}` spawned by <@{}>",
                 plate, command.user.id,
             ));
+            if let Err(e) = events_request_2!(
+                bootstrap::NC::get().await,
+                synixe_events::gear::db,
+                Transport {
+                    plate: plate.clone(),
+                    cost: asset.transport_cost,
+                    member: command.user.id,
+                }
+            )
+            .await
+            {
+                error!("Failed to log transport cost: {}", e);
+                if let Err(e) = LOG
+                    .say(
+                        &ctx.http,
+                        format!(
+                            "Failed to log transport cost on vehicle {plate} for {cost}: {e}",
+                            cost = asset.transport_cost
+                        ),
+                    )
+                    .await
+                {
+                    error!("Failed to send log message: {}", e);
+                }
+            }
             Ok(())
         }
         SpawnResult::AreaBlocked => interaction.reply("Area blocked").await,

@@ -39,6 +39,8 @@ pub struct ShopAsset {
     pub plate_template: Option<String>,
     /// fuel capacity in litres
     pub fuel_capacity: i32,
+    /// base transport cost
+    pub transport_cost: i32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

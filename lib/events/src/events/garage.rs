@@ -45,6 +45,12 @@ pub mod db {
         pub plate: String,
     }
 
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    pub enum FetchAsset {
+        ByName(String),
+        ByClass(String),
+    }
+
     events_requests!(db.garage {
         /// Get all plates
         struct FetchPlates {
@@ -76,7 +82,7 @@ pub mod db {
         /// Fetch a shop asset
         struct FetchShopAsset {
             /// The asset to fetch
-            asset: String
+            asset: FetchAsset,
         } => (Result<Option<ShopAsset>, String>)
         /// Fetch the color options for a vehicle
         struct FetchVehicleColors {
