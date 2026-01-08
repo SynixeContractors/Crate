@@ -13,10 +13,11 @@ use crate::discord::interaction::Interaction;
 use self::enums::Command;
 
 mod attachment;
-pub mod auto_complete;
 mod enums;
 mod purchase;
 mod spawn;
+mod transport;
+pub mod auto_complete;
 
 #[allow(clippy::too_many_lines)]
 pub fn register() -> CreateCommand {
