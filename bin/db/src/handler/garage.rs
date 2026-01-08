@@ -1,6 +1,8 @@
 use async_trait::async_trait;
 use synixe_events::{
-    garage::db::{FetchedPlate, Request, Response}, gear::db::FuelType, respond
+    garage::db::{FetchedPlate, Request, Response},
+    gear::db::FuelType,
+    respond,
 };
 use synixe_proc::events_request_5;
 
@@ -136,7 +138,7 @@ impl Handler for Request {
                     FROM
                         garage_shop
                     WHERE
-                        name LIKE $1",
+                        LOWER(name) LIKE LOWER($1)",
                     format!("%{search}%"),
                 )?;
                 Ok(())
@@ -153,7 +155,7 @@ impl Handler for Request {
                     FROM
                         garage_shop
                     WHERE
-                        name Like $1",
+                        LOWER(name) LIKE LOWER($1)",
                     format!("%{asset}%"),
                 )?;
                 Ok(())

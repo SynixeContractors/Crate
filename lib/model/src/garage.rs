@@ -49,5 +49,5 @@ pub struct VehicleColor {
     /// The name of the color
     pub name: String,
     /// The textures for the color
-    pub textures: Vec<String>,
+    pub texture_source: String,
 }

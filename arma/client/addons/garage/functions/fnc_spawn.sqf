@@ -8,7 +8,7 @@ if (allPlayers isEqualTo []) exitWith {
     EXTCALL("garage:spawn",[ARR_2(_id,"NoPlayers")]);
 };
 
-if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
+private _vehicle = if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     private _vehicle = _class createVehicleLocal [0,0,0];
     _vehicle enableSimulation false;
     private _spawn = switch (true) do {
@@ -34,16 +34,7 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
     // Spawn the vehicle
     private _vehicle = _class createVehicle _spawnPos;
     _vehicle setDir (markerDir _spawn);
-    _vehicle setVariable [QGVAR(plate), _plate, true];
-    _vehicle setPlateNumber _plate;
-    _vehicle setVariable ["crate", true, true];
-    [{
-        _this call EFUNC(common,objectState_load);
-    }, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;
-
-    EXTCALL("garage:spawn",[ARR_2(_id,"Yes")]);
-
-    GVAR(spawned) set [_plate, _vehicle];
+    _vehicle
 } else {
     private _vehicle = _class createVehicleLocal [0,0,0];
     _vehicle enableSimulation false;
@@ -83,19 +74,40 @@ if (getNumber (missionConfigFile >> "synixe_template") < 3) then {
 
     private _vehicle = _class createVehicle (getPos _spawn);
     _vehicle setDir (getDir _spawn);
-    _vehicle setVariable [QGVAR(plate), _plate, true];
-    _vehicle setPlateNumber _plate;
-    _vehicle setVariable ["ace_tagging_canTag", false, true];
-    _vehicle setVariable ["crate", true, true];
-    [{
-        _this call EFUNC(common,objectState_load);
-    }, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;
+    _vehicle
+};
 
-    EXTCALL("garage:spawn",[ARR_2(_id,"Yes")]);
+EXTCALL("garage:spawn",[ARR_2(_id,"Yes")]);
 
-    GVAR(spawned) set [_plate, _vehicle];
+_vehicle setVariable [QGVAR(plate), _plate, true];
+_vehicle setPlateNumber _plate;
+_vehicle setVariable ["ace_tagging_canTag", false, true];
+_vehicle setVariable ["crate", true, true];
+[{
+    _this call EFUNC(common,objectState_load);
+}, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;
 
-    // this may still be having issues?
-    // do it last just in case
-    [_vehicle, _plate, 0.4, "ffd731"] call ace_tagging_fnc_stencilVehicle;
+GVAR(spawned) set [_plate, _vehicle];
+
+// this may still be having issues?
+// do it last just in case
+[_vehicle, _plate, 0.4, "ffd731"] call ace_tagging_fnc_stencilVehicle;
+
+if ("tex_source" in _state) then {
+    private _config = configOf _vehicle;
+
+    private _textureList = getArray (_config >> "textureList");
+    if (_textureList isEqualTo []) exitWith {true};
+
+    private _textureSource = _config >> "TextureSources" >> (_state get "tex_source");
+    private _textures = getArray (_textureSource >> "textures");
+    private _materials = getArray (_textureSource >> "materials");
+
+    {
+        _vehicle setObjectTextureGlobal [_forEachIndex, _x];
+    } forEach _textures;
+
+    {
+        _vehicle setObjectMaterialGlobal [_forEachIndex, _x];
+    } forEach _materials;
 };

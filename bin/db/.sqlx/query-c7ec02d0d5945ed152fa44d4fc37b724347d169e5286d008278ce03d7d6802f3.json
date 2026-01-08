@@ -15,8 +15,8 @@
       },
       {
         "ordinal": 2,
-        "name": "textures",
-        "type_info": "TextArray"
+        "name": "texture_source",
+        "type_info": "Text"
       }
     ],
     "parameters": {

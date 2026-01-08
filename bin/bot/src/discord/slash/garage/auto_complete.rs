@@ -38,7 +38,7 @@ pub async fn autocomplete(
                 )
                 .await
             }
-            "color" => autocomplete_color(ctx, autocomplete).await,
+            "color" => autocomplete_color(ctx, autocomplete, focus.value.to_string()).await,
             _ => Ok(()),
         },
         Command::PurchaseAddon => match focus.name {
@@ -136,6 +136,7 @@ async fn autocomplete_vehicle(
         Command::PurchaseAddon => vehicles.retain(|v| v.addons.unwrap_or_default() > 0),
         _ => {}
     }
+    vehicles.sort_by(|a, b| a.name.cmp(&b.name));
     vehicles.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
@@ -162,6 +163,7 @@ async fn autocomplete_vehicle(
 async fn autocomplete_color(
     ctx: &Context,
     autocomplete: &CommandInteraction,
+    filter: String,
 ) -> serenity::Result<()> {
     let Some(subcommand) = autocomplete.data.options.first() else {
         return Ok(());
@@ -178,7 +180,7 @@ async fn autocomplete_color(
         error!("Missing vehicle option");
         return Ok(());
     };
-    let Ok(Ok((Response::FetchVehicleColors(Ok(colors)), _))) = events_request_2!(
+    let Ok(Ok((Response::FetchVehicleColors(Ok(mut colors)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchVehicleColors { id }
@@ -188,7 +190,10 @@ async fn autocomplete_color(
         error!("Failed to fetch colors");
         return Ok(());
     };
-
+    let filter = filter.to_lowercase();
+    colors.retain(|c| c.name.to_lowercase().contains(&filter));
+    colors.sort_by(|a, b| a.name.cmp(&b.name));
+    colors.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
@@ -220,6 +225,7 @@ async fn autocomplete_addon(
         error!("Failed to fetch addons");
         return Ok(());
     };
+    addons.sort_by(|a, b| a.name.cmp(&b.name));
     addons.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
@@ -276,6 +282,7 @@ async fn autocomplete_shop(
             assets.into_iter().filter(|a| a.base == Some(id)).collect()
         }
     };
+    assets.sort_by(|a, b| a.name.cmp(&b.name));
     assets.truncate(25);
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
