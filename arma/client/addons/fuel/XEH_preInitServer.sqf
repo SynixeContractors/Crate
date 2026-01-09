@@ -47,3 +47,5 @@ addMissionEventHandler ["ExtensionCallback", {
     if (_func != "price") exitWith {};
     [QGVAR(prices), [_data]] call CBA_fnc_globalEventJIP;
 }];
+
+EXTCALL("fuel:price", [worldName]);
