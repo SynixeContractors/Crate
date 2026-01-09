@@ -91,9 +91,9 @@ pub async fn spawn(
             ))
             .await?
             != Confirmation::Yes
-        {
-            return interaction.reply("Spawn cancelled").await;
-        }
+    {
+        return interaction.reply("Spawn cancelled").await;
+    }
 
     let Ok(Ok((Response::Spawn(Ok(response)), _))) = events_request_5!(
         bootstrap::NC::get().await,
