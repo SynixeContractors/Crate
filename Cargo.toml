@@ -35,7 +35,7 @@ nonstandard_style = "warn"
 
 [workspace.dependencies]
 anyhow = "1.0.100"
-arma-rs = { version = "1.12.0", features = ["uuid", "serde_json"] }
+arma-rs = { version = "1.12.1", features = ["uuid", "serde_json"] }
 async-trait = "0.1.89"
 axum = "0.8.8"
 # nats = { version = "0.25.0" }

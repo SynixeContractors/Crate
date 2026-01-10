@@ -66,7 +66,10 @@ if !(isMultiplayer) exitWith {};
 
 [QGVAR(shop_leave), {
     if !(GVAR(enabled)) exitWith {};
-    if (GVAR(readOnly) || EGVAR(campaigns,loadouts)) exitWith {};
+    if (GVAR(readOnly)) exitWith {};
+    if (EGVAR(campaigns,loadouts)) exitWith {
+        [QGVAR(loadout_store), [player, [player] call CBA_fnc_getLoadout]] call CBA_fnc_serverEvent;
+    };
     params [
         ["_player", objNull, [objNull]],
         ["_loadout", [], [[]]],
