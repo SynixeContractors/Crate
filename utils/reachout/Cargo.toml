@@ -1,0 +1,11 @@
+[package]
+name = "synixe-reachout"
+version = "0.1.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+serenity = { workspace = true, features = ["builder", "cache", "client", "collector", "gateway", "http", "model", "utils", "rustls_backend"] }
+tokio = { workspace = true, features = ["full"] }
