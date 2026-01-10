@@ -17,6 +17,9 @@ switch (_func) do {
         if (_newPretty == "") then {
             _newPretty = getText (configFile >> "CfgMagazines" >> _class >> "displayName");
         };
+        if (_newPretty == "") then {
+            _newPretty = getText (configFile >> "CfgGlasses" >> _class >> "displayName");
+        };
         if (_newPretty != "") then {
             if (_pretty == _newPretty) exitWith {};
             EXTCALL("gear:shop:pretty",[ARR_2(_class,_newPretty)]);
