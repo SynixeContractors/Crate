@@ -4,7 +4,7 @@ params ["_unit"];
 
 private _state = createHashMap;
 
-_state set ["name", name _unit];
+_state set ["name", [_unit, false, true] call ace_common_fnc_getName];
 _state set ["loadout", [_unit] call CBA_fnc_getLoadout];
 
 if (face _unit != "Default") then {
