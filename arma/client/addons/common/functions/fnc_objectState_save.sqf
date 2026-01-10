@@ -60,7 +60,7 @@ private _tex = getObjectTextures _object;
 if (_tex isNotEqualTo []) then {
     private _nexTex = [];
     {
-        _nexTex pushBack (_x regexReplace ['"', "$"]);
+        _nexTex pushBack (_x regexReplace ["""", "|"]);
     } forEach _tex;
     _state set ["tex", _nexTex];
 };

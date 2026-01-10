@@ -3,7 +3,7 @@
 if !(isMultiplayer) exitWith {};
 
 FUNC(fuelType) = {
-    param ["_vehicle"];
+    params ["_vehicle"];
     private _config = getText (configOf _vehicle >> "crate_fuel_type");
     if (_config == "") then {
         _config = switch (true) do {

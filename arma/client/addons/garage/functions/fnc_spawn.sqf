@@ -24,11 +24,13 @@ private _vehicle = if (getNumber (missionConfigFile >> "synixe_template") < 3) t
 
     if (_spawnPos isEqualTo [0,0,0]) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"NoSpawnArea")]);
+        objNull
     };
 
     // Check for any obstruction in the spawn area
     if (nearestObjects [_spawnPos, ["Land", "Air", "Ship", "Thing"], 5] isNotEqualTo []) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"AreaBlocked")]);
+        objNull
     };
 
     // Spawn the vehicle
@@ -62,6 +64,7 @@ private _vehicle = if (getNumber (missionConfigFile >> "synixe_template") < 3) t
 
     if (_spawns isEqualTo []) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"NoSpawnArea")]);
+        objNull
     };
 
     private _spawn = _spawns findIf {
@@ -69,6 +72,7 @@ private _vehicle = if (getNumber (missionConfigFile >> "synixe_template") < 3) t
     };
     if (_spawn == -1) exitWith {
         EXTCALL("garage:spawn",[ARR_2(_id,"AreaBlocked")]);
+        objNull
     };
     private _spawn = _spawns select _spawn;
 
@@ -76,6 +80,8 @@ private _vehicle = if (getNumber (missionConfigFile >> "synixe_template") < 3) t
     _vehicle setDir (getDir _spawn);
     _vehicle
 };
+
+if (_vehicle isEqualTo objNull) exitWith {};
 
 EXTCALL("garage:spawn",[ARR_2(_id,"Yes")]);
 

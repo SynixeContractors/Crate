@@ -1,3 +1,3 @@
 #include "script_component.hpp"
 
-EXTCALL("fuel:price", [worldName]);
+EXTCALL("fuel:price",[worldName]);
