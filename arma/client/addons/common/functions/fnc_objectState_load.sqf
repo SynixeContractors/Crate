@@ -80,7 +80,7 @@ private _fnc_addCargoForContainer = {
         };
         case "tex": {
             {
-                _object setObjectTextureGlobal [_forEachIndex, _x];
+                _object setObjectTextureGlobal [_forEachIndex, _x regexReplace ['$', '"']];
             } forEach _y;
         };
         case "hits": {

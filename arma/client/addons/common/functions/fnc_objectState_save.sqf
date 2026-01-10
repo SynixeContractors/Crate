@@ -58,7 +58,11 @@ if (_object getVariable ["ace_captives_isHandcuffed", false]) then {
 // Textures
 private _tex = getObjectTextures _object;
 if (_tex isNotEqualTo []) then {
-    _state set ["tex", _tex];
+    private _nexTex = [];
+    {
+        _nexTex pushBack (_x regexReplace ['"', "$"]);
+    } forEach _tex;
+    _state set ["tex", _nexTex];
 };
 
 // Damage
