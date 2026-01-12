@@ -25,11 +25,17 @@ if (inflamed _object) then {
 };
 
 // Fuel
-_state set ["fuel", fuel _object];
-_state set ["ace_fuel", _object getVariable ["ace_fuel_fuel", 0]];
+if (fuel _object != 1) then {
+    _state set ["fuel", fuel _object];
+};
+if (_object getVariable ["ace_fuel_fuel", -1] != -1) then {
+    _state set ["ace_fuel", _object getVariable ["ace_fuel_fuel", 0]];
+};
 
 // Plate
-_state set ["plate", getPlateNumber _object];
+if (getPlateNumber _object != "") then {
+    _state set ["plate", getPlateNumber _object];
+};
 
 // ACE Cargo
 if (missionNamespace getVariable ["ace_cargo", false]) then {

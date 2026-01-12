@@ -13,9 +13,13 @@ if (GVAR(objects_stack) isEqualTo []) then {
 if (GVAR(objects_stack) isEqualTo []) exitWith {};
 
 private _object = GVAR(objects_stack) deleteAt 0;
+if (_object isKindOf "CAManBase") exitWith {};
 if (_object isKindOf "Logic") exitWith {};
 if (_object isKindOf "babe_helper") exitWith {};
 if (_object isKindOf "ACRE_VRC103") exitWith {};
+if (_object isKindOf "ace_spectator_virtual") exitWith {};
+if (_object isKindOf "ACE_friesAnchorBar") exitWith {};
+if (_object isKindOf "ace_fire_logic") exitWith {};
 
 private _id = _object getVariable [QGVAR(id), ""];
 if (_id == "") then {

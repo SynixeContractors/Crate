@@ -3,7 +3,7 @@
 if !(GVAR(units_ready)) exitWith {};
 
 if (GVAR(units_stack) isEqualTo []) then {
-    GVAR(units_stack) = allUnits - allPlayers;
+    GVAR(units_stack) = (allMissionObjects "CAManBase") - allPlayers;
     {
         EXTCALL("campaigns:units:delete",[ARR_2(GVAR(key),_x)]);
         GVAR(units_ids) = GVAR(units_ids) - [_x];
