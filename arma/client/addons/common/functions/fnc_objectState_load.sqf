@@ -128,9 +128,6 @@ private _fnc_addCargoForContainer = {
                 }
             } forEach _y;
         };
-        case "cargo_space": {
-            [_object, _y] call ace_cargo_fnc_setSpace;
-        };
         case "handcuffed": {
             [_object, _y] call ace_captives_fnc_setHandcuffed;
         };
@@ -163,3 +160,8 @@ private _fnc_addCargoForContainer = {
         };
     };
 } forEach _state;
+
+// must be done after cargo is loaded
+if ("cargo_space" in _state) then {
+    _object setVariable ["ace_cargo_space", _state get "cargo_space"];
+};
