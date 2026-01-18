@@ -6,15 +6,17 @@ private _data = createHashMapFromArray _data;
 
 private _side = _data getOrDefault ["side", civilian];
 
-private _group = createGroup switch (toLower _side) do {
-    case "blufor";
-    case "west": { west };
-    case "opfor";
-    case "east": { east };
-    case "guer";
-    case "resistence";
-    case "independent": { independent };
-    default { civilian };
+private _group = createGroup call {
+    switch (toLower _side) do {
+        case "blufor";
+        case "west": { west };
+        case "opfor";
+        case "east": { east };
+        case "guer";
+        case "resistence";
+        case "independent": { independent };
+        default { civilian };
+    }
 };
 
 _group setVariable [QGVAR(id), _id];

@@ -64,7 +64,7 @@ params ["_unit", "_state"];
             };
         };
         case "stopped": {
-            _unit doStop true;
+            doStop _unit;
         };
         case "disableAI": {
             {
