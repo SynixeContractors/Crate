@@ -33,7 +33,7 @@ private _nested = _cargo select 1;
                 !_found &&
                 { (_x select 1) getVariable [QGVAR(NOEDIT), true] }
             ) then {
-                [_x select 1, (_items)] call FUNC(addInventory);
+                [_x select 1, _items] call FUNC(addInventory);
                 (_x select 1) setVariable [QGVAR(NOEDIT), false];
                 _found = true;
             };

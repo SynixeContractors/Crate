@@ -58,7 +58,7 @@ if !(_object isKindOf "GroundWeaponHolder") then {
             _object setRepairCargo _y;
         };
         case "inventory": {
-            call FUNC(addInventory);
+            [_object, _y] call FUNC(addInventory);
         };
         case "turret": {
             {
