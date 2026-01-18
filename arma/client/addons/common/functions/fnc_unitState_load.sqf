@@ -73,7 +73,7 @@ params ["_unit", "_state"];
         };
         case "skills": {
             {
-                _unit setSkill (_x#0) (_x#1);
+                _unit setSkill [_x#0, _x#1];
             } forEach _y;
         };
         case "ace_surrender": {
