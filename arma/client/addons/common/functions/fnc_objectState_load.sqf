@@ -25,7 +25,6 @@ if (_loaded isNotEqualTo []) then {
 };
 _object setVariable ["ace_cargo_loaded", [], true];
 
-
 private _fnc_addCargoForContainer = {
     params ["_container", "_cargo"];
 
@@ -33,25 +32,21 @@ private _fnc_addCargoForContainer = {
     private _nested = _cargo select 1;
 
     // Magazine cargo
-    clearMagazineCargoGlobal _container;
     {
         _container addMagazineCargoGlobal [_x, _standard select 0 select 1 select _forEachIndex];
     } forEach ((_standard select 0) select 0);
 
     // Weapon Cargo
-    clearWeaponCargoGlobal _container;
     {
         _container addWeaponWithAttachmentsCargoGlobal [_x, 1];
     } forEach (_standard select 1);
 
     // Item Cargo
-    clearItemCargoGlobal _container;
     {
         _container addItemCargoGlobal [_x, _standard select 2 select 1 select _forEachIndex];
     } forEach ((_standard select 2) select 0);
 
     // Nested Cargo
-    clearBackpackCargoGlobal _container;
     {
         _x params ["_class", "_items"];
         _container addBackpackCargoGlobal [_class, 1];
