@@ -40,6 +40,9 @@ if (unitCombatMode _unit != "YELLOW") then {
 if (behaviour _unit != "NORMAL") then {
     _state set ["behaviour", behaviour _unit];
 };
+if (stopped _unit) then {
+    _state set ["stopped", true];
+};
 if !(isNull objectParent _unit) then {
     private _vehicle = objectParent _unit;
     _state set ["vehicle", [
@@ -57,9 +60,20 @@ private _disableAI = [];
     if !(_unit checkAIFeature _x) then {
         _disableAI pushBack _x;
     };
-} forEach ["AUTOTARGET","MOVE","TARGET","TEAMSWITCH","WEAPONAIM","ANIM","FSM","AIMINGERROR","SUPPRESSION","CHECKVISIBLE","AUTOCOMBAT","COVER","PATH","MINEDETECTION","LIGHTS","NVG","RADIOPROTOCOL","FIREWEAPON"];
+} forEach AI_ABILITIES;
 if (_disableAI isNotEqualTo []) then {
     _state set ["disableAI", _disableAI];
+};
+
+private _skills = [];
+{
+    private _value = _unit skill _x;
+    if (_value != 0.5) then {
+        _skills pushBack [_x, _value];
+    };
+} forEach AI_SKILLS;
+if (_skills isNotEqualTo []) then {
+    _state set ["skills", _skills];
 };
 
 if (missionNamespace getVariable ["ace_main", false]) then {

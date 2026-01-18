@@ -18,5 +18,4 @@ _object setVectorDirAndUp (_data getOrDefault ["rot", [[0,0,0],[0,0,0]]]);
     _this#0 setVariable [QGVAR(cargo), _this#1 getOrDefault ["cargo", []]];
 }, [_object, _data]] call CBA_fnc_execNextFrame;
 
-
 _object setVariable [QGVAR(nextUpdate), time + 4];

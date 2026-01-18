@@ -8,6 +8,7 @@ private _groups = allGroups;
 private _group = _groups select (_groups findIf {(_x getVariable [QGVAR(id), "-"]) isEqualTo _group});
 
 private _unit = _group createUnit [_class, [0,0,0], [], 0, "NONE"];
+[_unit] joinSilent _group;
 
 _unit enableSimulationGlobal false;
 _unit setVariable [QGVAR(id), _id, true];

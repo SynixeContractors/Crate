@@ -63,9 +63,17 @@ params ["_unit", "_state"];
                 };
             };
         };
+        case "stopped": {
+            _unit doStop true;
+        };
         case "disableAI": {
             {
                 _unit disableAI _x;
+            } forEach _y;
+        };
+        case "skills": {
+            {
+                _unit setSkill (_x#0) (_x#1);
             } forEach _y;
         };
         case "ace_surrender": {
