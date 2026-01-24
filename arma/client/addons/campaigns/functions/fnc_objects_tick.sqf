@@ -20,6 +20,7 @@ if (_object isKindOf "ACRE_VRC103") exitWith {};
 if (_object isKindOf "ace_spectator_virtual") exitWith {};
 if (_object isKindOf "ACE_friesAnchorBar") exitWith {};
 if (_object isKindOf "ace_fire_logic") exitWith {};
+if (_object isKindOf "GRAD_slingHelmet_WeaponHolder") exitWith {};
 
 private _id = _object getVariable [QGVAR(id), ""];
 if (_id == "") then {
