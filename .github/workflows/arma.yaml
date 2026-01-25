@@ -26,6 +26,16 @@ jobs:
         working-directory: arma/client
         run: hemtt release
 
+      - name: Rename build folder
+        run: mv .hemttout/build .hemttout/@crate_client
+
+      - name: Upload Client
+        uses: actions/upload-artifact@v5
+        with:
+          name: crate_client.zip
+          path: arma/client/.hemttout/@*
+          include-hidden-files: true
+
       - uses: Swatinem/rust-cache@v2
         with:
           key: arma
@@ -40,14 +50,12 @@ jobs:
         working-directory: arma/server
         run: hemtt release
 
-      - name: Upload Client
-        uses: actions/upload-artifact@v5
-        with:
-          name: crate_client.zip
-          path: arma/client/releases/crate_client-latest.zip
+      - name: Rename build folder
+        run: mv .hemttout/build .hemttout/@crate_server
 
       - name: Upload Server
         uses: actions/upload-artifact@v5
         with:
           name: crate_server.zip
-          path: arma/server/releases/crate_server-latest.zip
+          path: arma/server/.hemttout/@*
+          include-hidden-files: true
