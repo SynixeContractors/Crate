@@ -12,7 +12,7 @@ pub fn group() -> Group {
     Group::new()
         .command("started", started)
         .command("tick", tick)
-        .command("finished", finished)
+        .command("stopped", stopped)
         .command("price", price)
         .state(Fueling::default())
 }
@@ -75,8 +75,8 @@ fn tick(ctx: Context, source: String, target: String, amount: f64) {
     entry.0 += amount;
 }
 
-fn finished(ctx: Context, source: String, target: String, map: String) {
-    info!("finished fueling from {source} to {target}");
+fn stopped(ctx: Context, source: String, target: String, map: String) {
+    info!("stopped fueling from {source} to {target}");
     let fueling = ctx
         .group()
         .get::<Fueling>()
@@ -88,7 +88,7 @@ fn finished(ctx: Context, source: String, target: String, map: String) {
     let Some((amount, discord, plate, fuel_type)) =
         fueling.remove(&(source.clone(), target.clone()))
     else {
-        error!("finished fueling called without started for {source} -> {target}");
+        error!("stopped fueling called without started for {source} -> {target}");
         return;
     };
     RUNTIME.spawn(async move {
