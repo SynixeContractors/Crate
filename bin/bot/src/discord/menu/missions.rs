@@ -101,7 +101,7 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
     else {
         return interaction.reply("Failed to find message").await;
     };
-    let aar = match Aar::from_message(&message.content) {
+    let aar = match Aar::from_message(&Aar::clean_content(message.content.clone())) {
         Ok(aar) => aar,
         Err(e) => {
             return interaction.reply(format!(":confused: I couldn't parse that AAR. Please make sure you're using the template. Error: {e}")).await;

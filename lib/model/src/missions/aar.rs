@@ -31,6 +31,14 @@ pub struct Aar {
 }
 
 impl Aar {
+    #[must_use]
+    pub fn clean_content(content: String) -> String {
+        content
+            .trim()
+            .replace("\u{2068}", "")
+            .replace("\u{2069}", "")
+    }
+
     #[allow(clippy::too_many_lines)]
     /// Parses an AAR from a discord message.
     ///

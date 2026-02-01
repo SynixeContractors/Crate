@@ -455,11 +455,6 @@ impl EventHandler for Handler {
             let message = match new {
                 Some(message) => message,
                 None => {
-                    if let Some(content) = event.content
-                        && !(content.starts_with("```") || content.ends_with("```"))
-                    {
-                        return;
-                    }
                     let Ok(message) = event.channel_id.message(&ctx.http, event.id).await else {
                         warn!("Cannot get message {}", event.id);
                         return;
