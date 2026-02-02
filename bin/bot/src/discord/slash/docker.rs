@@ -73,15 +73,11 @@ async fn container_autocomplete(
     autocomplete: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let Some(name) = get_option!(options, "container", String) else {
-        warn!("No container provided");
-        return Ok(());
-    };
-    let name = name.to_lowercase();
+    let name = get_option!(options, "container", String)
+        .map_or_else(String::new, |name| name.to_lowercase());
     let mut containers = synixe_meta::docker::Primary::iter()
         .map(std::convert::Into::into)
         .collect::<Vec<Container>>();
-    // containers.append(&mut synixe_meta::docker::Reynold::iter().map(|c| c.into()).collect::<Vec<Container>>());
     containers.retain(|c| {
         c.name()
             .unwrap_or_else(|| c.id())
