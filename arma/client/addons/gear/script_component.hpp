@@ -14,6 +14,8 @@
 #define IDC_RSCDISPLAYCHECKOUT_HEADER 73001
 #define IDC_RSCDISPLAYCHECKOUT_ITEMS 73002
 
+#define IDC_leftRoleFilter 84001
+
 #define COLOR_WHITE [1, 1, 1, 1]
 #define COLOR_OWNED [0, 1, 0, 1]
 #define COLOR_SALE [0, 0.75, 1, 1]

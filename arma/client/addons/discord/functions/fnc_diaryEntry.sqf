@@ -19,7 +19,8 @@ private _roles = player getVariable [QGVAR(roles), []];
 
 private _roleText = ["Roles:<br/>", ""] select (_roles isEqualTo []);
 {
-    _roleText = format ["%1  - %2<br/>", _roleText, _x];
+    private _roleName = GVAR(roles) getOrDefault [_x, _x];
+    _roleText = format ["%1  - %2<br/>", _roleText, _roleName];
 } forEach _roles;
 
 player setDiaryRecordText [[QGVAR(diary), GVAR(diaryRecord)], ["My Account", format [

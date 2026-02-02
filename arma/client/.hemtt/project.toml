@@ -12,3 +12,11 @@ authority = "synixe_crate"
 exclude = [
     "/XEH_preInit.sqf",
 ]
+
+[hemtt.launch.default]
+workshop = [
+    "synixe:@cba_a3",
+    "synixe:@ace",
+    "synixe:@zen",
+    "synixe:@acre2",
+]

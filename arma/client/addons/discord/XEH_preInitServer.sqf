@@ -60,5 +60,16 @@ addMissionEventHandler ["ExtensionCallback", {
             [QGVAR(needsLink), [], [_player]] call CBA_fnc_targetEvent;
             serverCommand format ['#kick %1', _steam];
         };
+        case "roles:get:ok": {
+            private _rolesData = parseSimpleArray _data;
+            private _roles = createHashMap;
+            {
+                _roles set [_x select 0, _x select 1];
+            } forEach _rolesData;
+            GVAR(roles) = _roles;
+            publicVariable QGVAR(roles);
+        };
     };
 }];
+
+EXTCALL("discord:roles:get",[]);

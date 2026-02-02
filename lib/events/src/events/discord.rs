@@ -144,6 +144,8 @@ pub mod info {
             /// The role to get the members for
             role: RoleId,
         } => (Result<Vec<Member>, String>)
+        // Get all the roles in the guild
+        struct AllRoles {} => (Result<Vec<(RoleId, String)>, String>)
     });
 }
 

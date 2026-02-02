@@ -118,5 +118,25 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
                 }
             }
         }
+        info::Request::AllRoles {} => {
+            match synixe_meta::discord::GUILD.roles(client.as_ref()).await {
+                Ok(roles_map) => {
+                    let roles: Vec<_> = roles_map
+                        .into_iter()
+                        .map(|(id, role)| (id, role.name))
+                        .collect();
+                    if let Err(e) = respond!(msg, info::Response::AllRoles(Ok(roles))).await {
+                        error!("Failed to respond to NATS: {}", e);
+                    }
+                }
+                Err(e) => {
+                    if let Err(e) =
+                        respond!(msg, info::Response::AllRoles(Err(e.to_string()))).await
+                    {
+                        error!("Failed to respond to NATS: {}", e);
+                    }
+                }
+            }
+        }
     }
 }
