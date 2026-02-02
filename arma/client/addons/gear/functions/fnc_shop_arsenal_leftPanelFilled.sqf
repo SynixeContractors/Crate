@@ -18,3 +18,7 @@ for "_lbIndex" from 0 to (lbSize _ctrlPanel - 1) do {
         _ctrlPanel lbSetColor [_lbIndex, _color];
     };
 };
+
+[{
+    _this call FUNC(shop_arsenal_roleFilter_apply);
+}, [_ctrlPanel, true]] call CBA_fnc_execNextFrame;

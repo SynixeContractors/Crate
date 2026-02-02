@@ -2,4 +2,4 @@
 
 params ["_itemCfg"];
 
-[configName _itemCfg] call FUNC(shop_item_owned)
+-1 * ([configName _itemCfg] call FUNC(shop_item_owned))

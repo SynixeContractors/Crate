@@ -28,6 +28,13 @@ switch (_func) do {
     case "items:publish": {
         GVAR(shop_items) = +GVAR(shop_items_importing);
         publicVariable QGVAR(shop_items);
+        GVAR(shop_roles) = createHashMap;
+        {
+            {
+                GVAR(shop_roles) set [_x, true];
+            } forEach _x;
+        } forEach values GVAR(shop_items);
+        publicVariable QGVAR(shop_roles);
         INFO_1("Published shop items: %1",count GVAR(shop_items));
     };
     case "items:err": {

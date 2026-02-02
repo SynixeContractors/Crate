@@ -5,8 +5,11 @@ if (ace_player isNotEqualTo player) exitWith {};
 if !(player getVariable [QGVAR(shop_open), false]) exitWith {};
 
 params ["_display", "_leftIDC"]; // , "_rightIDC"];
+
+private _ctrlPanel = -1;
+
 if (_leftIDC in [IDC_buttonPrimaryWeapon, IDC_buttonSecondaryWeapon, IDC_buttonHandgun]) then {
-    private _ctrlPanel = _display displayCtrl IDC_rightTabContent;
+    _ctrlPanel = _display displayCtrl IDC_rightTabContent;
     private _loadout = [player] call CBA_fnc_getLoadout;
     private _items = [_loadout] call FUNC(loadout_items);
     for "_lbIndex" from 0 to (lbSize _ctrlPanel - 1) do {
@@ -19,7 +22,7 @@ if (_leftIDC in [IDC_buttonPrimaryWeapon, IDC_buttonSecondaryWeapon, IDC_buttonH
     };
 };
 if (_leftIDC in [IDC_buttonUniform, IDC_buttonVest, IDC_buttonBackpack]) then {
-    private _ctrlPanel = _display displayCtrl IDC_rightTabContentListnBox;
+    _ctrlPanel = _display displayCtrl IDC_rightTabContentListnBox;
     private _loadout = [player] call CBA_fnc_getLoadout;
     private _items = [_loadout] call FUNC(loadout_items);
     (lnbSize _ctrlPanel) params ["_rows", "_columns"];
@@ -31,3 +34,7 @@ if (_leftIDC in [IDC_buttonUniform, IDC_buttonVest, IDC_buttonBackpack]) then {
         _ctrlPanel lnbSetColor [[_lbIndex, 1], _color];
     };
 };
+
+[{
+    _this call FUNC(shop_arsenal_roleFilter_apply);
+}, [_ctrlPanel, (_leftIDC in [IDC_buttonPrimaryWeapon, IDC_buttonSecondaryWeapon, IDC_buttonHandgun])]] call CBA_fnc_execNextFrame;

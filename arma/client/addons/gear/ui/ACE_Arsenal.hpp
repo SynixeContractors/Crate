@@ -13,17 +13,23 @@ class ace_arsenal_display {
             };
         };
         class rightTabContentListnBox: RscListNBox {
+            y = QUOTE(safeZoneY + 20 * GRID_H);
+            h = QUOTE(safeZoneH - 30.5 * GRID_H);
             onLBSelChanged = QUOTE(_this call FUNC(shop_arsenal_rightPanelSelChanged));
         };
 
         class leftRoleFilter: RscCombo {
             idc = IDC_leftRoleFilter;
-            onLBSelChanged = QUOTE(call FUNC(shop_arsenal_roleFilter));
+            onLBSelChanged = QUOTE(call FUNC(shop_arsenal_roleFilter_changed));
             x = QUOTE(safeZoneX + 13 * GRID_W);
             y = QUOTE(safeZoneY + 14 * GRID_H);
             w = QUOTE(80 * GRID_W);
             h = QUOTE(6 * GRID_H);
             sizeEx = QUOTE(5 * GRID_H);
+        };
+        class rightRoleFilter: leftRoleFilter {
+            idc = IDC_rightRoleFilter;
+            x = QUOTE(safeZoneX + safeZoneW - 93 * GRID_W);
         };
 
         class leftTabContent: RscListBox {
