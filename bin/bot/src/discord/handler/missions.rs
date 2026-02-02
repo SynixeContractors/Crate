@@ -7,7 +7,7 @@ use crate::discord::utils::find_members;
 
 #[allow(clippy::cognitive_complexity)]
 pub async fn validate_aar(ctx: &Context, message: Message) {
-    let trimmed = Aar::clean_content(message.content.clone());
+    let trimmed = Aar::clean_content(&message.content);
     if !trimmed.starts_with("```") || !trimmed.ends_with("```") {
         return;
     }

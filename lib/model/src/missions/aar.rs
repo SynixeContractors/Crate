@@ -32,7 +32,7 @@ pub struct Aar {
 
 impl Aar {
     #[must_use]
-    pub fn clean_content(content: String) -> String {
+    pub fn clean_content(content: &str) -> String {
         content
             .trim()
             .replace("\u{2068}", "")
