@@ -1,4 +1,4 @@
-use crate::{discord::interaction::Interaction, get_option};
+use crate::{audit, discord::interaction::Interaction, get_option};
 use serenity::{
     all::{
         CommandData, CommandDataOption, CommandDataOptionValue, CommandInteraction,
@@ -62,25 +62,45 @@ async fn kit(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
-    if let Ok(Ok((Response::CanClaim(Ok(Some(Some(false)))), _))) = events_request_2!(
-        bootstrap::NC::get().await,
-        synixe_events::reset::db,
-        CanClaim {
-            member: command.user.id
-        }
-    )
-    .await
-    {
-        interaction
-            .reply("You can not claim a kit at this time. Only one reset kit can be claimed every 14 days.")
-            .await?;
-        return Ok(());
-    }
     let Some(cert) = get_option!(options, "certification", String) else {
         return interaction
             .reply("Required option not provided: certification")
             .await;
     };
+    if let Ok(Ok((Response::CanClaim(Ok(Some(Some(false)))), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::reset::db,
+        CanClaim {
+            member: command.user.id,
+            cert: Uuid::parse_str(cert).expect("certification should be a uuid")
+        }
+    )
+    .await
+    {
+        if let Ok(Ok((Response::LastClaim(Ok(Some(last_claim))), _))) = events_request_2!(
+            bootstrap::NC::get().await,
+            synixe_events::reset::db,
+            LastClaim {
+                member: command.user.id,
+            }
+        )
+        .await
+        {
+            let last_claim = last_claim.to_utc().unix_timestamp();
+            audit(format!(
+                "Member <@{}> attempted to claim a reset kit but is on cooldown. Last claim was at <t:{}:F> (<t:{}:R>)",
+                command.user.id, last_claim, last_claim
+            ));
+            interaction
+                .reply(format!("Only one reset kit can be claimed every 14 days. Your last claim was at <t:{last_claim}:F> (<t:{last_claim}:R>)"))
+                .await?;
+            return Ok(());
+        }
+        interaction
+            .reply("Only one reset kit can be claimed every 14 days.")
+            .await?;
+        return Ok(());
+    }
     let Ok(Ok((Response::ClaimKit(Ok(())), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::reset::db,
@@ -97,6 +117,10 @@ async fn kit(
             .await;
     };
     interaction.reply("Kit claimed!").await?;
+    audit(format!(
+        "Member <@{}> claimed reset kit for cert {}",
+        command.user.id, cert
+    ));
     Ok(())
 }
 async fn kit_autocomplete(

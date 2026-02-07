@@ -21,12 +21,24 @@ impl Handler for Request {
                     cx,
                     synixe_model::reset::UnclaimedKit,
                     Response::UnclaimedKits,
-                    "SELECT certification as id,name FROM certifications_first_kit c WHERE c.certification NOT IN (SELECT cert FROM reset_kit WHERE MEMBER = $1) AND c.certification IN (SELECT certification FROM certifications_trials WHERE trainee = $1 AND passed IS TRUE and (valid_until> NOW() or valid_until IS NULL))",
+                    "SELECT certification as id,name,specialist FROM certifications_first_kit c WHERE c.certification NOT IN (SELECT cert FROM reset_kit WHERE MEMBER = $1) AND c.certification IN (SELECT certification FROM certifications_trials WHERE trainee = $1 AND passed IS TRUE and (valid_until> NOW() or valid_until IS NULL))",
                     member.to_string(),
                 )?;
                 Ok(())
             }
-            Self::CanClaim { member } => {
+            Self::CanClaim { member, cert } => {
+                // Check if the cert is a specialist cert, is not, always return true
+                let is_specialist = sqlx::query!(
+                    "SELECT specialist FROM certifications_first_kit WHERE certification = $1",
+                    cert
+                )
+                .fetch_one(&*db)
+                .await?
+                .specialist;
+                if !is_specialist {
+                    respond!(msg, Response::CanClaim(Ok(Some(Some(true))))).await?;
+                    return Ok(());
+                }
                 fetch_one_and_respond!(
                     msg,
                     *db,
@@ -36,22 +48,33 @@ impl Handler for Request {
                     member.to_string(),
                 )
             }
-            Self::ClaimKit { member, cert } => {
-                sqlx::query!(
-                    "INSERT INTO reset_kit (member, cert) VALUES ($1, $2)",
+            Self::LastClaim { member } => {
+                fetch_one_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::LastClaim,
+                    "SELECT created as value FROM reset_kit WHERE member = $1 ORDER BY created DESC LIMIT 1",
                     member.to_string(),
-                    cert,
                 )
-                .execute(&*db)
-                .await?;
-                let Value::Object(kit) =
-                    sqlx::query!("SELECT first_kit FROM certifications_first_kit WHERE certification = $1", cert)
+            }
+            Self::ClaimKit { member, cert } => {
+                let (Value::Object(kit), specialist) =
+                    sqlx::query!("SELECT first_kit, specialist FROM certifications_first_kit WHERE certification = $1", cert)
                         .fetch_one(&*db)
                         .await
-                        .map(|r| r.first_kit)?
+                        .map(|r| (r.first_kit, r.specialist))?
                 else {
                     return Ok(());
                 };
+                sqlx::query!(
+                    "INSERT INTO reset_kit (member, cert, specialist) VALUES ($1, $2, $3)",
+                    member.to_string(),
+                    cert,
+                    specialist,
+                )
+                .execute(&*db)
+                .await?;
                 for item in kit {
                     if let Value::Number(n) = item.1 {
                         #[allow(clippy::cast_possible_truncation)]

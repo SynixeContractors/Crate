@@ -4,6 +4,7 @@ pub mod db {
     use serenity::model::prelude::UserId;
     use synixe_model::reset::UnclaimedKit;
     use synixe_proc::events_requests;
+    use time::OffsetDateTime;
     use uuid::Uuid;
     events_requests!(db.reset {
         /// Get the unclaimed cert kits
@@ -15,7 +16,14 @@ pub mod db {
         struct CanClaim {
             /// The member to check
             member: UserId,
+            /// The cert to check
+            cert: Uuid,
         } => (Result<Option<Option<bool>>, String>)
+        /// When the last kit was claimed
+        struct LastClaim {
+            /// The member to check
+            member: UserId,
+        } => (Result<Option<OffsetDateTime>, String>)
         /// Claime a cert kit
         struct ClaimKit {
             /// Member who claimed the kit

@@ -9,4 +9,6 @@ pub struct UnclaimedKit {
     pub id: Uuid,
     /// Name
     pub name: String,
+    /// Specialist
+    pub specialist: bool,
 }

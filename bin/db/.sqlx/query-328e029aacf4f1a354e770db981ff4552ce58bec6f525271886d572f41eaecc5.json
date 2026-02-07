@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT specialist FROM certifications_first_kit WHERE certification = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "specialist",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "328e029aacf4f1a354e770db981ff4552ce58bec6f525271886d572f41eaecc5"
+}
