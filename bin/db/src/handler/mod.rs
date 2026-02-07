@@ -7,7 +7,7 @@ mod github;
 mod missions;
 mod recruiting;
 mod reputation;
-// mod reset;
+mod reset;
 mod servers;
 mod surveys;
 mod voting;
