@@ -72,7 +72,7 @@ async fn kit(
     .await
     {
         interaction
-            .reply("You can not claim a kit at this time")
+            .reply("You can not claim a kit at this time. Only one reset kit can be claimed every 14 days.")
             .await?;
         return Ok(());
     }
