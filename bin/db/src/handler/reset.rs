@@ -21,7 +21,7 @@ impl Handler for Request {
                     cx,
                     synixe_model::reset::UnclaimedKit,
                     Response::UnclaimedKits,
-                    "SELECT id,name FROM certifications c WHERE first_kit IS NOT NULL AND c.id NOT IN (SELECT cert FROM reset_kit WHERE MEMBER = $1) AND c.id IN (SELECT certification FROM certifications_trials WHERE trainee = $1 AND passed IS TRUE and (valid_until> NOW() or valid_until IS NULL))",
+                    "SELECT certification as id,name FROM certifications_first_kit c WHERE c.certification NOT IN (SELECT cert FROM reset_kit WHERE MEMBER = $1) AND c.certification IN (SELECT certification FROM certifications_trials WHERE trainee = $1 AND passed IS TRUE and (valid_until> NOW() or valid_until IS NULL))",
                     member.to_string(),
                 )?;
                 Ok(())
@@ -44,8 +44,8 @@ impl Handler for Request {
                 )
                 .execute(&*db)
                 .await?;
-                let Some(Value::Object(kit)) =
-                    sqlx::query!("SELECT first_kit FROM certifications WHERE id = $1", cert)
+                let Value::Object(kit) =
+                    sqlx::query!("SELECT first_kit FROM certifications_first_kit WHERE certification = $1", cert)
                         .fetch_one(&*db)
                         .await
                         .map(|r| r.first_kit)?

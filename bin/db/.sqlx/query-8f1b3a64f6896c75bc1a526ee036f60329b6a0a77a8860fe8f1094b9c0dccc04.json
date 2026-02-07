@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT NOT EXISTS(SELECT 1 FROM reset_kit WHERE member = $1 AND created > NOW() - INTERVAL '13 days') as value",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "value",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "8f1b3a64f6896c75bc1a526ee036f60329b6a0a77a8860fe8f1094b9c0dccc04"
+}

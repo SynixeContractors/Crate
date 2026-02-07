@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT certification as id,name FROM certifications_first_kit c WHERE c.certification NOT IN (SELECT cert FROM reset_kit WHERE MEMBER = $1) AND c.certification IN (SELECT certification FROM certifications_trials WHERE trainee = $1 AND passed IS TRUE and (valid_until> NOW() or valid_until IS NULL))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "94ab65aa6cb17fd47b8f74f2664d28c4b6b3d36c7065ddcfb162602deb2e143b"
+}
