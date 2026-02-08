@@ -2,9 +2,10 @@
 
 params ["_func", "_data"];
 
+(parseSimpleArray _data) params ["_netId"];
+private _bodybag = objectFromNetId _netId;
+
 switch (_func) do {
-    (parseSimpleArray _data) params ["_netId"];
-    private _bodybag = objectFromNetId _netId;
     case "store:ok": {
         clearBackpackCargoGlobal _bodybag;
         clearItemCargoGlobal _bodybag;
