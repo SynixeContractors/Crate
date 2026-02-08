@@ -10,12 +10,11 @@ use synixe_meta::discord::{channel::LOG, role::GARAGE};
 use synixe_proc::{events_request_2, events_request_5};
 
 use crate::{
-    audit,
     discord::{
         interaction::{Confirmation, Interaction},
         slash::ShouldAsk,
     },
-    get_option,
+    game_audit, get_option,
 };
 
 pub static SPAWN_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
@@ -135,9 +134,9 @@ pub async fn spawn(
                 }
             }
             interaction.reply("Vehicle spawned").await?;
-            audit(format!(
-                "Vehicle `{}` spawned by <@{}>",
-                plate, command.user.id,
+            game_audit(format!(
+                "**Vehicle Spawned**\n<@{}> spawned `{}`",
+                command.user.id, plate,
             ));
             if let Err(e) = events_request_2!(
                 bootstrap::NC::get().await,

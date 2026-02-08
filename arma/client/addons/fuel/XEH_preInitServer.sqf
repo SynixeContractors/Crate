@@ -45,5 +45,6 @@ addMissionEventHandler ["ExtensionCallback", {
     params ["_name", "_func", "_data"];
     if (_name != "crate:fuel") exitWith {};
     if (_func != "price") exitWith {};
-    [QGVAR(prices), [_data]] call CBA_fnc_globalEventJIP;
+    missionNamespace setVariable [QGVAR(prices), _data, true];
+    [QGVAR(prices), [_data]] call CBA_fnc_globalEvent;
 }];

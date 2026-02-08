@@ -58,14 +58,13 @@ fn command_store(
         if let Err(e) = context.callback_data("crate:gear:bodybag", "store:ok", vec![net_id]) {
             error!("error sending bodybag:store:ok: {e:?}");
         }
-        debug!("lockerstore for {discord}");
         if let Err(e) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::discord::write,
-            Audit {
+            GameAudit {
                 message: DiscordMessage {
                     content: DiscordContent::Text(format!(
-                        "Bodybag stored for <@{discord}> by <@{instigator}>"
+                        "**Bodybag Stored**\n<@{discord}> by <@{instigator}>"
                     )),
                     reactions: Vec::new(),
                 }

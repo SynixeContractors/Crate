@@ -400,10 +400,10 @@ impl Handler for Request {
                 }
                 respond!(msg, Response::Fuel(Ok(price))).await?;
                 let _ = game_audit(format!(
-                    "**Fuel**\n<@{member}> purchased {} {amount}l @ {:.2} (Total: ${}){}",
+                    "**Fuel**\n<@{member}> purchased {} {amount}l @ {:.2} (Total: {}){}",
                     fuel_type.as_str(),
                     prices_for_map(map) * fuel_type.multiplier(),
-                    price,
+                    bootstrap::format::money(price, false),
                     plate
                         .as_ref()
                         .map_or_else(String::new, |plate| format!(" on {plate}"))
@@ -434,8 +434,11 @@ impl Handler for Request {
                     return Err(anyhow::Error::new(e).context("Failed to record fuel purchase"));
                 }
                 respond!(msg, Response::Transport(Ok(*cost))).await?;
-                let _ =
-                    game_audit(format!("**Transport**\n<@{member}> paid {cost} on {plate}",)).await;
+                let _ = game_audit(format!(
+                    "**Vehicle Transported**\n<@{member}> paid {} on {plate}",
+                    bootstrap::format::money(*cost, false)
+                ))
+                .await;
                 Ok(())
             }
         }

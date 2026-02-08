@@ -48,3 +48,22 @@ pub fn audit(message: String) {
         }
     });
 }
+
+pub fn game_audit(message: String) {
+    tokio::spawn(async {
+        if let Err(e) = synixe_proc::events_request_2!(
+            bootstrap::NC::get().await,
+            synixe_events::discord::write,
+            GameAudit {
+                message: synixe_events::discord::write::DiscordMessage {
+                    content: synixe_events::discord::write::DiscordContent::Text(message),
+                    reactions: vec![],
+                }
+            }
+        )
+        .await
+        {
+            error!("Failed to game audit: {}", e);
+        }
+    });
+}

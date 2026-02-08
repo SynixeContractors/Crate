@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::discord::interaction::Interaction;
 use crate::discord::slash::ShouldAsk;
-use crate::{audit, get_option};
+use crate::{audit, game_audit, get_option};
 
 #[allow(clippy::too_many_lines)]
 pub async fn purchase(
@@ -71,10 +71,10 @@ pub async fn purchase(
             else {
                 return interaction.reply("Error purchasing vehicle").await;
             };
-            audit(format!(
-                "Vehicle `{}` purchased by <@{}>",
-                plate.expect("vehicle purchase must have plate"),
+            game_audit(format!(
+                "**Vehicle Purchased**\n\n<@{}> purchased `{}`",
                 command.user.id,
+                plate.expect("vehicle purchase must have plate"),
             ));
             interaction.reply("**Vehicle Purchased**\n\n").await
         }

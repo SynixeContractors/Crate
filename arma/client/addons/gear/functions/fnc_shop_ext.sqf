@@ -32,7 +32,7 @@ switch (_func) do {
         {
             {
                 GVAR(shop_roles) set [_x, true];
-            } forEach _x;
+            } forEach (_x select 0);
         } forEach values GVAR(shop_items);
         publicVariable QGVAR(shop_roles);
         INFO_1("Published shop items: %1",count GVAR(shop_items));

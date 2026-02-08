@@ -78,12 +78,11 @@ fn chat(steam: String, name: String, channel: String, message: String) {
         {
             error!("failed to log server event: {e}");
         }
-        audit(steam, "Chat".to_string(), format!("said \"{message}\"")).await;
+        game_audit(steam, "Chat".to_string(), format!("said \"{message}\"")).await;
     });
 }
 
 fn take(steam: String, name: String, from: String, item: String) {
-    return;
     RUNTIME.spawn(async move {
         if let Err(e) = events_request_5!(
             bootstrap::NC::get().await,
@@ -103,7 +102,7 @@ fn take(steam: String, name: String, from: String, item: String) {
         {
             error!("failed to log server event: {e}");
         }
-        audit(
+        game_audit(
             steam,
             "Item Taken".to_string(),
             format!("took {item} from {from}"),
@@ -135,7 +134,7 @@ fn role(steam: String, name: String, discord: String, role: String) {
     });
 }
 
-async fn audit(steam: String, header: String, message: String) {
+async fn game_audit(steam: String, header: String, message: String) {
     let Ok(Ok((synixe_events::discord::db::Response::FromSteam(Ok(Some(discord))), _))) =
         events_request_5!(
             bootstrap::NC::get().await,

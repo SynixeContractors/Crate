@@ -85,13 +85,15 @@ if (_vehicle isEqualTo objNull) exitWith {};
 
 EXTCALL("garage:spawn",[ARR_2(_id,"Yes")]);
 
+private _state = createHashMapFromArray _state;
+
 _vehicle setVariable [QGVAR(plate), _plate, true];
 _vehicle setPlateNumber _plate;
 _vehicle setVariable ["ace_tagging_canTag", false, true];
 _vehicle setVariable ["crate", true, true];
 [{
     _this call EFUNC(common,objectState_load);
-}, [_vehicle, createHashMapFromArray _state]] call CBA_fnc_execNextFrame;
+}, [_vehicle, _state]] call CBA_fnc_execNextFrame;
 
 GVAR(spawned) set [_plate, _vehicle];
 
