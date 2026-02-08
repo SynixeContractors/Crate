@@ -36,7 +36,7 @@ class ace_arsenal_display {
             y = QUOTE(safeZoneY + 20 * GRID_H);
             h = QUOTE(safeZoneH - 30.5 * GRID_H);
         };
-        class rightTabContent: RscListBox {
+        class rightTabContent: leftTabContent {
             h = QUOTE(safeZoneH - 34 * GRID_H);
         };
     };
