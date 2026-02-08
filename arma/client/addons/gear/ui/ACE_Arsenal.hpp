@@ -14,7 +14,7 @@ class ace_arsenal_display {
         };
         class rightTabContentListnBox: RscListNBox {
             y = QUOTE(safeZoneY + 20 * GRID_H);
-            h = QUOTE(safeZoneH - 30.5 * GRID_H);
+            h = QUOTE(safeZoneH - 40 * GRID_H);
             onLBSelChanged = QUOTE(_this call FUNC(shop_arsenal_rightPanelSelChanged));
         };
 
@@ -35,6 +35,9 @@ class ace_arsenal_display {
         class leftTabContent: RscListBox {
             y = QUOTE(safeZoneY + 20 * GRID_H);
             h = QUOTE(safeZoneH - 30.5 * GRID_H);
+        };
+        class rightTabContent: RscListBox {
+            h = QUOTE(safeZoneH - 34 * GRID_H);
         };
     };
 };
