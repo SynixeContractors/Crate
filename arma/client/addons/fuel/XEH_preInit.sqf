@@ -34,8 +34,4 @@ ADDON = false;
     ];
 }] call CBA_fnc_addEventHandler;
 
-if (missionNamespace getVariable [QGVAR(prices), []] isNotEqualTo []) then {
-    [QGVAR(prices), [QGVAR(prices)]] call CBA_fnc_localEvent;
-};
-
 ADDON = true;

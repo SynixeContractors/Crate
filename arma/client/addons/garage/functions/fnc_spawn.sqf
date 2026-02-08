@@ -102,12 +102,7 @@ GVAR(spawned) set [_plate, _vehicle];
 [_vehicle, _plate, 0.4, "ffd731"] call ace_tagging_fnc_stencilVehicle;
 
 if ("tex_source" in _state) then {
-    private _config = configOf _vehicle;
-
-    private _textureList = getArray (_config >> "textureList");
-    if (_textureList isEqualTo []) exitWith {true};
-
-    private _textureSource = _config >> "TextureSources" >> (_state get "tex_source");
+    private _textureSource = configOf _vehicle >> "TextureSources" >> (_state get "tex_source");
     private _textures = getArray (_textureSource >> "textures");
     private _materials = getArray (_textureSource >> "materials");
 
