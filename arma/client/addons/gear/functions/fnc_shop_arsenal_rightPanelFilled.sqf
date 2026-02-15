@@ -35,7 +35,7 @@ if (_leftIDC in [IDC_buttonUniform, IDC_buttonVest, IDC_buttonBackpack]) then {
     };
 };
 
-if (_ctrlPanel == -1) exitWith {};
+if (_ctrlPanel isEqualTo -1) exitWith {};
 
 [{
     _this call FUNC(shop_arsenal_roleFilter_apply);
