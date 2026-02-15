@@ -56,6 +56,7 @@ GVAR(shop_processing) = false;
 ["ace_arsenal_leftPanelFilled", FUNC(shop_arsenal_leftPanelFilled)] call CBA_fnc_addEventHandler;
 ["ace_arsenal_rightPanelFilled", FUNC(shop_arsenal_rightPanelFilled)] call CBA_fnc_addEventHandler;
 ["ace_arsenal_loadoutsListFilled", FUNC(shop_arsenal_loadoutsListFilled)] call CBA_fnc_addEventHandler;
+["ace_arsenal_showToggled", FUNC(shop_arsenal_showToggled)] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_enter_ok), FUNC(shop_enter)] call CBA_fnc_addEventHandler;
 [QGVAR(shop_enter_err), {

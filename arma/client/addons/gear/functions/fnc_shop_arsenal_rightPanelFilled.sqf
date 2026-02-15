@@ -35,6 +35,8 @@ if (_leftIDC in [IDC_buttonUniform, IDC_buttonVest, IDC_buttonBackpack]) then {
     };
 };
 
+if (_ctrlPanel == -1) exitWith {};
+
 [{
     _this call FUNC(shop_arsenal_roleFilter_apply);
 }, [_ctrlPanel, (_leftIDC in [IDC_buttonPrimaryWeapon, IDC_buttonSecondaryWeapon, IDC_buttonHandgun])]] call CBA_fnc_execNextFrame;

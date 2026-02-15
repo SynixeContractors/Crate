@@ -19,6 +19,7 @@ PREP(shop_arsenal_rightPanelFilled);
 PREP(shop_arsenal_rightPanelSelChanged);
 PREP(shop_arsenal_roleFilter_apply);
 PREP(shop_arsenal_roleFilter_changed);
+PREP(shop_arsenal_showToggled);
 PREP(shop_arsenal_sort_owned);
 PREP(shop_arsenal_sort_price);
 PREP(shop_arsenal_tooltip);
