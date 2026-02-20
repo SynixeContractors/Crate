@@ -35,6 +35,17 @@ impl Handler for Request {
                 for trial in expiring {
                     if let Some(valid_until) = trial.valid_until {
                         let diff = valid_until - OffsetDateTime::now_utc();
+                        if diff.whole_days() == 59 {
+                            let nats = bootstrap::NC::get().await;
+                            publish!(
+                                nats,
+                                synixe_events::certifications::publish::Publish::TrialExpiring {
+                                    trial: trial.clone(),
+                                    days: 60,
+                                }
+                            )
+                            .await?;
+                        }
                         if diff.whole_days() == 29 {
                             let nats = bootstrap::NC::get().await;
                             publish!(
@@ -42,17 +53,6 @@ impl Handler for Request {
                                 synixe_events::certifications::publish::Publish::TrialExpiring {
                                     trial: trial.clone(),
                                     days: 30,
-                                }
-                            )
-                            .await?;
-                        }
-                        if diff.whole_days() == 14 {
-                            let nats = bootstrap::NC::get().await;
-                            publish!(
-                                nats,
-                                synixe_events::certifications::publish::Publish::TrialExpiring {
-                                    trial: trial.clone(),
-                                    days: 15,
                                 }
                             )
                             .await?;
