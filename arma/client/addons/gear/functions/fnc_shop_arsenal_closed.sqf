@@ -2,10 +2,16 @@
 
 params ["_display"];
 
-if !(GVAR(enabled)) exitWith {};
+if !(GVAR(enabled)) exitWith {
+    INFO("Shop disabled, skipping arsenal close handler");
+};
 
-if (ace_player isNotEqualTo player) exitWith {};
-if !(player getVariable [QGVAR(shop_open), false]) exitWith {};
+if (ace_player isNotEqualTo player) exitWith {
+    INFO("Not local player, skipping arsenal close handler");
+};
+if !(player getVariable [QGVAR(shop_open), false]) exitWith {
+    INFO("Shop not open, skipping arsenal close handler");
+};
 
 [GVAR(shop_balanceHandle)] call CBA_fnc_removePerFrameHandler;
 [GVAR(shop_box), false] call ace_arsenal_fnc_removeBox;
