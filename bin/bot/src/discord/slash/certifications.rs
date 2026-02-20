@@ -153,6 +153,22 @@ pub fn register() -> CreateCommand {
                 .set_autocomplete(true),
             ),
         )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "info",
+                "Get information about a certification",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "certification",
+                    "The certification to get information about",
+                )
+                .required(true)
+                .set_autocomplete(true),
+            ),
+        )
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -164,6 +180,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
         match subcommand.name.as_str() {
             "trial" => trial(ctx, command, values).await?,
             "view" => view(ctx, command, values).await?,
+            "info" => info(ctx, command, values).await?,
             "list" => list(ctx, command, values, false).await?,
             "available" => list(ctx, command, values, true).await?,
             "first" => first(ctx, command, values).await?,
@@ -185,7 +202,7 @@ pub async fn autocomplete(
     };
     if subcommand.kind() == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
-            "trial" | "first" | "instructor" => {
+            "trial" | "first" | "instructor" | "info" => {
                 certifications_autocomplete(ctx, autocomplete).await?;
             }
             _ => unreachable!(),
@@ -246,6 +263,11 @@ async fn trial(
         .roles_required
         .iter()
         .filter(|r| !trainee_roles.iter().any(|tr| &tr.to_string() == *r))
+        .filter(|r| if *r == &JUNIOR.to_string() {
+            !trainee_roles.contains(&MEMBER)
+        } else {
+            true
+        })
         .collect::<Vec<_>>();
     if !missing.is_empty() && interaction.confirm(
             &format!(
@@ -390,6 +412,64 @@ async fn view(
     interaction.reply(content).await
 }
 
+async fn info(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    interaction.reply("Fetching certification info...").await?;
+    let Some(cert_str) = get_option!(options, "certification", String) else {
+        return interaction.reply("Invalid certification").await;
+    };
+    let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_2!(
+        bootstrap::NC::get().await,
+        synixe_events::certifications::db,
+        List {}
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fetch certifications").await;
+    };
+    let Some(cert) = certs.iter().find(|c| &c.id.to_string() == cert_str) else {
+        return interaction.reply("Invalid certification").await;
+    };
+    let content = format!("**{}**\n<{}>\n{}\n{}\n{}\n\n",
+        cert.name,
+        cert.link,
+        cert.instructors.as_ref().map_or_else(
+            || "No instructors".to_string(),
+            |ins| {
+                let instructors =
+                    ins.iter().map(|i| format!("<@{i}>")).collect::<Vec<_>>();
+                if instructors.is_empty() {
+                    "No instructors".to_string()
+                } else {
+                    format!("Instructor(s): {}", instructors.join(", "))
+                }
+            },
+        ),
+        {
+            let requires = cert
+                .roles_required
+                .iter()
+                .map(|r| format!("<@&{r}>"))
+                .collect::<Vec<_>>()
+                .join(", ");
+            if requires.is_empty() {
+                "No requirements".to_string()
+            } else {
+                format!("Requires: {requires}")
+            }
+        },
+        cert.valid_for.map_or_else(
+            || "No expiration".to_string(),
+            |v| format!("Lasts {v} days\n")
+        )
+    );
+    interaction.reply(content).await
+}
+
 async fn list(
     ctx: &Context,
     command: &CommandInteraction,
@@ -453,27 +533,9 @@ async fn list(
     for cert in certs {
         write!(
             content,
-            "**{}**\n<{}>\n{}\n{}\n{}\n\n",
+            "**{}**\n<{}>\n{}{}\n",
             cert.name,
             cert.link,
-            {
-                if available {
-                    cert.instructors.map_or_else(
-                        || "No instructors".to_string(),
-                        |ins| {
-                            let instructors =
-                                ins.iter().map(|i| format!("<@{i}>")).collect::<Vec<_>>();
-                            if instructors.is_empty() {
-                                "No instructors".to_string()
-                            } else {
-                                format!("Instructor(s): {}", instructors.join(", "))
-                            }
-                        },
-                    )
-                } else {
-                    String::new()
-                }
-            },
             {
                 let requires = cert
                     .roles_required
@@ -482,14 +544,14 @@ async fn list(
                     .collect::<Vec<_>>()
                     .join(", ");
                 if requires.is_empty() {
-                    "No requirements".to_string()
+                    String::new()
                 } else {
-                    format!("Requires: {requires}")
+                    format!("Requires {requires}\n")
                 }
             },
             cert.valid_for.map_or_else(
-                || "No expiration".to_string(),
-                |v| format!("Valid for {v} days")
+                String::new,
+                |v| format!("Lasts {v} days\n")
             )
         )?;
     }
