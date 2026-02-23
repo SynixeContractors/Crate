@@ -299,7 +299,7 @@ impl EventHandler for Handler {
                     BankDepositNew {
                         member: event.user.id,
                         reason: "Starting Funds".to_string(),
-                        amount: 3500,
+                        amount: 3250,
                         id: Some(Uuid::nil()),
                     }
                 )

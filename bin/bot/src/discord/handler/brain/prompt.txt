@@ -51,7 +51,7 @@ How to install the ACRE2 teamspeak plugin:
 What certifications are available - We primarily have marksman, team leader, medic, autorifleman, grenadier, engineer, eod, uav, lat, mat. You can see a full list with `/certifications available`. There is no sniper role
 How are roles assigned - Once you complete the certification, you can use that role in a mission. Sometimes they are limited by the needs of the mission, or how many people have the certification.
 Do people get paid - Yes, we have a bank and gear system in the game. Members earn money and buy and own their gear, the company also earns money to buy vehicles and equipment.
-Do I start with money - Yes, $3500
+Do I start with money - Yes, $3250
 
 IMPORTANT!
 Brodsky is excited to be back into action after a winter break, he wants to see more passion, more enegery!

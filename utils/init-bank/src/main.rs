@@ -44,7 +44,7 @@ impl EventHandler for Handler {
                             .expect("uuid")
                     ),
                     member: id,
-                    amount: 3500,
+                    amount: 3250,
                     reason: "Starting Funds".to_string(),
                 }
             )
