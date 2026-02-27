@@ -30,7 +30,7 @@ jobs:
         run: mv arma/client/.hemttout/build arma/client/.hemttout/@crate_client
 
       - name: Upload Client
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: crate_client.zip
           path: arma/client/.hemttout/@*
@@ -54,7 +54,7 @@ jobs:
         run: mv arma/server/.hemttout/build arma/server/.hemttout/@crate_server
 
       - name: Upload Server
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: crate_server.zip
           path: arma/server/.hemttout/@*
