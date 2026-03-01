@@ -44,7 +44,7 @@ impl Handler for Request {
                     *db,
                     cx,
                     Response::CanClaim,
-                    "SELECT NOT EXISTS(SELECT 1 FROM reset_kit WHERE member = $1 AND created > NOW() - INTERVAL '13 days') as value",
+                    "SELECT NOT EXISTS(SELECT 1 FROM reset_kit WHERE member = $1 AND created > NOW() - INTERVAL '13 days' AND specialist = TRUE) as value",
                     member.to_string(),
                 )
             }
