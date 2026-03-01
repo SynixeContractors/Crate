@@ -273,7 +273,7 @@ impl Aar {
 
     #[must_use]
     pub const fn casualty_payment(&self) -> i32 {
-        75_000
+        -75_000
     }
 
     #[must_use]
@@ -400,6 +400,16 @@ impl Aar {
             )
         )
         .expect("should be able to write to string");
+    if !self.casualties().is_empty() {
+        writeln!(
+            math,
+            "Casualties |  {:06}   x {:03} = {}",
+            self.casualties().len(),
+            self.casualty_payment(),
+            bootstrap::format::money(self.casualty_payment(), true)
+        )
+        .expect("should be able to write to string");
+    }
         writeln!(
             math,
             "{}    |  x{:.1}           = {}",
