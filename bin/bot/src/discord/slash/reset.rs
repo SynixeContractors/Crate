@@ -106,7 +106,7 @@ async fn kit(
         synixe_events::reset::db,
         ClaimKit {
             member: command.user.id,
-            cert: Uuid::parse_str(cert).expect("certification should be a uuid")
+            first_kit: Uuid::parse_str(cert).expect("certification should be a uuid")
         }
     )
     .await

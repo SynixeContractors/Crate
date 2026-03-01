@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT certification as id,name,specialist FROM certifications_first_kit c WHERE c.certification NOT IN (SELECT cert FROM reset_kit WHERE MEMBER = $1) AND c.certification IN (SELECT certification FROM certifications_trials WHERE trainee = $1 AND passed IS TRUE and (valid_until> NOW() or valid_until IS NULL))",
+  "query": "SELECT id,name,specialist FROM certifications_first_kit c WHERE c.certification NOT IN (SELECT cert FROM reset_kit WHERE MEMBER = $1) AND c.certification IN (SELECT certification FROM certifications_trials WHERE trainee = $1 AND passed IS TRUE and (valid_until> NOW() or valid_until IS NULL))",
   "describe": {
     "columns": [
       {
@@ -30,5 +30,5 @@
       false
     ]
   },
-  "hash": "ef3750f0e1a25ae12cf959a99d0d21d0132bf52e1d2eb4c91277a1e6e26d70e0"
+  "hash": "48a5754c0a2d8121d7a431f78002566dad3f7ed48c2d7ce0da800accd78a56a4"
 }

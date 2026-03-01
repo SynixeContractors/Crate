@@ -1,15 +1,20 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT first_kit, specialist FROM certifications_first_kit WHERE certification = $1",
+  "query": "SELECT certification, first_kit, specialist FROM certifications_first_kit WHERE id = $1",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
+        "name": "certification",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
         "name": "first_kit",
         "type_info": "Jsonb"
       },
       {
-        "ordinal": 1,
+        "ordinal": 2,
         "name": "specialist",
         "type_info": "Bool"
       }
@@ -21,8 +26,9 @@
     },
     "nullable": [
       false,
+      false,
       false
     ]
   },
-  "hash": "8a1ce1f506900facc28922bab6f7c18c84df33657d7d615abb92dee7b7120e67"
+  "hash": "4d8450f6d01605740ef813298bf0fd23a0410246c9019f796093a6cc386e5241"
 }

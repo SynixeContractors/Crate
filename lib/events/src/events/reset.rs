@@ -29,7 +29,7 @@ pub mod db {
             /// Member who claimed the kit
             member: UserId,
             /// Cert claimed
-            cert: Uuid,
+            first_kit: Uuid,
         } => (Result<(), String>)
     });
 }

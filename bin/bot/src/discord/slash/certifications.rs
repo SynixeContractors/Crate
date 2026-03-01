@@ -263,10 +263,12 @@ async fn trial(
         .roles_required
         .iter()
         .filter(|r| !trainee_roles.iter().any(|tr| &tr.to_string() == *r))
-        .filter(|r| if *r == &JUNIOR.to_string() {
-            !trainee_roles.contains(&MEMBER)
-        } else {
-            true
+        .filter(|r| {
+            if *r == &JUNIOR.to_string() {
+                !trainee_roles.contains(&MEMBER)
+            } else {
+                true
+            }
         })
         .collect::<Vec<_>>();
     if !missing.is_empty() && interaction.confirm(
@@ -434,14 +436,14 @@ async fn info(
     let Some(cert) = certs.iter().find(|c| &c.id.to_string() == cert_str) else {
         return interaction.reply("Invalid certification").await;
     };
-    let content = format!("**{}**\n<{}>\n{}\n{}\n{}\n\n",
+    let content = format!(
+        "**{}**\n<{}>\n{}\n{}\n{}\n\n",
         cert.name,
         cert.link,
         cert.instructors.as_ref().map_or_else(
             || "No instructors".to_string(),
             |ins| {
-                let instructors =
-                    ins.iter().map(|i| format!("<@{i}>")).collect::<Vec<_>>();
+                let instructors = ins.iter().map(|i| format!("<@{i}>")).collect::<Vec<_>>();
                 if instructors.is_empty() {
                     "No instructors".to_string()
                 } else {
@@ -549,10 +551,8 @@ async fn list(
                     format!("Requires {requires}\n")
                 }
             },
-            cert.valid_for.map_or_else(
-                String::new,
-                |v| format!("Lasts {v} days\n")
-            )
+            cert.valid_for
+                .map_or_else(String::new, |v| format!("Lasts {v} days\n"))
         )?;
     }
     interaction.reply(content).await

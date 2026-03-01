@@ -5,7 +5,7 @@ use uuid::Uuid;
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 /// Unclaimed cert kit
 pub struct UnclaimedKit {
-    /// Cert
+    /// First Kit ID
     pub id: Uuid,
     /// Name
     pub name: String,
