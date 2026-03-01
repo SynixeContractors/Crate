@@ -77,6 +77,10 @@ pub mod db {
             contractors: Vec<UserId>,
             /// The amount to pay contractors
             contractor_amount: i32,
+            /// The amount to pay for casualties
+            casualty_amount: i32,
+            /// The number of casualties during the mission
+            casualty_count: u16,
             /// The amount to pay the group
             group_amount: i32,
         } => (Result<(), String>)

@@ -205,6 +205,8 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
                 scheduled: scheduled.id,
                 contractors: ids.iter().map(|m| m.1).collect::<Vec<_>>(),
                 contractor_amount: aar.contractor_payment(payment, current_rep),
+                casualty_amount: aar.casualty_payment(),
+                casualty_count: aar.casualties().len() as u16,
                 group_amount: aar.employer_payment(payment, current_rep),
             }
         )

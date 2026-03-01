@@ -38,8 +38,23 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
             }
             return;
         };
-        if let Err(e) = find_members(ctx, aar.contractors()).await {
-            if let Err(e) = message.reply(&ctx.http, e).await {
+        let Ok((_, unknown)) = find_members(ctx, aar.contractors()).await else {
+            if let Err(e) = message.reply(&ctx.http, "Failed to find members").await {
+                error!("Error replying to message: {}", e);
+            }
+            return;
+        };
+        if !unknown.is_empty() {
+            if let Err(e) = message
+                .reply(
+                    &ctx.http,
+                    format!(
+                        "Could not find the following members: {}",
+                        unknown.join(", ")
+                    ),
+                )
+                .await
+            {
                 error!("Error replying to message: {}", e);
             }
             return;
@@ -69,25 +84,6 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
             error!("Error replying to message: {}", e);
         }
     } else if let Err(e) = message.reply(&ctx.http, ":white_check_mark: AAR Valid! Although since this is a non-contract mission, it won't be automatically linked to a mission.").await {
-        error!("Error replying to message: {}", e);
-    }
-    let Ok((_, unknown)) = find_members(ctx, aar.contractors()).await else {
-        if let Err(e) = message.reply(&ctx.http, "Failed to find members").await {
-            error!("Error replying to message: {}", e);
-        }
-        return;
-    };
-    if !unknown.is_empty()
-        && let Err(e) = message
-            .reply(
-                &ctx.http,
-                format!(
-                    "Could not find the following members: {}",
-                    unknown.join(", ")
-                ),
-            )
-            .await
-    {
         error!("Error replying to message: {}", e);
     }
 }

@@ -24,6 +24,8 @@ pub struct Aar {
     date: Date,
     /// Contractors in attendance
     contractors: Vec<String>,
+    /// Casualties during the mission
+    casualties: Vec<String>,
     /// Outcome of the mission
     outcome: Outcome,
     /// Payment for the mission
@@ -103,8 +105,8 @@ impl Aar {
                 .collect()
         };
 
-        let unique = contractors.iter().collect::<HashSet<_>>();
-        if unique.len() != contractors.len() {
+        let unique_contractors = contractors.iter().collect::<HashSet<_>>();
+        if unique_contractors.len() != contractors.len() {
             contractors.sort();
             let mut duplicates = Vec::new();
             for i in 0..contractors.len() - 2 {
@@ -115,6 +117,33 @@ impl Aar {
             if !duplicates.is_empty() {
                 return Err(format!(
                     "Duplicate contractors: {duplicates}",
+                    duplicates = duplicates.join(", ")
+                ));
+            }
+        }
+
+        let mut casualties: Vec<String> = {
+            let Some(casualties) = lines.get("casualties") else {
+                return Err("Could not find casualties.".to_string());
+            };
+            casualties
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect()
+        };
+        let unique_casualties = casualties.iter().collect::<HashSet<_>>();
+        if unique_casualties.len() != casualties.len() {
+            casualties.sort();
+            let mut duplicates = Vec::new();
+            for i in 0..casualties.len() - 2 {
+                if casualties[i] == casualties[i + 1] {
+                    duplicates.push(casualties[i].clone());
+                }
+            }
+            if !duplicates.is_empty() {
+                return Err(format!(
+                    "Duplicate casualties: {duplicates}",
                     duplicates = duplicates.join(", ")
                 ));
             }
@@ -163,6 +192,7 @@ impl Aar {
             mission: (*mission_name).to_string(),
             date,
             contractors,
+            casualties,
             outcome,
             payment,
         })
@@ -196,6 +226,12 @@ impl Aar {
     /// Returns the contractors in attendance.
     pub fn contractors(&self) -> &[String] {
         &self.contractors
+    }
+
+    #[must_use]
+    /// Returns the casualties during the mission.
+    pub fn casualties(&self) -> &[String] {
+        &self.casualties
     }
 
     #[must_use]
@@ -233,6 +269,11 @@ impl Aar {
         payment += reputation * 200f32 / 60f32 * self.payment.total() as f32;
         payment *= self.outcome.employer_multiplier();
         (payment as i32).max(20_000)
+    }
+
+    #[must_use]
+    pub const fn casualty_payment(&self) -> i32 {
+        75_000
     }
 
     #[must_use]
