@@ -26,11 +26,11 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
-            Self::CanClaim { member, cert } => {
+            Self::CanClaim { member, first_kit } => {
                 // Check if the cert is a specialist cert, is not, always return true
                 let is_specialist = sqlx::query!(
-                    "SELECT specialist FROM certifications_first_kit WHERE certification = $1",
-                    cert
+                    "SELECT specialist FROM certifications_first_kit WHERE id = $1",
+                    first_kit
                 )
                 .fetch_one(&*db)
                 .await?

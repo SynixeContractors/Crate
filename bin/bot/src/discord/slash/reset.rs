@@ -18,7 +18,7 @@ pub fn register() -> CreateCommand {
                 .add_sub_option(
                     CreateCommandOption::new(
                         CommandOptionType::String,
-                        "certification",
+                        "first_kit",
                         "Kit to receieve",
                     )
                     .set_autocomplete(true)
@@ -62,9 +62,9 @@ async fn kit(
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
-    let Some(cert) = get_option!(options, "certification", String) else {
+    let Some(first_kit) = get_option!(options, "first_kit", String) else {
         return interaction
-            .reply("Required option not provided: certification")
+            .reply("Required option not provided: first_kit")
             .await;
     };
     if let Ok(Ok((Response::CanClaim(Ok(Some(Some(false)))), _))) = events_request_2!(
@@ -72,7 +72,7 @@ async fn kit(
         synixe_events::reset::db,
         CanClaim {
             member: command.user.id,
-            cert: Uuid::parse_str(cert).expect("certification should be a uuid")
+            first_kit: Uuid::parse_str(first_kit).expect("first_kit should be a uuid")
         }
     )
     .await
@@ -106,7 +106,7 @@ async fn kit(
         synixe_events::reset::db,
         ClaimKit {
             member: command.user.id,
-            first_kit: Uuid::parse_str(cert).expect("certification should be a uuid")
+            first_kit: Uuid::parse_str(first_kit).expect("first_kit should be a uuid")
         }
     )
     .await
@@ -118,8 +118,8 @@ async fn kit(
     };
     interaction.reply("Kit claimed!").await?;
     audit(format!(
-        "Member <@{}> claimed reset kit for cert {}",
-        command.user.id, cert
+        "Member <@{}> claimed reset kit for first kit {}",
+        command.user.id, first_kit
     ));
     Ok(())
 }
@@ -131,10 +131,10 @@ async fn kit_autocomplete(
     let Some(focus) = CommandData::autocomplete(&autocomplete.data) else {
         return Ok(());
     };
-    if focus.name != "certification" {
+    if focus.name != "first_kit" {
         return Ok(());
     }
-    let Ok(Ok((Response::UnclaimedKits(Ok(certs)), _))) = events_request_2!(
+    let Ok(Ok((Response::UnclaimedKits(Ok(first_kits)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::reset::db,
         UnclaimedKits {
@@ -143,10 +143,10 @@ async fn kit_autocomplete(
     )
     .await
     else {
-        error!("Failed to fetch certifications");
+        error!("Failed to fetch unclaimed kits");
         return Ok(());
     };
-    let mut certs: Vec<_> = certs
+    let mut first_kits: Vec<_> = first_kits
         .into_iter()
         .filter(|c| {
             c.name
@@ -154,14 +154,14 @@ async fn kit_autocomplete(
                 .contains(&focus.value.to_string().to_lowercase())
         })
         .collect();
-    if certs.len() > 25 {
-        certs.truncate(25);
+    if first_kits.len() > 25 {
+        first_kits.truncate(25);
     }
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
-            for cert in certs {
-                f = f.add_string_choice(&cert.name, cert.id.to_string());
+            for kit in first_kits {
+                f = f.add_string_choice(&kit.name, kit.id.to_string());
             }
             CreateInteractionResponse::Autocomplete(f)
         })

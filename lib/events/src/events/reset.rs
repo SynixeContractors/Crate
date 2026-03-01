@@ -17,7 +17,7 @@ pub mod db {
             /// The member to check
             member: UserId,
             /// The cert to check
-            cert: Uuid,
+            first_kit: Uuid,
         } => (Result<Option<Option<bool>>, String>)
         /// When the last kit was claimed
         struct LastClaim {
