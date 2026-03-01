@@ -400,16 +400,16 @@ impl Aar {
             )
         )
         .expect("should be able to write to string");
-    if !self.casualties().is_empty() {
-        writeln!(
-            math,
-            "Casualties |  {:06}   x {:03} = {}",
-            self.casualties().len(),
-            self.casualty_payment(),
-            bootstrap::format::money(self.casualty_payment(), true)
-        )
-        .expect("should be able to write to string");
-    }
+        if !self.casualties().is_empty() {
+            writeln!(
+                math,
+                "Casualties |  {:06}   x {:03} = {}",
+                self.casualties().len(),
+                self.casualty_payment(),
+                bootstrap::format::money(self.casualty_payment(), true)
+            )
+            .expect("should be able to write to string");
+        }
         writeln!(
             math,
             "{}    |  x{:.1}           = {}",

@@ -263,7 +263,7 @@ impl Handler for Request {
                     "INSERT INTO gear_bank_deposits (member, amount, reason, id, created) VALUES ('0', $1, $2, $3, $4)",
                     casualty_amount * i32::from(*casualty_count),
                     format!("{}: {} - {} casualties @ ${}", scheduled.typ.to_string(), scheduled.name, casualty_count, casualty_amount),
-                    scheduled.id,
+                    uuid::Uuid::parse_str("00000000-0000-0000-0000-000000000003").expect("valid uuid"),
                     end,
                 )
                 .execute(&mut *tx)
