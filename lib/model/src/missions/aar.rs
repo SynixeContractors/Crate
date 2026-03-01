@@ -268,6 +268,7 @@ impl Aar {
         payment += self.payment.total() as f32 / 60f32 * payment_type.employer() as f32;
         payment += reputation * 200f32 / 60f32 * self.payment.total() as f32;
         payment *= self.outcome.employer_multiplier();
+        payment += self.casualties().len() as f32 * self.casualty_payment() as f32;
         (payment as i32).max(20_000)
     }
 
@@ -404,8 +405,8 @@ impl Aar {
             writeln!(
                 math,
                 "Casualties |  {:06}   x {:03} = {}",
-                self.casualties().len(),
                 self.casualty_payment(),
+                self.casualties().len(),
                 bootstrap::format::money(self.casualty_payment(), true)
             )
             .expect("should be able to write to string");
