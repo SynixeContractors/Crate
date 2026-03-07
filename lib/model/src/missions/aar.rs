@@ -625,7 +625,7 @@ impl PaymentType {
     #[allow(clippy::match_same_arms)]
     /// Hourly rate for the employer
     pub const fn employer(&self) -> i32 {
-        (match self {
+        ((match self {
             Self::ProtectionLowRisk => 59800,
             Self::ProtectionHighRisk => 89700,
             Self::Logistics => 44850,
@@ -635,7 +635,7 @@ impl PaymentType {
             Self::Support => 44850,
             Self::Security => 59800,
             Self::SmashGrab => 44850,
-        }) * 2.5
+        }) as f32 * 2.5) as i32
     }
 }
 
