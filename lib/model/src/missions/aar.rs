@@ -268,8 +268,9 @@ impl Aar {
         payment += self.payment.total() as f32 / 60f32 * payment_type.employer() as f32;
         payment += reputation * 200f32 / 60f32 * self.payment.total() as f32;
         payment *= self.outcome.employer_multiplier();
+        payment = (payment as i32).max(20_000) as f32;
         payment += self.casualties().len() as f32 * self.casualty_payment() as f32;
-        (payment as i32).max(20_000)
+        payment as i32
     }
 
     #[must_use]
@@ -634,7 +635,7 @@ impl PaymentType {
             Self::Support => 44850,
             Self::Security => 59800,
             Self::SmashGrab => 44850,
-        }) * 2
+        }) * 2.5
     }
 }
 
