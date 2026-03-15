@@ -408,7 +408,10 @@ impl Aar {
                 "Casualties |  {:06}   x {:03} = {}",
                 self.casualty_payment(),
                 self.casualties().len(),
-                bootstrap::format::money(self.casualty_payment(), true)
+                bootstrap::format::money(
+                    self.casualty_payment() * self.casualties().len() as i32,
+                    true
+                )
             )
             .expect("should be able to write to string");
         }
@@ -635,7 +638,8 @@ impl PaymentType {
             Self::Support => 44850,
             Self::Security => 59800,
             Self::SmashGrab => 44850,
-        }) as f32 * 2.5) as i32
+        }) as f32
+            * 2.5) as i32
     }
 }
 
