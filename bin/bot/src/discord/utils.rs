@@ -40,9 +40,12 @@ pub async fn find_members(
         .into_inner();
     for name in names {
         let name = name.trim();
-        // Handle the special snowflake
+        // Handle the special snowflakes
         if name == "Nathanial Greene" {
             ids.push((name.to_string(), UserId::new(358_146_229_626_077_187)));
+            continue;
+        } else if name == "Donna Winter" {
+            ids.push((name.to_string(), UserId::new(200_746_545_820_336_138)));
             continue;
         }
         members
