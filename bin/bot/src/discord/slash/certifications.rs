@@ -192,6 +192,12 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
     Ok(())
 }
 
+#[derive(PartialEq, Eq)]
+pub enum AutocompleteFilter {
+    All,
+    Instructor,
+}
+
 pub async fn autocomplete(
     ctx: &Context,
     autocomplete: &CommandInteraction,
@@ -202,8 +208,12 @@ pub async fn autocomplete(
     };
     if subcommand.kind() == CommandOptionType::SubCommand {
         match subcommand.name.as_str() {
-            "trial" | "first" | "instructor" | "info" => {
-                certifications_autocomplete(ctx, autocomplete).await?;
+            "trial" | "first" | "instructor" => {
+                certifications_autocomplete(ctx, autocomplete, AutocompleteFilter::Instructor)
+                    .await?;
+            }
+            "info" => {
+                certifications_autocomplete(ctx, autocomplete, AutocompleteFilter::All).await?;
             }
             _ => unreachable!(),
         }
@@ -318,6 +328,7 @@ async fn trial(
 async fn certifications_autocomplete(
     ctx: &Context,
     autocomplete: &CommandInteraction,
+    filter: AutocompleteFilter,
 ) -> serenity::Result<()> {
     let Some(focus) = CommandData::autocomplete(&autocomplete.data) else {
         return Ok(());
@@ -325,17 +336,32 @@ async fn certifications_autocomplete(
     if focus.name != "certification" {
         return Ok(());
     }
-    let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request_2!(
-        bootstrap::NC::get().await,
-        synixe_events::certifications::db,
-        ListInstructor {
-            member: autocomplete.user.id
-        }
-    )
-    .await
-    else {
-        error!("Failed to fetch certifications");
-        return Ok(());
+    let certs = if filter == AutocompleteFilter::Instructor {
+        let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request_2!(
+            bootstrap::NC::get().await,
+            synixe_events::certifications::db,
+            ListInstructor {
+                member: autocomplete.user.id
+            }
+        )
+        .await
+        else {
+            error!("Failed to fetch certifications");
+            return Ok(());
+        };
+        certs
+    } else {
+        let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_2!(
+            bootstrap::NC::get().await,
+            synixe_events::certifications::db,
+            List {}
+        )
+        .await
+        else {
+            error!("Failed to fetch certifications");
+            return Ok(());
+        };
+        certs
     };
     let mut certs: Vec<_> = certs
         .into_iter()
