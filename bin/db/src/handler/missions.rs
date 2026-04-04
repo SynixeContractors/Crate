@@ -220,8 +220,6 @@ impl Handler for Request {
                 scheduled,
                 contractors,
                 contractor_amount,
-                casualty_amount,
-                casualty_count,
                 group_amount,
             } => {
                 let mut tx = db.begin().await?;
@@ -259,15 +257,6 @@ impl Handler for Request {
                     .execute(&mut *tx)
                     .await?;
                 }
-                sqlx::query!(
-                    "INSERT INTO gear_bank_deposits (member, amount, reason, id, created) VALUES ('0', $1, $2, $3, $4)",
-                    casualty_amount * i32::from(*casualty_count),
-                    format!("{}: {} - {} casualties @ ${}", scheduled.typ.to_string(), scheduled.name, casualty_count, casualty_amount),
-                    uuid::Uuid::parse_str("00000000-0000-0000-0000-000000000003").expect("valid uuid"),
-                    end,
-                )
-                .execute(&mut *tx)
-                .await?;
                 sqlx::query!(
                     "INSERT INTO gear_bank_deposits (member, amount, reason, id, created) VALUES ('0', $1, $2, $3, $4)",
                     group_amount,
