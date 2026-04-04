@@ -130,6 +130,7 @@ impl Aar {
                 .split(',')
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty())
+                .filter(|s| s.to_lowercase() != "none")
                 .collect()
         };
         let unique_casualties = casualties.iter().collect::<HashSet<_>>();
