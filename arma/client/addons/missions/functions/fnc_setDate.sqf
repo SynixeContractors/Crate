@@ -2,8 +2,12 @@
 
 params ["_minutes"];
 
-private _startHour = (getMissionConfigValue ["synixe_start_time", 12]) - (ceil (_minutes / 60));
-private _startMinute = 60 - _minutes mod 60;
+private _startTime = getMissionConfigValue ["synixe_start_time", 12];
+
+private _totalMinutes = (_startTime * 60) - _minutes;
+
+private _startHour = floor (_totalMinutes / 60);
+private _startMinute = _totalMinutes mod 60;
 
 private _startDate = date;
 _startDate set [3, _startHour];
