@@ -278,7 +278,7 @@ impl Handler for Request {
             }
             Self::FamilySearch { item, relation } => {
                 let query = sqlx::query!(
-                    "SELECT family,class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2)",
+                    "SELECT family,class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2) AND relation = $2",
                     item,
                     relation,
                 );
@@ -289,7 +289,7 @@ impl Handler for Request {
                             Response::FamilySearch(Ok(res
                                 .into_iter()
                                 .map(|row| FamilyItem {
-                                    family: item.clone(),
+                                    family: row.family,
                                     class: row.class,
                                     pretty: row.pretty.unwrap_or_default(),
                                 })

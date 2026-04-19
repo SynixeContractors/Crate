@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT family,class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2)",
+  "query": "SELECT family,class,(SELECT pretty FROM gear_items WHERE class = gear_items_family.class) as pretty FROM gear_items_family WHERE family = (SELECT family FROM gear_items_family WHERE class = $1 AND relation = $2) AND relation = $2",
   "describe": {
     "columns": [
       {
@@ -31,5 +31,5 @@
       null
     ]
   },
-  "hash": "d65cf24c0ba4dc509348fd0586f1a168babcfc66e2ff0a0d3dcfc14a489950e9"
+  "hash": "3841c674bcacc139ead136d9dc64c39ea43e7ae947e06e8c418435b03f8bb9be"
 }

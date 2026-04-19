@@ -1,7 +1,7 @@
 use serenity::{
     all::{
         CommandData, CommandDataOption, CommandDataOptionValue, CommandInteraction,
-        CommandOptionType,
+        CommandOptionType, RoleId,
     },
     builder::{
         CreateAutocompleteResponse, CreateCommand, CreateCommandOption, CreateInteractionResponse,
@@ -17,55 +17,96 @@ use crate::{
     get_option,
 };
 
+/// Configuration for a gear modification command
+struct GearCommandConfig {
+    /// Database relation type and command (e.g., "color", "ugl")
+    relation: &'static str,
+    /// User-facing description
+    description: &'static str,
+    /// Cost in currency
+    cost: i32,
+    /// Name of the item/source option
+    item_option: &'static str,
+    /// Name of the variant/target option
+    variant_option: &'static str,
+    /// Whether to filter items where class != family (for base items only)
+    filter_base_only: bool,
+    /// Required roles to use this command (empty slice means no role requirement)
+    required_roles: &'static [RoleId],
+}
+
+/// All available gear modification commands
+const GEAR_COMMANDS: &[GearCommandConfig] = &[
+    GearCommandConfig {
+        relation: "color",
+        description: "Repaint a weapon",
+        cost: 150,
+        item_option: "item",
+        variant_option: "color",
+        filter_base_only: false,
+        required_roles: &[],
+    },
+    GearCommandConfig {
+        relation: "ugl",
+        description: "Upgrade a weapon to have a UGL",
+        cost: 300,
+        item_option: "weapon",
+        variant_option: "ugl",
+        filter_base_only: true,
+        required_roles: &[CERT_GRENADIER],
+    },
+    GearCommandConfig {
+        relation: "belt",
+        description: "Add a belt to a vest",
+        cost: 100,
+        item_option: "current",
+        variant_option: "new",
+        filter_base_only: true,
+        required_roles: &[],
+    },
+    GearCommandConfig {
+        relation: "barrel",
+        description: "Change your weapon barrel",
+        cost: 60,
+        item_option: "weapon",
+        variant_option: "barrel",
+        filter_base_only: false,
+        required_roles: &[],
+    },
+];
+
 pub fn register() -> CreateCommand {
-    CreateCommand::new("gear")
-        .description("Manage your gear")
-        .add_option(
-            CreateCommandOption::new(CommandOptionType::SubCommand, "repaint", "Repaint a weapon")
-                .add_sub_option(
-                    CreateCommandOption::new(
-                        CommandOptionType::String,
-                        "item",
-                        "Select the item you want to modify",
-                    )
-                    .required(true)
-                    .set_autocomplete(true),
-                )
-                .add_sub_option(
-                    CreateCommandOption::new(
-                        CommandOptionType::String,
-                        "color",
-                        "Select the new variant of the item",
-                    )
-                    .required(true)
-                    .set_autocomplete(true),
-                ),
+    let mut cmd = CreateCommand::new("gear").description("Manage your gear");
+
+    for config in GEAR_COMMANDS {
+        let sub = CreateCommandOption::new(
+            CommandOptionType::SubCommand,
+            config.relation,
+            config.description,
         )
-        .add_option(
+        .add_sub_option(
             CreateCommandOption::new(
-                CommandOptionType::SubCommand,
-                "ugl",
-                "Upgrade a weapon to have a UGL",
+                CommandOptionType::String,
+                config.item_option,
+                format!("Select the {} you want to modify", config.item_option),
             )
-            .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::String,
-                    "weapon",
-                    "Select the weapon you want to modify",
-                )
-                .required(true)
-                .set_autocomplete(true),
-            )
-            .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::String,
-                    "ugl",
-                    "Select the UGL you want to add",
-                )
-                .required(true)
-                .set_autocomplete(true),
-            ),
+            .required(true)
+            .set_autocomplete(true),
         )
+        .add_sub_option(
+            CreateCommandOption::new(
+                CommandOptionType::String,
+                config.variant_option,
+                format!("Select the new {} of the item", config.variant_option),
+            )
+            .required(true)
+            .set_autocomplete(true),
+        );
+
+        cmd = cmd.add_option(sub);
+    }
+
+    cmd
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -73,12 +114,11 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
         warn!("No subcommand for gear provided");
         return Ok(());
     };
-    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value {
-        match subcommand.name.as_str() {
-            "repaint" => repaint(ctx, command, options).await?,
-            "ugl" => ugl(ctx, command, options).await?,
-            _ => unreachable!(),
-        }
+
+    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value
+        && let Some(config) = GEAR_COMMANDS.iter().find(|c| c.relation == subcommand.name)
+    {
+        run_gear_command(ctx, command, options, config).await?;
     }
     Ok(())
 }
@@ -91,34 +131,61 @@ pub async fn autocomplete(
         warn!("No subcommand for gear provided");
         return Ok(());
     };
-    if subcommand.kind() == CommandOptionType::SubCommand {
-        match subcommand.name.as_str() {
-            "repaint" => repaint_autocomplete(ctx, autocomplete).await?,
-            "ugl" => ugl_autocomplete(ctx, autocomplete).await?,
-            _ => unreachable!(),
-        }
+
+    if subcommand.kind() == CommandOptionType::SubCommand
+        && let Some(config) = GEAR_COMMANDS.iter().find(|c| c.relation == subcommand.name)
+    {
+        gear_autocomplete(ctx, autocomplete, config).await?;
     }
     Ok(())
 }
 
-async fn repaint(
+async fn run_gear_command(
     ctx: &Context,
     command: &CommandInteraction,
     options: &[CommandDataOption],
+    config: &GearCommandConfig,
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
-    let Some(item) = get_option!(options, "item", String) else {
+
+    // Check required roles if specified
+    if !config.required_roles.is_empty() {
+        let Some(guild) = command.guild_id else {
+            return interaction
+                .reply("This command must be used in a server")
+                .await;
+        };
+
+        let member = guild
+            .member(&ctx, command.user.id)
+            .await
+            .expect("User must be in Synixe");
+
+        let has_required_role = config
+            .required_roles
+            .iter()
+            .any(|role| member.roles.contains(role));
+        if !has_required_role {
+            return interaction
+                .reply("You do not have the required role for this command")
+                .await;
+        }
+    }
+
+    let Some(item) = get_option!(options, config.item_option, String) else {
         return interaction.reply("Invalid item").await;
     };
-    let Some(color) = get_option!(options, "color", String) else {
-        return interaction.reply("Invalid color").await;
+
+    let Some(variant) = get_option!(options, config.variant_option, String) else {
+        return interaction.reply("Invalid variant").await;
     };
+
     let Ok(Ok((Response::FamilySearch(Ok(family_items)), _))) = events_request_2!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         FamilySearch {
             item: item.clone(),
-            relation: "color".to_string(),
+            relation: config.relation.to_string(),
         }
     )
     .await
@@ -126,25 +193,30 @@ async fn repaint(
         error!("failed to fetch item list");
         return Ok(());
     };
+
     let mut original_name = None;
     let mut new_name = None;
+
     for family_item in family_items {
-        if &family_item.class == color {
+        if family_item.class == *variant {
             new_name = Some(family_item.pretty);
-        } else if &family_item.class == item {
+        } else if family_item.class == *item {
             original_name = Some(family_item.pretty);
         }
     }
+
     if new_name.is_none() || original_name.is_none() {
         return interaction
             .reply("Invalid selections, not a valid variant")
             .await;
     }
+
     if interaction
         .confirm(&format!(
-            "Are you sure you want to repaint {} to {} for $150?",
+            "Are you sure you want to change {} to {} for ${}?",
             original_name.expect("name exists, checked for invalid selection"),
-            new_name.expect("name exists, checked for invalid selection")
+            new_name.expect("name exists, checked for invalid selection"),
+            config.cost
         ))
         .await?
         == Confirmation::Yes
@@ -155,38 +227,42 @@ async fn repaint(
             FamilyReplace {
                 member: command.user.id,
                 original: item.clone(),
-                new: color.clone(),
-                reason: "color".to_string(),
-                cost: 150,
+                new: variant.clone(),
+                reason: config.relation.to_string(),
+                cost: config.cost,
             }
         )
         .await
         else {
-            error!("failed to repaint item");
+            error!("failed to modify gear");
             return Ok(());
         };
-        interaction.reply("Repaint Complete!").await?;
+
+        interaction.reply("Modification complete!").await?;
     } else {
-        interaction.reply("Repaint cancelled").await?;
+        interaction.reply("Modification cancelled").await?;
     }
+
     Ok(())
 }
 
 #[allow(clippy::cognitive_complexity)]
-async fn repaint_autocomplete(
+async fn gear_autocomplete(
     ctx: &Context,
     autocomplete: &CommandInteraction,
+    config: &GearCommandConfig,
 ) -> serenity::Result<()> {
     let Some(focus) = CommandData::autocomplete(&autocomplete.data) else {
         return Ok(());
     };
-    if focus.name == "item" {
+
+    if focus.name == config.item_option {
         let Ok(Ok((Response::FamilyCompatibleItems(Ok(mut items)), _))) = events_request_2!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             FamilyCompatibleItems {
                 member: autocomplete.user.id,
-                relation: "color".to_string(),
+                relation: config.relation.to_string(),
             }
         )
         .await
@@ -194,11 +270,17 @@ async fn repaint_autocomplete(
             error!("failed to fetch item list");
             return Ok(());
         };
+
         items.truncate(25);
+
         if let Err(e) = autocomplete
             .create_response(&ctx.http, {
                 let mut f = CreateAutocompleteResponse::default();
                 for item in items {
+                    // Filter to base items only if configured
+                    if config.filter_base_only && item.class != item.family {
+                        continue;
+                    }
                     f = f.add_string_choice(&item.pretty, &item.class);
                 }
                 CreateInteractionResponse::Autocomplete(f)
@@ -207,208 +289,44 @@ async fn repaint_autocomplete(
         {
             error!("failed to create autocomplete response: {}", e);
         }
-    } else if focus.name == "color" {
+    } else if focus.name == config.variant_option {
         let CommandDataOptionValue::SubCommand(options) = &autocomplete.data.options[0].value
         else {
             return Ok(());
         };
+
         let item = options
             .iter()
-            .find(|o| o.name == "item")
+            .find(|o| o.name == config.item_option)
             .and_then(|o| o.value.as_str())
             .unwrap_or_default()
             .to_string();
-        let Ok(Ok((Response::FamilySearch(Ok(mut colors)), _))) = events_request_2!(
+
+        let Ok(Ok((Response::FamilySearch(Ok(mut variants)), _))) = events_request_2!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             FamilySearch {
                 item: item.clone(),
-                relation: "color".to_string(),
+                relation: config.relation.to_string(),
             }
         )
         .await
         else {
-            error!("failed to fetch item list");
+            error!("failed to fetch variant list");
             return Ok(());
         };
-        colors.truncate(25);
-        if let Err(e) = autocomplete
-            .create_response(&ctx.http, {
-                let mut f = CreateAutocompleteResponse::default();
-                for color in colors {
-                    if color.class == item {
-                        continue;
-                    }
-                    f = f.add_string_choice(&color.pretty, &color.class);
-                }
-                CreateInteractionResponse::Autocomplete(f)
-            })
-            .await
-        {
-            error!("failed to create autocomplete response: {}", e);
-        }
-    }
-    Ok(())
-}
 
-#[allow(clippy::cognitive_complexity)]
-async fn ugl(
-    ctx: &Context,
-    command: &CommandInteraction,
-    options: &[CommandDataOption],
-) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, command.clone(), options);
-    // Check if they have the Grenadier role
-    let Some(guild) = command.guild_id else {
-        return interaction
-            .reply("This command must be used in a server")
-            .await;
-    };
-    let member = guild
-        .member(&ctx, command.user.id)
-        .await
-        .expect("User must be in Synixe");
-    if !member.roles.contains(&CERT_GRENADIER) {
-        return interaction
-            .reply("You must be a Grenadier to use this command")
-            .await;
-    }
-    let Some(weapon) = get_option!(options, "weapon", String) else {
-        return interaction.reply("Invalid weapon").await;
-    };
-    let Some(ugl) = get_option!(options, "ugl", String) else {
-        return interaction.reply("Invalid UGL").await;
-    };
-    let Ok(Ok((Response::FamilySearch(Ok(family_items)), _))) = events_request_2!(
-        bootstrap::NC::get().await,
-        synixe_events::gear::db,
-        FamilySearch {
-            item: weapon.clone(),
-            relation: "ugl".to_string(),
-        }
-    )
-    .await
-    else {
-        error!("failed to fetch item list");
-        return Ok(());
-    };
-    let mut original_name = None;
-    let mut new_name = None;
-    for family_item in family_items {
-        if &family_item.class == ugl {
-            new_name = Some(family_item.pretty);
-        } else if &family_item.class == weapon {
-            original_name = Some(family_item.pretty);
-        }
-    }
-    if new_name.is_none() || original_name.is_none() {
-        return interaction
-            .reply("Invalid selections, not a valid variant")
-            .await;
-    }
-    if interaction
-        .confirm(&format!(
-            "Are you sure you want to upgrade {} to {} for $300?",
-            original_name.expect("name exists, checked for invalid selection"),
-            new_name.expect("name exists, checked for invalid selection")
-        ))
-        .await?
-        == Confirmation::Yes
-    {
-        let Ok(Ok((Response::FamilyReplace(Ok(())), _))) = events_request_2!(
-            bootstrap::NC::get().await,
-            synixe_events::gear::db,
-            FamilyReplace {
-                member: command.user.id,
-                original: weapon.clone(),
-                new: ugl.clone(),
-                reason: "ugl".to_string(),
-                cost: 300,
-            }
-        )
-        .await
-        else {
-            error!("failed to repaint item");
-            return Ok(());
-        };
-        interaction.reply("Upgrade Complete!").await?;
-    } else {
-        interaction.reply("Upgrade cancelled").await?;
-    }
-    Ok(())
-}
+        variants.truncate(25);
 
-#[allow(clippy::cognitive_complexity)]
-async fn ugl_autocomplete(
-    ctx: &Context,
-    autocomplete: &CommandInteraction,
-) -> serenity::Result<()> {
-    let Some(focus) = CommandData::autocomplete(&autocomplete.data) else {
-        return Ok(());
-    };
-    if focus.name == "weapon" {
-        let Ok(Ok((Response::FamilyCompatibleItems(Ok(mut items)), _))) = events_request_2!(
-            bootstrap::NC::get().await,
-            synixe_events::gear::db,
-            FamilyCompatibleItems {
-                member: autocomplete.user.id,
-                relation: "ugl".to_string(),
-            }
-        )
-        .await
-        else {
-            error!("failed to fetch item list");
-            return Ok(());
-        };
-        items.truncate(25);
         if let Err(e) = autocomplete
             .create_response(&ctx.http, {
                 let mut f = CreateAutocompleteResponse::default();
-                for item in items {
-                    if item.class != item.family {
+                for variant in variants {
+                    // Don't suggest the same item they already have
+                    if variant.class == item {
                         continue;
                     }
-                    f = f.add_string_choice(&item.pretty, &item.class);
-                }
-                CreateInteractionResponse::Autocomplete(f)
-            })
-            .await
-        {
-            error!("failed to create autocomplete response: {}", e);
-        }
-    } else if focus.name == "ugl" {
-        let CommandDataOptionValue::SubCommand(options) = &autocomplete.data.options[0].value
-        else {
-            return Ok(());
-        };
-        let weapon = options
-            .iter()
-            .find(|o| o.name == "weapon")
-            .and_then(|o| o.value.as_str())
-            .unwrap_or_default()
-            .to_string();
-        let Ok(Ok((Response::FamilySearch(Ok(mut ugls)), _))) = events_request_2!(
-            bootstrap::NC::get().await,
-            synixe_events::gear::db,
-            FamilySearch {
-                item: weapon.clone(),
-                relation: "ugl".to_string(),
-            }
-        )
-        .await
-        else {
-            error!("failed to fetch item list");
-            return Ok(());
-        };
-        ugls.truncate(25);
-        if let Err(e) = autocomplete
-            .create_response(&ctx.http, {
-                let mut f = CreateAutocompleteResponse::default();
-                for ugl in ugls {
-                    if ugl.class == weapon {
-                        continue;
-                    }
-                    f = f.add_string_choice(&ugl.pretty, &ugl.class);
+                    f = f.add_string_choice(&variant.pretty, &variant.class);
                 }
                 CreateInteractionResponse::Autocomplete(f)
             })
@@ -417,5 +335,6 @@ async fn ugl_autocomplete(
             error!("failed to create autocomplete response: {}", e);
         }
     }
+
     Ok(())
 }
