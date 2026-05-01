@@ -1,4 +1,4 @@
-#include "script_component.hpp"
+#include "..\script_component.hpp"
 
 _this call ace_arsenal_fnc_onSelChangedRightListnBox;
 

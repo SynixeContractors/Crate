@@ -14,7 +14,7 @@ synixe-proc = { path = "../../lib/proc" }
 
 aes-gcm = "0.10.3"
 base64 = "0.22.1"
-dialoguer = "0.11.0"
+dialoguer = "0.12.0"
 rand = "0.8.5"
 rsa = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
@@ -24,4 +24,4 @@ sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "time
 ssss = "0.2.0"
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
-uuid = "1.10.0"
+uuid = { workspace = true }

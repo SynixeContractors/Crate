@@ -1,4 +1,4 @@
-#include "script_component.hpp"
+#include "..\script_component.hpp"
 
 if !(GVAR(enabled)) exitWith {};
 if (ace_player isNotEqualTo player) exitWith {};

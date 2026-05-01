@@ -1,4 +1,4 @@
-#include "script_component.hpp"
+#include "..\script_component.hpp"
 
 params ["_display"];
 
@@ -43,7 +43,7 @@ _list lnbAddRow [
     "",
     format ["$%1", _personal],
     format ["$%1", _company]
-]; 
+];
 
 private _fnc_onConfirm = {
     params [["_ctrlButtonOK", controlNull, [controlNull]]];

@@ -1,4 +1,4 @@
-#include "script_component.hpp"
+#include "..\script_component.hpp"
 
 if !(GVAR(markers_ready)) exitWith {};
 

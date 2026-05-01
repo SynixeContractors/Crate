@@ -814,10 +814,8 @@ async fn process_trial_first_kit(
             }
             return Ok(());
         }
-        Ok(Ok((Response::PassedCount(Ok(Some(count))), _))) => {
-            if count != 1 {
-                return Ok(());
-            }
+        Ok(Ok((Response::PassedCount(Ok(Some(count))), _))) if count != 1 => {
+            return Ok(());
         }
         _ => (),
     }

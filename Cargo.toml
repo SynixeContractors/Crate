@@ -34,22 +34,21 @@ future_incompatible = "warn"
 nonstandard_style = "warn"
 
 [workspace.dependencies]
-anyhow = "1.0.100"
+anyhow = "1.0.102"
 arma-rs = { version = "1.12.1", features = ["uuid", "serde_json"] }
 async-trait = "0.1.89"
-axum = "0.8.8"
-# nats = { version = "0.25.0" }
-nats = { git = "https://github.com/nats-io/nats.rs" }
-regex = "1.12.2"
-reqwest = { version = "0.13.1" }
+axum = "0.8.9"
+nats = { version = "0.26.0" }
+regex = "1.12.3"
+reqwest = { version = "0.13.3" }
 rsa = "0.9.10"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 serenity = { version = "0.12.5", default-features = false, features = ["rustls_backend"] }
 sqlx = { version = "0.8.6" }
-strum = "0.27.2"
-time = "0.3.44"
-tokio = "1.49.0"
+strum = "0.28.0"
+time = "0.3.47"
+tokio = "1.52.1"
 tracing = { version = "0.1.44", features = ["log"] }
-tracing-subscriber = "0.3.22"
-uuid = "1.19.0"
+tracing-subscriber = "0.3.23"
+uuid = "1.23.1"

@@ -1,4 +1,4 @@
-#include "script_component.hpp"
+#include "..\script_component.hpp"
 
 if !(player diarySubjectExists QGVAR(diary)) then {
     player createDiarySubject [

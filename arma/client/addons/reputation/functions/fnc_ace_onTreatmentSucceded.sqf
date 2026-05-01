@@ -1,4 +1,4 @@
-#include "script_component.hpp"
+#include "..\script_component.hpp"
 
 params ["_medic", "_patient", "_bodyPart", "_classname", "_itemUser", "_usedItem"];
 

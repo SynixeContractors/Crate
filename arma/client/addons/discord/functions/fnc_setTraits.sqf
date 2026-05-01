@@ -1,4 +1,4 @@
-#include "script_component.hpp"
+#include "..\script_component.hpp"
 
 player setVariable ["ace_medical_medicClass", 0, true];
 player setVariable ["ACE_isEngineer", 0, true];
