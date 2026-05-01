@@ -168,7 +168,7 @@ impl<'a> Interaction<'a> {
             .as_ref()
             .expect("message should be set after followup")
             .await_component_interaction(self.ctx)
-            .timeout(Duration::from_secs(60 * 3))
+            .timeout(Duration::from_mins(3))
             .next()
             .await
         else {

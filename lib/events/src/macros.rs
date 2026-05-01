@@ -53,6 +53,7 @@ macro_rules! publish {
         let path = body.self_path();
         trace!("publishing on {:?}", path);
         let mut trace_body = $crate::Wrapper::new(body);
+        #[allow(deprecated)]
         $nats.publish(path, $crate::serde_json::to_vec(&trace_body).unwrap())
     }};
 }
@@ -62,6 +63,7 @@ macro_rules! publish {
 macro_rules! respond {
     ($msg:expr, $resp:expr) => {{
         let mut trace_body = $crate::Wrapper::new($resp);
+        #[allow(deprecated)]
         $msg.respond($crate::serde_json::to_vec(&trace_body).unwrap())
     }};
 }

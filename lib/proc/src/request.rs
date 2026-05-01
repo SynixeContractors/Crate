@@ -18,18 +18,21 @@ pub fn request(item: TokenStream, timeout: u64) -> TokenStream {
             let path = body.self_path();
             trace!("requesting on {:?}", path);
             let mut trace_body = synixe_events::Wrapper::new(body);
-            let response = #nats.request_timeout(
-                path,
-                synixe_events::serde_json::to_vec(&trace_body).unwrap(),
-                std::time::Duration::from_secs(#timeout),
-            ).await;
-            match response {
-                Ok(response) => {
-                    Ok(synixe_events::parse_data!(response, #path::Response))
-                }
-                Err(e) => {
-                    error!("Error in request {}: {}", path, e);
-                    Err(e.to_string())
+            #[allow(deprecated)]
+            {
+                let response = #nats.request_timeout(
+                    path,
+                    synixe_events::serde_json::to_vec(&trace_body).unwrap(),
+                    std::time::Duration::from_secs(#timeout),
+                ).await;
+                match response {
+                    Ok(response) => {
+                        Ok(synixe_events::parse_data!(response, #path::Response))
+                    }
+                    Err(e) => {
+                        error!("Error in request {}: {}", path, e);
+                        Err(e.to_string())
+                    }
                 }
             }
         }
