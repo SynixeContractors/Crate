@@ -19,5 +19,9 @@
 
 #define COLOR_WHITE [1, 1, 1, 1]
 #define COLOR_OWNED [0, 1, 0, 1]
+
 #define COLOR_SALE [0, 0.75, 1, 1]
 #define COLOR_INCREASE [1, 0, 0, 1]
+
+#define COLOR_OWNED_SALE [0, 1, 1, 1]
+#define COLOR_OWNED_INCREASE [1, 0.5, 0, 1]

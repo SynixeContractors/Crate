@@ -39,7 +39,11 @@ private _tooltip = if (GVAR(readOnly) || EGVAR(campaigns,loadouts)) then {
 } else {
     private _owned = [_raw_class] call FUNC(shop_item_owned);
     if (_owned > 0) then {
-        _color = COLOR_OWNED;
+        switch _color do {
+            case COLOR_INCREASE: {_color = COLOR_OWNED_INCREASE};
+            case COLOR_SALE: {_color = COLOR_OWNED_SALE};
+            case COLOR_WHITE: {_color = COLOR_OWNED};
+        };
     };
     format ["%1\nOwned: %2\nEquipped: %3\n%4", _raw_class, _owned, _equipped, _cost]
 };

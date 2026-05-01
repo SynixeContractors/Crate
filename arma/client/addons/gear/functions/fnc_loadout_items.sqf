@@ -95,8 +95,14 @@ private _item = _loadout select 8 select 0;
 // Linked Items
 {
     private _item = _loadout select 9 select _x;
-    [_item] call _fnc_additem;
+    [_item] call _fnc_addItem;
 } forEach [0, 1, 2, 3, 4, 5];
+
+// grad_slingHelmet
+private _slung = _extra getOrDefault ["grad_slingHelmet", ""];
+if (_slung != "") then {
+    [_slung] call _fnc_addItem;
+};
 
 _items deleteAt "ItemRadio";
 _items deleteAt "ItemRadioAcreFlagged";
