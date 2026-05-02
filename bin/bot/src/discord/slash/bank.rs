@@ -213,6 +213,27 @@ async fn transfer(
     );
     interaction.reply(&reply).await?;
 
+    if let Err(e) = LOG
+        .say(
+            &ctx.http,
+            format!(
+                "<@{}> transferred <@{}> {}\n> {}",
+                command
+                    .member
+                    .as_ref()
+                    .expect("member should always exist on guild commands")
+                    .user
+                    .id,
+                user,
+                bootstrap::format::money(*amount as i32, false),
+                reason.clone(),
+            ),
+        )
+        .await
+    {
+        error!("failed to send log: {}", e);
+    }
+
     let Ok(private_channel) = user.create_dm_channel(&ctx).await else {
         error!("Unable to create DM channel for transfer notification");
         return interaction
@@ -241,27 +262,6 @@ async fn transfer(
         interaction
             .reply(&format!("{reply}, but I wasn't able to notify them"))
             .await?;
-    }
-
-    if let Err(e) = LOG
-        .say(
-            &ctx.http,
-            format!(
-                "<@{}> transferred <@{}> {}\n> {}",
-                command
-                    .member
-                    .as_ref()
-                    .expect("member should always exist on guild commands")
-                    .user
-                    .id,
-                user,
-                bootstrap::format::money(*amount as i32, false),
-                reason.clone(),
-            ),
-        )
-        .await
-    {
-        error!("failed to send log: {}", e);
     }
 
     Ok(())
@@ -323,6 +323,22 @@ async fn fine(
     );
     interaction.reply(&reply).await?;
 
+    if let Err(e) = LOG
+        .say(
+            &ctx.http,
+            format!(
+                "<@{}> fined <@{}> {}\n> {}",
+                command.user.id,
+                user,
+                bootstrap::format::money(*amount as i32, false),
+                reason.clone(),
+            ),
+        )
+        .await
+    {
+        error!("failed to send log: {}", e);
+    }
+
     let Ok(private_channel) = user.create_dm_channel(&ctx).await else {
         error!("Unable to create DM channel for fine notification");
         return interaction
@@ -347,21 +363,6 @@ async fn fine(
             .await?;
     }
 
-    if let Err(e) = LOG
-        .say(
-            &ctx.http,
-            format!(
-                "<@{}> fined <@{}> {}\n> {}",
-                command.user.id,
-                user,
-                bootstrap::format::money(*amount as i32, false),
-                reason.clone(),
-            ),
-        )
-        .await
-    {
-        error!("failed to send log: {}", e);
-    }
     Ok(())
 }
 
