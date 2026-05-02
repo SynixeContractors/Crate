@@ -38,8 +38,6 @@ impl Listener for Publish {
     ) -> Result<(), bootstrap::anyhow::Error> {
         match &self {
             Self::Hook { data } => {
-                println!("Got Hook");
-
                 let Ok(data) = serde_json::from_str::<Value>(data) else {
                     error!("Invalid json");
                     return Ok(());
