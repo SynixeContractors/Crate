@@ -338,8 +338,11 @@ impl EventHandler for Handler {
     #[allow(clippy::too_many_lines)]
     async fn message(&self, ctx: Context, message: Message) {
         if message.guild_id.is_none() {
+            if message.author.bot {
+                return;
+            }
             audit(format!(
-                "DM from <@{}>:\n >>> {}",
+                "DM from <@{}>: >>> {}",
                 message.author.id,
                 message.content
             ));
