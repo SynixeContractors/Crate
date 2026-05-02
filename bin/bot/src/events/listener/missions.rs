@@ -22,7 +22,7 @@ impl Listener for Publish {
         &self,
         _msg: async_nats::message::Message,
         _nats: async_nats::Client,
-    ) -> Result<(), anyhow::Error> {
+    ) -> Result<(), bootstrap::anyhow::Error> {
         match &self {
             Self::StartingSoon { scheduled, minutes } => {
                 let Some((channel, message)) = scheduled.message() else {

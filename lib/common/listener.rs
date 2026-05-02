@@ -1,5 +1,5 @@
-use async_trait::async_trait;
-use async_nats::{Client, Message};
+use bootstrap::async_trait::async_trait;
+use bootstrap::async_nats::{Client, Message};
 use synixe_events::Publishable;
 use bootstrap::tokio_stream::StreamExt;
 
@@ -11,5 +11,5 @@ pub trait Listener: Publishable {
         &self,
         msg: Message,
         nats: Client,
-    ) -> Result<(), anyhow::Error>;
+    ) -> Result<(), bootstrap::anyhow::Error>;
 }

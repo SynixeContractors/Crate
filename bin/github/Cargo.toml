@@ -9,4 +9,9 @@ workspace = true
 [dependencies]
 bootstrap = { path = "../../lib/bootstrap", features = ["async-nats"] }
 synixe-events = { path = "../../lib/events" }
+synixe-meta = { path = "../../lib/meta" }
 synixe-proc = { path = "../../lib/proc" }
+
+serenity = { workspace = true, features = ["builder"] }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }

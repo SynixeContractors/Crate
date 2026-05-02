@@ -7,7 +7,9 @@ edition = "2024"
 workspace = true
 
 [dependencies]
+anyhow = { workspace = true }
 async-nats =  { workspace = true, optional = true }
+async-trait = { workspace = true }
 sqlx = { workspace = true, optional = true, features = ["postgres"] }
 tokio = { workspace = true }
 tokio-stream = { workspace = true }

@@ -103,6 +103,25 @@ pub mod write {
             /// The message to audit
             message: DiscordMessage,
         } => (Result<(ChannelId, MessageId), String>)
+        /// Write a message to a PR thread
+        struct PullRequestThreadMessage {
+            /// The pull request number
+            number: i32,
+            /// The title of the PR
+            title: String,
+            /// The message to send
+            content: DiscordContent,
+        } => (Result<(), String>)
+        /// Add a user to a PR thread
+        struct PullRequestThreadUser {
+            /// The pull request number
+            number: i32,
+            /// The pull request title
+            title: String,
+            /// The user to add
+            user: UserId,
+            reason: String,
+        } => (Result<(), String>)
     });
 }
 

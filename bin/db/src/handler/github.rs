@@ -38,6 +38,24 @@ impl Handler for Request {
                 discord.to_string(),
                 github,
             ),
+
+            Self::SavePullRequestThread { number, thread_id } => execute_and_respond!(
+                msg,
+                *db,
+                cx,
+                Response::SavePullRequestThread,
+                "INSERT INTO github_prs (id, thread) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET thread = EXCLUDED.thread",
+                number,
+                thread_id.get().to_string(),
+            ),
+            Self::GetPullRequestThread { number } => fetch_one_and_respond!(
+                msg,
+                *db,
+                cx,
+                Response::GetPullRequestThread,
+                "SELECT thread as value FROM github_prs WHERE id = $1",
+                number,
+            ),
         }
     }
 }

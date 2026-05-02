@@ -2,7 +2,7 @@
 
 /// Interact with the database
 pub mod db {
-    use serenity::model::prelude::UserId;
+    use serenity::{all::ChannelId, model::prelude::UserId};
     use synixe_proc::events_requests;
 
     events_requests!(db.github {
@@ -23,6 +23,19 @@ pub mod db {
             /// The GitHub user
             github: String,
         } => (Result<(), String>)
+
+        /// Save a thread for a pull request
+        struct SavePullRequestThread {
+            /// The pull request number
+            number: i32,
+            /// The thread ID
+            thread_id: ChannelId,
+        } => (Result<(), String>)
+        /// Get the thread for a pull request
+        struct GetPullRequestThread {
+            /// The pull request number
+            number: i32,
+        } => (Result<Option<String>, String>)
     });
 }
 

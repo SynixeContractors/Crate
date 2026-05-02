@@ -15,7 +15,7 @@ impl Listener for Publish {
         &self,
         _msg: async_nats::message::Message,
         nats: async_nats::Client,
-    ) -> Result<(), anyhow::Error> {
+    ) -> Result<(), bootstrap::anyhow::Error> {
         match &self {
             Self::TrialSubmitted { trial } => {
                 info!("Trial submitted: {:?}", trial);

@@ -13,7 +13,6 @@ synixe-meta = { path = "../../lib/meta" }
 synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
 
-anyhow = { workspace = true }
 async-openai = "0.14.3"
 async-trait = { workspace = true }
 git2 = "0.20.3"
