@@ -1,6 +1,5 @@
 use std::sync::atomic::AtomicU32;
 
-use rand::Rng;
 use serenity::{
     all::{CreateInteractionResponse, CreateInteractionResponseMessage},
     async_trait,
@@ -8,9 +7,7 @@ use serenity::{
     prelude::*,
 };
 use synixe_events::{discord::publish::Publish, missions::db::Response, publish};
-use synixe_meta::discord::channel::{
-    BOT, GAME_LOG, LEADERSHIP, LOBBY, LOG, LOOKING_TO_PLAY, OFFTOPIC, ONTOPIC,
-};
+use synixe_meta::discord::channel::{BOT, GAME_LOG, LEADERSHIP, LOG, LOOKING_TO_PLAY};
 use synixe_proc::{events_request_2, events_request_5};
 use uuid::Uuid;
 
@@ -25,14 +22,10 @@ use super::{
     slash::{self, schedule::post_mission},
 };
 
-mod brain;
 mod missions;
 // pub mod recruiting;
 
-pub use self::brain::Brain;
-
 pub struct Handler {
-    pub brain: Brain,
     pub subcon_counter: AtomicU32,
 }
 
@@ -418,44 +411,44 @@ impl EventHandler for Handler {
             }
         }
 
-        if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, LOBBY].contains(&message.channel_id) {
-            if message.author.bot {
-                return;
-            }
+        // if [ONTOPIC, OFFTOPIC, BOT, LOOKING_TO_PLAY, LOBBY].contains(&message.channel_id) {
+        //     if message.author.bot {
+        //         return;
+        //     }
 
-            if self.brain.awake() {
-                if message.content.is_empty() {
-                    return;
-                }
-                if message
-                    .mentions
-                    .iter()
-                    .any(|user| user.id == ctx.cache.current_user().id)
-                {
-                    let typing = message.channel_id.start_typing(&ctx.http);
-                    if let Some(reply) = self.brain.ask(&ctx, &message).await {
-                        match message.reply_ping(&ctx.http, reply).await {
-                            Ok(reply) => self.brain.observe(&ctx, &reply).await,
-                            Err(e) => error!("Cannot send message: {}", e),
-                        }
-                    }
-                    typing.stop();
-                } else if rand::rng().random_range(0..100) < 4 {
-                    let typing = message.channel_id.start_typing(&ctx.http);
-                    if let Some(reply) = self.brain.ask(&ctx, &message).await {
-                        match message.reply_ping(&ctx.http, reply).await {
-                            Ok(reply) => self.brain.observe(&ctx, &reply).await,
-                            Err(e) => error!("Cannot send message: {}", e),
-                        }
-                    } else {
-                        warn!("No reply could be generated");
-                    }
-                    typing.stop();
-                } else {
-                    self.brain.observe(&ctx, &message).await;
-                }
-            }
-        }
+        //     if self.brain.awake() {
+        //         if message.content.is_empty() {
+        //             return;
+        //         }
+        //         if message
+        //             .mentions
+        //             .iter()
+        //             .any(|user| user.id == ctx.cache.current_user().id)
+        //         {
+        //             let typing = message.channel_id.start_typing(&ctx.http);
+        //             if let Some(reply) = self.brain.ask(&ctx, &message).await {
+        //                 match message.reply_ping(&ctx.http, reply).await {
+        //                     Ok(reply) => self.brain.observe(&ctx, &reply).await,
+        //                     Err(e) => error!("Cannot send message: {}", e),
+        //                 }
+        //             }
+        //             typing.stop();
+        //         } else if rand::rng().random_range(0..100) < 4 {
+        //             let typing = message.channel_id.start_typing(&ctx.http);
+        //             if let Some(reply) = self.brain.ask(&ctx, &message).await {
+        //                 match message.reply_ping(&ctx.http, reply).await {
+        //                     Ok(reply) => self.brain.observe(&ctx, &reply).await,
+        //                     Err(e) => error!("Cannot send message: {}", e),
+        //                 }
+        //             } else {
+        //                 warn!("No reply could be generated");
+        //             }
+        //             typing.stop();
+        //         } else {
+        //             self.brain.observe(&ctx, &message).await;
+        //         }
+        //     }
+        // }
     }
 
     #[allow(clippy::manual_let_else)]
