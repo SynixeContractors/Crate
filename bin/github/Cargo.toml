@@ -1,0 +1,12 @@
+[package]
+name = "synixe-github"
+version = "0.1.0"
+edition = "2024"
+
+[lints]
+workspace = true
+
+[dependencies]
+bootstrap = { path = "../../lib/bootstrap", features = ["async-nats"] }
+synixe-events = { path = "../../lib/events" }
+synixe-proc = { path = "../../lib/proc" }

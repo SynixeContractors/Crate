@@ -12,6 +12,7 @@ members = [
     "bin/db",
     "bin/docker",
     "bin/executor",
+    "bin/github",
     "bin/hooks",
     "bin/web",
 

@@ -25,3 +25,16 @@ pub mod db {
         } => (Result<(), String>)
     });
 }
+
+/// Inform services about missions.
+pub mod publish {
+    use synixe_proc::events_publish;
+
+    events_publish!(publish.webhook {
+        /// A webhook was received from GitHub
+        struct Hook {
+            /// The raw JSON data from the webhook
+            data: String,
+        }
+    });
+}

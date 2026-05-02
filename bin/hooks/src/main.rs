@@ -13,6 +13,7 @@ use tokio::net::TcpListener;
 #[macro_use]
 extern crate tracing;
 
+mod github;
 mod missions;
 mod modpack;
 
@@ -20,7 +21,7 @@ mod modpack;
 async fn main() {
     bootstrap::logger::init();
 
-    let app = Router::new().nest(
+    let app = Router::new().route("/github", post(github::handler)).nest(
         "/hooks",
         Router::new()
             .route("/missions/list_updated", post(missions::list_updated))
