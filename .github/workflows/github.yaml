@@ -1,0 +1,57 @@
+name: github
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/github.yaml
+      - Cargo.toml
+      - bin/github/**
+      - lib/**
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Protoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: github
+
+      - run: cargo build --release
+        working-directory: ./bin/github
+
+      - run: cp target/release/synixe-github ./bin/github/synixe-github
+
+      - name: Build Image
+        working-directory: ./bin/github
+        run: docker build . -t github
+
+      - name: Tag Image
+        run: docker tag github ghcr.io/synixecontractors/apps-github:latest
+
+      - name: Push Image
+        run: docker push ghcr.io/synixecontractors/apps-github:latest
