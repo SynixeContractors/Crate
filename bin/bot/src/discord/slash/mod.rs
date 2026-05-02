@@ -10,7 +10,7 @@ use serenity::{
     },
 };
 use synixe_meta::discord::channel::LOG;
-use time::{Date, OffsetDateTime, PrimitiveDateTime, Time, Weekday};
+use time::{Date, OffsetDateTime, PrimitiveDateTime, Time};
 use time_tz::{OffsetDateTimeExt, PrimitiveDateTimeExt, timezones::db::america::NEW_YORK};
 
 use crate::{bot::Bot, cache_http::CacheAndHttp};
@@ -96,7 +96,7 @@ pub async fn requires_roles(
                 interaction.reply("Requesting permission... Staff have 10 minutes to approve your request.").await?;
                 let Some(confirm_interaction) = message
                     .await_component_interaction(&*Bot::get())
-                    .timeout(Duration::from_secs(60 * 10))
+                    .timeout(Duration::from_mins(10))
                     .next()
                     .await
                 else {

@@ -83,7 +83,7 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             }
         }
         write::Request::EnsureRoles { member, roles } => {
-            let Ok(_) = respond!(msg, write::Response::EnsureRoles(Ok(()))).await else {
+            let Ok(()) = respond!(msg, write::Response::EnsureRoles(Ok(()))).await else {
                 error!("Failed to respond to NATS");
                 return;
             };

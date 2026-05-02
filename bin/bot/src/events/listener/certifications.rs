@@ -107,7 +107,7 @@ impl Listener for Publish {
                     if let Err(e) = synixe_meta::discord::channel::LOG
                         .say(
                             CacheAndHttp::get().as_ref(),
-                            format!("<@{}> has been notified\n> {message}", trial.trainee,),
+                            format!("<@{}> has been notified\n> {message}", trial.trainee),
                         )
                         .await
                     {

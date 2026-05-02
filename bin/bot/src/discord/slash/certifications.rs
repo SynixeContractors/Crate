@@ -874,7 +874,7 @@ async fn process_trial_first_kit(
                     ).custom_id("first_kit_selection"))])).await?;
                 let Some(interaction) = m
                     .await_component_interaction(&ctx.shard)
-                    .timeout(Duration::from_secs(60 * 60 * 24 * 7))
+                    .timeout(Duration::from_hours(168))
                     .await
                 else {
                     let _ = m.reply(&ctx, "You have run out of time to select a kit, you will need to ask a staff member for help.").await;

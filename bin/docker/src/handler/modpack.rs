@@ -46,7 +46,7 @@ impl Handler for Request {
         {
             error!("failed to send restart event for main: {e}");
         }
-        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+        tokio::time::sleep(std::time::Duration::from_mins(1)).await;
         if let Err(e) = events_request_5!(
             nats,
             synixe_events::containers::docker,

@@ -34,8 +34,7 @@ pub async fn execute(client: ArcCacheAndHttp) {
             .expect("couldn't read pullled repo")
             .filter(|p| {
                 p.as_ref()
-                    .map(|p| p.path().extension() == Some(OsStr::new("md")))
-                    .unwrap_or(false)
+                    .is_ok_and(|p| p.path().extension() == Some(OsStr::new("md")))
             })
             .collect();
         let file = {

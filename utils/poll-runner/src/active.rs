@@ -217,7 +217,7 @@ async fn close_poll(keys: Vec<(String, String, String)>, id: Uuid, title: String
             .find(|(option_id, _)| &option_id == id)
             .expect("should be able to find option")
             .1;
-        writeln!(message, "{title}: {count}",).expect("should be able to write to message");
+        writeln!(message, "{title}: {count}").expect("should be able to write to message");
     }
     message.push_str("\nWinning option: ");
     let (winning_id, _) = results.first().expect("should have results");
@@ -230,7 +230,7 @@ async fn close_poll(keys: Vec<(String, String, String)>, id: Uuid, title: String
     message.push_str("\n\nParticipants:\n");
     for member in &members {
         let (member, _) = member.split_once(':').expect("should be able to split");
-        writeln!(message, "<@{member}>",).expect("should be able to write to message");
+        writeln!(message, "<@{member}>").expect("should be able to write to message");
     }
     println!("{message}");
     sqlx::query!(

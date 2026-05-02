@@ -69,7 +69,7 @@ impl Listener for Publish {
             {
                 error!("failed to send audit message: {}", e);
             }
-            tokio::time::sleep(Duration::from_secs(60)).await;
+            tokio::time::sleep(Duration::from_mins(1)).await;
             if let Err(e) = events_request_5!(
                 nats,
                 synixe_events::containers::docker,
