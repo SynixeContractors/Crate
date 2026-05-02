@@ -173,25 +173,9 @@ pub fn get_datetime(options: &[CommandDataOption]) -> OffsetDateTime {
         || OffsetDateTime::now_utc().to_timezone(NEW_YORK).date().day(),
         |day| (*day).try_into().expect("Discord should limit to 1-31"),
     );
-    let hour = get_option!(options, "hour", Integer).map_or_else(
-        || {
-            if matches!(
-                OffsetDateTime::now_utc()
-                    .to_timezone(NEW_YORK)
-                    .replace_day(day)
-                    .expect("The day will be valid cause we check it above")
-                    .replace_month(month)
-                    .expect("The month will be valid cause we check it above")
-                    .weekday(),
-                Weekday::Saturday | Weekday::Sunday
-            ) {
-                16
-            } else {
-                22
-            }
-        },
-        |hour| (*hour).try_into().expect("Discord should limit to 0-23"),
-    );
+    let hour = get_option!(options, "hour", Integer).map_or(16, |hour| {
+        (*hour).try_into().expect("Discord should limit to 0-23")
+    });
     {
         let year = OffsetDateTime::now_utc()
             .to_timezone(NEW_YORK)
