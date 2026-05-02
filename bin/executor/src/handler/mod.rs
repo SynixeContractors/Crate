@@ -14,12 +14,14 @@ pub async fn start() {
         .expect("should be able to subscribe to executor events");
     while let Some(msg) = sub.next().await {
         let nats = nats.clone();
-        synixe_events::handler!(
-            msg,
-            nats,
-            synixe_events::recruiting::executions::Request,
-            synixe_events::missions::executions::Request,
-            synixe_events::certifications::executions::Request,
-        );
+        tokio::spawn(async move {
+            synixe_events::handler!(
+                msg,
+                nats,
+                synixe_events::recruiting::executions::Request,
+                synixe_events::missions::executions::Request,
+                synixe_events::certifications::executions::Request,
+            );
+        });
     }
 }

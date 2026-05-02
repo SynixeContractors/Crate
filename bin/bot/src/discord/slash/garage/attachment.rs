@@ -2,7 +2,7 @@ use serenity::all::{CommandDataOption, CommandInteraction};
 use serenity::client::Context;
 use synixe_events::garage::db::Response;
 use synixe_meta::discord::role::GARAGE;
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 use uuid::Uuid;
 
 use crate::discord::interaction::Interaction;
@@ -43,7 +43,7 @@ pub async fn attach(
         return interaction.reply("Invalid addon UUID").await;
     };
 
-    let Ok(Ok((Response::AttachAddon(Ok(())), _))) = events_request_2!(
+    let Ok(Ok((Response::AttachAddon(Ok(())), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         AttachAddon {
@@ -90,7 +90,7 @@ pub async fn detach(
             .await;
     };
 
-    let Ok(Ok((Response::DetachAddon(Ok(())), _))) = events_request_2!(
+    let Ok(Ok((Response::DetachAddon(Ok(())), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         DetachAddon {

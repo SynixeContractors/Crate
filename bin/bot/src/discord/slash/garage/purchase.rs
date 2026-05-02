@@ -2,7 +2,7 @@ use serenity::all::{CommandDataOption, CommandInteraction};
 use serenity::client::Context;
 use synixe_events::garage::db::{Response, ShopOrder};
 use synixe_meta::discord::role::GARAGE;
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 use uuid::Uuid;
 
 use crate::discord::interaction::Interaction;
@@ -51,7 +51,7 @@ pub async fn purchase(
 
     match kind.name.as_str() {
         "vehicle" => {
-            let Ok(Ok((Response::PurchaseShopAsset(Ok(plate)), _))) = events_request_2!(
+            let Ok(Ok((Response::PurchaseShopAsset(Ok(plate)), _))) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 PurchaseShopAsset {
@@ -84,7 +84,7 @@ pub async fn purchase(
                     .reply("Required option not provided: vehicle")
                     .await;
             };
-            let Ok(Ok((Response::PurchaseShopAsset(Ok(_)), _))) = events_request_2!(
+            let Ok(Ok((Response::PurchaseShopAsset(Ok(_)), _))) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 PurchaseShopAsset {

@@ -2,7 +2,7 @@ use serde_json::json;
 use serenity::prelude::Context;
 use synixe_events::gear::db::Response;
 use synixe_meta::discord::BRODSKY;
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 
 use crate::discord::utils::find_members;
 
@@ -62,7 +62,7 @@ impl BrainFunction for GetBalance {
         let mut responses = Vec::new();
 
         for (_, member) in found {
-            let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_2!(
+            let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
                 BankBalance { member }
@@ -78,7 +78,7 @@ impl BrainFunction for GetBalance {
                 }));
             }
 
-            let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_2!(
+            let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
                 LockerBalance { member }
@@ -87,7 +87,7 @@ impl BrainFunction for GetBalance {
             else {
                 return None;
             };
-            let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_2!(
+            let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
                 LoadoutBalance { member }

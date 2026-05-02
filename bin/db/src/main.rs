@@ -14,7 +14,7 @@ async fn main() {
 }
 
 pub async fn game_audit(message: String) -> Option<serenity::all::MessageId> {
-    match synixe_proc::events_request_2!(
+    match synixe_proc::events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::discord::write,
         GameAudit {
@@ -43,7 +43,7 @@ pub async fn game_audit(message: String) -> Option<serenity::all::MessageId> {
 }
 
 pub async fn audit(message: String) -> Option<serenity::all::MessageId> {
-    match synixe_proc::events_request_2!(
+    match synixe_proc::events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::discord::write,
         Audit {

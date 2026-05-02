@@ -20,7 +20,7 @@ use synixe_meta::discord::{
     role::{JUNIOR, MEMBER},
 };
 use synixe_model::certifications::Certification;
-use synixe_proc::{events_request_2, events_request_5};
+use synixe_proc::events_request_5;
 
 use crate::cache_http::CacheAndHttp;
 use crate::discord::slash::ShouldAsk;
@@ -229,7 +229,7 @@ async fn trial(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Fetching certifications...").await?;
-    let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request_2!(
+    let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         ListInstructor {
@@ -291,7 +291,7 @@ async fn trial(
         return Ok(());
     }
     interaction.reply("Submitting trial...").await?;
-    match events_request_2!(
+    match events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         Certify {
@@ -337,7 +337,7 @@ async fn certifications_autocomplete(
         return Ok(());
     }
     let certs = if filter == AutocompleteFilter::Instructor {
-        let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request_2!(
+        let Ok(Ok((Response::ListInstructor(Ok(certs)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::certifications::db,
             ListInstructor {
@@ -351,7 +351,7 @@ async fn certifications_autocomplete(
         };
         certs
     } else {
-        let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_2!(
+        let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::certifications::db,
             List {}
@@ -393,7 +393,7 @@ async fn view(
     let Some(user) = get_option_user!(options, "member") else {
         return interaction.reply("Invalid member").await;
     };
-    let Ok(Ok((Response::Active(Ok(certs)), _))) = events_request_2!(
+    let Ok(Ok((Response::Active(Ok(certs)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         Active { member: *user }
@@ -409,7 +409,7 @@ async fn view(
     }
     let mut content = format!("**<@{user}> Certifications**\n\n");
     for cert in certs {
-        if let Ok(Ok((Response::Name(Ok(Some(name))), _))) = events_request_2!(
+        if let Ok(Ok((Response::Name(Ok(Some(name))), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::certifications::db,
             Name {
@@ -450,7 +450,7 @@ async fn info(
     let Some(cert_str) = get_option!(options, "certification", String) else {
         return interaction.reply("Invalid certification").await;
     };
-    let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_2!(
+    let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         List {}
@@ -506,7 +506,7 @@ async fn list(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Fetching certifications...").await?;
-    let Ok(Ok((Response::List(Ok(mut certs)), _))) = events_request_2!(
+    let Ok(Ok((Response::List(Ok(mut certs)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         List {}
@@ -618,7 +618,7 @@ async fn first(
         error!("Failed to send message: {}", e);
     }
     interaction.reply("Fetching certifications...").await?;
-    let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_2!(
+    let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         List {}
@@ -725,7 +725,7 @@ async fn instructor(
     let Some(cert_str) = get_option!(options, "certification", String) else {
         return interaction.reply("Invalid certification").await;
     };
-    let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_2!(
+    let Ok(Ok((Response::List(Ok(certs)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         List {}
@@ -737,7 +737,7 @@ async fn instructor(
     let Some(cert) = certs.iter().find(|c| &c.id.to_string() == cert_str) else {
         return interaction.reply("Invalid certification").await;
     };
-    match events_request_2!(
+    match events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::certifications::db,
         AddInstructor {

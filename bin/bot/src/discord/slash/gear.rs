@@ -10,7 +10,7 @@ use serenity::{
 };
 use synixe_events::gear::db::Response;
 use synixe_meta::discord::role::CERT_GRENADIER;
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 
 use crate::{
     discord::interaction::{Confirmation, Interaction},
@@ -180,7 +180,7 @@ async fn run_gear_command(
         return interaction.reply("Invalid variant").await;
     };
 
-    let Ok(Ok((Response::FamilySearch(Ok(family_items)), _))) = events_request_2!(
+    let Ok(Ok((Response::FamilySearch(Ok(family_items)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         FamilySearch {
@@ -221,7 +221,7 @@ async fn run_gear_command(
         .await?
         == Confirmation::Yes
     {
-        let Ok(Ok((Response::FamilyReplace(Ok(())), _))) = events_request_2!(
+        let Ok(Ok((Response::FamilyReplace(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             FamilyReplace {
@@ -257,7 +257,7 @@ async fn gear_autocomplete(
     };
 
     if focus.name == config.item_option {
-        let Ok(Ok((Response::FamilyCompatibleItems(Ok(mut items)), _))) = events_request_2!(
+        let Ok(Ok((Response::FamilyCompatibleItems(Ok(mut items)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             FamilyCompatibleItems {
@@ -302,7 +302,7 @@ async fn gear_autocomplete(
             .unwrap_or_default()
             .to_string();
 
-        let Ok(Ok((Response::FamilySearch(Ok(mut variants)), _))) = events_request_2!(
+        let Ok(Ok((Response::FamilySearch(Ok(mut variants)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             FamilySearch {

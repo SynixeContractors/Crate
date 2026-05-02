@@ -15,14 +15,17 @@ pub async fn start() {
         .await
         .expect("Failed to subscribe to synixe.publish.*");
     while let Some(msg) = sub.next().await {
-        synixe_events::listener!(
-            msg.clone(),
-            nats.clone(),
-            synixe_events::certifications::publish::Publish,
-            synixe_events::gear::publish::Publish,
-            synixe_events::missions::publish::Publish,
-            synixe_events::global::Publish,
-        );
+        let nats = nats.clone();
+        tokio::spawn(async move {
+            synixe_events::listener!(
+                msg.clone(),
+                nats.clone(),
+                synixe_events::certifications::publish::Publish,
+                synixe_events::gear::publish::Publish,
+                synixe_events::missions::publish::Publish,
+                synixe_events::global::Publish,
+            );
+        });
     }
 }
 

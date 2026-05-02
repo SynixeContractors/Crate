@@ -6,7 +6,7 @@ use serenity::all::{
 };
 use synixe_events::surveys::db::Response;
 use synixe_meta::discord::role::STAFF;
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 use uuid::Uuid;
 
 use crate::{discord::interaction::Interaction, get_option};
@@ -71,7 +71,7 @@ async fn post_autocomplete(
     if focus.name != "survey" {
         return Ok(());
     }
-    let Ok(Ok((Response::SearchSurvey(Ok(mut surveys)), _))) = events_request_2!(
+    let Ok(Ok((Response::SearchSurvey(Ok(mut surveys)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::surveys::db,
         SearchSurvey {
@@ -132,7 +132,7 @@ async fn post(
             .await;
     };
     let survey: Uuid = survey.parse().expect("survey id should be a valid uuid");
-    let Ok(Ok((Response::GetSurvey(Ok(Some((id, title, description)))), _))) = events_request_2!(
+    let Ok(Ok((Response::GetSurvey(Ok(Some((id, title, description)))), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::surveys::db,
         GetSurvey { survey }
@@ -175,7 +175,7 @@ pub async fn submit_button(
         .parse()
         .expect("survey id should be a valid uuid");
     let mut interaction = Interaction::new(ctx, component.clone(), &[]);
-    let Ok(Ok((Response::GetOptions(Ok(options)), _))) = events_request_2!(
+    let Ok(Ok((Response::GetOptions(Ok(options)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::surveys::db,
         GetOptions { survey }
@@ -198,7 +198,7 @@ pub async fn submit_button(
         warn!("No option selected");
         return Ok(());
     };
-    let Ok(Ok((Response::Submit(Ok(())), _))) = events_request_2!(
+    let Ok(Ok((Response::Submit(Ok(())), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::surveys::db,
         Submit {

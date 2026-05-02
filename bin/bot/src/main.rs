@@ -32,7 +32,7 @@ async fn main() {
 
 pub fn audit(message: String) {
     tokio::spawn(async {
-        if let Err(e) = synixe_proc::events_request_2!(
+        if let Err(e) = synixe_proc::events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::discord::write,
             Audit {
@@ -51,7 +51,7 @@ pub fn audit(message: String) {
 
 pub fn game_audit(message: String) {
     tokio::spawn(async {
-        if let Err(e) = synixe_proc::events_request_2!(
+        if let Err(e) = synixe_proc::events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::discord::write,
             GameAudit {

@@ -8,7 +8,7 @@ use serenity::{
 };
 use synixe_events::{discord::publish::Publish, missions::db::Response, publish};
 use synixe_meta::discord::channel::{BOT, GAME_LOG, LEADERSHIP, LOG, LOOKING_TO_PLAY};
-use synixe_proc::{events_request_2, events_request_5};
+use synixe_proc::events_request_5;
 use uuid::Uuid;
 
 use crate::{
@@ -269,7 +269,7 @@ impl EventHandler for Handler {
         }
         if event.roles.contains(&synixe_meta::discord::role::RECRUIT) {
             let Ok(Ok((synixe_events::gear::db::Response::BankDepositSearch(Ok(deposits)), _))) =
-                events_request_2!(
+                events_request_5!(
                     bootstrap::NC::get().await,
                     synixe_events::gear::db,
                     BankDepositSearch {
@@ -287,7 +287,7 @@ impl EventHandler for Handler {
                 return;
             }
             let Ok(Ok((synixe_events::gear::db::Response::BankDepositNew(Ok(())), _))) =
-                events_request_2!(
+                events_request_5!(
                     bootstrap::NC::get().await,
                     synixe_events::gear::db,
                     BankDepositNew {
@@ -366,7 +366,7 @@ impl EventHandler for Handler {
         }
 
         if message.channel_id == BOT && message.content.as_str() == "!exec active" {
-            if let Err(e) = events_request_2!(
+            if let Err(e) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::executions,
                 UpdateActivityRoles {}
@@ -382,7 +382,7 @@ impl EventHandler for Handler {
         }
 
         if message.channel_id == LOG && message.content.as_str() == "!exec weeklytips" {
-            if let Err(e) = events_request_2!(
+            if let Err(e) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::discord::executions,
                 PostWeeklyTips {}
@@ -500,7 +500,7 @@ impl EventHandler for Handler {
 #[allow(clippy::cognitive_complexity)]
 async fn move_channel_missions(ctx: &Context, channel: ChannelId) {
     // delete subcon message and move here
-    let Ok(Ok((Response::FetchUpcomingChannel(Ok(evs)), _))) = events_request_2!(
+    let Ok(Ok((Response::FetchUpcomingChannel(Ok(evs)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FetchUpcomingChannel { channel }
@@ -531,7 +531,7 @@ async fn move_channel_missions(ctx: &Context, channel: ChannelId) {
             error!("Cannot post mission");
             return;
         };
-        if let Err(e) = events_request_2!(
+        if let Err(e) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
             SetScheduledMesssage {

@@ -4,7 +4,6 @@
 pub mod db {
     use std::collections::HashMap;
 
-    use serde::{Deserialize, Serialize};
     use serenity::model::prelude::UserId;
     use synixe_model::gear::{Deposit, FamilyItem, Price};
     use synixe_proc::events_requests;

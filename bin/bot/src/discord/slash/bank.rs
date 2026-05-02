@@ -17,7 +17,7 @@ use synixe_meta::discord::{
     channel::LOG,
     role::{ACTIVE, STAFF},
 };
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 
 use crate::{
     discord::interaction::{Confirmation, Interaction},
@@ -97,7 +97,7 @@ async fn balance(
         return interaction.reply("Invalid member").await;
     };
 
-    let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_2!(
+    let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankBalance { member: *user }
@@ -117,7 +117,7 @@ async fn balance(
             .await;
     }
 
-    let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_2!(
+    let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         LockerBalance { member: *user }
@@ -126,7 +126,7 @@ async fn balance(
     else {
         return interaction.reply("Failed to fetch locker balance").await;
     };
-    let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_2!(
+    let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         LoadoutBalance { member: *user }
@@ -186,7 +186,7 @@ async fn transfer(
     let Some(reason) = get_option!(options, "reason", String) else {
         return interaction.reply("Invalid reason").await;
     };
-    let Ok(Ok((Response::BankTransferNew(Ok(())), _))) = events_request_2!(
+    let Ok(Ok((Response::BankTransferNew(Ok(())), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankTransferNew {
@@ -301,7 +301,7 @@ async fn fine(
     let Some(reason) = get_option!(options, "reason", String) else {
         return interaction.reply("Invalid reason").await;
     };
-    let Ok(Ok((Response::BankDepositNew(Ok(())), _))) = events_request_2!(
+    let Ok(Ok((Response::BankDepositNew(Ok(())), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankDepositNew {
@@ -379,7 +379,7 @@ async fn wallet(ctx: &Context, command: &CommandInteraction) -> serenity::Result
         .reply("Creating Google Wallet... This may take a moment.")
         .await?;
 
-    let balance = match events_request_2!(
+    let balance = match events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankBalance {
@@ -407,7 +407,7 @@ async fn wallet(ctx: &Context, command: &CommandInteraction) -> serenity::Result
                 .await;
         }
     };
-    let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_2!(
+    let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         LockerBalance {
@@ -418,7 +418,7 @@ async fn wallet(ctx: &Context, command: &CommandInteraction) -> serenity::Result
     else {
         return interaction.reply("Failed to fetch locker balance").await;
     };
-    let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_2!(
+    let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         LoadoutBalance {

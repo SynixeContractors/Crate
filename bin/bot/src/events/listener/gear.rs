@@ -5,7 +5,7 @@ use porter::{
 use serenity::async_trait;
 use synixe_events::gear::{db::Response, publish::Publish};
 use synixe_meta::discord::GUILD;
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 
 use crate::cache_http::CacheAndHttp;
 
@@ -36,7 +36,7 @@ impl Listener for Publish {
                 };
 
                 let mut client = GoogleWalletClient::new(config.clone());
-                let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_2!(
+                let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_5!(
                     bootstrap::NC::get().await,
                     synixe_events::gear::db,
                     LockerBalance { member: *member }
@@ -45,7 +45,7 @@ impl Listener for Publish {
                 else {
                     return Ok(());
                 };
-                let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_2!(
+                let Ok(Ok((Response::LoadoutBalance(Ok(loadout_balance)), _))) = events_request_5!(
                     bootstrap::NC::get().await,
                     synixe_events::gear::db,
                     LoadoutBalance { member: *member }

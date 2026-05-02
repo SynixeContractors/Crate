@@ -9,7 +9,7 @@ use synixe_model::missions::{
     MissionType,
     aar::{Aar, PaymentType},
 };
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 use time::macros::offset;
 
 pub const MENU_AAR_PAY: &str = "AAR - Pay";
@@ -108,7 +108,7 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
         }
     };
     let Ok(Ok((reputation::db::Response::CurrentReputation(Ok(Some(Some(current_rep)))), _))) =
-        events_request_2!(
+        events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::reputation::db,
             CurrentReputation {
@@ -152,7 +152,7 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
             ))
             .await;
     }
-    let Ok(Ok((Response::FindScheduledDate(Ok(Some(scheduled))), _))) = events_request_2!(
+    let Ok(Ok((Response::FindScheduledDate(Ok(Some(scheduled))), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::missions::db,
         FindScheduledDate {
@@ -165,7 +165,7 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
     else {
         return interaction.reply("Failed to find scheduled date").await;
     };
-    let Ok(Ok((reputation::db::Response::MissionCompleted(Ok(())), _))) = events_request_2!(
+    let Ok(Ok((reputation::db::Response::MissionCompleted(Ok(())), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::reputation::db,
         MissionCompleted {
@@ -198,7 +198,7 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
         .await?
         == Confirmation::Yes
     {
-        if let Ok(Ok((Response::PayMission(Ok(())), _))) = events_request_2!(
+        if let Ok(Ok((Response::PayMission(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
             PayMission {

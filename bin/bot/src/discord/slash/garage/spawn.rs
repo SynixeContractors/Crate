@@ -7,7 +7,7 @@ use synixe_events::garage::{
     db,
 };
 use synixe_meta::discord::{channel::LOG, role::GARAGE};
-use synixe_proc::{events_request_2, events_request_5};
+use synixe_proc::events_request_5;
 
 use crate::{
     discord::{
@@ -48,7 +48,7 @@ pub async fn spawn(
     };
     interaction.reply("Waiting for lock").await?;
     let _lock = SPAWN_LOCK.lock().await;
-    let Ok(Ok((db::Response::FetchVehicleInfo(Ok(info)), _))) = events_request_2!(
+    let Ok(Ok((db::Response::FetchVehicleInfo(Ok(info)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchVehicleInfo {
@@ -70,7 +70,7 @@ pub async fn spawn(
         return interaction.reply("Vehicle state not found").await;
     };
 
-    let Ok(Ok((db::Response::FetchShopAsset(Ok(Some(asset))), _))) = events_request_2!(
+    let Ok(Ok((db::Response::FetchShopAsset(Ok(Some(asset))), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchShopAsset {
@@ -112,7 +112,7 @@ pub async fn spawn(
     match response {
         SpawnResult::Yes => {
             std::mem::drop(interaction.reply("Vehicle spawning").await);
-            if let Err(e) = events_request_2!(
+            if let Err(e) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 RetrieveVehicle {
@@ -138,7 +138,7 @@ pub async fn spawn(
                 "**Vehicle Spawned**\n<@{}> spawned `{}`",
                 command.user.id, plate,
             ));
-            if let Err(e) = events_request_2!(
+            if let Err(e) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::garage::db,
                 Transport {

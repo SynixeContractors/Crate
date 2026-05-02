@@ -11,10 +11,13 @@ pub async fn start() {
         .await
         .expect("Failed to subscribe to synixe.publish.*");
     while let Some(msg) = sub.next().await {
-        synixe_events::listener!(
-            msg.clone(),
-            nats.clone(),
-            synixe_events::missions::publish::Publish,
-        );
+        let nats = nats.clone();
+        tokio::spawn(async move {
+            synixe_events::listener!(
+                msg.clone(),
+                nats.clone(),
+                synixe_events::missions::publish::Publish,
+            );
+        });
     }
 }

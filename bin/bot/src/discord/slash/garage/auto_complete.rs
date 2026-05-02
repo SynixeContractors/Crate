@@ -4,7 +4,7 @@ use serenity::{
     client::Context,
 };
 use synixe_events::garage::db::Response;
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 use uuid::Uuid;
 
 use crate::{
@@ -114,7 +114,7 @@ async fn autocomplete_vehicle(
     filter: String,
     value_type: VehicleValueType,
 ) -> serenity::Result<()> {
-    let Ok(Ok((Response::FetchStoredVehicles(Ok(mut vehicles)), _))) = events_request_2!(
+    let Ok(Ok((Response::FetchStoredVehicles(Ok(mut vehicles)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchStoredVehicles {
@@ -180,7 +180,7 @@ async fn autocomplete_color(
         error!("Missing vehicle option");
         return Ok(());
     };
-    let Ok(Ok((Response::FetchVehicleColors(Ok(mut colors)), _))) = events_request_2!(
+    let Ok(Ok((Response::FetchVehicleColors(Ok(mut colors)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchVehicleColors { id }
@@ -215,7 +215,7 @@ async fn autocomplete_addon(
     plate: String,
 ) -> serenity::Result<()> {
     debug!("Autocompleting addons for {}", plate);
-    let Ok(Ok((Response::FetchStoredAddons(Ok(mut addons)), _))) = events_request_2!(
+    let Ok(Ok((Response::FetchStoredAddons(Ok(mut addons)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchStoredAddons { plate }
@@ -247,7 +247,7 @@ async fn autocomplete_shop(
     autocomplete: &CommandInteraction,
     filter: AssetFilter,
 ) -> serenity::Result<()> {
-    let Ok(Ok((Response::FetchShopAssets(Ok(assets)), _))) = events_request_2!(
+    let Ok(Ok((Response::FetchShopAssets(Ok(assets)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchShopAssets {

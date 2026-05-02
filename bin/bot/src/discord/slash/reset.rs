@@ -8,7 +8,7 @@ use serenity::{
     client::Context,
 };
 use synixe_events::reset::db::Response;
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 use uuid::Uuid;
 pub fn register() -> CreateCommand {
     CreateCommand::new("reset")
@@ -67,7 +67,7 @@ async fn kit(
             .reply("Required option not provided: first_kit")
             .await;
     };
-    if let Ok(Ok((Response::CanClaim(Ok(Some(Some(false)))), _))) = events_request_2!(
+    if let Ok(Ok((Response::CanClaim(Ok(Some(Some(false)))), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::reset::db,
         CanClaim {
@@ -77,7 +77,7 @@ async fn kit(
     )
     .await
     {
-        if let Ok(Ok((Response::LastClaim(Ok(Some(last_claim))), _))) = events_request_2!(
+        if let Ok(Ok((Response::LastClaim(Ok(Some(last_claim))), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::reset::db,
             LastClaim {
@@ -101,7 +101,7 @@ async fn kit(
             .await?;
         return Ok(());
     }
-    let Ok(Ok((Response::ClaimKit(Ok(())), _))) = events_request_2!(
+    let Ok(Ok((Response::ClaimKit(Ok(())), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::reset::db,
         ClaimKit {
@@ -134,7 +134,7 @@ async fn kit_autocomplete(
     if focus.name != "first_kit" {
         return Ok(());
     }
-    let Ok(Ok((Response::UnclaimedKits(Ok(first_kits)), _))) = events_request_2!(
+    let Ok(Ok((Response::UnclaimedKits(Ok(first_kits)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::reset::db,
         UnclaimedKits {

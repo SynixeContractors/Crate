@@ -15,11 +15,14 @@ pub async fn start() {
         panic!("failed to subscribe to publish events");
     };
     while let Some(msg) = sub.next().await {
-        synixe_events::listener!(
-            msg.clone(),
-            nats.clone(),
-            synixe_events::discord::publish::Publish,
-            synixe_events::missions::publish::Publish,
-        );
+        let nats = nats.clone();
+        tokio::spawn(async move {
+            synixe_events::listener!(
+                msg.clone(),
+                nats.clone(),
+                synixe_events::discord::publish::Publish,
+                synixe_events::missions::publish::Publish,
+            );
+        });
     }
 }

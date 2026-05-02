@@ -19,12 +19,14 @@ pub async fn start() {
         .expect("should be able to subscribe to docker events");
     while let Some(msg) = sub.next().await {
         let nats = nats.clone();
-        synixe_events::handler!(
-            msg,
-            nats,
-            synixe_events::containers::docker::Request,
-            synixe_events::containers::missions::Request,
-            synixe_events::containers::modpack::Request,
-        );
+        tokio::spawn(async move {
+            synixe_events::handler!(
+                msg,
+                nats,
+                synixe_events::containers::docker::Request,
+                synixe_events::containers::missions::Request,
+                synixe_events::containers::modpack::Request,
+            );
+        });
     }
 }

@@ -16,6 +16,8 @@ pub async fn start() {
     };
     while let Some(msg) = sub.next().await {
         let nats = nats.clone();
-        synixe_events::handler!(msg, nats, synixe_events::garage::arma::Request,);
+        tokio::spawn(async move {
+            synixe_events::handler!(msg, nats, synixe_events::garage::arma::Request,);
+        });
     }
 }

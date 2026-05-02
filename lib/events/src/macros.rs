@@ -5,15 +5,14 @@ macro_rules! handler {
         use synixe_events::Evokable;
         let subject = $msg.subject.clone();
         let sub = subject.as_str();
-        info!("seen event: {}", sub);
         if 1 == 2 {}
         $(
             else if sub == <$events>::path() {
                 let Ok((ev, _)) = synixe_events::parse_data!($msg, $events) else {
                     error!("Failed to parse event: {}", sub);
-                    continue
+                    return;
                 };
-                info!("Handling event: {:?}", ev);
+                info!("Handling event: {} -> {:?}", sub, ev);
                 if let Err(e) = ev.handle($msg, $nats).await {
                     error!("Error in handler {}: {}", sub, e);
                 }
@@ -33,9 +32,9 @@ macro_rules! listener {
             if sub == <$events>::path() {
                 let Ok((ev, pcx)) = synixe_events::parse_data!($msg, $events) else {
                     error!("Failed to parse event: {}", sub);
-                    continue
+                    return;
                 };
-                debug!("Handling event: {}", ev.name());
+                debug!("Handling event: {} -> {}", sub, ev.name());
                 if let Err(e) = ev.listen($msg, $nats).await {
                     error!("Error in handler {}: {}", sub, e);
                 }
@@ -69,7 +68,7 @@ macro_rules! respond {
             let mut trace_body = $crate::Wrapper::new($resp);
             let nats = bootstrap::NC::get().await;
             let response = nats
-                .request(
+                .publish(
                     $msg.reply.clone().unwrap(),
                     $crate::serde_json::to_vec(&trace_body).unwrap().into(),
                 )

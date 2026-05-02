@@ -1,13 +1,13 @@
 use serenity::{all::UserId, futures::StreamExt};
 use synixe_events::discord::db::Response;
 use synixe_meta::discord::{GUILD, channel::LOG, role::ACTIVE};
-use synixe_proc::events_request_2;
+use synixe_proc::events_request_5;
 
 use crate::ArcCacheAndHttp;
 
 #[allow(clippy::cognitive_complexity)]
 pub async fn execute(client: ArcCacheAndHttp) {
-    let Ok(Ok((Response::ActiveMembers(Ok(active)), _))) = events_request_2!(
+    let Ok(Ok((Response::ActiveMembers(Ok(active)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::discord::db,
         ActiveMembers {}
