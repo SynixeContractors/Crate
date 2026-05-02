@@ -20,8 +20,8 @@ use super::Listener;
 impl Listener for Publish {
     async fn listen(
         &self,
-        _msg: nats::asynk::Message,
-        _nats: std::sync::Arc<nats::asynk::Connection>,
+        _msg: async_nats::message::Message,
+        _nats: async_nats::Client,
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::StartingSoon { scheduled, minutes } => {
@@ -142,7 +142,7 @@ impl Listener for Publish {
     }
 }
 
-pub async fn tick(nats: std::sync::Arc<nats::asynk::Connection>) {
+pub async fn tick(nats: async_nats::Client) {
     if let Ok(Ok((Response::FetchCurrentMission(Ok(Some(mission))), _))) =
         events_request_5!(nats, synixe_events::missions::db, FetchCurrentMission {}).await
     {

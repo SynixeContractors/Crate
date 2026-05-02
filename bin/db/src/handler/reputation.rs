@@ -10,8 +10,8 @@ use super::Handler;
 impl Handler for Request {
     async fn handle(
         &self,
-        msg: nats::asynk::Message,
-        _nats: std::sync::Arc<nats::asynk::Connection>,
+        msg: async_nats::message::Message,
+        _nats: async_nats::Client,
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
@@ -178,7 +178,7 @@ impl Handler for Request {
             }
             Self::FriendlyHealed { member, target } => {
                 let message =
-                    game_audit(format!("**Friendly Healed**\n<@{member}> healed {target}",)).await;
+                    game_audit(format!("**Friendly Healed**\n<@{member}> healed {target}")).await;
                 execute_and_respond!(
                     msg,
                     *db,
@@ -212,7 +212,7 @@ impl Handler for Request {
             }
             Self::CivilianHealed { member, target } => {
                 let message =
-                    game_audit(format!("**Civilian Healed**\n<@{member}> healed {target}",)).await;
+                    game_audit(format!("**Civilian Healed**\n<@{member}> healed {target}")).await;
                 execute_and_respond!(
                     msg,
                     *db,

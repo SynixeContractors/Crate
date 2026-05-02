@@ -140,7 +140,7 @@ pub async fn spawn(
             ));
             if let Err(e) = events_request_2!(
                 bootstrap::NC::get().await,
-                synixe_events::gear::db,
+                synixe_events::garage::db,
                 Transport {
                     plate: plate.clone(),
                     cost: asset.transport_cost,

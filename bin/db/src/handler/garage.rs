@@ -1,10 +1,11 @@
 use async_trait::async_trait;
 use synixe_events::{
-    garage::db::{FetchedPlate, Request, Response},
-    gear::db::FuelType,
+    garage::db::{FetchedPlate, FuelType, Request, Response},
     respond,
 };
 use synixe_proc::events_request_5;
+
+use crate::{actor::fuel::prices_for_map, game_audit};
 
 use super::Handler;
 
@@ -13,8 +14,8 @@ use super::Handler;
 impl Handler for Request {
     async fn handle(
         &self,
-        msg: nats::asynk::Message,
-        _nats: std::sync::Arc<nats::asynk::Connection>,
+        msg: async_nats::message::Message,
+        _nats: async_nats::Client,
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
@@ -219,7 +220,7 @@ impl Handler for Request {
                     }
                     events_request_5!(
                         bootstrap::NC::get().await,
-                        synixe_events::gear::db,
+                        synixe_events::garage::db,
                         Fuel {
                             member: *member,
                             amount,
@@ -322,6 +323,76 @@ impl Handler for Request {
                     member.to_string(),
                     state,
                 )
+            }
+
+            #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
+            Self::Fuel {
+                member,
+                amount,
+                fuel_type,
+                plate,
+                map,
+            } => {
+                let price_raw = prices_for_map(map) * (*amount as f64) * fuel_type.multiplier();
+                let price = price_raw.ceil() as i32;
+                if let Err(e) = sqlx::query!(
+                    "INSERT INTO gear_bank_deposits (member, amount, reason, id) VALUES (0, $1, $2, '00000000-0000-0000-0000-000000000001')",
+                    price,
+                    format!(
+                        "Fuel: {} {amount}l @ {:.2} by {member}{}",
+                        fuel_type.as_str(),
+                        prices_for_map(map) * fuel_type.multiplier(),
+                        plate
+                            .as_ref()
+                            .map_or_else(String::new, |plate| format!(" on {plate}"))
+                    ),
+                )
+                .execute(&*db)
+                .await {
+                    return Err(anyhow::Error::new(e).context("Failed to record fuel purchase"));
+                }
+                respond!(msg, Response::Fuel(Ok(price))).await?;
+                let _ = game_audit(format!(
+                    "**Fuel**\n<@{member}> purchased {} {amount}l @ {:.2} (Total: {}){}",
+                    fuel_type.as_str(),
+                    prices_for_map(map) * fuel_type.multiplier(),
+                    bootstrap::format::money(price, false),
+                    plate
+                        .as_ref()
+                        .map_or_else(String::new, |plate| format!(" on {plate}"))
+                ))
+                .await;
+                Ok(())
+            }
+            Self::FuelPrice { map } => {
+                let price = prices_for_map(map);
+                respond!(msg, Response::FuelPrice(Ok(price))).await?;
+                Ok(())
+            }
+            #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
+            Self::Transport {
+                member,
+                cost,
+                plate,
+            } => {
+                if let Err(e) = sqlx::query!(
+                    "INSERT INTO gear_bank_deposits (member, amount, reason, id) VALUES (0, $1, $2, '00000000-0000-0000-0000-000000000002')",
+                    cost,
+                    format!(
+                        "Transport: {cost} by {member} on {plate}",
+                    ),
+                )
+                .execute(&*db)
+                .await {
+                    return Err(anyhow::Error::new(e).context("Failed to record fuel purchase"));
+                }
+                respond!(msg, Response::Transport(Ok(*cost))).await?;
+                let _ = game_audit(format!(
+                    "**Vehicle Transported**\n<@{member}> paid {} on {plate}",
+                    bootstrap::format::money(*cost, false)
+                ))
+                .await;
+                Ok(())
             }
         }
     }

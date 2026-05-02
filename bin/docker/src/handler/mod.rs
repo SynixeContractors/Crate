@@ -10,10 +10,10 @@ mod modpack;
 pub async fn start() {
     let nats = bootstrap::NC::get().await;
 
-    let sub = nats
+    let mut sub = nats
         .queue_subscribe(
             "synixe.docker.>",
-            &format!("synixe-docker-{}", *DOCKER_SERVER),
+            format!("synixe-docker-{}", *DOCKER_SERVER),
         )
         .await
         .expect("should be able to subscribe to docker events");

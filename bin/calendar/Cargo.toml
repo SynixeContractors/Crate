@@ -7,7 +7,7 @@ edition = "2024"
 workspace = true
 
 [dependencies]
-bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["async-nats"] }
 synixe-events = { path = "../../lib/events" }
 synixe-proc = { path = "../../lib/proc" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
@@ -15,7 +15,7 @@ synixe-model = { path = "../../lib/model", features = ["missions"] }
 axum = { workspace = true }
 chrono = "0.4.42"
 icalendar = "0.17.6"
-nats = { workspace = true }
+async-nats =  { workspace = true }
 time = { workspace = true }
 time-tz = "2.0.0"
 tokio = { workspace = true, features = ["full"] }

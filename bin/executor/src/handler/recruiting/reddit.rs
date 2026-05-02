@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use nats::asynk::Message;
+use async_nats::message::Message;
 use roux::{Reddit, User};
 use scraper::{Html, Selector};
 use synixe_events::{

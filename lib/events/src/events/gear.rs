@@ -10,46 +10,6 @@ pub mod db {
     use synixe_proc::events_requests;
     use uuid::Uuid;
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-    pub enum FuelType {
-        Regular,
-        JetA1,
-        Avgas,
-    }
-
-    impl FuelType {
-        #[must_use]
-        pub fn as_str(&self) -> &'static str {
-            match self {
-                Self::Regular => "regular",
-                Self::JetA1 => "jeta1",
-                Self::Avgas => "avgas",
-            }
-        }
-
-        #[must_use]
-        pub fn multiplier(&self) -> f64 {
-            match self {
-                Self::Regular => 1.0,
-                Self::Avgas => 1.6,
-                Self::JetA1 => 2.0,
-            }
-        }
-    }
-
-    impl TryFrom<&str> for FuelType {
-        type Error = ();
-
-        fn try_from(value: &str) -> Result<Self, Self::Error> {
-            match value {
-                "regular" => Ok(Self::Regular),
-                "jeta1" => Ok(Self::JetA1),
-                "avgas" => Ok(Self::Avgas),
-                _ => Err(()),
-            }
-        }
-    }
-
     events_requests!(db.gear {
         /// Get a member's loadout
         struct LoadoutGet {
@@ -218,35 +178,6 @@ pub mod db {
             /// Cost
             cost: i32,
         } => (Result<(), String>)
-
-        /// Fuel purchase
-        struct Fuel {
-            /// Member
-            member: UserId,
-            /// Amount of fuel purchased
-            amount: u64,
-            /// Type of fuel purchased
-            fuel_type: FuelType,
-            // Plate of the vehicle being fueled
-            plate: Option<String>,
-            // Map the fuel was purchased on
-            map: String,
-        } => (Result<i32, String>)
-        /// Get fuel prices for a map
-        struct FuelPrice {
-            /// Map to get prices for
-            map: String,
-        } => (Result<f64, String>)
-
-        /// Transport vehicle
-        struct Transport {
-            /// Member
-            member: UserId,
-            /// Cost of the transport
-            cost: i32,
-            /// Plate of the vehicle being transported
-            plate: String,
-        } => (Result<i32, String>)
     });
 }
 

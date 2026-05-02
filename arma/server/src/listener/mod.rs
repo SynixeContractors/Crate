@@ -8,8 +8,8 @@ mod missions;
 pub async fn start() {
     let nats = bootstrap::NC::get().await;
 
-    let Ok(sub) = nats
-        .queue_subscribe("synixe.publish.>", &format!("arma-server-{}", *SERVER_ID))
+    let Ok(mut sub) = nats
+        .queue_subscribe("synixe.publish.>", format!("arma-server-{}", *SERVER_ID))
         .await
     else {
         panic!("failed to subscribe to publish events");

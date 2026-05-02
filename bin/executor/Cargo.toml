@@ -7,7 +7,7 @@ edition = "2024"
 workspace = true
 
 [dependencies]
-bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["async-nats"] }
 synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-proc = { path = "../../lib/proc" }
@@ -15,12 +15,13 @@ synixe-model = { path = "../../lib/model" }
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-nats = { workspace = true }
+async-nats =  { workspace = true }
 reqwest = { workspace = true }
 serenity = { workspace = true, features = ["builder"] }
 time = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
-tokio-simple-scheduler = "0.1.2"
+tokio-stream = { workspace = true }
+tokio-simple-scheduler = "0.2.0"
 tracing = { workspace = true }
 
 # recruiting

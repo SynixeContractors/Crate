@@ -9,8 +9,8 @@ use synixe_events::{
 impl Handler for Request {
     async fn handle(
         &self,
-        msg: nats::asynk::Message,
-        _nats: std::sync::Arc<nats::asynk::Connection>,
+        msg: async_nats::message::Message,
+        _nats: async_nats::Client,
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {

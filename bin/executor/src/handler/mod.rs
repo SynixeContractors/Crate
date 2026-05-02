@@ -8,8 +8,8 @@ include!("../../../../lib/common/handler.rs");
 pub async fn start() {
     let nats = bootstrap::NC::get().await;
 
-    let sub = nats
-        .queue_subscribe("synixe.executor.>", "synixe-executor")
+    let mut sub = nats
+        .queue_subscribe("synixe.executor.>", String::from("synixe-executor"))
         .await
         .expect("should be able to subscribe to executor events");
     while let Some(msg) = sub.next().await {

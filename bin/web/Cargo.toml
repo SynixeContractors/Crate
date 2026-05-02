@@ -7,14 +7,14 @@ edition = "2024"
 workspace = true
 
 [dependencies]
-bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["async-nats"] }
 synixe-events = { path = "../../lib/events" }
 synixe-proc = { path = "../../lib/proc" }
 synixe-poll-runner = { path = "../../utils/poll-runner" }
 
 axum = { workspace = true }
 base64 = "0.22.1"
-nats = { workspace = true }
+async-nats =  { workspace = true }
 rsa = { workspace = true }
 serenity = { workspace = true, features = ["builder"] }
 tera = "1.20.1"

@@ -38,7 +38,7 @@ anyhow = "1.0.102"
 arma-rs = { version = "1.12.1", features = ["uuid", "serde_json"] }
 async-trait = "0.1.89"
 axum = "0.8.9"
-nats = { version = "0.26.0" }
+async-nats =  { version = "0.47.0" }
 regex = "1.12.3"
 reqwest = { version = "0.13.3" }
 rsa = "0.9.10"
@@ -49,6 +49,7 @@ sqlx = { version = "0.8.6" }
 strum = "0.28.0"
 time = "0.3.47"
 tokio = "1.52.1"
+tokio-stream = "0.1.18"
 tracing = { version = "0.1.44", features = ["log"] }
 tracing-subscriber = "0.3.23"
 uuid = "1.23.1"

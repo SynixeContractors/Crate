@@ -13,7 +13,7 @@ synixe-proc = { path = "../proc" }
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-nats = { workspace = true }
+async-nats =  { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 serenity = { workspace = true, features = ["utils", "builder"] }

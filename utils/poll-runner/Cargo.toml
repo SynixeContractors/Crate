@@ -7,7 +7,7 @@ edition = "2021"
 workspace = true
 
 [dependencies]
-bootstrap = { path = "../../lib/bootstrap", features = ["sqlx", "nats"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["sqlx", "async-nats"] }
 synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-proc = { path = "../../lib/proc" }

@@ -403,6 +403,7 @@ impl Aar {
             )
         )
         .expect("should be able to write to string");
+        #[allow(clippy::cast_possible_wrap)]
         if !self.casualties().is_empty() {
             writeln!(
                 math,
@@ -627,6 +628,8 @@ impl PaymentType {
 
     #[must_use]
     #[allow(clippy::match_same_arms)]
+    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::cast_precision_loss)]
     /// Hourly rate for the employer
     pub const fn employer(&self) -> i32 {
         ((match self {

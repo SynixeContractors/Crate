@@ -35,8 +35,8 @@ impl Display for Action {
 impl Handler for Request {
     async fn handle(
         &self,
-        msg: nats::asynk::Message,
-        nats: std::sync::Arc<nats::asynk::Connection>,
+        msg: async_nats::message::Message,
+        nats: async_nats::Client,
     ) -> Result<(), anyhow::Error> {
         // TODO could use a macro for these 3 to reduce some code, but not really worth it
         match self {
@@ -58,7 +58,7 @@ impl Handler for Request {
 
 #[allow(clippy::cognitive_complexity)]
 async fn handle(
-    nats: std::sync::Arc<nats::asynk::Connection>,
+    nats: async_nats::Client,
     container: &Container,
     action: Action,
     reason: &str,

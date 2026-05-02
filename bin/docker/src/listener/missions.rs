@@ -20,8 +20,8 @@ const CONFIG_CONTRACTS: &str = "/arma/config/configs/contracts.cfg";
 impl Listener for Publish {
     async fn listen(
         &self,
-        _msg: nats::asynk::Message,
-        nats: std::sync::Arc<nats::asynk::Connection>,
+        _msg: async_nats::message::Message,
+        nats: async_nats::Client,
     ) -> Result<(), anyhow::Error> {
         if let Self::ChangeMission {
             id,

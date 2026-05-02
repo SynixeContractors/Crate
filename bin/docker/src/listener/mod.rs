@@ -6,8 +6,8 @@ mod missions;
 pub async fn start() {
     let nats = bootstrap::NC::get().await;
 
-    let sub = nats
-        .queue_subscribe("synixe.publish.>", "synixe-docker")
+    let mut sub = nats
+        .queue_subscribe("synixe.publish.>", String::from("synixe-docker"))
         .await
         .expect("Failed to subscribe to synixe.publish.*");
     while let Some(msg) = sub.next().await {

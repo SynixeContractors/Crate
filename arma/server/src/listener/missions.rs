@@ -12,8 +12,8 @@ use super::Listener;
 impl Listener for Publish {
     async fn listen(
         &self,
-        _msg: nats::asynk::Message,
-        _nats: std::sync::Arc<nats::asynk::Connection>,
+        _msg: async_nats::message::Message,
+        _nats: async_nats::Client,
     ) -> Result<(), anyhow::Error> {
         let context_store = CONTEXT.read().await;
         let Some(context) = context_store.as_ref() else {

@@ -54,7 +54,10 @@ macro_rules! publish {
         trace!("publishing on {:?}", path);
         let mut trace_body = $crate::Wrapper::new(body);
         #[allow(deprecated)]
-        $nats.publish(path, $crate::serde_json::to_vec(&trace_body).unwrap())
+        $nats.publish(
+            path,
+            $crate::serde_json::to_vec(&trace_body).unwrap().into(),
+        )
     }};
 }
 
@@ -62,14 +65,22 @@ macro_rules! publish {
 /// Respond to a request.
 macro_rules! respond {
     ($msg:expr, $resp:expr) => {{
-        let mut trace_body = $crate::Wrapper::new($resp);
-        #[allow(deprecated)]
-        $msg.respond($crate::serde_json::to_vec(&trace_body).unwrap())
+        Box::pin(async {
+            let mut trace_body = $crate::Wrapper::new($resp);
+            let nats = bootstrap::NC::get().await;
+            let response = nats
+                .request(
+                    $msg.reply.clone().unwrap(),
+                    $crate::serde_json::to_vec(&trace_body).unwrap().into(),
+                )
+                .await;
+            response.map(|_| ())
+        })
     }};
 }
 
 #[macro_export]
 /// Unwraps an event.
 macro_rules! parse_data {
-    ($msg:expr, $t:ty) => {{ $crate::serde_json::from_slice::<$crate::Wrapper<$t>>(&$msg.data).map(|d| d.into_parts()) }};
+    ($msg:expr, $t:ty) => {{ $crate::serde_json::from_slice::<$crate::Wrapper<$t>>(&$msg.payload).map(|d| d.into_parts()) }};
 }

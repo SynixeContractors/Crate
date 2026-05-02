@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::RwLock};
 
 use arma_rs::{Context, ContextState, Group};
 use serenity::all::UserId;
-use synixe_events::gear::db::FuelType;
+use synixe_events::garage::db::FuelType;
 use synixe_meta::discord::BRODSKY;
 use synixe_proc::events_request_5;
 
@@ -93,9 +93,9 @@ fn stopped(ctx: Context, source: String, target: String, map: String) {
     };
     RUNTIME.spawn(async move {
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let Ok(Ok((synixe_events::gear::db::Response::Fuel(Ok(spent)), _))) = events_request_5!(
+        let Ok(Ok((synixe_events::garage::db::Response::Fuel(Ok(spent)), _))) = events_request_5!(
             bootstrap::NC::get().await,
-            synixe_events::gear::db,
+            synixe_events::garage::db,
             Fuel {
                 member: discord,
                 amount: amount.round() as u64,
@@ -116,10 +116,10 @@ fn stopped(ctx: Context, source: String, target: String, map: String) {
 fn price(ctx: Context, map: String) {
     RUNTIME.spawn(async move {
         let fuel_price =
-            if let Ok(Ok((synixe_events::gear::db::Response::FuelPrice(Ok(fuel_price)), _))) =
+            if let Ok(Ok((synixe_events::garage::db::Response::FuelPrice(Ok(fuel_price)), _))) =
                 events_request_5!(
                     bootstrap::NC::get().await,
-                    synixe_events::gear::db,
+                    synixe_events::garage::db,
                     FuelPrice { map }
                 )
                 .await

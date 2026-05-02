@@ -15,8 +15,8 @@ use super::Handler;
 impl Handler for Request {
     async fn handle(
         &self,
-        msg: nats::asynk::Message,
-        nats: std::sync::Arc<nats::asynk::Connection>,
+        msg: async_nats::message::Message,
+        nats: async_nats::Client,
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {

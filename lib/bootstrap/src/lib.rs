@@ -3,10 +3,12 @@ mod db;
 #[cfg(feature = "sqlx")]
 pub use db::{DB, DBPool};
 
-#[cfg(feature = "nats")]
+#[cfg(feature = "async-nats")]
 mod nc;
-#[cfg(feature = "nats")]
-pub use nc::NC;
+#[cfg(feature = "async-nats")]
+pub use nc::{NC, async_nats};
 
 pub mod format;
 pub mod logger;
+
+pub use tokio_stream;

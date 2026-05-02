@@ -10,8 +10,8 @@ mod missions;
 pub async fn start() {
     let nats = bootstrap::NC::get().await;
 
-    let sub = nats
-        .queue_subscribe("synixe.publish.>", "synixe-bot")
+    let mut sub = nats
+        .queue_subscribe("synixe.publish.>", String::from("synixe-bot"))
         .await
         .expect("Failed to subscribe to synixe.publish.*");
     while let Some(msg) = sub.next().await {
@@ -30,8 +30,8 @@ pub async fn start() {
 impl Listener for Publish {
     async fn listen(
         &self,
-        _msg: nats::asynk::Message,
-        nats: std::sync::Arc<nats::asynk::Connection>,
+        _msg: async_nats::message::Message,
+        nats: async_nats::Client,
     ) -> Result<(), anyhow::Error> {
         match &self {
             Self::Tick { time } => {

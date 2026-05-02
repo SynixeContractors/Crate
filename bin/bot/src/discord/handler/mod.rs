@@ -15,7 +15,9 @@ use synixe_proc::{events_request_2, events_request_5};
 use uuid::Uuid;
 
 use crate::{
-    audit, bot::Bot, discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY}
+    audit,
+    bot::Bot,
+    discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY},
 };
 
 use super::{
@@ -343,8 +345,7 @@ impl EventHandler for Handler {
             }
             audit(format!(
                 "DM from <@{}>: >>> {}",
-                message.author.id,
-                message.content
+                message.author.id, message.content
             ));
             return;
         }

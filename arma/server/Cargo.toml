@@ -11,7 +11,7 @@ name = "crate_server"
 crate-type = ["cdylib"]
 
 [dependencies]
-bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["async-nats"] }
 synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-model = { path = "../../lib/model", features = ["gear", "arma-rs"] }
@@ -21,12 +21,12 @@ anyhow = { workspace = true }
 arma-rs = { workspace = true }
 async-trait = { workspace = true }
 log = "0.4.29"
-nats = { workspace = true }
+async-nats =  { workspace = true }
 serde_json = { workspace = true }
 serenity = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 uuid = { workspace = true }
 
 [dev-dependencies]
-nats = { workspace = true }
+async-nats =  { workspace = true }
 rand = "0.9.2"

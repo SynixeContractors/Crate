@@ -12,7 +12,7 @@ pub fn request(item: TokenStream, timeout: u64) -> TokenStream {
     let nats = event.nats;
     let body = event.body;
     TokenStream::from(quote! {
-        async {
+        Box::pin(#[allow(clippy::use_self)] async {
             use synixe_events::Evokable;
             let body = #path::Request::#body;
             let path = body.self_path();
@@ -20,10 +20,12 @@ pub fn request(item: TokenStream, timeout: u64) -> TokenStream {
             let mut trace_body = synixe_events::Wrapper::new(body);
             #[allow(deprecated)]
             {
-                let response = #nats.request_timeout(
+                let request = bootstrap::async_nats::Request::new()
+                    .timeout(Some(std::time::Duration::from_secs(#timeout)))
+                    .payload(synixe_events::serde_json::to_vec(&trace_body).unwrap().into());
+                let response = #nats.send_request(
                     path,
-                    synixe_events::serde_json::to_vec(&trace_body).unwrap(),
-                    std::time::Duration::from_secs(#timeout),
+                    request,
                 ).await;
                 match response {
                     Ok(response) => {
@@ -35,7 +37,7 @@ pub fn request(item: TokenStream, timeout: u64) -> TokenStream {
                     }
                 }
             }
-        }
+        })
     })
 }
 

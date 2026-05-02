@@ -123,11 +123,7 @@ pub async fn shop_purchase_personal_cost(
     Ok(())
 }
 
-pub async fn publish_balance(
-    nats: std::sync::Arc<nats::asynk::Connection>,
-    member: UserId,
-    reason: String,
-) {
+pub async fn publish_balance(nats: async_nats::Client, member: UserId, reason: String) {
     let db = bootstrap::DB::get().await;
     let mut tx = db
         .begin()

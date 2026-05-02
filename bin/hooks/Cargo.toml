@@ -7,7 +7,7 @@ edition = "2024"
 workspace = true
 
 [dependencies]
-bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["async-nats"] }
 synixe-events = { path = "../../lib/events" }
 synixe-proc = { path = "../../lib/proc" }
 

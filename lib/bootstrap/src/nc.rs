@@ -1,9 +1,7 @@
-use std::sync::Arc;
-
-use nats::asynk::Connection;
+use async_nats::Client;
 use tokio::sync::OnceCell;
 
-type NatsConn = Arc<Connection>;
+pub use async_nats;
 
 pub struct NC();
 
@@ -13,16 +11,14 @@ impl NC {
     /// # Panics
     ///
     /// Panics if the NATS connection can not be initialized.
-    pub async fn get() -> NatsConn {
-        static NATS: OnceCell<NatsConn> = OnceCell::const_new();
+    pub async fn get() -> Client {
+        static NATS: OnceCell<Client> = OnceCell::const_new();
         NATS.get_or_init(|| async {
-            Arc::new(
-                nats::asynk::connect(
-                    std::env::var("NATS_URL").expect("Expected the NATS_URL in the environment"),
-                )
-                .await
-                .expect("Failed to connect to NATS"),
+            async_nats::connect(
+                std::env::var("NATS_URL").expect("Expected the NATS_URL in the environment"),
             )
+            .await
+            .expect("Failed to connect to NATS")
         })
         .await
         .clone()

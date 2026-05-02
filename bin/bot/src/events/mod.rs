@@ -1,3 +1,4 @@
+use bootstrap::tokio_stream::StreamExt;
 use synixe_events::{Evokable, discord};
 
 use crate::ArcCacheAndHttp;
@@ -17,9 +18,9 @@ pub async fn start(http: ArcCacheAndHttp) {
 }
 
 async fn write(http: ArcCacheAndHttp) {
-    let sub = bootstrap::NC::get()
+    let mut sub = bootstrap::NC::get()
         .await
-        .queue_subscribe(discord::write::Request::path(), "synixe-bot")
+        .queue_subscribe(discord::write::Request::path(), String::from("synixe-bot"))
         .await
         .expect("Failed to subscribe to write queue");
     while let Some(msg) = sub.next().await {
@@ -28,9 +29,9 @@ async fn write(http: ArcCacheAndHttp) {
 }
 
 async fn info(http: ArcCacheAndHttp) {
-    let sub = bootstrap::NC::get()
+    let mut sub = bootstrap::NC::get()
         .await
-        .queue_subscribe(discord::info::Request::path(), "synixe-bot")
+        .queue_subscribe(discord::info::Request::path(), String::from("synixe-bot"))
         .await
         .expect("Failed to subscribe to info queue");
     while let Some(msg) = sub.next().await {
@@ -39,11 +40,14 @@ async fn info(http: ArcCacheAndHttp) {
 }
 
 async fn executions(http: ArcCacheAndHttp) {
-    let sub = bootstrap::NC::get()
+    let mut sub = bootstrap::NC::get()
         .await
-        .queue_subscribe(discord::executions::Request::path(), "synixe-bot")
+        .queue_subscribe(
+            discord::executions::Request::path(),
+            String::from("synixe-bot"),
+        )
         .await
-        .expect("Failed to subscribe to info queue");
+        .expect("Failed to subscribe to executions queue");
     while let Some(msg) = sub.next().await {
         executions::handle(msg, http.clone()).await;
     }

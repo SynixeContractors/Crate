@@ -1,4 +1,4 @@
-use nats::asynk::Message;
+use async_nats::message::Message;
 use synixe_events::{discord::executions, respond};
 
 use crate::ArcCacheAndHttp;

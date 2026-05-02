@@ -1,4 +1,4 @@
-use nats::asynk::Message;
+use async_nats::message::Message;
 use serenity::{all::MessageId, builder::CreateMessage, model::prelude::ChannelId};
 use synixe_events::{
     discord::write::{self, DiscordMessage},
@@ -83,7 +83,7 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             }
         }
         write::Request::EnsureRoles { member, roles } => {
-            let Ok(()) = respond!(msg, write::Response::EnsureRoles(Ok(()))).await else {
+            let Ok(_) = respond!(msg, write::Response::EnsureRoles(Ok(()))).await else {
                 error!("Failed to respond to NATS");
                 return;
             };

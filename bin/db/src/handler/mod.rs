@@ -18,8 +18,8 @@ include!("../../../../lib/common/handler.rs");
 pub async fn start() {
     let nats = bootstrap::NC::get().await;
 
-    let sub = nats
-        .queue_subscribe("synixe.db.>", "synixe-db")
+    let mut sub = nats
+        .queue_subscribe("synixe.db.>", String::from("synixe-db"))
         .await
         .expect("should be able to subscribe to db events");
     while let Some(msg) = sub.next().await {

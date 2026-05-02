@@ -7,7 +7,7 @@ edition = "2024"
 workspace = true
 
 [dependencies]
-bootstrap = { path = "../../lib/bootstrap", features = ["nats"] }
+bootstrap = { path = "../../lib/bootstrap", features = ["async-nats"] }
 synixe-events = { path = "../../lib/events" }
 synixe-meta = { path = "../../lib/meta" }
 synixe-model = { path = "../../lib/model", features = ["missions"] }
@@ -15,8 +15,8 @@ synixe-proc = { path = "../../lib/proc" }
 
 anyhow = { workspace = true }
 async-trait = { workspace = true }
-bollard = "0.19.4"
-nats = { workspace = true }
+bollard = "0.20.2"
+async-nats =  { workspace = true }
 regex = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }

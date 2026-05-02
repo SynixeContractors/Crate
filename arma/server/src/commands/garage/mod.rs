@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use arma_rs::{Context, ContextState, Group, Value};
-use nats::asynk::Message;
+use async_nats::message::Message;
 use serenity::model::prelude::UserId;
 use synixe_events::{
     garage::{arma::Response, db},
