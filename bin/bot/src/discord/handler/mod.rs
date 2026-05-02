@@ -15,8 +15,7 @@ use synixe_proc::{events_request_2, events_request_5};
 use uuid::Uuid;
 
 use crate::{
-    bot::Bot,
-    discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY},
+    audit, bot::Bot, discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY}
 };
 
 use super::{
@@ -338,6 +337,19 @@ impl EventHandler for Handler {
 
     #[allow(clippy::too_many_lines)]
     async fn message(&self, ctx: Context, message: Message) {
+        if message.guild_id.is_none() {
+            audit(format!(
+                "DM from <@{}>:\n >>> {}",
+                message.author.id,
+                message.content
+            ));
+            return;
+        }
+
+        if message.guild_id != Some(synixe_meta::discord::GUILD) {
+            return;
+        }
+
         if message.channel_id == LEADERSHIP {
             missions::validate_aar(&ctx, message).await;
             return;
