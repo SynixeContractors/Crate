@@ -167,7 +167,7 @@ impl Listener for Publish {
                             number,
                             title.to_string(),
                             format!(
-                                "Review submitted on pull request #{number}: [{state}](<{}>){by}",
+                                "Review submitted on pull request #{number}{by}: [{state}](<{}>)",
                                 review
                                     .get("html_url")
                                     .and_then(|v| v.as_str())
