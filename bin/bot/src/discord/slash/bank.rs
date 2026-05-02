@@ -160,6 +160,10 @@ async fn transfer(
         return interaction.reply("Invalid member").await;
     };
 
+    if user == &BRODSKY {
+        return interaction.reply("I don't accept bribes").await;
+    }
+
     super::requires_roles(
         command.user.id,
         &[ACTIVE],
