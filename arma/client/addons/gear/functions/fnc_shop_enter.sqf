@@ -12,7 +12,7 @@ GVAR(shop_blurHandle) ppEffectCommit 0.25;
     ppEffectDestroy GVAR(shop_blurHandle);
 }, [], 1] call CBA_fnc_waitAndExecute;
 
-private _items = [keys GVAR(shop_items)] call FUNC(shop_items_allowed);
+private _items = [GVAR(shop_items)] call FUNC(shop_items_allowed);
 _items append (keys GVAR(shop_locker));
 _items = _items - ["ItemRadioAcreFlagged"];
 

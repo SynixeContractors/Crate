@@ -55,3 +55,8 @@ private _action = [QGVAR(box), "Shop", "", {
 [QGVAR(suppressors_enable), {
     systemChat "Suppressors enabled";
 }] call CBA_fnc_addEventHandler;
+
+["shoprefresh", {
+    [QGVAR(shop_items)] call CBA_fnc_serverEvent;
+    systemChat "Refresh requested on the server";
+}, "admin"] call CBA_fnc_registerChatCommand;

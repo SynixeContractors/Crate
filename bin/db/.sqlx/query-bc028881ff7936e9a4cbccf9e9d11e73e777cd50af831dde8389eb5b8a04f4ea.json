@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT i.class, i.pretty, i.roles, cost_base.*, cost_current.* FROM gear_items i, LATERAL gear_item_base_cost(i.class) cost_base, LATERAL gear_item_current_cost(i.class) cost_current WHERE i.enabled = TRUE LIMIT $1 OFFSET $2",
+  "query": "SELECT i.class, i.pretty, i.listed, i.roles, cost_base.*, cost_current.* FROM gear_items i, LATERAL gear_item_base_cost(i.class) cost_base, LATERAL gear_item_current_cost(i.class) cost_current WHERE i.enabled = TRUE LIMIT $1 OFFSET $2",
   "describe": {
     "columns": [
       {
@@ -15,31 +15,36 @@
       },
       {
         "ordinal": 2,
+        "name": "listed",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 3,
         "name": "roles",
         "type_info": "VarcharArray"
       },
       {
-        "ordinal": 3,
+        "ordinal": 4,
         "name": "personal",
         "type_info": "Int4"
       },
       {
-        "ordinal": 4,
+        "ordinal": 5,
         "name": "company",
         "type_info": "Int4"
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "personal_current",
         "type_info": "Int4"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "company_current",
         "type_info": "Int4"
       },
       {
-        "ordinal": 7,
+        "ordinal": 8,
         "name": "end_date",
         "type_info": "Timestamptz"
       }
@@ -53,6 +58,7 @@
     "nullable": [
       false,
       true,
+      false,
       true,
       null,
       null,
@@ -61,5 +67,5 @@
       null
     ]
   },
-  "hash": "a01e990376ea500301506d3e0d972cc146f432cb117cea8e731967b9f9f3827f"
+  "hash": "bc028881ff7936e9a4cbccf9e9d11e73e777cd50af831dde8389eb5b8a04f4ea"
 }

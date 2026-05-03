@@ -51,7 +51,7 @@ fn command_items() {
         if let Err(e) = context.callback_null("crate:gear:shop", "items:clear") {
             error!("error sending shop:items:clear: {e:?}");
         }
-        for (class, (pretty, roles, price)) in items {
+        for (class, (pretty, roles, price, listed)) in items {
             if let Err(e) = context.callback_data(
                 "crate:gear:shop",
                 "items:set",
@@ -60,6 +60,7 @@ fn command_items() {
                     arma_rs::Value::Array(vec![
                         roles.unwrap_or_default().to_arma(),
                         price.to_arma(),
+                        listed.to_arma(),
                     ]),
                     pretty.to_arma(),
                 ],

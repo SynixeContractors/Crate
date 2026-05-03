@@ -7,14 +7,14 @@ pub async fn items(
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<
     (
-        HashMap<String, (Option<String>, Option<Vec<String>>, Price)>,
+        HashMap<String, (Option<String>, Option<Vec<String>>, Price, bool)>,
         bool,
     ),
     anyhow::Error,
 > {
     const PER_PAGE: i64 = 3000;
     let query = sqlx::query!(
-        "SELECT i.class, i.pretty, i.roles, cost_base.*, cost_current.* FROM gear_items i, LATERAL gear_item_base_cost(i.class) cost_base, LATERAL gear_item_current_cost(i.class) cost_current WHERE i.enabled = TRUE LIMIT $1 OFFSET $2",
+        "SELECT i.class, i.pretty, i.listed, i.roles, cost_base.*, cost_current.* FROM gear_items i, LATERAL gear_item_base_cost(i.class) cost_base, LATERAL gear_item_current_cost(i.class) cost_current WHERE i.enabled = TRUE LIMIT $1 OFFSET $2",
         PER_PAGE,
         page * PER_PAGE,
     );
@@ -38,6 +38,7 @@ pub async fn items(
                             row.company_current,
                             row.end_date,
                         ),
+                        row.listed,
                     ),
                 )
             })

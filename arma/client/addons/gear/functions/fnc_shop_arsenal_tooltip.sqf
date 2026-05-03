@@ -12,24 +12,28 @@ private _company = _price select 1;
 private _personal_base = _price select 2;
 private _company_base = _price select 3;
 
-private _cost = format ["Personal: %1", _personal];
+private _cost = "";
 
-if (_personal > _personal_base) then {
-    _color = COLOR_INCREASE;
-    _cost = format ["%1\nRegular: %2", _cost, _personal_base];
-};
-if (_personal < _personal_base) then {
-    _color = COLOR_SALE;
-    _cost = format ["%1\nRegular: %2", _cost, _personal_base];
-};
+if (_cost != -1) then {
+    _cost = format ["Personal: %1", _personal];
 
-if (_company != 0) then {
-    _cost = format ["%1\nCompany: %2", _cost, _company];
-    if (_company > _company_base) then {
-        _cost = format ["%1\nRegular: %2", _cost, _company_base];
+    if (_personal > _personal_base) then {
+        _color = COLOR_INCREASE;
+        _cost = format ["%1\nRegular: %2", _cost, _personal_base];
     };
-    if (_company < _company_base) then {
-        _cost = format ["%1\nRegular: %2", _cost, _company_base];
+    if (_personal < _personal_base) then {
+        _color = COLOR_SALE;
+        _cost = format ["%1\nRegular: %2", _cost, _personal_base];
+    };
+
+    if (_company != 0) then {
+        _cost = format ["%1\nCompany: %2", _cost, _company];
+        if (_company > _company_base) then {
+            _cost = format ["%1\nRegular: %2", _cost, _company_base];
+        };
+        if (_company < _company_base) then {
+            _cost = format ["%1\nRegular: %2", _cost, _company_base];
+        };
     };
 };
 
