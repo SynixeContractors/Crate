@@ -35,6 +35,9 @@ if (_cost != -1) then {
             _cost = format ["%1\nRegular: %2", _cost, _company_base];
         };
     };
+} else {
+    _color = COLOR_CONTRABAND;
+    _cost = "Contraband";
 };
 
 private _equipped = _items getOrDefault [_raw_class, 0];
