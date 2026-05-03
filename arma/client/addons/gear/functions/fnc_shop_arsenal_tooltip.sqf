@@ -14,7 +14,7 @@ private _company_base = _price select 3;
 
 private _cost = "";
 
-if (_cost != -1) then {
+if (_personal != -1) then {
     _cost = format ["Personal: %1", _personal];
 
     if (_personal > _personal_base) then {
