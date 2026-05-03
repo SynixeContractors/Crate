@@ -26,4 +26,4 @@
 #define COLOR_OWNED_SALE [0, 1, 1, 1]
 #define COLOR_OWNED_INCREASE [1, 0.5, 0, 1]
 
-#define COLOR_CONTRABAND [0.75, 0, 1, 1]
+#define COLOR_CONTRABAND [0.75, 0.5, 1, 1]
