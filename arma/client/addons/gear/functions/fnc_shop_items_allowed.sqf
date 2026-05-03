@@ -1,7 +1,7 @@
 #include "..\script_component.hpp"
 
 params [
-    ["_items"]
+    "_items"
 ];
 
 if (typeName _items != "HASHMAP") exitWith {
