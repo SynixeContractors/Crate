@@ -3,7 +3,6 @@ use std::net::SocketAddr;
 use axum::{Router, response::IntoResponse, routing::get};
 use chrono::{DateTime, Duration};
 use icalendar::{Calendar, Component, Event, EventLike};
-use synixe_events::missions::db::Response;
 use synixe_proc::events_request_5;
 use tokio::net::TcpListener;
 
@@ -27,15 +26,28 @@ async fn main() {
 }
 
 async fn calendar() -> impl IntoResponse {
-    let Ok(Ok((Response::UpcomingSchedule(Ok(schedule)), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::missions::db,
-        UpcomingSchedule {}
-    )
-    .await
+    let Ok(Ok((synixe_events::missions::db::Response::UpcomingSchedule(Ok(schedule)), _))) =
+        events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::missions::db,
+            UpcomingSchedule {}
+        )
+        .await
     else {
         return "Error".to_string();
     };
+
+    let Ok(Ok((synixe_events::discord::info::Response::Events(Ok(events)), _))) =
+        events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::discord::info,
+            Events {}
+        )
+        .await
+    else {
+        return "Error".to_string();
+    };
+
     let mut calendar = Calendar::new();
     for scheduled in schedule {
         let start =
@@ -52,6 +64,17 @@ async fn calendar() -> impl IntoResponse {
                 }))
                 .starts(start)
                 .ends(start + chrono::Duration::try_minutes(150i64).expect("duration valid"))
+                .done(),
+        );
+    }
+    for event in events {
+        let start = DateTime::from_timestamp(event.start, 0).expect("valid timestamp");
+        calendar.push(
+            Event::new()
+                .summary(&event.name)
+                .description(&event.description)
+                .starts(start)
+                .ends(start + chrono::Duration::try_minutes(60i64).expect("duration valid"))
                 .done(),
         );
     }

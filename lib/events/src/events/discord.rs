@@ -142,6 +142,14 @@ pub mod info {
         pub user_name: String,
     }
 
+    #[derive(Debug, Serialize, Deserialize)]
+    /// A Discord event
+    pub struct DiscordEvent {
+        pub name: String,
+        pub description: String,
+        pub start: i64,
+    }
+
     events_requests!(discord.info {
         /// Get a user's name information
         struct Username {
@@ -165,6 +173,9 @@ pub mod info {
         } => (Result<Vec<Member>, String>)
         // Get all the roles in the guild
         struct AllRoles {} => (Result<Vec<(RoleId, String)>, String>)
+
+        /// Get all events
+        struct Events {} => (Result<Vec<DiscordEvent>, String>)
     });
 }
 

@@ -7,10 +7,7 @@ private _class = [_raw_class] call FUNC(shop_item_listing);
 private _color = COLOR_WHITE;
 
 private _price = [_class, false] call FUNC(shop_item_price);
-private _personal = _price select 0;
-private _company = _price select 1;
-private _personal_base = _price select 2;
-private _company_base = _price select 3;
+_price params ["_personal", "_company", "_personal_base", "_company_base"];
 
 private _cost = "";
 

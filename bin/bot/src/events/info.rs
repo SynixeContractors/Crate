@@ -1,5 +1,6 @@
 use async_nats::message::Message;
 use synixe_events::{discord::info, respond};
+use synixe_meta::discord::GUILD;
 
 use crate::ArcCacheAndHttp;
 
@@ -138,5 +139,25 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
                 }
             }
         }
+        info::Request::Events {} => match GUILD.scheduled_events(client.as_ref(), false).await {
+            Ok(events) => {
+                let events = events
+                    .into_iter()
+                    .map(|e| info::DiscordEvent {
+                        name: e.name,
+                        description: e.description.unwrap_or_default(),
+                        start: e.start_time.unix_timestamp(),
+                    })
+                    .collect();
+                if let Err(e) = respond!(msg, info::Response::Events(Ok(events))).await {
+                    error!("Failed to respond to NATS: {}", e);
+                }
+            }
+            Err(e) => {
+                if let Err(e) = respond!(msg, info::Response::Events(Err(e.to_string()))).await {
+                    error!("Failed to respond to NATS: {}", e);
+                }
+            }
+        },
     }
 }
