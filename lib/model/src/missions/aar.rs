@@ -643,7 +643,7 @@ impl PaymentType {
             Self::Security => 59800,
             Self::SmashGrab => 44850,
         }) as f32
-            * 2.5) as i32
+            * 3.5) as i32
     }
 }
 
