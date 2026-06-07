@@ -1,6 +1,7 @@
 //! Event Definitions
 
 pub mod campaigns;
+pub mod casino;
 pub mod certifications;
 pub mod containers;
 pub mod discord;

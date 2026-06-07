@@ -1,0 +1,114 @@
+use serenity::all::{
+    CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType, Context,
+    CreateCommand, CreateCommandOption,
+};
+use synixe_events::casino::db::Response;
+use synixe_meta::discord::role::MEMBER;
+use synixe_proc::events_request_5;
+
+use crate::{
+    discord::{interaction::Interaction, slash::ShouldAsk},
+    get_option,
+};
+
+pub fn register() -> CreateCommand {
+    CreateCommand::new("casino")
+        .description("Gamble your money away")
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "coinflip",
+                "Flip a coin to double your money or lose it all",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Integer,
+                    "bid",
+                    "The amount of money to bet",
+                )
+                .min_int_value(1)
+                .max_int_value(50)
+                .required(true),
+            ),
+        )
+}
+
+pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
+    let Some(subcommand) = command.data.options.first() else {
+        warn!("No subcommand for casino provided");
+        return Ok(());
+    };
+    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value {
+        match subcommand.name.as_str() {
+            "coinflip" => coinflip(ctx, command, options).await?,
+            _ => unreachable!(),
+        }
+    }
+    Ok(())
+}
+
+async fn coinflip(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let _ = options;
+    let mut interaction = Interaction::new(ctx, command.clone(), &[]).ephemeral(false);
+
+    super::requires_roles(
+        command.user.id,
+        &[MEMBER],
+        &command
+            .member
+            .as_ref()
+            .expect("member should always exist on guild commands")
+            .roles,
+        ShouldAsk::Deny,
+        &mut interaction,
+    )
+    .await?;
+
+    let Some(amount) = get_option!(options, "amount", Integer) else {
+        return interaction.reply("Invalid amount").await;
+    };
+    // Do the buy in
+    let Ok(Ok((Response::BuyIn(Ok(())), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::casino::db,
+        BuyIn {
+            member: command.user.id,
+            #[allow(clippy::cast_possible_truncation)]
+            amount: *amount as i32,
+            game: "coinflip".to_string(),
+        }
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fine").await;
+    };
+    // Flip the coin
+    let win = rand::random();
+    if win {
+        let amount = *amount as i32 * 2;
+        // Cash out the winnings
+        let Ok(Ok((Response::CashOut(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::casino::db,
+            CashOut {
+                member: command.user.id,
+                #[allow(clippy::cast_possible_truncation)]
+                amount,
+                game: "coinflip".to_string(),
+            }
+        )
+        .await
+        else {
+            return interaction.reply("Failed to cash out winnings").await;
+        };
+        interaction.reply(format!("You won ${amount}!")).await?;
+    } else {
+        interaction.reply(format!("You lost ${amount}!")).await?;
+    }
+
+    Ok(())
+}

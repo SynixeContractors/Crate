@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        INSERT INTO\n                            gear_bank_deposits\n                            (member, amount, reason, id)\n                        VALUES\n                            ($1, $2, $3, '00000000-0000-0000-0000-000000000010')\n                        ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Int4",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8775dd4f0dc34366f957d6c57034ee72a5d4982b58cdc3e11e05628f021b13fb"
+}

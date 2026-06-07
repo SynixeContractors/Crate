@@ -25,6 +25,7 @@ pub mod gear;
 pub mod missions;
 pub mod reputation;
 // pub mod reset;
+pub mod casino;
 pub mod schedule;
 pub mod surveys;
 

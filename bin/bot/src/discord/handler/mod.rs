@@ -43,6 +43,7 @@ impl EventHandler for Handler {
                     menu::missions::aar_ids(),
                     menu::missions::aar_pay(),
                     slash::bank::register(),
+                    slash::casino::register(),
                     slash::certifications::register(),
                     slash::docker::register(),
                     slash::garage::register(),
@@ -67,6 +68,7 @@ impl EventHandler for Handler {
                 debug!("matching command: {:?}", command.data.name.as_str());
                 match command.data.name.as_str() {
                     "bank" => slash::bank::run(&ctx, &command).await,
+                    "casino" => slash::casino::run(&ctx, &command).await,
                     "certifications" => slash::certifications::run(&ctx, &command).await,
                     "docker" => slash::docker::run(&ctx, &command).await,
                     "garage" => slash::garage::run(&ctx, &command).await,

@@ -1,4 +1,5 @@
 mod campaigns;
+mod casino;
 mod certifications;
 mod discord;
 mod garage;

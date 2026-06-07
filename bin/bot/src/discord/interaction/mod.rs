@@ -54,6 +54,11 @@ impl<'a> Interaction<'a> {
         }
     }
 
+    pub fn ephemeral(mut self, ephemeral: bool) -> Self {
+        self.ephemeral = ephemeral;
+        self
+    }
+
     async fn internal_followup(
         &mut self,
         content: CreateInteractionResponseFollowup,
