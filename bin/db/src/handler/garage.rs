@@ -334,7 +334,7 @@ impl Handler for Request {
                 map,
             } => {
                 let price_raw = prices_for_map(map) * (*amount as f64) * fuel_type.multiplier();
-                let price = price_raw.ceil() as i32;
+                let price = -(price_raw.ceil() as i32);
                 if let Err(e) = sqlx::query!(
                     "INSERT INTO gear_bank_deposits (member, amount, reason, id) VALUES (0, $1, $2, '00000000-0000-0000-0000-000000000001')",
                     price,
@@ -377,14 +377,14 @@ impl Handler for Request {
             } => {
                 if let Err(e) = sqlx::query!(
                     "INSERT INTO gear_bank_deposits (member, amount, reason, id) VALUES (0, $1, $2, '00000000-0000-0000-0000-000000000002')",
-                    cost,
+                    -cost,
                     format!(
                         "Transport: {cost} by {member} on {plate}",
                     ),
                 )
                 .execute(&*db)
                 .await {
-                    return Err(anyhow::Error::new(e).context("Failed to record fuel purchase"));
+                    return Err(anyhow::Error::new(e).context("Failed to record transport purchase"));
                 }
                 respond!(msg, Response::Transport(Ok(*cost))).await?;
                 let _ = game_audit(format!(
