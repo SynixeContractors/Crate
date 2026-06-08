@@ -463,8 +463,8 @@ async fn candlestick(
     let mut daily_balances: Vec<(String, i32, i32, i32, i32)> = Vec::new();
     let mut current_day = String::new();
     let mut open = 0;
-    let mut high = 0;
-    let mut low = 0;
+    let mut high = i32::MIN;
+    let mut low = i32::MAX;
     let format =
         format_description::parse("[year]-[month]-[day]").expect("Failed to parse date format");
     for Transaction { amount, created } in history {
@@ -478,8 +478,8 @@ async fn candlestick(
             }
             current_day = day;
             open = current_balance;
-            high = current_balance;
-            low = current_balance;
+            high = i32::MIN;
+            low = i32::MAX;
         }
         current_balance += amount;
         if current_balance > high {
