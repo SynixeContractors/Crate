@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use serenity::all::{
     CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType, Context,
     CreateCommand, CreateCommandOption,
