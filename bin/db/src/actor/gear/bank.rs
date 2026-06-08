@@ -181,7 +181,7 @@ FROM (
 
     SELECT
         member,
-        -personal AS "amount!",
+        (-personal * quantity) AS "amount!",
         created as "created!"
     FROM gear_bank_purchases
 ) ledger
