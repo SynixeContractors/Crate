@@ -510,7 +510,11 @@ async fn lucky3(
         else {
             return interaction.reply("Failed to cash out winnings").await;
         };
-        let _ = write!(reply, "You got {threes} threes! You won ${winnings}!");
+        if threes == 1 {
+            let _ = write!(reply, "You got 1 three! You won ${winnings}!");
+        } else {
+            let _ = write!(reply, "You got {threes} threes! You won ${winnings}!");
+        }
     } else {
         reply.push_str("You got no threes! You lost your bet!");
     }
