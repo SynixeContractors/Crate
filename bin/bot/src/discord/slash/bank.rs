@@ -516,6 +516,14 @@ async fn candlestick(
         THEME_GRAFANA,
     );
 
+    // Swap Asian colors (red for up, green for down) to Western colors (green for up, red for down)
+    let up_color = chart.candlestick_down_color;
+    let up_border_color = chart.candlestick_down_border_color;
+    chart.candlestick_down_color = chart.candlestick_up_color;
+    chart.candlestick_down_border_color = chart.candlestick_up_border_color;
+    chart.candlestick_up_color = up_color;
+    chart.candlestick_up_border_color = up_border_color;
+
     let user_data = GUILD
         .member(&ctx, user)
         .await
