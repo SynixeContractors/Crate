@@ -30,6 +30,7 @@ pub async fn start() {
                 msg,
                 nats,
                 synixe_events::campaigns::db::Request,
+                synixe_events::casino::db::Request,
                 synixe_events::certifications::db::Request,
                 synixe_events::discord::db::Request,
                 synixe_events::garage::db::Request,
