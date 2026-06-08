@@ -458,6 +458,9 @@ async fn candlestick(
             .await;
     }
 
+    // Reverse history to get oldest to newest (it comes sorted DESC from the DB)
+    let history: Vec<_> = history.into_iter().rev().collect();
+
     // group history by day, then find the open, high, low, and close for each day
     let mut current_balance = 0;
     let mut daily_balances: Vec<(String, i32, i32, i32, i32)> = Vec::new();
@@ -478,8 +481,8 @@ async fn candlestick(
             }
             current_day = day;
             open = current_balance;
-            high = i32::MIN;
-            low = i32::MAX;
+            high = current_balance;
+            low = current_balance;
         }
         current_balance += amount;
         if current_balance > high {
