@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use charts_rs::{CandlestickChart, THEME_GRAFANA, svg_to_png};
+use charts_rs::{CandlestickChart, PieChart, THEME_GRAFANA, svg_to_png};
 use porter::{
     PassBuilder, PassType, PorterError,
     google::{
@@ -416,19 +416,21 @@ async fn spent(
             .await;
     }
 
-    let mut reply = format!("Spending for <@{user}>:\n");
-    // sort by amount spent, highest to lowest
-    let mut spending: Vec<(String, i32)> = spending.into_iter().collect();
-    spending.sort_by_key(|b| std::cmp::Reverse(b.1));
-    for (category, amount) in spending {
-        let _ = writeln!(
-            reply,
-            "- {}: {}",
-            category,
-            bootstrap::format::money(amount, false)
-        );
-    }
-    interaction.reply(reply).await
+    let reply = format!("Spending for <@{user}>:\n");
+    let mut chart = PieChart::new_with_theme(
+        spending
+            .iter()
+            .map(|(category, cost)| (category.as_str(), vec![*cost as f32]).into())
+            .collect(),
+        THEME_GRAFANA,
+    );
+    chart.legend_show = Some(false);
+
+    let image = svg_to_png(&chart.svg().expect("Failed to generate SVG"))
+        .expect("Failed to convert SVG to PNG");
+    interaction
+        .reply_with_attachment(reply, CreateAttachment::bytes(image, "chart.png"))
+        .await
 }
 
 async fn candlestick(
