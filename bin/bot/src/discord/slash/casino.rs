@@ -35,7 +35,7 @@ pub fn register() -> CreateCommand {
             CreateCommandOption::new(
                 CommandOptionType::SubCommand,
                 "diceroll",
-                "Roll a die, win if you roll 4 or higher",
+                "Pick a number 1-6 on a die roll",
             )
             .add_sub_option(
                 CreateCommandOption::new(
@@ -45,6 +45,16 @@ pub fn register() -> CreateCommand {
                 )
                 .min_int_value(1)
                 .max_int_value(1000)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::Integer,
+                    "number",
+                    "Your guess (1-6)",
+                )
+                .min_int_value(1)
+                .max_int_value(6)
                 .required(true),
             ),
         )
@@ -229,6 +239,9 @@ async fn diceroll(
     let Some(amount) = get_option!(options, "bid", Integer) else {
         return interaction.reply("Invalid bid").await;
     };
+    let Some(guess) = get_option!(options, "number", Integer) else {
+        return interaction.reply("Invalid number").await;
+    };
     // Do the buy in
     let Ok(Ok((Response::BuyIn(Ok(())), _))) = events_request_5!(
         bootstrap::NC::get().await,
@@ -246,7 +259,7 @@ async fn diceroll(
     };
     // Roll the die (1-6)
     let roll = rand::random::<u32>() % 6 + 1;
-    if roll >= 4 {
+    if roll == *guess as u32 {
         #[allow(clippy::cast_possible_truncation)]
         let amount = (*amount * 6) as i32;
         // Cash out the winnings
@@ -265,11 +278,11 @@ async fn diceroll(
             return interaction.reply("Failed to cash out winnings").await;
         };
         interaction
-            .reply(format!("You rolled a {roll}! You won ${amount}!"))
+            .reply(format!("You rolled a {roll}! You guessed correctly! You won ${amount}!"))
             .await?;
     } else {
         interaction
-            .reply(format!("You rolled a {roll}! You lost ${amount}!"))
+            .reply(format!("You rolled a {roll}! You guessed {guess}. You lost ${amount}!"))
             .await?;
     }
 
