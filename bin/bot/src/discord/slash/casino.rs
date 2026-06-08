@@ -516,7 +516,7 @@ async fn lucky3(
             let _ = write!(reply, "You got {threes} threes! You won ${winnings}!");
         }
     } else {
-        reply.push_str("You got no threes! You lost your bet!");
+        let _ = write!(reply, "You got no threes! You lost ${amount}!");
     }
     interaction.reply(reply).await
 }
