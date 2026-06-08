@@ -417,6 +417,12 @@ async fn spent(
     }
 
     let reply = format!("Spending for <@{user}>:\n");
+    // sort spending by cost descending
+    let mut spending = spending
+        .into_iter()
+        .filter(|(_, cost)| *cost != 0)
+        .collect::<Vec<_>>();
+    spending.sort_by_key(|b| std::cmp::Reverse(b.1));
     let mut chart = PieChart::new_with_theme(
         spending
             .iter()
