@@ -100,8 +100,8 @@ async fn coinflip(
     command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let Some(amount) = get_option!(options, "amount", Integer) else {
-        return interaction.reply("Invalid amount").await;
+    let Some(amount) = get_option!(options, "bid", Integer) else {
+        return interaction.reply("Invalid bid").await;
     };
     // Do the buy in
     let Ok(Ok((Response::BuyIn(Ok(())), _))) = events_request_5!(
