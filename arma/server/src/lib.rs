@@ -3,7 +3,6 @@
 use std::{collections::HashMap, sync::LazyLock};
 
 use arma_rs::{Context, Extension, arma};
-use synixe_events::discord::write::{DiscordContent, DiscordMessage};
 use synixe_proc::events_request_5;
 use tokio::sync::RwLock;
 use uuid::Uuid;

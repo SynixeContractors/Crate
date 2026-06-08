@@ -11,6 +11,8 @@ use crate::{
     get_option,
 };
 
+const MAX_BID: u64 = 500;
+
 pub fn register() -> CreateCommand {
     CreateCommand::new("casino")
         .description("Gamble your money away")
@@ -27,7 +29,7 @@ pub fn register() -> CreateCommand {
                     "The amount of money to bet",
                 )
                 .min_int_value(1)
-                .max_int_value(1000)
+                .max_int_value(MAX_BID)
                 .required(true),
             ),
         )
@@ -44,7 +46,7 @@ pub fn register() -> CreateCommand {
                     "The amount of money to bet",
                 )
                 .min_int_value(1)
-                .max_int_value(1000)
+                .max_int_value(MAX_BID)
                 .required(true),
             )
             .add_sub_option(
@@ -67,7 +69,7 @@ pub fn register() -> CreateCommand {
                     "The amount of money to bet",
                 )
                 .min_int_value(1)
-                .max_int_value(1000)
+                .max_int_value(MAX_BID)
                 .required(true),
             )
             .add_sub_option(
@@ -90,7 +92,7 @@ pub fn register() -> CreateCommand {
                     "The amount of money to bet",
                 )
                 .min_int_value(1)
-                .max_int_value(1000)
+                .max_int_value(MAX_BID)
                 .required(true),
             )
             .add_sub_option(
@@ -99,6 +101,23 @@ pub fn register() -> CreateCommand {
                     .max_int_value(10)
                     .required(true),
             ),
+        )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "lucky3",
+                "Roll 3 dice, if any of them is a 3 you win. One 3 = 1.5x, two 3 = 4x, three 3 = 30x",
+                )
+                .add_sub_option(
+                    CreateCommandOption::new(
+                        CommandOptionType::Integer,
+                        "bid",
+                        "The amount of money to bet",
+                    )
+                    .min_int_value(1)
+                    .max_int_value(MAX_BID)
+                    .required(true),
+                ),
         )
 }
 
@@ -133,6 +152,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
             "diceroll" => diceroll(ctx, &mut interaction, command, options).await?,
             "carddraw" => carddraw(ctx, &mut interaction, command, options).await?,
             "numberguess" => numberguess(ctx, &mut interaction, command, options).await?,
+            "lucky3" => lucky3(ctx, &mut interaction, command, options).await?,
             _ => unreachable!(),
         }
     }
@@ -163,6 +183,22 @@ pub async fn can_play(command: &CommandInteraction, interaction: &mut Interactio
         false
     } else {
         true
+    }
+}
+
+fn number_to_emoji(number: u32) -> &'static str {
+    match number {
+        1 => ":one:",
+        2 => ":two:",
+        3 => ":three:",
+        4 => ":four:",
+        5 => ":five:",
+        6 => ":six:",
+        7 => ":seven:",
+        8 => ":eight:",
+        9 => ":nine:",
+        10 => ":keycap_ten:",
+        _ => unreachable!(),
     }
 }
 
@@ -403,4 +439,67 @@ async fn numberguess(
     }
 
     Ok(())
+}
+
+async fn lucky3(
+    _ctx: &Context,
+    interaction: &mut Interaction<'_>,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let Some(amount) = get_option!(options, "bid", Integer) else {
+        return interaction.reply("Invalid bid").await;
+    };
+    // Do the buy in
+    let Ok(Ok((Response::BuyIn(Ok(())), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::casino::db,
+        BuyIn {
+            member: command.user.id,
+            #[allow(clippy::cast_possible_truncation)]
+            amount: *amount as i32,
+            game: "lucky3".to_string(),
+        }
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fine").await;
+    };
+    // Roll 3 dice
+    let rolls: Vec<u32> = (0..3).map(|_| (rand::random::<u32>() % 6) + 1).collect();
+    let mut reply = format!(
+        "You rolled: {} {} {}\n",
+        number_to_emoji(rolls[0]),
+        number_to_emoji(rolls[1]),
+        number_to_emoji(rolls[2])
+    );
+    let threes = rolls.iter().filter(|&&r| r == 3).count();
+    let winnings = match threes {
+        0 => 0,
+        1 => (*amount as f64 * 1.5) as i32,
+        2 => (*amount as f64 * 4.0) as i32,
+        3 => (*amount as f64 * 30.0) as i32,
+        _ => unreachable!(),
+    };
+    if winnings > 0 {
+        // Cash out the winnings
+        let Ok(Ok((Response::CashOut(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::casino::db,
+            CashOut {
+                member: command.user.id,
+                #[allow(clippy::cast_possible_truncation)]
+                amount: winnings,
+                game: "lucky3".to_string(),
+            }
+        )
+        .await
+        else {
+            return interaction.reply("Failed to cash out winnings").await;
+        };
+        reply.push_str(&format!("You got {threes} threes! You won ${winnings}!"));
+    } else {
+        reply.push_str("You got no threes! You lost your bet!");
+    }
+    interaction.reply(reply).await
 }
