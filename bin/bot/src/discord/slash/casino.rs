@@ -13,101 +13,74 @@ use crate::{
 
 const MAX_BID: u64 = 500;
 
+enum GameOption {
+    Integer {
+        name: &'static str,
+        description: &'static str,
+        min: u64,
+        max: u64,
+    },
+    String {
+        name: &'static str,
+        description: &'static str,
+        choices: &'static [(&'static str, &'static str)],
+    },
+}
+
+struct Game {
+    id: &'static str,
+    description: &'static str,
+    options: &'static [GameOption],
+}
+
+const GAMES: &[Game] = &[
+    Game {
+        id: "coinflip",
+        description: "Flip a coin. Payout is 2x your bet.",
+        options: &[],
+    },
+    Game {
+        id: "diceroll",
+        description: "Pick a number 1-6 on a die roll. Payout is 6x your bet.",
+        options: &[GameOption::Integer {
+            name: "number",
+            description: "Your guess (1-6)",
+            min: 1,
+            max: 6,
+        }],
+    },
+    Game {
+        id: "carddraw",
+        description: "Draw a card, pick red or black. Payout is 2x your bet.",
+        options: &[GameOption::String {
+            name: "color",
+            description: "Pick red or black",
+            choices: &[("red", "red"), ("black", "black")],
+        }],
+    },
+    Game {
+        id: "numberguess",
+        description: "Guess a number between 1-10. Payout is 10x your bet.",
+        options: &[GameOption::Integer {
+            name: "number",
+            description: "Your guess (1-10)",
+            min: 1,
+            max: 10,
+        }],
+    },
+    Game {
+        id: "lucky3",
+        description: "Roll 3 dice, hope to get 3s. Payout for one 3 = 1.5x, two = 4x, three = 30x",
+        options: &[],
+    },
+];
+
 pub fn register() -> CreateCommand {
-    CreateCommand::new("casino")
-        .description("Gamble your money away")
-        .add_option(
-            CreateCommandOption::new(
-                CommandOptionType::SubCommand,
-                "coinflip",
-                "Flip a coin to double your money or lose it all",
-            )
-            .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::Integer,
-                    "bid",
-                    "The amount of money to bet",
-                )
-                .min_int_value(1)
-                .max_int_value(MAX_BID)
-                .required(true),
-            ),
-        )
-        .add_option(
-            CreateCommandOption::new(
-                CommandOptionType::SubCommand,
-                "diceroll",
-                "Pick a number 1-6 on a die roll",
-            )
-            .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::Integer,
-                    "bid",
-                    "The amount of money to bet",
-                )
-                .min_int_value(1)
-                .max_int_value(MAX_BID)
-                .required(true),
-            )
-            .add_sub_option(
-                CreateCommandOption::new(CommandOptionType::Integer, "number", "Your guess (1-6)")
-                    .min_int_value(1)
-                    .max_int_value(6)
-                    .required(true),
-            ),
-        )
-        .add_option(
-            CreateCommandOption::new(
-                CommandOptionType::SubCommand,
-                "carddraw",
-                "Draw a card, pick red or black",
-            )
-            .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::Integer,
-                    "bid",
-                    "The amount of money to bet",
-                )
-                .min_int_value(1)
-                .max_int_value(MAX_BID)
-                .required(true),
-            )
-            .add_sub_option(
-                CreateCommandOption::new(CommandOptionType::String, "color", "Pick red or black")
-                    .required(true)
-                    .add_string_choice("red", "red")
-                    .add_string_choice("black", "black"),
-            ),
-        )
-        .add_option(
-            CreateCommandOption::new(
-                CommandOptionType::SubCommand,
-                "numberguess",
-                "Guess a number between 1-10",
-            )
-            .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::Integer,
-                    "bid",
-                    "The amount of money to bet",
-                )
-                .min_int_value(1)
-                .max_int_value(MAX_BID)
-                .required(true),
-            )
-            .add_sub_option(
-                CreateCommandOption::new(CommandOptionType::Integer, "number", "Your guess (1-10)")
-                    .min_int_value(1)
-                    .max_int_value(10)
-                    .required(true),
-            ),
-        )
-        .add_option(
-            CreateCommandOption::new(
-                CommandOptionType::SubCommand,
-                "lucky3",
-                "Roll 3 dice, if any of them is a 3 you win. One 3 = 1.5x, two 3 = 4x, three 3 = 30x",
-                )
+    let mut cmd = CreateCommand::new("casino").description("Gamble your money away");
+
+    for game in GAMES {
+        let mut sub_cmd =
+            CreateCommandOption::new(CommandOptionType::SubCommand, game.id, game.description)
                 .add_sub_option(
                     CreateCommandOption::new(
                         CommandOptionType::Integer,
@@ -117,8 +90,41 @@ pub fn register() -> CreateCommand {
                     .min_int_value(1)
                     .max_int_value(MAX_BID)
                     .required(true),
+                );
+
+        for option in game.options {
+            sub_cmd = match option {
+                GameOption::Integer {
+                    name,
+                    description,
+                    min,
+                    max,
+                } => sub_cmd.add_sub_option(
+                    CreateCommandOption::new(CommandOptionType::Integer, *name, *description)
+                        .min_int_value(*min)
+                        .max_int_value(*max)
+                        .required(true),
                 ),
-        )
+                GameOption::String {
+                    name,
+                    description,
+                    choices,
+                } => {
+                    let mut opt =
+                        CreateCommandOption::new(CommandOptionType::String, *name, *description)
+                            .required(true);
+                    for (choice_name, choice_value) in *choices {
+                        opt = opt.add_string_choice(*choice_name, *choice_value);
+                    }
+                    sub_cmd.add_sub_option(opt)
+                }
+            };
+        }
+
+        cmd = cmd.add_option(sub_cmd);
+    }
+
+    cmd
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -143,6 +149,11 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
     .await?;
 
     if !can_play(command, &mut interaction).await {
+        return Ok(());
+    }
+
+    // Validate game exists
+    if !GAMES.iter().any(|g| g.id == subcommand.name) {
         return Ok(());
     }
 
@@ -497,7 +508,7 @@ async fn lucky3(
         else {
             return interaction.reply("Failed to cash out winnings").await;
         };
-        reply.push_str(&format!("You got {threes} threes! You won ${winnings}!"));
+        let _ = write!(reply, "You got {threes} threes! You won ${winnings}!");
     } else {
         reply.push_str("You got no threes! You lost your bet!");
     }
