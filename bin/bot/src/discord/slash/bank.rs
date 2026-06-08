@@ -431,6 +431,7 @@ async fn spent(
         THEME_GRAFANA,
     );
     chart.legend_show = Some(false);
+    chart.series_label_formatter = String::from("{a}: ${c} ({d}%)");
 
     let image = svg_to_png(&chart.svg().expect("Failed to generate SVG"))
         .expect("Failed to convert SVG to PNG");
