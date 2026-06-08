@@ -38,21 +38,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
         warn!("No subcommand for casino provided");
         return Ok(());
     };
-    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value {
-        match subcommand.name.as_str() {
-            "coinflip" => coinflip(ctx, command, options).await?,
-            _ => unreachable!(),
-        }
-    }
-    Ok(())
-}
 
-async fn coinflip(
-    ctx: &Context,
-    command: &CommandInteraction,
-    options: &[CommandDataOption],
-) -> serenity::Result<()> {
-    let _ = options;
     let mut interaction = Interaction::new(ctx, command.clone(), &[]).ephemeral(false);
 
     super::requires_roles(
@@ -68,6 +54,52 @@ async fn coinflip(
     )
     .await?;
 
+    if !can_play(command, &mut interaction).await {
+        return Ok(());
+    }
+
+    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value {
+        match subcommand.name.as_str() {
+            "coinflip" => coinflip(ctx, &mut interaction, command, options).await?,
+            _ => unreachable!(),
+        }
+    }
+    Ok(())
+}
+
+pub async fn can_play(command: &CommandInteraction, interaction: &mut Interaction<'_>) -> bool {
+    let Ok(Ok((synixe_events::gear::db::Response::BankBalance(Ok(Some(balance))), _))) =
+        events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::gear::db,
+            BankBalance {
+                member: command.user.id,
+            }
+        )
+        .await
+    else {
+        let _ = interaction
+            .reply("Failed to get your balance, please try again later")
+            .await;
+        return false;
+    };
+
+    if balance < 2000 {
+        let _ = interaction
+            .reply("You need at least $2000 to play casino games")
+            .await;
+        false
+    } else {
+        true
+    }
+}
+
+async fn coinflip(
+    _ctx: &Context,
+    interaction: &mut Interaction<'_>,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
     let Some(amount) = get_option!(options, "amount", Integer) else {
         return interaction.reply("Invalid amount").await;
     };
@@ -88,8 +120,9 @@ async fn coinflip(
     };
     // Flip the coin
     let win = rand::random();
+    #[allow(clippy::cast_possible_truncation)]
     if win {
-        let amount = *amount as i32 * 2;
+        let amount = (*amount * 2) as i32;
         // Cash out the winnings
         let Ok(Ok((Response::CashOut(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
