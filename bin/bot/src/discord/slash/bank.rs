@@ -524,12 +524,6 @@ async fn candlestick(
     chart.candlestick_up_color = up_color;
     chart.candlestick_up_border_color = up_border_color;
 
-    let user_data = GUILD
-        .member(&ctx, user)
-        .await
-        .expect("Failed to fetch member data");
-    chart.title_text = format!("Balance History for {}", user_data.display_name());
-
     let image = svg_to_png(&chart.svg().expect("Failed to generate SVG"))
         .expect("Failed to convert SVG to PNG");
     interaction
