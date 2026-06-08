@@ -3,7 +3,7 @@ use serenity::all::{
     CreateCommand, CreateCommandOption,
 };
 use synixe_events::casino::db::Response;
-use synixe_meta::discord::role::MEMBER;
+use synixe_meta::discord::role::{JUNIOR, MEMBER};
 use synixe_proc::events_request_5;
 
 use crate::{
@@ -27,7 +27,7 @@ pub fn register() -> CreateCommand {
                     "The amount of money to bet",
                 )
                 .min_int_value(1)
-                .max_int_value(50)
+                .max_int_value(1000)
                 .required(true),
             ),
         )
@@ -43,7 +43,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
 
     super::requires_roles(
         command.user.id,
-        &[MEMBER],
+        &[JUNIOR, MEMBER],
         &command
             .member
             .as_ref()
@@ -84,9 +84,9 @@ pub async fn can_play(command: &CommandInteraction, interaction: &mut Interactio
         return false;
     };
 
-    if balance < 2000 {
+    if balance < 1000 {
         let _ = interaction
-            .reply("You need at least $2000 to play casino games")
+            .reply("You need at least $1000 to play casino games")
             .await;
         false
     } else {
