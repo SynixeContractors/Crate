@@ -1,3 +1,5 @@
+PREP(repack);
+
 PREP(bodybag_ext);
 PREP(loadout_ext);
 PREP(shop_ext);

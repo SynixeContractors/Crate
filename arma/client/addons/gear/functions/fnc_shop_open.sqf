@@ -12,6 +12,8 @@ GVAR(shop_box) = _box;
 player enableSimulation false;
 player setVariable [QGVAR(shop_open), true, true];
 
+[player] call FUNC(repack);
+
 private _loadout = [player] call CBA_fnc_getLoadout;
 GVAR(shop_preLoadout) = _loadout;
 private _items = [_loadout] call FUNC(loadout_items);
