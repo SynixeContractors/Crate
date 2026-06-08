@@ -1,5 +1,6 @@
 use std::fmt::Write;
 
+use charts_rs::{CandlestickChart, THEME_GRAFANA, svg_to_png};
 use porter::{
     PassBuilder, PassType, PorterError,
     google::{
@@ -9,17 +10,21 @@ use porter::{
     },
 };
 use serenity::{
-    all::{CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType},
+    all::{
+        CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType,
+        CreateAttachment,
+    },
     builder::{CreateCommand, CreateCommandOption},
     client::Context,
 };
-use synixe_events::gear::db::Response;
+use synixe_events::gear::db::{Response, Transaction};
 use synixe_meta::discord::{
     BRODSKY, GUILD,
     channel::LOG,
     role::{ACTIVE, STAFF},
 };
 use synixe_proc::events_request_5;
+use time::format_description;
 
 use crate::{
     discord::interaction::{Confirmation, Interaction},
@@ -76,6 +81,13 @@ pub fn register() -> CreateCommand {
                 )
                 .allow_public()
         )
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::SubCommand, "candlestick", "View a candlestick chart of a member's balance over time")
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view the chart for")
+                    .required(true)
+                )
+                .allow_public()
+        )
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -90,6 +102,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
             "fine" => fine(ctx, command, options).await?,
             "wallet" => wallet(ctx, command).await?,
             "spent" => spent(ctx, command, options).await?,
+            "candlestick" => candlestick(ctx, command, options).await?,
             _ => unreachable!(),
         }
     }
@@ -416,6 +429,104 @@ async fn spent(
         );
     }
     interaction.reply(reply).await
+}
+
+async fn candlestick(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    interaction.reply("Fetching balance history...").await?;
+    let Some(user) = get_option_user!(options, "member") else {
+        return interaction.reply("Invalid member").await;
+    };
+
+    let Ok(Ok((Response::BankHistory(Ok(history)), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        BankHistory { member: *user }
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fetch balance history").await;
+    };
+
+    if history.is_empty() {
+        return interaction
+            .reply("No balance history found for this member")
+            .await;
+    }
+
+    // group history by day, then find the open, high, low, and close for each day
+    let mut current_balance = 0;
+    let mut daily_balances: Vec<(String, i32, i32, i32, i32)> = Vec::new();
+    let mut current_day = String::new();
+    let mut open = 0;
+    let mut high = 0;
+    let mut low = 0;
+    let format =
+        format_description::parse("[year]-[month]-[day]").expect("Failed to parse date format");
+    for Transaction { amount, created } in history {
+        let day = created
+            .format(&format)
+            .expect("Failed to format date")
+            .clone();
+        if day != current_day {
+            if !current_day.is_empty() {
+                daily_balances.push((current_day.clone(), open, high, low, current_balance));
+            }
+            current_day = day;
+            open = current_balance;
+            high = current_balance;
+            low = current_balance;
+        }
+        current_balance += amount;
+        if current_balance > high {
+            high = current_balance;
+        }
+        if current_balance < low {
+            low = current_balance;
+        }
+    }
+    // push the last day
+    daily_balances.push((current_day, open, high, low, current_balance));
+
+    // [open price1, close price1, lowest price1, highest price1, open price2, close price2, ...]
+    let mut data = Vec::new();
+    #[allow(clippy::cast_precision_loss)]
+    for (_, open, high, low, close) in &daily_balances {
+        data.push(*open as f32);
+        data.push(*close as f32);
+        data.push(*low as f32);
+        data.push(*high as f32);
+    }
+
+    let x_axis_data: Vec<String> = daily_balances
+        .iter()
+        .map(|(day, _, _, _, _)| day.clone())
+        .collect();
+
+    let mut chart = CandlestickChart::new_with_theme(
+        vec![("Balance", data).into()],
+        x_axis_data,
+        THEME_GRAFANA,
+    );
+
+    let user_data = GUILD
+        .member(&ctx, user)
+        .await
+        .expect("Failed to fetch member data");
+    chart.title_text = format!("Balance History for {}", user_data.display_name());
+
+    let image = svg_to_png(&chart.svg().expect("Failed to generate SVG"))
+        .expect("Failed to convert SVG to PNG");
+    interaction
+        .reply_with_attachment(
+            format!("Balance history for <@{user}>:"),
+            CreateAttachment::bytes(image, "chart.png"),
+        )
+        .await
 }
 
 #[allow(clippy::too_many_lines)]

@@ -13,11 +13,11 @@ pub const ANNOUNCEMENTS: ChannelId = ChannelId::new(714_734_181_665_603_736);
 /// On-topic discussion
 pub const ONTOPIC: ChannelId = ChannelId::new(700_888_743_611_072_535);
 /// Off-topic discussion
-pub const OFFTOPIC: ChannelId = ChannelId::new(700_888_757_724_774_451);
+pub const OFFTOPIC: ChannelId = ChannelId::new(736_790_994_833_506_414);
 /// Looking to play with others
 pub const LOOKING_TO_PLAY: ChannelId = ChannelId::new(785_233_960_983_724_054);
-/// Memes
-pub const MEMES: ChannelId = ChannelId::new(736_790_994_833_506_414);
+/// Wordle
+pub const WORDLE: ChannelId = ChannelId::new(700_888_757_724_774_451);
 // Advisors, members with over 150 missions
 pub const ADVISORS: ChannelId = ChannelId::new(1_427_014_584_052_744_325);
 

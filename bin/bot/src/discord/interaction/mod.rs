@@ -1,7 +1,10 @@
 use std::{fmt::Display, time::Duration};
 
 use serenity::{
-    all::{ButtonStyle, CommandDataOption, ComponentInteractionDataKind, InteractionType, Message},
+    all::{
+        ButtonStyle, CommandDataOption, ComponentInteractionDataKind, CreateAttachment,
+        InteractionType, Message,
+    },
     builder::{
         CreateActionRow, CreateButton, CreateInteractionResponse,
         CreateInteractionResponseFollowup, CreateInteractionResponseMessage, CreateSelectMenu,
@@ -123,6 +126,23 @@ impl<'a> Interaction<'a> {
         self.internal_followup(
             CreateInteractionResponseFollowup::default()
                 .content(content.to_string())
+                .components(vec![]),
+        )
+        .await?;
+        Ok(())
+    }
+
+    pub async fn reply_with_attachment(
+        &mut self,
+        content: impl Display + Send,
+        file: CreateAttachment,
+    ) -> serenity::Result<()> {
+        self.initial().await?;
+        debug!("replying to interaction with components: {}", content);
+        self.internal_followup(
+            CreateInteractionResponseFollowup::default()
+                .content(content.to_string())
+                .add_file(file)
                 .components(vec![]),
         )
         .await?;
