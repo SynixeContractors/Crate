@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            gi.category,\n            SUM(gbp.personal) AS cost\n        FROM gear_bank_purchases gbp\n        JOIN gear_items gi\n            ON gbp.class = gi.class\n        WHERE gbp.member = $1\n        GROUP BY gi.category;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "category",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "cost",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      true,
+      null
+    ]
+  },
+  "hash": "0c29f381938c3ec2147b91fe55690edb3ef68cf18ab7eee9b58274fda7e493d3"
+}

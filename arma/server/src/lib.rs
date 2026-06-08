@@ -28,23 +28,6 @@ static CONTEXT: LazyLock<RwLock<Option<Context>>> = LazyLock::new(|| RwLock::new
 static STEAM_CACHE: LazyLock<RwLock<HashMap<String, String>>> =
     LazyLock::new(|| RwLock::new(HashMap::new()));
 
-async fn audit(message: String) {
-    if let Err(e) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::discord::write,
-        Audit {
-            message: DiscordMessage {
-                content: DiscordContent::Text(message),
-                reactions: Vec::new(),
-            }
-        }
-    )
-    .await
-    {
-        error!("failed to send audit message over nats: {e}");
-    }
-}
-
 #[arma]
 fn init() -> Extension {
     info!("Initializing for server `{}`", *SERVER_ID);

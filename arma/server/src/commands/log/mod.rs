@@ -134,7 +134,24 @@ fn role(steam: String, name: String, discord: String, role: String) {
     });
 }
 
-async fn game_audit(steam: String, header: String, message: String) {
+pub async fn audit(message: String) {
+    if let Err(e) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::discord::write,
+        Audit {
+            message: DiscordMessage {
+                content: DiscordContent::Text(message),
+                reactions: Vec::new(),
+            }
+        }
+    )
+    .await
+    {
+        error!("failed to send audit message over nats: {e}");
+    }
+}
+
+pub async fn game_audit(steam: String, header: String, message: String) {
     let Ok(Ok((synixe_events::discord::db::Response::FromSteam(Ok(Some(discord))), _))) =
         events_request_5!(
             bootstrap::NC::get().await,

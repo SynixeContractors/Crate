@@ -4,10 +4,17 @@
 pub mod db {
     use std::collections::HashMap;
 
+    use serde::{Deserialize, Serialize};
     use serenity::model::prelude::UserId;
     use synixe_model::gear::{Deposit, FamilyItem, Price};
     use synixe_proc::events_requests;
     use uuid::Uuid;
+
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    pub struct Transaction {
+        pub amount: i32,
+        pub created: time::OffsetDateTime,
+    }
 
     events_requests!(db.gear {
         /// Get a member's loadout
@@ -96,6 +103,16 @@ pub mod db {
             /// The reason for the transfer
             reason: String,
         } => (Result<(), String>)
+        /// Get money spent per category for a member
+        struct BankSpent {
+            /// The member's ID
+            member: UserId,
+        } => (Result<HashMap<String, i32>, String>)
+        /// Get history of spending for a member
+        struct BankHistory {
+            /// The member's ID
+            member: UserId,
+        } => (Result<Vec<Transaction>, String>)
 
         /// Get all items in the shop
         #[allow(clippy::type_complexity)]

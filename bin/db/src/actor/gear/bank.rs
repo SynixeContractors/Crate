@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
-use synixe_events::publish;
+use synixe_events::{gear::db::Transaction, publish};
 use synixe_meta::discord::BRODSKY;
 use synixe_model::gear::Deposit;
 use uuid::Uuid;
@@ -121,6 +121,76 @@ pub async fn shop_purchase_personal_cost(
         query.execute(&mut **executor).await?;
     }
     Ok(())
+}
+
+pub async fn spent(
+    member: &UserId,
+    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<HashMap<String, i32>, anyhow::Error> {
+    let query = sqlx::query!(
+        "SELECT
+            gi.category,
+            SUM(gbp.personal) AS cost
+        FROM gear_bank_purchases gbp
+        JOIN gear_items gi
+            ON gbp.class = gi.class
+        WHERE gbp.member = $1
+        GROUP BY gi.category;",
+        member.to_string(),
+    );
+    let res = query.fetch_all(&mut **executor).await?;
+    Ok(res
+        .into_iter()
+        .map(|row| (row.category, row.cost.unwrap_or(0) as i32))
+        .filter(|(_, cost)| *cost != 0)
+        .filter_map(|(category, cost)| category.map(|category| (category, cost)))
+        .collect())
+}
+
+pub async fn history(
+    member: &UserId,
+    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<Vec<Transaction>, anyhow::Error> {
+    let query = sqlx::query_as!(
+        Transaction,
+        r#"SELECT "amount!", "created!"
+FROM (
+    SELECT
+        member,
+        amount as "amount!",
+        created as "created!"
+    FROM gear_bank_deposits
+
+    UNION ALL
+
+    SELECT
+        target AS member,
+        amount AS "amount!",
+        created as "created!"
+    FROM gear_bank_transfers
+
+    UNION ALL
+
+    SELECT
+        source AS member,
+        -amount AS "amount!",
+        created as "created!"
+    FROM gear_bank_transfers
+
+    UNION ALL
+
+    SELECT
+        member,
+        -personal AS "amount!",
+        created as "created!"
+    FROM gear_bank_purchases
+) ledger
+WHERE member = $1
+ORDER BY "created!" DESC;"#,
+        member.to_string(),
+    );
+    let res = query.fetch_all(&mut **executor).await?;
+    Ok(res)
 }
 
 pub async fn publish_balance(nats: async_nats::Client, member: UserId, reason: String) {

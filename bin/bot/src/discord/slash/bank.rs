@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use porter::{
     PassBuilder, PassType, PorterError,
     google::{
@@ -67,6 +69,13 @@ pub fn register() -> CreateCommand {
         .add_option(
             CreateCommandOption::new(CommandOptionType::SubCommand, "wallet", "Create a Google Wallet for your bank balance")
         )
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::SubCommand, "spent", "View money spent per category for a member")
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view spending for")
+                    .required(true)
+                )
+                .allow_public()
+        )
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -80,6 +89,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
             "transfer" => transfer(ctx, command, options).await?,
             "fine" => fine(ctx, command, options).await?,
             "wallet" => wallet(ctx, command).await?,
+            "spent" => spent(ctx, command, options).await?,
             _ => unreachable!(),
         }
     }
@@ -364,6 +374,48 @@ async fn fine(
     }
 
     Ok(())
+}
+
+async fn spent(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    interaction.reply("Fetching spending data...").await?;
+    let Some(user) = get_option_user!(options, "member") else {
+        return interaction.reply("Invalid member").await;
+    };
+
+    let Ok(Ok((Response::BankSpent(Ok(spending)), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        BankSpent { member: *user }
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fetch spending data").await;
+    };
+
+    if spending.is_empty() {
+        return interaction
+            .reply("No spending data found for this member")
+            .await;
+    }
+
+    let mut reply = format!("Spending for <@{user}>:\n");
+    // sort by amount spent, highest to lowest
+    let mut spending: Vec<(String, i32)> = spending.into_iter().collect();
+    spending.sort_by_key(|b| std::cmp::Reverse(b.1));
+    for (category, amount) in spending {
+        let _ = writeln!(
+            reply,
+            "- {}: {}",
+            category,
+            bootstrap::format::money(amount, false)
+        );
+    }
+    interaction.reply(reply).await
 }
 
 #[allow(clippy::too_many_lines)]

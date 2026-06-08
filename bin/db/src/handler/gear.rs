@@ -185,6 +185,19 @@ impl Handler for Request {
                 });
                 res
             }
+            Self::BankSpent { member } => {
+                quick_transaction_return!(BankSpent, db, msg, cx, actor::gear::bank::spent, member,)
+            }
+            Self::BankHistory { member } => {
+                quick_transaction_return!(
+                    BankHistory,
+                    db,
+                    msg,
+                    cx,
+                    actor::gear::bank::history,
+                    member,
+                )
+            }
             Self::ShopGetAll { page } => {
                 quick_transaction_return!(
                     ShopGetAll,

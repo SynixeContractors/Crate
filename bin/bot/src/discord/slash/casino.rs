@@ -48,14 +48,10 @@ pub fn register() -> CreateCommand {
                 .required(true),
             )
             .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::Integer,
-                    "number",
-                    "Your guess (1-6)",
-                )
-                .min_int_value(1)
-                .max_int_value(6)
-                .required(true),
+                CreateCommandOption::new(CommandOptionType::Integer, "number", "Your guess (1-6)")
+                    .min_int_value(1)
+                    .max_int_value(6)
+                    .required(true),
             ),
         )
         .add_option(
@@ -75,14 +71,10 @@ pub fn register() -> CreateCommand {
                 .required(true),
             )
             .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::String,
-                    "color",
-                    "Pick red or black",
-                )
-                .required(true)
-                .add_string_choice("red", "red")
-                .add_string_choice("black", "black"),
+                CreateCommandOption::new(CommandOptionType::String, "color", "Pick red or black")
+                    .required(true)
+                    .add_string_choice("red", "red")
+                    .add_string_choice("black", "black"),
             ),
         )
         .add_option(
@@ -102,14 +94,10 @@ pub fn register() -> CreateCommand {
                 .required(true),
             )
             .add_sub_option(
-                CreateCommandOption::new(
-                    CommandOptionType::Integer,
-                    "number",
-                    "Your guess (1-10)",
-                )
-                .min_int_value(1)
-                .max_int_value(10)
-                .required(true),
+                CreateCommandOption::new(CommandOptionType::Integer, "number", "Your guess (1-10)")
+                    .min_int_value(1)
+                    .max_int_value(10)
+                    .required(true),
             ),
         )
 }
@@ -278,11 +266,15 @@ async fn diceroll(
             return interaction.reply("Failed to cash out winnings").await;
         };
         interaction
-            .reply(format!("You rolled a {roll}! You guessed correctly! You won ${amount}!"))
+            .reply(format!(
+                "You rolled a {roll}! You guessed correctly! You won ${amount}!"
+            ))
             .await?;
     } else {
         interaction
-            .reply(format!("You rolled a {roll}! You guessed {guess}. You lost ${amount}!"))
+            .reply(format!(
+                "You rolled a {roll}! You guessed {guess}. You lost ${amount}!"
+            ))
             .await?;
     }
 
@@ -398,11 +390,15 @@ async fn numberguess(
             return interaction.reply("Failed to cash out winnings").await;
         };
         interaction
-            .reply(format!("The number was {number}! You guessed correctly! You won ${amount}!"))
+            .reply(format!(
+                "The number was {number}! You guessed correctly! You won ${amount}!"
+            ))
             .await?;
     } else {
         interaction
-            .reply(format!("The number was {number}! You guessed {guess}. You lost ${amount}!"))
+            .reply(format!(
+                "The number was {number}! You guessed {guess}. You lost ${amount}!"
+            ))
             .await?;
     }
 

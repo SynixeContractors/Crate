@@ -3,7 +3,7 @@ use serenity::model::prelude::UserId;
 use synixe_events::discord::{self, db, info};
 use synixe_proc::events_request_5;
 
-use crate::{CONTEXT, RUNTIME, STEAM_CACHE, audit};
+use crate::{CONTEXT, RUNTIME, STEAM_CACHE, commands::log::audit};
 
 pub fn group() -> Group {
     Group::new()
