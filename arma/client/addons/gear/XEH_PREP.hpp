@@ -1,5 +1,3 @@
-PREP(repack);
-
 PREP(bodybag_ext);
 PREP(loadout_ext);
 PREP(shop_ext);
@@ -10,6 +8,7 @@ PREP(bodybag_store);
 
 PREP(loadout_clean);
 PREP(loadout_items);
+PREP(loadout_magazines);
 PREP(loadout_onChange);
 
 PREP(shop_arsenal_btnHide);

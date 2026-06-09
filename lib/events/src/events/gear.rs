@@ -134,6 +134,8 @@ pub mod db {
             member: UserId,
             /// The items to store
             items: HashMap<String, i32>,
+            /// The magazines to purchase (bullets needed, bullets per magazine)
+            magazines: HashMap<String, (i32, i32)>,
         } => (Result<(HashMap<String, i32>, i32), String>)
         /// Helper for Arma to:
         /// - Set the player's loadout

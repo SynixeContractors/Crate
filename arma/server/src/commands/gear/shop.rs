@@ -74,7 +74,12 @@ fn command_items() {
     });
 }
 
-fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>) {
+fn command_enter(
+    discord: String,
+    steam: String,
+    mut items: HashMap<String, i32>,
+    magazines: HashMap<String, (i32, i32)>,
+) {
     let Ok(discord) = discord.parse::<u64>() else {
         error!("invalid discord id: {discord}");
         return;
@@ -93,6 +98,7 @@ fn command_enter(discord: String, steam: String, mut items: HashMap<String, i32>
             ShopEnter {
                 member: UserId::new(discord),
                 items,
+                magazines,
             }
         )
         .await

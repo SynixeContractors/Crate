@@ -12,14 +12,14 @@ GVAR(shop_box) = _box;
 player enableSimulation false;
 player setVariable [QGVAR(shop_open), true, true];
 
-[player] call FUNC(repack);
-
 private _loadout = [player] call CBA_fnc_getLoadout;
 GVAR(shop_preLoadout) = _loadout;
 private _items = [_loadout] call FUNC(loadout_items);
 
+private _magazines = [] call FUNC(loadout_magazines);
+
 if (GVAR(readOnly) || EGVAR(campaigns,loadouts)) then {
     [[], 0] call FUNC(shop_enter);
 } else {
-    [QGVAR(shop_enter), [player, _items]] call CBA_fnc_serverEvent;
+    [QGVAR(shop_enter), [player, _items, _magazines]] call CBA_fnc_serverEvent;
 };

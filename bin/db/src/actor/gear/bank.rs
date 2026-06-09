@@ -123,6 +123,48 @@ pub async fn shop_purchase_personal_cost(
     Ok(())
 }
 
+pub async fn shop_purchase_ammo_refill(
+    member: &UserId,
+    magazines: &HashMap<String, (i32, i32)>,
+    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<(), anyhow::Error> {
+    for (class, (bullets_needed, bullets_per_magazine)) in magazines {
+        let full_mags = bullets_needed / bullets_per_magazine;
+        let remainder_bullets = bullets_needed % bullets_per_magazine;
+
+        if full_mags > 0 {
+            sqlx::query!(
+                "INSERT INTO gear_bank_purchases (member, class, quantity, reason, personal, company)
+                 SELECT $1, $2, $3, $4, cost.personal_current, cost.company_current
+                 FROM gear_item_current_cost($2) AS cost",
+                member.to_string(),
+                class,
+                full_mags,
+                format!("shop refill {full_mags} full magazines for {class}"),
+            )
+            .execute(&mut **executor)
+            .await?;
+        }
+
+        if remainder_bullets > 0 {
+            let partial_cost_factor = remainder_bullets as f32 / *bullets_per_magazine as f32;
+            sqlx::query!(
+                "INSERT INTO gear_bank_purchases (member, class, quantity, reason, personal, company)
+                 SELECT $1, $2, $3, $4, CEIL(cost.personal_current * $5), CEIL(cost.company_current * $5)
+                 FROM gear_item_current_cost($2) AS cost",
+                member.to_string(),
+                class,
+                1,
+                format!("shop refill {remainder_bullets} bullets for {class}"),
+                partial_cost_factor as f64,
+            )
+            .execute(&mut **executor)
+            .await?;
+        }
+    }
+    Ok(())
+}
+
 pub async fn spent(
     member: &UserId,
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,

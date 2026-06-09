@@ -211,8 +211,14 @@ impl Handler for Request {
             Self::ShopGetPrice { item } => {
                 quick_transaction_return!(ShopGetPrice, db, msg, cx, actor::gear::shop::price, item,)
             }
-            Self::ShopEnter { member, items } => {
+            Self::ShopEnter {
+                member,
+                items,
+                magazines,
+            } => {
                 let mut tx = transaction!(db, msg, cx);
+                // Purchase ammo refill
+                actor::gear::bank::shop_purchase_ammo_refill(member, magazines, &mut tx).await?;
                 // Store a blank loadout
                 actor::gear::loadout::store(
                     member,

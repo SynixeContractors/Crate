@@ -55,13 +55,14 @@ if !(isMultiplayer) exitWith {};
     if (GVAR(readOnly) || EGVAR(campaigns,loadouts)) exitWith {};
     params [
         ["_player", objNull, [objNull]],
-        ["_items", createHashMap, [createHashMap]]
+        ["_items", createHashMap, [createHashMap]],
+        ["_magazines", createHashMap, [createHashMap]]
     ];
     if (isNull _player) exitWith {};
     private _discord = _player getVariable [QEGVAR(discord,id), ""];
     if (_discord isEqualTo "") exitWith {};
     private _steam = getPlayerUID _player;
-    EXTCALL("gear:shop:enter",[ARR_3(_discord,_steam,_items)]);
+    EXTCALL("gear:shop:enter",[ARR_4(_discord,_steam,_items,_magazines)]);
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_leave), {
