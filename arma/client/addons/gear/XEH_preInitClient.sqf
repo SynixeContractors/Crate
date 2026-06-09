@@ -68,6 +68,7 @@ GVAR(shop_processing) = false;
     }, [], 1] call CBA_fnc_waitAndExecute;
     player setVariable [QGVAR(shop_open), false, true];
     player enableSimulation true;
+    [player, GVAR(shop_preLoadout), false] call CBA_fnc_setLoadout;
     systemChat "An error occurred while trying to enter the shop, please try again later.";
 }] call CBA_fnc_addEventHandler;
 
