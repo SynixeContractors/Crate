@@ -134,8 +134,8 @@ pub async fn shop_purchase_ammo_refill(
 
         if full_mags > 0 {
             sqlx::query!(
-                "INSERT INTO gear_bank_purchases (member, class, quantity, reason, personal, company)
-                 SELECT $1, $2, $3, $4, cost.personal_current, cost.company_current
+                "INSERT INTO gear_bank_purchases (member, class, quantity, reason, personal, company, created)
+                 SELECT $1, $2, $3, $4, cost.personal_current, cost.company_current, NOW() + INTERVAL '1 millisecond'
                  FROM gear_item_current_cost($2) AS cost",
                 member.to_string(),
                 class,
@@ -150,7 +150,7 @@ pub async fn shop_purchase_ammo_refill(
             let partial_cost_factor = remainder_bullets as f32 / *bullets_per_magazine as f32;
             sqlx::query!(
                 "INSERT INTO gear_bank_purchases (member, class, quantity, reason, personal, company, created)
-                 SELECT $1, $2, $3, $4, CEIL(cost.personal_current * $5), CEIL(cost.company_current * $5), NOW() + INTERVAL '1 millisecond'
+                 SELECT $1, $2, $3, $4, CEIL(cost.personal_current * $5), CEIL(cost.company_current * $5), NOW() + INTERVAL '2 millisecond'
                  FROM gear_item_current_cost($2) AS cost",
                 member.to_string(),
                 class,
