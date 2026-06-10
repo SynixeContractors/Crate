@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO gear_bank_purchases (member, class, quantity, reason, personal, company, created, add_item)\n                 SELECT $1, $2, $3, $4, CEIL(cost.personal_current * $5), CEIL(cost.company_current * $5), NOW() + INTERVAL '2 millisecond', false\n                 FROM gear_item_current_cost($2) AS cost",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Int4",
+        "Varchar",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2b529ec36c7a4661305d77992e40f4a801387827e8d3afd694d34de120250911"
+}
