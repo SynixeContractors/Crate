@@ -13,6 +13,3 @@ tailwind.css
 
 # Python
 __pycache__/
-
-# Google Wallet
-*.pem
