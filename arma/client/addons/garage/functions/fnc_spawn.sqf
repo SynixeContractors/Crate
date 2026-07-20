@@ -83,6 +83,8 @@ private _vehicle = if (getNumber (missionConfigFile >> "synixe_template") < 3) t
 
 if (_vehicle isEqualTo objNull) exitWith {};
 
+_vehicle setVariable ["BIS_enableRandomization", false];
+
 EXTCALL("garage:spawn",[ARR_2(_id,"Yes")]);
 
 private _state = createHashMapFromArray _state;
@@ -95,22 +97,25 @@ _vehicle setVariable ["crate", true, true];
     _this call EFUNC(common,objectState_load);
 }, [_vehicle, _state]] call CBA_fnc_execNextFrame;
 
+[{
+    params ["_vehicle", "_state"];
+    if ("tex_source" in _state) then {
+        private _textureSource = configOf _vehicle >> "TextureSources" >> (_state get "tex_source");
+        private _textures = getArray (_textureSource >> "textures");
+        private _materials = getArray (_textureSource >> "materials");
+
+        {
+            _vehicle setObjectTextureGlobal [_forEachIndex, _x];
+        } forEach _textures;
+
+        {
+            _vehicle setObjectMaterialGlobal [_forEachIndex, _x];
+        } forEach _materials;
+    };
+}, [_vehicle, _state], 0.1] call CBA_fnc_waitAndExecute;
+
 GVAR(spawned) set [_plate, _vehicle];
 
 // this may still be having issues?
 // do it last just in case
 [_vehicle, _plate, 0.4, "ffd731"] call ace_tagging_fnc_stencilVehicle;
-
-if ("tex_source" in _state) then {
-    private _textureSource = configOf _vehicle >> "TextureSources" >> (_state get "tex_source");
-    private _textures = getArray (_textureSource >> "textures");
-    private _materials = getArray (_textureSource >> "materials");
-
-    {
-        _vehicle setObjectTextureGlobal [_forEachIndex, _x];
-    } forEach _textures;
-
-    {
-        _vehicle setObjectMaterialGlobal [_forEachIndex, _x];
-    } forEach _materials;
-};
