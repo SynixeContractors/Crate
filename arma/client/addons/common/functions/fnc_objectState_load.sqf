@@ -2,6 +2,11 @@
 
 params ["_object", "_state", ["_ace_cargo", true]];
 
+// Make sure state is a hashmap
+if (typeName _state isEqualTo "ARRAY") then {
+    _state = createHashMapFromArray _state;
+};
+
 // Clear existing state
 // Inventory
 if !(_object isKindOf "GroundWeaponHolder") then {
