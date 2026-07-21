@@ -45,7 +45,13 @@ fn spawn(ctx: Context, id: Uuid, res: String) {
     });
 }
 
-fn store(ctx: Context, plate: String, state: HashMap<String, Value>, discord: String) {
+fn store(
+    ctx: Context,
+    plate: String,
+    state: HashMap<String, Value>,
+    steam: String,
+    discord: String,
+) {
     let Ok(discord) = discord.parse::<u64>() else {
         error!("failed to parse discord id");
         return;
@@ -67,8 +73,12 @@ fn store(ctx: Context, plate: String, state: HashMap<String, Value>, discord: St
             error!("failed to store vehicle over nats");
             return;
         };
-        // TODO: game_audit
-        audit(format!("Vehicle `{plate}` stored by <@{discord}>")).await;
+        game_audit(
+            steam,
+            "Vehicle Stored".to_string(),
+            format!("<@{discord}> stored `{plate}`"),
+        )
+        .await;
         if let Err(e) = ctx.callback_data("crate:garage", "store", vec![plate]) {
             error!("error sending store: {e:?}");
         }

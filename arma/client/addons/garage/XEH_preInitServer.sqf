@@ -27,10 +27,12 @@ addMissionEventHandler ["ExtensionCallback", {
     params ["_player", "_vehicle"];
     private _plate = _vehicle getVariable [QGVAR(plate), ""];
     if (_plate == "") exitWith {};
+    private _steam = getPlayerUID _player;
+    if (_steam == "") exitWith {};
     private _discord = _player getVariable [QEGVAR(discord,id), ""];
     if (_discord == "") exitWith {};
 
     private _state = [_vehicle] call EFUNC(common,objectState_save);
 
-    EXTCALL("garage:store",[ARR_3(_plate,_state,_discord)]);
+    EXTCALL("garage:store",[ARR_4(_plate,_state,_steam,_discord)]);
 }] call CBA_fnc_addEventHandler;

@@ -388,7 +388,7 @@ impl Handler for Request {
                 }
                 respond!(msg, Response::Transport(Ok(*cost))).await?;
                 let _ = game_audit(format!(
-                    "**Vehicle Transported**\n<@{member}> paid {} on {plate}",
+                    "**Vehicle Transported**\n<@{member}> paid {} on `{plate}`",
                     bootstrap::format::money(*cost, false)
                 ))
                 .await;
