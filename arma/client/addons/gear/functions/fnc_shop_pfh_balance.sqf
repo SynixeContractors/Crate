@@ -28,9 +28,11 @@ if (_invalid isNotEqualTo []) exitWith {
 private _cost = [_items] call FUNC(shop_items_cost);
 
 if (GVAR(readOnly) || EGVAR(campaigns,loadouts)) exitWith {
+    private _personal = [_items, 0] call FUNC(shop_items_cost);
+    private _company = [_items, 1] call FUNC(shop_items_cost);
     _btnHide ctrlEnable false;
-    _btnHide ctrlSetText format ["%1", _cost];
-    _btnHide ctrlSetTooltip "Loadout Cost";
+    _btnHide ctrlSetText format ["%1 + %2", _personal, _company];
+    _btnHide ctrlSetTooltip "Loadout Personal + Company";
 };
 
 if (_cost == 0) then {
