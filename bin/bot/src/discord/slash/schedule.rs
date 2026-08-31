@@ -669,7 +669,7 @@ pub async fn remove(
                         format!(
                             "{} - {}",
                             m.mission,
-                            &m.start
+                            m.start
                                 .to_timezone(NEW_YORK)
                                 .format(&time_format)
                                 .expect("Should have been able to format time")
@@ -692,7 +692,7 @@ pub async fn remove(
         .reply(format!(
             "{} - {}",
             scheduled.mission,
-            &scheduled
+            scheduled
                 .start
                 .to_timezone(NEW_YORK)
                 .format(&time_format)
@@ -703,7 +703,7 @@ pub async fn remove(
         .confirm(&format!(
             "Are you sure you want to remove `{} - {}`?",
             scheduled.mission,
-            &scheduled
+            scheduled
                 .start
                 .to_timezone(NEW_YORK)
                 .format(&time_format)
@@ -730,7 +730,7 @@ pub async fn remove(
                     .reply(format!(
                         "Removed `{} - {}`",
                         scheduled.mission,
-                        &scheduled
+                        scheduled
                             .start
                             .to_timezone(NEW_YORK)
                             .format(&time_format)
@@ -742,7 +742,7 @@ pub async fn remove(
                     .reply(format!(
                         "Failed to remove `{} - {}`",
                         scheduled.mission,
-                        &scheduled
+                        scheduled
                             .start
                             .to_timezone(NEW_YORK)
                             .format(&time_format)

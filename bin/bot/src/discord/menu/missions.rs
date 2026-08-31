@@ -194,7 +194,7 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
         return interaction.reply("Failed to get payment type").await;
     };
     if interaction
-        .confirm(&format!("```{}```", &aar.show_math(payment, current_rep)))
+        .confirm(&format!("```{}```", aar.show_math(payment, current_rep)))
         .await?
         == Confirmation::Yes
     {

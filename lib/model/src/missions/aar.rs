@@ -252,11 +252,16 @@ impl Aar {
     /// Calculates the contractor payment for the mission.
     pub fn contractor_payment(&self, payment_type: PaymentType, reputation: f32) -> i32 {
         let mut payment = 0f32;
-        payment += self.payment.no_combat as f32 / 60f32 * payment_type.no_combat() as f32;
-        payment += self.payment.light_combat as f32 / 60f32 * payment_type.light_combat() as f32;
-        payment += self.payment.medium_combat as f32 / 60f32 * payment_type.medium_combat() as f32;
-        payment += self.payment.heavy_combat as f32 / 60f32 * payment_type.heavy_combat() as f32;
-        payment += reputation.clamp(-300f32, 300f32) / 60f32 * self.payment.total() as f32;
+        payment = (self.payment.no_combat as f32 / 60f32)
+            .mul_add(payment_type.no_combat() as f32, payment);
+        payment = (self.payment.light_combat as f32 / 60f32)
+            .mul_add(payment_type.light_combat() as f32, payment);
+        payment = (self.payment.medium_combat as f32 / 60f32)
+            .mul_add(payment_type.medium_combat() as f32, payment);
+        payment = (self.payment.heavy_combat as f32 / 60f32)
+            .mul_add(payment_type.heavy_combat() as f32, payment);
+        payment = (reputation.clamp(-300f32, 300f32) / 60f32)
+            .mul_add(self.payment.total() as f32, payment);
         payment *= self.outcome.contractor_multiplier();
         payment as i32
     }
@@ -266,11 +271,12 @@ impl Aar {
     /// Calculates the employer payment for the mission.
     pub fn employer_payment(&self, payment_type: PaymentType, reputation: f32) -> i32 {
         let mut payment = 0f32;
-        payment += self.payment.total() as f32 / 60f32 * payment_type.employer() as f32;
-        payment += reputation * 200f32 / 60f32 * self.payment.total() as f32;
+        payment =
+            (self.payment.total() as f32 / 60f32).mul_add(payment_type.employer() as f32, payment);
+        payment = (reputation * 200f32 / 60f32).mul_add(self.payment.total() as f32, payment);
         payment *= self.outcome.employer_multiplier();
         payment = (payment as i32).max(20_000) as f32;
-        payment += self.casualties().len() as f32 * self.casualty_payment() as f32;
+        payment = (self.casualties().len() as f32).mul_add(self.casualty_payment() as f32, payment);
         payment as i32
     }
 
