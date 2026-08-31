@@ -122,7 +122,7 @@ if (_turretAmmo isNotEqualTo []) then {
 // Animation Phases
 private _phases = [];
 {
-    private _phase = _object animationSourcePhase _x;
+    private _phase = _object animationPhase _x;
     _phases pushBack [_x, _phase];
 } forEach (animationNames _object);
 if (_phases isNotEqualTo []) then {

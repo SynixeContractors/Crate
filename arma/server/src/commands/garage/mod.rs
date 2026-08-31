@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 use crate::{
     RUNTIME,
-    commands::log::{audit, game_audit},
+    commands::log::game_audit,
 };
 
 #[derive(Default)]

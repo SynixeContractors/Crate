@@ -92,7 +92,7 @@ if !(_object isKindOf "GroundWeaponHolder") then {
         };
         case "phases": {
             {
-                _object animateSource [_x#0, _x#1, true];
+                _object animate [_x#0, _x#1, true];
             } forEach _y;
         };
         case "terrain": {
