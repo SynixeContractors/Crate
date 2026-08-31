@@ -76,7 +76,7 @@ fn store(
         game_audit(
             steam,
             "Vehicle Stored".to_string(),
-            format!("<@{discord}> stored `{plate}`"),
+            format!("stored `{plate}`"),
         )
         .await;
         if let Err(e) = ctx.callback_data("crate:garage", "store", vec![plate]) {
