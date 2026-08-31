@@ -5,14 +5,14 @@ private _loadout = getUnitLoadout player;
 private _magazines = createHashMap;
 private _bulletsPerMagazine = createHashMap;
 
-_fnc_getPerMag = {
+private _fnc_getPerMag = {
     params ["_class"];
     _bulletsPerMagazine getOrDefaultCall [_class, {
         getNumber (configFile >> "CfgMagazines" >> _class >> "count")
     }];
 };
 
-_fnc_addBullets = {
+private _fnc_addBullets = {
     params ["_class", "_count"];
     if (getNumber (configFile >> "CfgMagazines" >> _class >> "ace_disableRepacking") == 1) exitWith {};
     private _needed = ([_class] call _fnc_getPerMag) - _count;
@@ -20,7 +20,7 @@ _fnc_addBullets = {
     _magazines set [_class, _existing + _needed];
 };
 
-_fnc_doWeapon = {
+private _fnc_doWeapon = {
     params ["_weaponArray"];
     if (_weaponArray isNotEqualTo []) then {
         {
@@ -33,7 +33,7 @@ _fnc_doWeapon = {
     };
 };
 
-_fnc_doContainer = {
+private _fnc_doContainer = {
     params ["_containerArray"];
     if (_containerArray isEqualTo []) exitWith {};
     {

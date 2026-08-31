@@ -15,7 +15,7 @@ class ace_arsenal_display {
         class rightTabContentListnBox: RscListNBox {
             y = QUOTE(safeZoneY + 20 * GRID_H);
             h = QUOTE(safeZoneH - 40 * GRID_H);
-            onLBSelChanged = QUOTE(_this call FUNC(shop_arsenal_rightPanelSelChanged));
+            onLBSelChanged = QUOTE(call FUNC(shop_arsenal_rightPanelSelChanged));
         };
 
         class leftRoleFilter: RscCombo {

@@ -8,7 +8,7 @@ if (markerAlpha _marker != 1) then {
     _state set ["alpha", markerAlpha _marker];
 };
 private _color = markerColor _marker;
-if (_color != "ColorBlack" && {_color != ""}) then {
+if (_color != "ColorBlack" && _color != "") then {
     _state set ["color", _color];
 };
 if (markerSize _marker isNotEqualTo [1,1]) then {

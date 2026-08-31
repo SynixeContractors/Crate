@@ -48,7 +48,7 @@ addMissionEventHandler ["BuildingChanged", {
 ["ace_tagCreated", {
     params ["_tag", "_texture", "_object", "_unit"];
     EXTFUNC("uuid");
-    _id = _ext_res select 0;
+    private _id = _ext_res select 0;
     private _state = createHashMap;
     _state set ["pos", getPosASL _tag];
     _state set ["rot", [

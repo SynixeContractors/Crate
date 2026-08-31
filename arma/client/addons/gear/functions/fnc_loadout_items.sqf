@@ -11,7 +11,7 @@ _extendedLoadout params ["_loadout", "_extra"];
 
 private _items = createHashMap;
 
-_fnc_addItem = {
+private _fnc_addItem = {
     params ["_item", ["_count", 1]];
     if (_item isNotEqualTo "") then {
         if (_count isEqualType true) then {
@@ -23,7 +23,7 @@ _fnc_addItem = {
     };
 };
 
-_fnc_addWeapon = {
+private _fnc_addWeapon = {
     params ["_weaponArray"];
     if (_weaponArray isNotEqualTo []) then {
         // weapon and attachements
@@ -42,7 +42,7 @@ _fnc_addWeapon = {
     };
 };
 
-_fnc_addContainer = {
+private _fnc_addContainer = {
     params ["_containerArray"];
     if (_containerArray isEqualTo []) exitWith {};
     [_containerArray select 0] call _fnc_addItem;

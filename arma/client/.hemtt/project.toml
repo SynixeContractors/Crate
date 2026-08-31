@@ -8,11 +8,6 @@ git_hash = 0
 [hemtt.signing]
 authority = "synixe_crate"
 
-[asc]
-exclude = [
-    "/XEH_preInit.sqf",
-]
-
 [hemtt.launch.default]
 file_patching = false
 parameters = [
