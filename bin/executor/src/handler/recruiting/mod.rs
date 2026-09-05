@@ -11,7 +11,7 @@ use synixe_proc::events_request_5;
 use super::Handler;
 
 mod candidate;
-mod reddit;
+pub mod reddit;
 mod steam;
 
 const IGNORE: [&str; 5] = ["exile", "vietnam", "police rp", "halo", "ww2"];

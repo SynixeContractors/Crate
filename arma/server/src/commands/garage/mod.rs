@@ -11,10 +11,7 @@ use synixe_proc::events_request_5;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::{
-    RUNTIME,
-    commands::log::game_audit,
-};
+use crate::{RUNTIME, commands::log::game_audit};
 
 #[derive(Default)]
 pub struct PendingSpawn(RwLock<HashMap<Uuid, Message>>);

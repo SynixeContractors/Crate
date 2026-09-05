@@ -25,6 +25,7 @@ tokio-simple-scheduler = "0.2.0"
 tracing = { workspace = true }
 
 # recruiting
-roux = "2.2.15"
-rust-embed = "8.9.0"
-scraper = "0.25.0"
+# roux = "2.2.15"
+roux = { git = "https://github.com/synixecontractors/roux" }
+rust-embed = "8.12.0"
+scraper = "0.27.0"

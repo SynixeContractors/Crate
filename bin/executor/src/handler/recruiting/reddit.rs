@@ -129,14 +129,20 @@ pub async fn post_reddit_findaunit() {
     debug!("in executor post reddit");
     let client = Reddit::new(
         "Ctirad Brodsky (by /u/synixe)",
-        &std::env::var("REDDIT_CLIENT_ID").expect("REDDIT_CLIENT_SECRET not set"),
+        &std::env::var("REDDIT_CLIENT_ID").expect("REDDIT_CLIENT_ID not set"),
         &std::env::var("REDDIT_CLIENT_SECRET").expect("REDDIT_CLIENT_SECRET not set"),
     )
     .username(&std::env::var("REDDIT_USERNAME").expect("REDDIT_USERNAME not set"))
     .password(&std::env::var("REDDIT_PASSWORD").expect("REDDIT_PASSWORD not set"))
     .login()
     .await;
-    let Ok(client) = client else { return };
+    let client = match client {
+        Ok(client) => client,
+        Err(e) => {
+            error!("Failed to login to reddit: {}", e);
+            return;
+        }
+    };
     match client.submit_richtext(
         "[A3][Recruiting][EU/NA/SA][Semi-milsim][18+]- Synixe Contractors - PMC - Persistent Gear - Manage your own kit",
         std::str::from_utf8(crate::Assets::get("reddit-findaunit.json").expect("reddit post json missing").data.as_ref()).expect("Invalid json"),
