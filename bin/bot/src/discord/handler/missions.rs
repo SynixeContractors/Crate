@@ -50,7 +50,7 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
             }
             return;
         };
-	unknown.append(&mut unknown_casualties);
+        unknown.append(&mut unknown_casualties);
         if !unknown.is_empty() {
             if let Err(e) = message
                 .reply(
