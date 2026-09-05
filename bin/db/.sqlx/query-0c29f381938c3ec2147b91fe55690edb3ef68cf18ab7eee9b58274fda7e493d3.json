@@ -6,12 +6,19 @@
       {
         "ordinal": 0,
         "name": "category",
-        "type_info": "Varchar"
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "gear_items",
+            "name": "category"
+          }
+        }
       },
       {
         "ordinal": 1,
         "name": "cost",
-        "type_info": "Int8"
+        "type_info": "Int8",
+        "origin": "Expression"
       }
     ],
     "parameters": {

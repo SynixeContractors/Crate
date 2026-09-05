@@ -6,7 +6,8 @@
       {
         "ordinal": 0,
         "name": "give_first_kit",
-        "type_info": "Void"
+        "type_info": "Void",
+        "origin": "Expression"
       }
     ],
     "parameters": {

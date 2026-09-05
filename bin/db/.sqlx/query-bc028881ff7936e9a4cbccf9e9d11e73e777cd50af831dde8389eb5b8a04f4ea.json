@@ -6,47 +6,76 @@
       {
         "ordinal": 0,
         "name": "class",
-        "type_info": "Varchar"
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "gear_items",
+            "name": "class"
+          }
+        }
       },
       {
         "ordinal": 1,
         "name": "pretty",
-        "type_info": "Varchar"
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "gear_items",
+            "name": "pretty"
+          }
+        }
       },
       {
         "ordinal": 2,
         "name": "listed",
-        "type_info": "Bool"
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "gear_items",
+            "name": "listed"
+          }
+        }
       },
       {
         "ordinal": 3,
         "name": "roles",
-        "type_info": "VarcharArray"
+        "type_info": "VarcharArray",
+        "origin": {
+          "Table": {
+            "table": "gear_items",
+            "name": "roles"
+          }
+        }
       },
       {
         "ordinal": 4,
         "name": "personal",
-        "type_info": "Int4"
+        "type_info": "Int4",
+        "origin": "Expression"
       },
       {
         "ordinal": 5,
         "name": "company",
-        "type_info": "Int4"
+        "type_info": "Int4",
+        "origin": "Expression"
       },
       {
         "ordinal": 6,
         "name": "personal_current",
-        "type_info": "Int4"
+        "type_info": "Int4",
+        "origin": "Expression"
       },
       {
         "ordinal": 7,
         "name": "company_current",
-        "type_info": "Int4"
+        "type_info": "Int4",
+        "origin": "Expression"
       },
       {
         "ordinal": 8,
         "name": "end_date",
-        "type_info": "Timestamptz"
+        "type_info": "Timestamptz",
+        "origin": "Expression"
       }
     ],
     "parameters": {

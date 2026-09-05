@@ -6,42 +6,101 @@
       {
         "ordinal": 0,
         "name": "id",
-        "type_info": "Uuid"
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "id"
+          }
+        }
       },
       {
         "ordinal": 1,
         "name": "base",
-        "type_info": "Uuid"
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "base"
+          }
+        }
       },
       {
         "ordinal": 2,
         "name": "class",
-        "type_info": "Varchar"
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "class"
+          }
+        }
       },
       {
         "ordinal": 3,
         "name": "name",
-        "type_info": "Varchar"
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "name"
+          }
+        }
       },
       {
         "ordinal": 4,
         "name": "cost",
-        "type_info": "Int4"
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "cost"
+          }
+        }
       },
       {
         "ordinal": 5,
         "name": "plate_template",
-        "type_info": "Text"
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "plate_template"
+          }
+        }
       },
       {
         "ordinal": 6,
         "name": "fuel_capacity",
-        "type_info": "Int4"
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "fuel_capacity"
+          }
+        }
       },
       {
         "ordinal": 7,
         "name": "transport_cost",
-        "type_info": "Int4"
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "transport_cost"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "animations",
+        "type_info": "Jsonb",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "animations"
+          }
+        }
       }
     ],
     "parameters": {
@@ -57,7 +116,8 @@
       false,
       true,
       false,
-      false
+      false,
+      true
     ]
   },
   "hash": "e80f272afc1d4fdd2e7739e51881614b68153b1c5acc5eda13c8a38bf1e22f2f"

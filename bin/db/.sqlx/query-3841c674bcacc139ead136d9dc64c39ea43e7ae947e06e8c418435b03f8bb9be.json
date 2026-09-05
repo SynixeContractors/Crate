@@ -6,17 +6,30 @@
       {
         "ordinal": 0,
         "name": "family",
-        "type_info": "Varchar"
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "gear_items_family",
+            "name": "family"
+          }
+        }
       },
       {
         "ordinal": 1,
         "name": "class",
-        "type_info": "Varchar"
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "gear_items_family",
+            "name": "class"
+          }
+        }
       },
       {
         "ordinal": 2,
         "name": "pretty",
-        "type_info": "Varchar"
+        "type_info": "Varchar",
+        "origin": "Expression"
       }
     ],
     "parameters": {

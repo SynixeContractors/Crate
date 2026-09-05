@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                                *\n                            FROM\n                                garage_shop\n                            WHERE\n                                LOWER(name) LIKE LOWER($1)",
+  "query": "\n                    SELECT\n                        a.id,\n                        s.name,\n                        s.cost,\n                        s.class,\n                        s.base,\n                        s.plate_template,\n                        s.fuel_capacity,\n                        s.transport_cost,\n                        s.animations\n                    FROM\n                        garage_addons a\n                    INNER JOIN\n                        garage_shop s\n                    ON\n                        s.id = a.id\n                    WHERE\n                        s.base = (SELECT v.id FROM garage_vehicles v WHERE v.plate = $1)\n                        AND a.count > 0",
   "describe": {
     "columns": [
       {
@@ -9,35 +9,13 @@
         "type_info": "Uuid",
         "origin": {
           "Table": {
-            "table": "garage_shop",
+            "table": "garage_addons",
             "name": "id"
           }
         }
       },
       {
         "ordinal": 1,
-        "name": "base",
-        "type_info": "Uuid",
-        "origin": {
-          "Table": {
-            "table": "garage_shop",
-            "name": "base"
-          }
-        }
-      },
-      {
-        "ordinal": 2,
-        "name": "class",
-        "type_info": "Varchar",
-        "origin": {
-          "Table": {
-            "table": "garage_shop",
-            "name": "class"
-          }
-        }
-      },
-      {
-        "ordinal": 3,
         "name": "name",
         "type_info": "Varchar",
         "origin": {
@@ -48,13 +26,35 @@
         }
       },
       {
-        "ordinal": 4,
+        "ordinal": 2,
         "name": "cost",
         "type_info": "Int4",
         "origin": {
           "Table": {
             "table": "garage_shop",
             "name": "cost"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "class",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "class"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "base",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "base"
           }
         }
       },
@@ -110,15 +110,15 @@
     },
     "nullable": [
       false,
+      false,
+      false,
+      false,
       true,
-      false,
-      false,
-      false,
       true,
       false,
       false,
       true
     ]
   },
-  "hash": "88d19d3e0ce5fdfa84d5af3e7ef895d9f92a1195f56a367e1b775fd847ce7e3b"
+  "hash": "815e01426cd3045a63ab1d5431c7d074daeaaba101d89f0ed6bd0cf91196ae4d"
 }

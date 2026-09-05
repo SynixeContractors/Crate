@@ -6,7 +6,13 @@
       {
         "ordinal": 0,
         "name": "specialist",
-        "type_info": "Bool"
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "certifications_first_kit",
+            "name": "specialist"
+          }
+        }
       }
     ],
     "parameters": {
