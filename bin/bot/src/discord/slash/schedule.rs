@@ -647,7 +647,7 @@ pub async fn remove(
     )
     .await?;
     let time_format =
-        format_description::parse(TIME_FORMAT).expect("Time format should have been valid");
+        format_description::parse_borrowed::<3>(TIME_FORMAT).expect("Time format should have been valid");
     debug!("fetching missions");
     interaction.reply("Fetching missions...").await?;
     let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request_5!(
@@ -802,7 +802,7 @@ async fn post(
                 .start
                 .to_timezone(NEW_YORK)
                 .format(
-                    &format_description::parse(TIME_FORMAT)
+                    &format_description::parse_borrowed::<3>(TIME_FORMAT)
                         .expect("Time format should have been valid")
                 )
                 .expect("Should have been able to format time")

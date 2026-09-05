@@ -113,7 +113,8 @@ impl Handler for Request {
                         s.base,
                         s.plate_template,
                         s.fuel_capacity,
-                        s.transport_cost
+                        s.transport_cost,
+                        s.animations
                     FROM
                         garage_addons a
                     INNER JOIN

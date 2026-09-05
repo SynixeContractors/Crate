@@ -41,6 +41,8 @@ pub struct ShopAsset {
     pub fuel_capacity: i32,
     /// base transport cost
     pub transport_cost: i32,
+    /// animations
+    pub animations: Option<serde_json::Value>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
