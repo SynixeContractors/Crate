@@ -38,12 +38,19 @@ pub async fn validate_aar(ctx: &Context, message: Message) {
             }
             return;
         };
-        let Ok((_, unknown)) = find_members(ctx, aar.contractors()).await else {
+        let Ok((_, mut unknown)) = find_members(ctx, aar.contractors()).await else {
             if let Err(e) = message.reply(&ctx.http, "Failed to find members").await {
                 error!("Error replying to message: {}", e);
             }
             return;
         };
+        let Ok((_, mut unknown_casualties)) = find_members(ctx, aar.casualties()).await else {
+            if let Err(e) = message.reply(&ctx.http, "Failed to find casualties").await {
+                error!("Error replying to message: {}", e);
+            }
+            return;
+        };
+	unknown.append(&mut unknown_casualties);
         if !unknown.is_empty() {
             if let Err(e) = message
                 .reply(
