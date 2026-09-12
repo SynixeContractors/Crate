@@ -19,7 +19,7 @@ impl DB {
             Arc::new(
                 PgPoolOptions::new()
                     .min_connections(1)
-                    .max_connections(5)
+                    .max_connections(3)
                     .connect(
                         &std::env::var("DATABASE_URL")
                             .expect("Expected the DATABASE_URL in the environment"),
