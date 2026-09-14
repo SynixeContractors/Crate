@@ -1,4 +1,4 @@
-class RscButtonMenuOk;
+class RscButtonMenuOK;
 class RscButtonMenuCancel;
 class RscText;
 class RscPicture;
@@ -34,7 +34,7 @@ class GVAR(RscCheckout) {
             h = QUOTE(H_PART(1.5));
             colorBackground[] = {0.13,0.54,0.21,0.8};
         };
-        class GVAR(Buy): RscButtonMenuOk {
+        class GVAR(Buy): RscButtonMenuOK {
             text = "Purchase";
             x = QUOTE(X_PART((OFFSET + (WIDTH - 4))));
             y = QUOTE(Y_PART(23));

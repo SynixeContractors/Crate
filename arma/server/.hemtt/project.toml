@@ -1,5 +1,6 @@
 name = "crate-server"
 prefix = "crate_server"
+mainprefix = "synixe"
 
 [files]
 include = [
