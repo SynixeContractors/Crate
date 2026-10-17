@@ -12,7 +12,9 @@ use synixe_proc::events_request_5;
 use uuid::Uuid;
 
 use crate::{
-    audit, bot::Bot, discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY, MENU_ARMA_DISCORD},
+    audit,
+    bot::Bot,
+    discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY, MENU_ARMA_DISCORD},
 };
 
 use super::{
