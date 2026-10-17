@@ -30,30 +30,27 @@ impl Handler for Request {
                     error!("failed to respond for CheckSteam{:?}", e);
                 }
                 steam::check_steam_forums().await;
-                Ok(())
             }
             Self::CheckReddit {} => {
                 if let Err(e) = respond!(msg, Response::CheckReddit(Ok(()))).await {
                     error!("failed to respond for CheckReddit{:?}", e);
                 }
                 reddit::check_reddit_findaunit().await;
-                Ok(())
             }
             Self::PostReddit {} => {
                 if let Err(e) = respond!(msg, Response::PostReddit(Ok(()))).await {
                     error!("failed to respond for PostReddit{:?}", e);
                 }
                 reddit::post_reddit_findaunit().await;
-                Ok(())
             }
             Self::ReplyReddit { url } => {
                 if let Err(e) = respond!(msg, Response::ReplyReddit(Ok(()))).await {
                     error!("failed to respond for ReplyReddit{:?}", e);
                 }
                 reddit::reply(msg, url).await;
-                Ok(())
             }
         }
+        Ok(())
     }
 }
 

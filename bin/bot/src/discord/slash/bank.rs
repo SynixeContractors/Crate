@@ -460,8 +460,8 @@ async fn candlestick(
     let mut open = 0;
     let mut high = i32::MIN;
     let mut low = i32::MAX;
-    let format =
-        format_description::parse_borrowed::<3>("[year]-[month]-[day]").expect("Failed to parse date format");
+    let format = format_description::parse_borrowed::<3>("[year]-[month]-[day]")
+        .expect("Failed to parse date format");
     for Transaction { amount, created } in history {
         let day = created
             .format(&format)

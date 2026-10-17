@@ -646,8 +646,8 @@ pub async fn remove(
         &mut interaction,
     )
     .await?;
-    let time_format =
-        format_description::parse_borrowed::<3>(TIME_FORMAT).expect("Time format should have been valid");
+    let time_format = format_description::parse_borrowed::<3>(TIME_FORMAT)
+        .expect("Time format should have been valid");
     debug!("fetching missions");
     interaction.reply("Fetching missions...").await?;
     let Ok(Ok((Response::UpcomingSchedule(Ok(missions)), _))) = events_request_5!(

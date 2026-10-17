@@ -70,7 +70,6 @@ impl Handler for Request {
                         }
                     }
                 }
-                Ok(())
             }
             Self::CheckRoles {} => {
                 respond!(msg, Response::CheckRoles(Ok(()))).await?;
@@ -116,8 +115,8 @@ impl Handler for Request {
                         }
                     }
                 }
-                Ok(())
             }
         }
+        Ok(())
     }
 }
