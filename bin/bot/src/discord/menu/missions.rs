@@ -14,6 +14,7 @@ use time::macros::offset;
 
 pub const MENU_AAR_PAY: &str = "AAR - Pay";
 pub const MENU_AAR_IDS: &str = "AAR - Get IDs";
+pub const MENU_ARMA_DISCORD: &str = "Mission - Arma Discord";
 
 use crate::discord::{
     interaction::{Confirmation, Interaction},
@@ -271,5 +272,54 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
             interaction.reply("Failed to pay mission").await?;
         }
     }
+    Ok(())
+}
+
+pub fn arma_discord() -> CreateCommand {
+    CreateCommand::new(MENU_ARMA_DISCORD).kind(CommandType::Message)
+}
+
+pub async fn run_arma_discord(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), &[]);
+    let Ok(Ok((Response::FetchScheduledMessage(Ok(Some(scheduled))), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        FetchScheduledMessage {
+            channel: command.channel_id,
+            message: MessageId::from(
+                command
+                    .data
+                    .target_id
+                    .expect("Should only be possible to run this command on a message")
+            )
+        }
+    )
+    .await
+    else {
+        error!("Failed to fetch scheduled mission for component");
+        return Ok(());
+    };
+
+    let title = scheduled.name;
+    let summary = scheduled.summary;
+    let time = format!("<t:{}:F>", scheduled.start.unix_timestamp());
+
+    let text = format!(
+        "```
+## {title}
+
+Group: **Synixe Contractors**
+Branch: **Semi Realism**
+Main Language: English
+Operation Time: {time}
+Operation Type: Assault
+Required Mods: ACE, ACRE, Aegis
+
+{summary}
+
+Discord: https://discord.com/invite/SZhzv6z
+```"
+    );
+    interaction.reply(text).await?;
     Ok(())
 }

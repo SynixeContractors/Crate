@@ -12,9 +12,7 @@ use synixe_proc::events_request_5;
 use uuid::Uuid;
 
 use crate::{
-    audit,
-    bot::Bot,
-    discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY},
+    audit, bot::Bot, discord::menu::missions::{MENU_AAR_IDS, MENU_AAR_PAY, MENU_ARMA_DISCORD},
 };
 
 use super::{
@@ -42,6 +40,7 @@ impl EventHandler for Handler {
                 vec![
                     menu::missions::aar_ids(),
                     menu::missions::aar_pay(),
+                    menu::missions::arma_discord(),
                     slash::bank::register(),
                     slash::casino::register(),
                     slash::certifications::register(),
@@ -80,6 +79,7 @@ impl EventHandler for Handler {
                     "surveys" => slash::surveys::run(&ctx, &command).await,
                     MENU_AAR_IDS => menu::missions::run_aar_ids(&ctx, &command).await,
                     MENU_AAR_PAY => menu::missions::run_aar_pay(&ctx, &command).await,
+                    MENU_ARMA_DISCORD => menu::missions::run_arma_discord(&ctx, &command).await,
                     _ => Ok(()),
                 }
             }
