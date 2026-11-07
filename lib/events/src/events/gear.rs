@@ -14,6 +14,33 @@ pub mod db {
     pub struct Transaction {
         pub amount: i32,
         pub created: time::OffsetDateTime,
+        pub kind: TransactionKind,
+        pub reason: String,
+        /// The item class, for purchases
+        pub class: Option<String>,
+        /// The number of items, for purchases
+        pub quantity: Option<i32>,
+    }
+
+    #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+    #[serde(rename_all = "snake_case")]
+    pub enum TransactionKind {
+        Deposit,
+        TransferIn,
+        TransferOut,
+        Purchase,
+    }
+
+    impl TransactionKind {
+        #[must_use]
+        pub const fn label(self) -> &'static str {
+            match self {
+                Self::Deposit => "deposit",
+                Self::TransferIn => "transfer in",
+                Self::TransferOut => "transfer out",
+                Self::Purchase => "purchase",
+            }
+        }
     }
 
     events_requests!(db.gear {

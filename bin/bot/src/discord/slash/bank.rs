@@ -470,7 +470,10 @@ async fn candlestick(
     let mut low = i32::MAX;
     let format = format_description::parse_borrowed::<3>("[year]-[month]-[day]")
         .expect("Failed to parse date format");
-    for Transaction { amount, created } in history {
+    for Transaction {
+        amount, created, ..
+    } in history
+    {
         let day = created
             .format(&format)
             .expect("Failed to format date")
@@ -566,10 +569,18 @@ async fn history(
         .iter()
         .take(10)
         .map(|t| {
+            let detail = match (&t.class, t.quantity) {
+                (Some(class), Some(quantity)) => {
+                    format!("{class} x{quantity} ({})", t.reason)
+                }
+                _ => t.reason.clone(),
+            };
+            let detail: String = detail.chars().take(80).collect();
             format!(
-                "{}  {}",
+                "{}  {:>10}  {:<12}  {detail}",
                 t.created.date(),
-                bootstrap::format::money(t.amount, false)
+                bootstrap::format::money(t.amount, false),
+                t.kind.label(),
             )
         })
         .collect::<Vec<_>>()

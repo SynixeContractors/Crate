@@ -2,6 +2,7 @@ use async_openai::types::chat::{ChatCompletionTool, ChatCompletionTools, Functio
 use serenity::prelude::Context;
 
 pub mod bank;
+pub mod missions;
 pub mod moderation;
 
 #[async_trait::async_trait]

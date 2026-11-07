@@ -179,7 +179,7 @@ impl BrainFunction for History {
     }
 
     fn desc(&self) -> &'static str {
-        "Get the most recent bank transactions for a member, newest first"
+        "Get the most recent bank transactions for a member, newest first. Each has a type, amount, and reason (e.g. the mission a payment was for, a fine, or a transfer's reason), and purchases include the item bought"
     }
 
     fn args(&self) -> serde_json::Value {
@@ -214,10 +214,18 @@ impl BrainFunction for History {
             history
                 .iter()
                 .take(10)
-                .map(|t| json!({
-                    "date": t.created.date().to_string(),
-                    "amount": bootstrap::format::money(t.amount, false),
-                }))
+                .map(|t| {
+                    let mut entry = json!({
+                        "date": t.created.date().to_string(),
+                        "type": t.kind.label(),
+                        "amount": bootstrap::format::money(t.amount, false),
+                        "reason": t.reason,
+                    });
+                    if let (Some(class), Some(quantity)) = (&t.class, t.quantity) {
+                        entry["item"] = json!(format!("{class} x{quantity}"));
+                    }
+                    entry
+                })
                 .collect::<Vec<_>>()
         ))
     }

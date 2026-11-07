@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
-use synixe_events::{gear::db::Transaction, publish};
+use synixe_events::{
+    gear::db::{Transaction, TransactionKind},
+    publish,
+};
 use synixe_meta::discord::BRODSKY;
 use synixe_model::gear::Deposit;
 use uuid::Uuid;
@@ -189,50 +192,94 @@ pub async fn spent(
         .collect())
 }
 
+#[derive(sqlx::FromRow)]
+struct LedgerRow {
+    amount: i32,
+    created: time::OffsetDateTime,
+    kind: String,
+    reason: String,
+    class: Option<String>,
+    quantity: Option<i32>,
+}
+
 pub async fn history(
     member: &UserId,
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<Vec<Transaction>, anyhow::Error> {
-    let query = sqlx::query_as!(
-        Transaction,
-        r#"SELECT "amount!", "created!"
+    let rows = sqlx::query_as::<_, LedgerRow>(
+        "SELECT amount, created, kind, reason, class, quantity
 FROM (
     SELECT
         member,
-        amount as "amount!",
-        created as "created!"
+        amount,
+        created,
+        'deposit' AS kind,
+        reason,
+        NULL::VARCHAR AS class,
+        NULL::INTEGER AS quantity
     FROM gear_bank_deposits
 
     UNION ALL
 
     SELECT
         target AS member,
-        amount AS "amount!",
-        created as "created!"
+        amount,
+        created,
+        'transfer_in' AS kind,
+        reason,
+        NULL::VARCHAR AS class,
+        NULL::INTEGER AS quantity
     FROM gear_bank_transfers
 
     UNION ALL
 
     SELECT
         source AS member,
-        -amount AS "amount!",
-        created as "created!"
+        -amount AS amount,
+        created,
+        'transfer_out' AS kind,
+        reason,
+        NULL::VARCHAR AS class,
+        NULL::INTEGER AS quantity
     FROM gear_bank_transfers
 
     UNION ALL
 
     SELECT
         member,
-        (-personal * quantity) AS "amount!",
-        created as "created!"
+        (-personal * quantity) AS amount,
+        created,
+        'purchase' AS kind,
+        reason,
+        class,
+        quantity
     FROM gear_bank_purchases
 ) ledger
 WHERE member = $1
-ORDER BY "created!" DESC;"#,
-        member.to_string(),
-    );
-    let res = query.fetch_all(&mut **executor).await?;
-    Ok(res)
+ORDER BY created DESC;",
+    )
+    .bind(member.to_string())
+    .fetch_all(&mut **executor)
+    .await?;
+    rows.into_iter()
+        .map(|row| {
+            let kind = match row.kind.as_str() {
+                "deposit" => TransactionKind::Deposit,
+                "transfer_in" => TransactionKind::TransferIn,
+                "transfer_out" => TransactionKind::TransferOut,
+                "purchase" => TransactionKind::Purchase,
+                other => anyhow::bail!("unknown transaction kind: {other}"),
+            };
+            Ok(Transaction {
+                amount: row.amount,
+                created: row.created,
+                kind,
+                reason: row.reason,
+                class: row.class,
+                quantity: row.quantity,
+            })
+        })
+        .collect()
 }
 
 pub async fn publish_balance(nats: async_nats::Client, member: UserId, reason: String) {

@@ -40,6 +40,7 @@ impl Brain {
                 Box::new(functions::bank::Spending {}),
                 Box::new(functions::bank::History {}),
                 Box::new(functions::bank::ShopPrice {}),
+                Box::new(functions::missions::Upcoming {}),
                 Box::new(functions::moderation::Timeout {}),
             ],
         }
