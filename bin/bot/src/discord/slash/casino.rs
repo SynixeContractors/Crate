@@ -296,7 +296,7 @@ async fn diceroll(
     };
     // Roll the die (1-6)
     let roll = rand::random::<u32>() % 6 + 1;
-    if roll == *guess as u32 {
+    if roll == u32::try_from(*guess).unwrap_or(0) {
         #[allow(clippy::cast_possible_truncation)]
         let amount = (*amount * 6) as i32;
         // Cash out the winnings

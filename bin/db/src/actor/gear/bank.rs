@@ -186,7 +186,12 @@ pub async fn spent(
     let res = query.fetch_all(&mut **executor).await?;
     Ok(res
         .into_iter()
-        .map(|row| (row.category, row.cost.unwrap_or(0) as i32))
+        .map(|row| {
+            (
+                row.category,
+                i32::try_from(row.cost.unwrap_or(0)).unwrap_or(0),
+            )
+        })
         .filter(|(_, cost)| *cost != 0)
         .filter_map(|(category, cost)| category.map(|category| (category, cost)))
         .collect())

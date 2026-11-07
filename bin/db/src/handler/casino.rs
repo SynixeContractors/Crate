@@ -38,7 +38,6 @@ impl Handler for Request {
                 .execute(&*db)
                 .await?;
                 respond!(msg, Response::BuyIn(Ok(()))).await?;
-                Ok(())
             }
             Self::CashOut {
                 member,
@@ -60,8 +59,8 @@ impl Handler for Request {
                 .execute(&*db)
                 .await?;
                 respond!(msg, Response::CashOut(Ok(()))).await?;
-                Ok(())
             }
         }
+        Ok(())
     }
 }

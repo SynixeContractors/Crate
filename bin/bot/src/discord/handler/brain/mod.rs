@@ -224,7 +224,7 @@ impl Brain {
 
     fn prompt(channel: ChannelId) -> String {
         let mut prompt = include_str!("prompt.txt").to_string();
-        prompt = prompt.replace("%channel%", &format!("<#{}>", channel));
+        prompt = prompt.replace("%channel%", &format!("<#{channel}>"));
         prompt
     }
 }

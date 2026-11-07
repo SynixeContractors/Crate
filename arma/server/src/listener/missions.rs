@@ -65,7 +65,6 @@ impl Listener for Publish {
                     }
                     _ => {}
                 }
-                Ok(())
             }
             Self::ChangeMission {
                 id,
@@ -101,7 +100,6 @@ impl Listener for Publish {
                 ) {
                     error!("error sending brodsky_say: {e:?}");
                 }
-                Ok(())
             }
             Self::WarnChangeMission {
                 id,
@@ -116,8 +114,8 @@ impl Listener for Publish {
                 ) {
                     error!("error sending brodsky_say: {e:?}");
                 }
-                Ok(())
             }
         }
+        Ok(())
     }
 }

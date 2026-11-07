@@ -52,7 +52,6 @@ impl Listener for Publish {
                         error!("Failed to send message: {}", e);
                     }
                 }
-                Ok(())
             }
             Self::TrialExpiring { trial, days } => {
                 if let Ok(Ok((Response::List(Ok(certs)), _))) =
@@ -114,8 +113,8 @@ impl Listener for Publish {
                         error!("Cannot send ban message: {}", e);
                     }
                 }
-                Ok(())
             }
         }
+        Ok(())
     }
 }
