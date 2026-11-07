@@ -37,6 +37,9 @@ impl Brain {
             conversations: RwLock::new(HashMap::new()),
             functions: vec![
                 Box::new(functions::bank::GetBalance {}),
+                Box::new(functions::bank::Spending {}),
+                Box::new(functions::bank::History {}),
+                Box::new(functions::bank::ShopPrice {}),
                 Box::new(functions::moderation::Timeout {}),
             ],
         }
@@ -220,7 +223,7 @@ impl Brain {
 
     fn prompt(channel: ChannelId) -> String {
         let mut prompt = include_str!("prompt.txt").to_string();
-        prompt = prompt.replace("%channel%", &format!("<#{}>", &channel));
+        prompt = prompt.replace("%channel%", &format!("<#{}>", channel));
         prompt
     }
 }

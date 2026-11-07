@@ -66,6 +66,13 @@ pub fn register() -> CreateCommand {
                 .allow_public()
         )
         .add_option(
+            CreateCommandOption::new(CommandOptionType::SubCommand, "history", "View a member's most recent bank transactions")
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view transactions for")
+                    .required(true)
+                )
+                .allow_public()
+        )
+        .add_option(
             CreateCommandOption::new(CommandOptionType::SubCommand, "candlestick", "View a candlestick chart of a member's balance over time")
                 .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view the chart for")
                     .required(true)
@@ -86,6 +93,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
             "fine" => fine(ctx, command, options).await?,
             "spent" => spent(ctx, command, options).await?,
             "candlestick" => candlestick(ctx, command, options).await?,
+            "history" => history(ctx, command, options).await?,
             _ => unreachable!(),
         }
     }
@@ -523,5 +531,50 @@ async fn candlestick(
             format!("Balance history for <@{user}>:"),
             CreateAttachment::bytes(image, "chart.png"),
         )
+        .await
+}
+
+async fn history(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    interaction.reply("Fetching transactions...").await?;
+    let Some(user) = get_option_user!(options, "member") else {
+        return interaction.reply("Invalid member").await;
+    };
+
+    let Ok(Ok((Response::BankHistory(Ok(mut history)), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        BankHistory { member: *user }
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fetch transactions").await;
+    };
+
+    if history.is_empty() {
+        return interaction
+            .reply("No transactions found for this member")
+            .await;
+    }
+
+    history.sort_by_key(|a| std::cmp::Reverse(a.created));
+    let lines = history
+        .iter()
+        .take(10)
+        .map(|t| {
+            format!(
+                "{}  {}",
+                t.created.date(),
+                bootstrap::format::money(t.amount, false)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    interaction
+        .reply(format!("Latest transactions for <@{user}>:\n```{lines}```"))
         .await
 }

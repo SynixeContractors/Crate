@@ -60,6 +60,7 @@ impl EventHandler for Handler {
                     slash::reputation::register(),
                     // slash::reset::register(),
                     slash::schedule::register(),
+                    slash::shop::register(),
                     slash::surveys::register(),
                 ],
             )
@@ -85,6 +86,7 @@ impl EventHandler for Handler {
                     "reputation" => slash::reputation::run(&ctx, &command).await,
                     // "reset" => slash::reset::run(&ctx, &command).await,
                     "schedule" => slash::schedule::run(&ctx, &command).await,
+                    "shop" => slash::shop::run(&ctx, &command).await,
                     "surveys" => slash::surveys::run(&ctx, &command).await,
                     MENU_AAR_IDS => menu::missions::run_aar_ids(&ctx, &command).await,
                     MENU_AAR_PAY => menu::missions::run_aar_pay(&ctx, &command).await,

@@ -27,6 +27,7 @@ pub mod reputation;
 // pub mod reset;
 pub mod casino;
 pub mod schedule;
+pub mod shop;
 pub mod surveys;
 
 #[derive(Debug, Clone)]
