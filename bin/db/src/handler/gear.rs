@@ -211,6 +211,16 @@ impl Handler for Request {
             Self::ShopGetPrice { item } => {
                 quick_transaction_return!(ShopGetPrice, db, msg, cx, actor::gear::shop::price, item,)
             }
+            Self::ShopSearch { search } => {
+                quick_transaction_return!(
+                    ShopSearch,
+                    db,
+                    msg,
+                    cx,
+                    actor::gear::shop::search,
+                    search,
+                )
+            }
             Self::ShopEnter {
                 member,
                 items,

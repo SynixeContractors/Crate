@@ -64,3 +64,24 @@ pub async fn price(
         res.end_date,
     ))
 }
+
+pub async fn search(
+    search: &str,
+    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<Vec<(String, Option<String>)>, anyhow::Error> {
+    let pattern = format!(
+        "%{}%",
+        search
+            .replace('\\', "\\\\")
+            .replace('%', "\\%")
+            .replace('_', "\\_")
+    );
+    let items = sqlx::query_as::<_, (String, Option<String>)>(
+        "SELECT class, pretty FROM gear_items WHERE enabled = TRUE AND (class ILIKE $1 OR pretty ILIKE $1) ORDER BY COALESCE(lower(class) = lower($2) OR lower(pretty) = lower($2), FALSE) DESC, COALESCE(pretty, class) LIMIT 25",
+    )
+    .bind(pattern)
+    .bind(search)
+    .fetch_all(&mut **executor)
+    .await?;
+    Ok(items)
+}

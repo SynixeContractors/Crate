@@ -111,6 +111,7 @@ impl EventHandler for Handler {
                     "missions" => slash::missions::autocomplete(&ctx, &autocomplete).await,
                     // "reset" => slash::reset::autocomplete(&ctx, &autocomplete).await,
                     "schedule" => slash::schedule::autocomplete(&ctx, &autocomplete).await,
+                    "shop" => slash::shop::autocomplete(&ctx, &autocomplete).await,
                     "surveys" => slash::surveys::autocomplete(&ctx, &autocomplete).await,
                     _ => Ok(()),
                 }

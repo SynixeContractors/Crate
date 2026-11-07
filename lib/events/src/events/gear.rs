@@ -124,6 +124,11 @@ pub mod db {
             /// The item to get the price of
             item: String,
         } => (Result<Price, String>)
+        /// Search shop items by class or pretty name, exact matches first
+        struct ShopSearch {
+            /// The text to search for
+            search: String,
+        } => (Result<Vec<(String, Option<String>)>, String>)
 
         /// Helper for Arma to:
         /// - Set the loadout to blank
