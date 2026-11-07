@@ -2,7 +2,10 @@ use std::{ffi::OsStr, path::PathBuf};
 
 use async_openai::{
     Client,
-    types::{ChatCompletionRequestMessageArgs, CreateChatCompletionRequestArgs, Role},
+    types::chat::{
+        ChatCompletionRequestMessage, ChatCompletionRequestSystemMessageArgs,
+        ChatCompletionRequestUserMessageArgs, CreateChatCompletionRequestArgs, ReasoningEffort,
+    },
 };
 use git2::Repository;
 use rand::seq::IndexedRandom;
@@ -47,24 +50,26 @@ pub async fn execute(client: ArcCacheAndHttp) {
         let mut message = std::fs::read_to_string(file.path()).expect("Failed to read file");
 
         // ai stuff
+        let messages: Vec<ChatCompletionRequestMessage> = vec![
+            ChatCompletionRequestSystemMessageArgs::default()
+                .content(format!(
+                    "{}\n\nRewrite the tips that you receive in your own voice and style, you will be sending them out to the contractors as a weekly reminder",
+                    include_str!("postweeklytips-prompt.txt")
+                ))
+                .build()
+                .expect("prompt is valid")
+                .into(),
+            ChatCompletionRequestUserMessageArgs::default()
+                .content(message.as_str())
+                .build()
+                .expect("prompt is valid")
+                .into(),
+        ];
         if let Ok(request) = CreateChatCompletionRequestArgs::default()
-            .max_tokens(512u16)
-            .model("gpt-4o-mini")
-            .messages(vec![
-                ChatCompletionRequestMessageArgs::default()
-                    .role(Role::System)
-                    .content(format!(
-                        "{}\n\nRewrite the tips that you receive in your own voice and style, you will be sending them out to the contractors as a weekly reminder",
-                        include_str!("postweeklytips-prompt.txt")
-                    ))
-                    .build()
-                    .expect("prompt is valid"),
-                ChatCompletionRequestMessageArgs::default()
-                    .role(Role::User)
-                    .content(&message)
-                    .build()
-                    .expect("prompt is valid"),
-            ])
+            .max_completion_tokens(512u32)
+            .model("gpt-6-luna")
+            .reasoning_effort(ReasoningEffort::None)
+            .messages(messages)
             .build()
         {
             match Client::new().chat().create(request).await {

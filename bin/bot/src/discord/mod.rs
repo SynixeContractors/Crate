@@ -13,6 +13,7 @@ pub async fn build() -> Client {
     let token = std::env::var("DISCORD_TOKEN").expect("token");
     Client::builder(token, GatewayIntents::all())
         .event_handler(handler::Handler {
+            brain: handler::Brain::new(),
             subcon_counter: AtomicU32::new(0),
         })
         .await
