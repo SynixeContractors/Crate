@@ -19,6 +19,20 @@ pub struct Object {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
+/// Advanced Equipment state for a device object
+pub struct Ae3Device {
+    /// Campaign id
+    pub campaign: Uuid,
+    /// Object id the device was saved under
+    pub id: Uuid,
+    /// Object class
+    pub class: String,
+    /// Encoded device state
+    pub state: serde_json::Value,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 /// A group object
 pub struct Group {
     /// Campaign id

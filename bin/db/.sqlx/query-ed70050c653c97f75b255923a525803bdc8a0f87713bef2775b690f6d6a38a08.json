@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO\n                        campaigns_ae3_devices (id, campaign, class, state)\n                    VALUES\n                        ($1, $2, $3, $4)\n                    ON CONFLICT (campaign, id) DO UPDATE SET\n                        class = $3,\n                        state = $4,\n                        updated_at = NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Varchar",
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ed70050c653c97f75b255923a525803bdc8a0f87713bef2775b690f6d6a38a08"
+}

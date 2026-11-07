@@ -6,6 +6,10 @@ GVAR(objects_ready) = false;
 GVAR(objects_stack) = [];
 GVAR(objects_ids) = [];
 GVAR(objects_notSeen) = [];
+GVAR(ae3_pending) = [];
+GVAR(ae3_restores) = createHashMap;
+GVAR(ae3_parts) = createHashMap;
+GVAR(ae3_states) = createHashMap;
 
 GVAR(groups_ready) = false;
 GVAR(groups_stack) = [];
@@ -36,6 +40,9 @@ addMissionEventHandler ["ExtensionCallback", {
         };
         case "crate:campaigns:markers": {
             [_func, _data] call FUNC(markers_ext);
+        };
+        case "crate:campaigns:ae3": {
+            [_func, _data] call FUNC(ae3_ext);
         };
     }
 }];

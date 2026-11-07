@@ -33,6 +33,9 @@ if (_id == "") then {
 GVAR(objects_notSeen) = GVAR(objects_notSeen) - [_id];
 
 if (_object getVariable [QGVAR(ignore), false]) exitWith {};
+
+[_object, _id] call FUNC(ae3_save);
+
 if (time < (_object getVariable [QGVAR(nextUpdate), -1])) exitWith {};
 
 private _state = [_object] call EFUNC(common,objectState_save);

@@ -2,7 +2,7 @@
 
 /// Interact with the database.
 pub mod db {
-    use synixe_model::campaigns::{Group, Marker, Object, Unit};
+    use synixe_model::campaigns::{Ae3Device, Group, Marker, Object, Unit};
     use synixe_proc::events_requests;
     use uuid::Uuid;
 
@@ -12,6 +12,29 @@ pub mod db {
             /// The campaign to get objects for
             campaign: Uuid,
         } => (Result<Vec<Object>, String>)
+        /// Retrieve all Advanced Equipment device states for a campaign
+        struct Ae3Devices {
+            /// The campaign to get devices for
+            campaign: Uuid,
+        } => (Result<Vec<Ae3Device>, String>)
+        /// Retrieve the Advanced Equipment device state for one device
+        struct Ae3DeviceById {
+            /// The campaign the device belongs to
+            campaign: Uuid,
+            /// Device id
+            id: Uuid,
+        } => (Result<Vec<Ae3Device>, String>)
+        /// Store an Advanced Equipment device state
+        struct StoreAe3Device {
+            /// The campaign to store the device for
+            campaign: Uuid,
+            /// Device id
+            id: Uuid,
+            /// Device class
+            class: String,
+            /// Encoded device state
+            state: serde_json::Value,
+        } => (Result<(), String>)
         /// Retrieve all groups for a campaign
         struct Groups {
             /// The campaign to get groups for

@@ -34,6 +34,49 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
+            Self::Ae3Devices { campaign } => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::campaigns::Ae3Device,
+                    Response::Ae3Devices,
+                    r#"
+                        SELECT
+                            id,
+                            campaign,
+                            class,
+                            state
+                        FROM
+                            campaigns_ae3_devices
+                        WHERE
+                            campaign = $1"#,
+                    campaign,
+                )?;
+                Ok(())
+            }
+            Self::Ae3DeviceById { campaign, id } => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::campaigns::Ae3Device,
+                    Response::Ae3DeviceById,
+                    r#"
+                        SELECT
+                            id,
+                            campaign,
+                            class,
+                            state
+                        FROM
+                            campaigns_ae3_devices
+                        WHERE
+                            campaign = $1 AND id = $2"#,
+                    campaign,
+                    id,
+                )?;
+                Ok(())
+            }
             Self::Groups { campaign } => {
                 fetch_as_and_respond!(
                     msg,
@@ -118,6 +161,31 @@ impl Handler for Request {
                     campaign,
                     class,
                     data,
+                )
+            }
+            Self::StoreAe3Device {
+                campaign,
+                id,
+                class,
+                state,
+            } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::StoreAe3Device,
+                    "INSERT INTO
+                        campaigns_ae3_devices (id, campaign, class, state)
+                    VALUES
+                        ($1, $2, $3, $4)
+                    ON CONFLICT (campaign, id) DO UPDATE SET
+                        class = $3,
+                        state = $4,
+                        updated_at = NOW()",
+                    id,
+                    campaign,
+                    class,
+                    state,
                 )
             }
             Self::StoreGroup { campaign, id, data } => {
