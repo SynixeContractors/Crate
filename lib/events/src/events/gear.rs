@@ -16,13 +16,18 @@ pub mod db {
         pub created: time::OffsetDateTime,
         pub kind: TransactionKind,
         pub reason: String,
-        /// The item class, for purchases
-        pub class: Option<String>,
-        /// The number of items, for purchases
-        pub quantity: Option<i32>,
+        /// Items bought in this transaction, for purchases
+        pub items: Vec<PurchasedItem>,
     }
 
-    #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    pub struct PurchasedItem {
+        /// The item's pretty name, or class if it has none
+        pub name: String,
+        pub quantity: i32,
+    }
+
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     #[serde(rename_all = "snake_case")]
     pub enum TransactionKind {
         Deposit,

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
 use synixe_events::{
-    gear::db::{Transaction, TransactionKind},
+    gear::db::{PurchasedItem, Transaction, TransactionKind},
     publish,
 };
 use synixe_meta::discord::BRODSKY;
@@ -199,6 +199,7 @@ struct LedgerRow {
     kind: String,
     reason: String,
     class: Option<String>,
+    pretty: Option<String>,
     quantity: Option<i32>,
 }
 
@@ -207,7 +208,7 @@ pub async fn history(
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<Vec<Transaction>, anyhow::Error> {
     let rows = sqlx::query_as::<_, LedgerRow>(
-        "SELECT amount, created, kind, reason, class, quantity
+        "SELECT amount, created, kind, reason, class, pretty, quantity
 FROM (
     SELECT
         member,
@@ -216,6 +217,7 @@ FROM (
         'deposit' AS kind,
         reason,
         NULL::VARCHAR AS class,
+        NULL::VARCHAR AS pretty,
         NULL::INTEGER AS quantity
     FROM gear_bank_deposits
 
@@ -228,6 +230,7 @@ FROM (
         'transfer_in' AS kind,
         reason,
         NULL::VARCHAR AS class,
+        NULL::VARCHAR AS pretty,
         NULL::INTEGER AS quantity
     FROM gear_bank_transfers
 
@@ -240,20 +243,23 @@ FROM (
         'transfer_out' AS kind,
         reason,
         NULL::VARCHAR AS class,
+        NULL::VARCHAR AS pretty,
         NULL::INTEGER AS quantity
     FROM gear_bank_transfers
 
     UNION ALL
 
     SELECT
-        member,
-        (-personal * quantity) AS amount,
-        created,
+        gbp.member,
+        (-gbp.personal * gbp.quantity) AS amount,
+        gbp.created,
         'purchase' AS kind,
-        reason,
-        class,
-        quantity
-    FROM gear_bank_purchases
+        gbp.reason,
+        gbp.class,
+        gi.pretty,
+        gbp.quantity
+    FROM gear_bank_purchases gbp
+    LEFT JOIN gear_items gi ON gi.class = gbp.class
 ) ledger
 WHERE member = $1
 ORDER BY created DESC;",
@@ -261,25 +267,43 @@ ORDER BY created DESC;",
     .bind(member.to_string())
     .fetch_all(&mut **executor)
     .await?;
-    rows.into_iter()
-        .map(|row| {
-            let kind = match row.kind.as_str() {
-                "deposit" => TransactionKind::Deposit,
-                "transfer_in" => TransactionKind::TransferIn,
-                "transfer_out" => TransactionKind::TransferOut,
-                "purchase" => TransactionKind::Purchase,
-                other => anyhow::bail!("unknown transaction kind: {other}"),
-            };
-            Ok(Transaction {
-                amount: row.amount,
-                created: row.created,
-                kind,
-                reason: row.reason,
-                class: row.class,
-                quantity: row.quantity,
-            })
-        })
-        .collect()
+
+    let mut ledger: Vec<Transaction> = Vec::new();
+    // Items bought in one checkout share a timestamp, so they are merged into one entry
+    let mut checkouts: HashMap<time::OffsetDateTime, usize> = HashMap::new();
+    for row in rows {
+        let kind = match row.kind.as_str() {
+            "deposit" => TransactionKind::Deposit,
+            "transfer_in" => TransactionKind::TransferIn,
+            "transfer_out" => TransactionKind::TransferOut,
+            "purchase" => TransactionKind::Purchase,
+            other => anyhow::bail!("unknown transaction kind: {other}"),
+        };
+        let item = match (row.class, row.quantity) {
+            (Some(class), Some(quantity)) => Some(PurchasedItem {
+                name: row.pretty.unwrap_or(class),
+                quantity,
+            }),
+            _ => None,
+        };
+        if kind == TransactionKind::Purchase {
+            if let Some(&index) = checkouts.get(&row.created) {
+                let entry = &mut ledger[index];
+                entry.amount += row.amount;
+                entry.items.extend(item);
+                continue;
+            }
+            checkouts.insert(row.created, ledger.len());
+        }
+        ledger.push(Transaction {
+            amount: row.amount,
+            created: row.created,
+            kind,
+            reason: row.reason,
+            items: item.into_iter().collect(),
+        });
+    }
+    Ok(ledger)
 }
 
 pub async fn publish_balance(nats: async_nats::Client, member: UserId, reason: String) {

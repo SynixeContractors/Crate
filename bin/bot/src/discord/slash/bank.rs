@@ -569,13 +569,18 @@ async fn history(
         .iter()
         .take(10)
         .map(|t| {
-            let detail = match (&t.class, t.quantity) {
-                (Some(class), Some(quantity)) => {
-                    format!("{class} x{quantity} ({})", t.reason)
-                }
-                _ => t.reason.clone(),
+            let items = t
+                .items
+                .iter()
+                .map(|i| format!("{} x{}", i.name, i.quantity))
+                .collect::<Vec<_>>()
+                .join(", ");
+            let detail = match (items.is_empty(), t.reason.as_str()) {
+                (true, _) => t.reason.clone(),
+                (false, "shop purchase") => items,
+                (false, reason) => format!("{items} ({reason})"),
             };
-            let detail: String = detail.chars().take(80).collect();
+            let detail: String = detail.chars().take(120).collect();
             format!(
                 "{}  {:>10}  {:<12}  {detail}",
                 t.created.date(),
