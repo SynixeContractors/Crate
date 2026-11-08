@@ -170,6 +170,21 @@ fn items_load() {
             return;
         };
         for item in items {
+            // Sent ahead of the item so a flash drive's filesystem is in place before AE3 mounts it on connect
+            match events_request_5!(
+                bootstrap::NC::get().await,
+                synixe_events::campaigns::db,
+                Ae3DeviceById { id: item.device_id }
+            )
+            .await
+            {
+                Ok(Ok((Response::Ae3DeviceById(Ok(devices)), _))) => {
+                    if let Some(device) = devices.into_iter().next() {
+                        send_state(context, item.device_id, &device.class, &device.state);
+                    }
+                }
+                _ => error!("failed to load ae3 device {}", item.device_id),
+            }
             if let Err(e) = context.callback_data(
                 "crate:campaigns:ae3",
                 "itemLoad",

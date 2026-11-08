@@ -57,18 +57,36 @@ switch (_func) do {
     case "itemLoad": {
         (parseSimpleArray _data) params ["_item", "_id", "_class"];
         // AE3 stores laptops and flash drives in separate buffers, told apart the same way ae3_save does
-        private _bufferVar = ["AE3_LAPTOP_ITEM", "AE3_ITEM"] select (getText (((configFile >> "CfgVehicles") >> _class) >> "ae3_item") != "");
+        private _isFlashdrive = [_class] call FUNC(ae3_isFlashdrive);
+        private _bufferVar = ["AE3_LAPTOP_ITEM", "AE3_ITEM"] select _isFlashdrive;
         private _buffer = missionNamespace getVariable [_bufferVar, createHashMap];
         // A minimal namespace is enough to get past AE3's deploy checks; the Crate ID carried on it
         // lets ae3_save's own redeploy check pull down the real saved state once the object exists.
-        // It's registered as already sent so the packed-item tick doesn't save it over that state
         private _itemNamespace = createHashMap;
         _itemNamespace set ["AE3_OBJECT_TYPE", _class];
         _itemNamespace set [toLower QGVAR(id), _id];
+
+        // A flash drive's saved state goes into its item now. AE3 mounts a drive's filesystem as soon as
+        // it's connected, so restoring after that would leave the computer with an empty copy. The state
+        // is marked as initialized so the object isn't restored again over the mount.
+        (GVAR(ae3_states) getOrDefault [_id, []]) params [["_savedClass", ""], ["_savedState", ""]];
+        GVAR(ae3_states) deleteAt _id;
+        if (_isFlashdrive && {_savedState != ""}) then {
+            private _encoded = (parseSimpleArray _savedState) select 1;
+            private _values = [_encoded] call FUNC(ae3_decode);
+            {
+                if ((toLower _x) find "ae3_" == 0) then {
+                    _itemNamespace set [_x, _values get _x];
+                };
+            } forEach keys _values;
+            _itemNamespace set [toLower QGVAR(ae3_initChecked), true];
+        };
+
         _buffer set [_item, _itemNamespace];
         missionNamespace setVariable [_bufferVar, _buffer, false];
+        // Registered as already sent, as the snapshot the packed-item tick compares against
         private _known = GVAR(ae3_packed_known) getOrDefault [_bufferVar, createHashMap];
-        _known set [_item, [_id, _itemNamespace]];
+        _known set [_item, [_id, [["device", "flashdrive"] select _isFlashdrive, _itemNamespace] call FUNC(ae3_state)]];
         GVAR(ae3_packed_known) set [_bufferVar, _known];
     };
 };

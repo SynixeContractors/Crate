@@ -9,6 +9,16 @@
 
 if (isNil "AE3_armaos_fnc_laptop_captureState") exitWith {};
 
+// Crate IDs of devices that are live in the world. A live device's buffer entry shares its values with the
+// object, so it's not treated as packed until the device is packed again.
+private _live = createHashMap;
+{
+    private _id = _x getVariable [QGVAR(id), ""];
+    if (_id != "") then {
+        _live set [_id, true];
+    };
+} forEach allMissionObjects "All";
+
 {
     private _bufferVar = _x;
     private _buffer = missionNamespace getVariable [_bufferVar, createHashMap];
@@ -26,20 +36,23 @@ if (isNil "AE3_armaos_fnc_laptop_captureState") exitWith {};
             _buffer set [_x, _y];
             missionNamespace setVariable [_bufferVar, _buffer, false];
         };
-        // _known values are [device id, snapshot last sent]
-        _next set [_x, [_id, _y]];
-        private _last = _known getOrDefault [_x, []];
-        if (_last isEqualTo [] || {!(_y isEqualTo (_last select 1))}) then {
+
+        if !(_live getOrDefault [_id, false]) then {
+            // _known values are [device id, encoded state last sent]
             private _class = _y getOrDefault ["AE3_OBJECT_TYPE", ""];
-            if (_class != "") then {
-                private _kind = if (getText (configFile >> "CfgVehicles" >> _class >> "ae3_item") != "") then { "flashdrive" } else { "device" };
-                [_id, _class, [_kind, _y] call FUNC(ae3_state), _x] call FUNC(ae3_send);
+            private _kind = if ([_class] call FUNC(ae3_isFlashdrive)) then { "flashdrive" } else { "device" };
+            private _state = [_kind, _y] call FUNC(ae3_state);
+            _next set [_x, [_id, _state]];
+
+            private _last = _known getOrDefault [_x, []];
+            if (_class != "" && {_last isEqualTo [] || {!(_state isEqualTo (_last select 1))}}) then {
+                [_id, _class, _state, _x] call FUNC(ae3_send);
             };
         };
     } forEach _buffer;
 
     {
-        // _x: item class name that was packed last check, _y: [device id, snapshot]
+        // _x: item class name that was packed last check, _y: [device id, encoded state]
         if !(_x in _next) then {
             EXTCALL("campaigns:ae3:itemDeployed",[ARR_1(_x)]);
         };

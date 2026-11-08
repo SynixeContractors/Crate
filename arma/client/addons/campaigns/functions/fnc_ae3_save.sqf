@@ -23,7 +23,7 @@ if (time < (_object getVariable [QGVAR(ae3_nextUpdate), -1])) exitWith {};
 _object setVariable [QGVAR(ae3_nextUpdate), time + 10];
 
 private _kind = "";
-if (getText (configOf _object >> "ae3_item") != "") then {
+if ([typeOf _object] call FUNC(ae3_isFlashdrive)) then {
     _kind = "flashdrive";
 } else {
     if (

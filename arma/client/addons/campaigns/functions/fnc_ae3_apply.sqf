@@ -16,7 +16,7 @@
 
 params ["_object", "_text"];
 
-(parseSimpleArray _text) params ["_kind", "_encoded"];
+(parseSimpleArray _text) params ["", "_encoded"];
 private _values = [_encoded] call FUNC(ae3_decode);
 
 // Defends against state saved before this filter existed, or anything that slips past ae3_save in
@@ -29,7 +29,8 @@ private _ae3Values = createHashMap;
 } forEach _values;
 _values = _ae3Values;
 
-if (_kind == "flashdrive") exitWith {
+// Decided by the object, not the saved kind, so states saved before laptops were told apart still apply correctly
+if ([typeOf _object] call FUNC(ae3_isFlashdrive)) exitWith {
     {
         _object setVariable [_x, _values get _x];
     } forEach keys _values;
