@@ -58,6 +58,14 @@ You are welcome to read, not copy directly, the source code for inspiration for 
 - Tracks all units
     - Damage
     - Inventory
+- Advanced Equipment (AE3) support, when AE3 is loaded
+    - Saves the state of computers (including power), networks, and flash drives
+    - Each saved device is keyed by its own Crate ID, not scoped to a campaign, so it keeps its state when carried between missions (e.g. in a laptop's inventory item)
+    - A device recreated with a previously-known ID (redeployed from inventory, or recreated after a restart) is automatically restored to its last saved state
+    - Zeus module "Restore AE3 Device" applies a saved device's state to the attached object, given its saved ID
+    - Device state is stored separately from object data, so object sync can't remove it
+    - Large states (e.g. a big filesystem) are sent in chunks to stay under the callExtension size limit
+    - AE3's own packed-item buffers (laptops and flash drives carried in inventory) are mirrored to the database and rebuilt at mission start, so a packed device can still be redeployed with its saved state after a restart
 
 ### Certifications
 

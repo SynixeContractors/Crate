@@ -34,6 +34,65 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
+            Self::Ae3DevicesByIds { ids } => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::campaigns::Ae3Device,
+                    Response::Ae3DevicesByIds,
+                    r#"
+                        SELECT
+                            id,
+                            class,
+                            state
+                        FROM
+                            campaigns_ae3_devices
+                        WHERE
+                            id = ANY($1)"#,
+                    ids,
+                )?;
+                Ok(())
+            }
+            Self::Ae3DeviceById { id } => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::campaigns::Ae3Device,
+                    Response::Ae3DeviceById,
+                    r#"
+                        SELECT
+                            id,
+                            class,
+                            state
+                        FROM
+                            campaigns_ae3_devices
+                        WHERE
+                            id = $1"#,
+                    id,
+                )?;
+                Ok(())
+            }
+            Self::Ae3PackedItems {} => {
+                fetch_as_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    synixe_model::campaigns::Ae3PackedItem,
+                    Response::Ae3PackedItems,
+                    r#"
+                        SELECT
+                            p.item_class,
+                            p.device_id,
+                            d.class
+                        FROM
+                            campaigns_ae3_packed_items p
+                        INNER JOIN
+                            campaigns_ae3_devices d ON d.id = p.device_id"#,
+                )?;
+                Ok(())
+            }
             Self::Groups { campaign } => {
                 fetch_as_and_respond!(
                     msg,
@@ -118,6 +177,55 @@ impl Handler for Request {
                     campaign,
                     class,
                     data,
+                )
+            }
+            Self::StoreAe3Device { id, class, state } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::StoreAe3Device,
+                    "INSERT INTO
+                        campaigns_ae3_devices (id, class, state)
+                    VALUES
+                        ($1, $2, $3)
+                    ON CONFLICT (id) DO UPDATE SET
+                        class = $2,
+                        state = $3,
+                        updated_at = NOW()",
+                    id,
+                    class,
+                    state,
+                )
+            }
+            Self::StoreAe3PackedItem {
+                item_class,
+                device_id,
+            } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::StoreAe3PackedItem,
+                    "INSERT INTO
+                        campaigns_ae3_packed_items (item_class, device_id)
+                    VALUES
+                        ($1, $2)
+                    ON CONFLICT (item_class) DO UPDATE SET
+                        device_id = $2,
+                        updated_at = NOW()",
+                    item_class,
+                    device_id,
+                )
+            }
+            Self::DeleteAe3PackedItem { item_class } => {
+                execute_and_respond!(
+                    msg,
+                    *db,
+                    cx,
+                    Response::DeleteAe3PackedItem,
+                    "DELETE FROM campaigns_ae3_packed_items WHERE item_class = $1",
+                    item_class,
                 )
             }
             Self::StoreGroup { campaign, id, data } => {

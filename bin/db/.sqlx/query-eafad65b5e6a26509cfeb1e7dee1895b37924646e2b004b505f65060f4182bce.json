@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM campaigns_ae3_packed_items WHERE item_class = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "eafad65b5e6a26509cfeb1e7dee1895b37924646e2b004b505f65060f4182bce"
+}

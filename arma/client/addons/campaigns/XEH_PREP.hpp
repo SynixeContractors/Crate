@@ -1,3 +1,13 @@
+PREP(ae3_apply);
+PREP(ae3_applyWait);
+PREP(ae3_decode);
+PREP(ae3_encode);
+PREP(ae3_ext);
+PREP(ae3_items_tick);
+PREP(ae3_restore);
+PREP(ae3_save);
+PREP(ae3_zeusRestore);
+
 PREP(groups_ext);
 PREP(groups_load);
 PREP(groups_tick);

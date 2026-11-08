@@ -8,7 +8,9 @@ class CfgPatches {
         requiredVersion = REQUIRED_VERSION;
         requiredAddons[] = {
             "crate_client_main",
-            "zen_area_markers"
+            "zen_area_markers",
+            "zen_custom_modules",
+            "zen_dialog"
         };
         author = "AUTHOR";
         VERSION_CONFIG;

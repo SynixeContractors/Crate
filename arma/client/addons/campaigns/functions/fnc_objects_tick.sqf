@@ -27,12 +27,17 @@ if (_id == "") then {
     EXTFUNC("uuid");
     _id = _ext_res select 0;
     _object setVariable [QGVAR(id), _id];
-    GVAR(objects_ids) pushBackUnique _id;
 };
+// A device carried over a pre-existing ID (e.g. redeployed from inventory, see fnc_ae3_save) is
+// registered here too, otherwise it is never tracked for the delete sweep above
+GVAR(objects_ids) pushBackUnique _id;
 
 GVAR(objects_notSeen) = GVAR(objects_notSeen) - [_id];
 
 if (_object getVariable [QGVAR(ignore), false]) exitWith {};
+
+[_object, _id] call FUNC(ae3_save);
+
 if (time < (_object getVariable [QGVAR(nextUpdate), -1])) exitWith {};
 
 private _state = [_object] call EFUNC(common,objectState_save);

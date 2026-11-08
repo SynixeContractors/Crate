@@ -2,9 +2,11 @@ use std::collections::HashMap;
 
 use arma_rs::{Group, IntoArma, Value};
 use synixe_events::campaigns::db::Response;
+use synixe_model::campaigns::Ae3Device;
 use synixe_proc::events_request_5;
 use uuid::Uuid;
 
+use super::ae3::send_state;
 use crate::{CONTEXT, RUNTIME};
 
 pub fn group() -> Group {
@@ -56,8 +58,27 @@ fn load(campaign: Uuid) {
             error!("failed to load objects");
             return;
         };
+        let Ok(Ok((Response::Ae3DevicesByIds(Ok(devices)), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::campaigns::db,
+            Ae3DevicesByIds {
+                ids: objects.iter().map(|object| object.id).collect()
+            }
+        )
+        .await
+        else {
+            error!("failed to load ae3 devices");
+            return;
+        };
+        let mut ae3_devices: HashMap<Uuid, Ae3Device> = devices
+            .into_iter()
+            .map(|device| (device.id, device))
+            .collect();
         debug!("loading {} objects", objects.len());
         for object in objects {
+            if let Some(device) = ae3_devices.remove(&object.id) {
+                send_state(context, object.id, &device.class, &device.state);
+            }
             if let Err(e) = context.callback_data(
                 "crate:campaigns:objects",
                 "load",
