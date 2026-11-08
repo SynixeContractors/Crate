@@ -21,6 +21,9 @@ pub fn group() -> Group {
         .command("part", part)
         .command("save", save)
         .command("restore", restore)
+        .command("itemPacked", item_packed)
+        .command("itemDeployed", item_deployed)
+        .command("itemsLoad", items_load)
 }
 
 fn part(id: Uuid, chunk: String) {
@@ -32,7 +35,7 @@ fn part(id: Uuid, chunk: String) {
         .push_str(&chunk);
 }
 
-fn save(campaign: Uuid, id: Uuid, class: String) {
+fn save(id: Uuid, class: String) {
     let state = PARTS
         .lock()
         .unwrap_or_else(PoisonError::into_inner)
@@ -46,7 +49,6 @@ fn save(campaign: Uuid, id: Uuid, class: String) {
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
             StoreAe3Device {
-                campaign,
                 id,
                 class,
                 state: serde_json::Value::String(state),
@@ -86,7 +88,7 @@ pub fn send_state(context: &Context, id: Uuid, class: &str, state: &serde_json::
     }
 }
 
-fn restore(campaign: Uuid, id: Uuid) {
+fn restore(id: Uuid) {
     RUNTIME.spawn(async move {
         let context_store = CONTEXT.read().await;
         let Some(context) = context_store.as_ref() else {
@@ -96,7 +98,7 @@ fn restore(campaign: Uuid, id: Uuid) {
         let Ok(Ok((Response::Ae3DeviceById(Ok(devices)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            Ae3DeviceById { campaign, id }
+            Ae3DeviceById { id }
         )
         .await
         else {
@@ -110,6 +112,76 @@ fn restore(campaign: Uuid, id: Uuid) {
         if let Err(e) = context.callback_data("crate:campaigns:ae3", "restore", vec![id.to_arma()])
         {
             error!("error sending ae3:restore: {e:?}");
+        }
+    });
+}
+
+/// Records that a device was packed into an inventory item, so the mapping survives a restart
+fn item_packed(item_class: String, device_id: Uuid) {
+    RUNTIME.spawn(async move {
+        let Ok(Ok((Response::StoreAe3PackedItem(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::campaigns::db,
+            StoreAe3PackedItem {
+                item_class,
+                device_id,
+            }
+        )
+        .await
+        else {
+            error!("failed to save ae3 packed item");
+            return;
+        };
+    });
+}
+
+/// Records that a packed item was redeployed, so the mapping is no longer needed
+fn item_deployed(item_class: String) {
+    RUNTIME.spawn(async move {
+        let Ok(Ok((Response::DeleteAe3PackedItem(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::campaigns::db,
+            DeleteAe3PackedItem { item_class }
+        )
+        .await
+        else {
+            error!("failed to delete ae3 packed item");
+            return;
+        };
+    });
+}
+
+/// Sends every packed device to Arma so AE3's in-memory item buffers (lost on a restart) can be
+/// rebuilt, letting a packed item still be redeployed
+fn items_load() {
+    RUNTIME.spawn(async move {
+        let context_store = CONTEXT.read().await;
+        let Some(context) = context_store.as_ref() else {
+            error!("command received before context was initialized");
+            return;
+        };
+        let Ok(Ok((Response::Ae3PackedItems(Ok(items)), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::campaigns::db,
+            Ae3PackedItems {}
+        )
+        .await
+        else {
+            error!("failed to load ae3 packed items");
+            return;
+        };
+        for item in items {
+            if let Err(e) = context.callback_data(
+                "crate:campaigns:ae3",
+                "itemLoad",
+                vec![
+                    item.item_class.to_arma(),
+                    item.device_id.to_arma(),
+                    item.class.to_arma(),
+                ],
+            ) {
+                error!("error sending ae3:itemLoad: {e:?}");
+            }
         }
     });
 }

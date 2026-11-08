@@ -2,7 +2,7 @@
 
 /// Interact with the database.
 pub mod db {
-    use synixe_model::campaigns::{Ae3Device, Group, Marker, Object, Unit};
+    use synixe_model::campaigns::{Ae3Device, Ae3PackedItem, Group, Marker, Object, Unit};
     use synixe_proc::events_requests;
     use uuid::Uuid;
 
@@ -12,28 +12,40 @@ pub mod db {
             /// The campaign to get objects for
             campaign: Uuid,
         } => (Result<Vec<Object>, String>)
-        /// Retrieve all Advanced Equipment device states for a campaign
-        struct Ae3Devices {
-            /// The campaign to get devices for
-            campaign: Uuid,
+        /// Retrieve the Advanced Equipment device states for a set of ids. Not scoped to a
+        /// campaign; devices are looked up by their own id wherever they currently live.
+        struct Ae3DevicesByIds {
+            /// Device ids to look up
+            ids: Vec<Uuid>,
         } => (Result<Vec<Ae3Device>, String>)
-        /// Retrieve the Advanced Equipment device state for one device
+        /// Retrieve the Advanced Equipment device state for one device, not scoped to a campaign
         struct Ae3DeviceById {
-            /// The campaign the device belongs to
-            campaign: Uuid,
             /// Device id
             id: Uuid,
         } => (Result<Vec<Ae3Device>, String>)
-        /// Store an Advanced Equipment device state
+        /// Store an Advanced Equipment device state, not scoped to a campaign
         struct StoreAe3Device {
-            /// The campaign to store the device for
-            campaign: Uuid,
             /// Device id
             id: Uuid,
             /// Device class
             class: String,
             /// Encoded device state
             state: serde_json::Value,
+        } => (Result<(), String>)
+        /// Retrieve all packed (inventory item) Advanced Equipment devices, to rebuild AE3's
+        /// in-memory item buffer at mission start
+        struct Ae3PackedItems {} => (Result<Vec<Ae3PackedItem>, String>)
+        /// Record that a device was packed into an inventory item
+        struct StoreAe3PackedItem {
+            /// The inventory item class the device was packed as
+            item_class: String,
+            /// Device id
+            device_id: Uuid,
+        } => (Result<(), String>)
+        /// Record that a packed item was redeployed, so the mapping is no longer needed
+        struct DeleteAe3PackedItem {
+            /// The inventory item class that was redeployed
+            item_class: String,
         } => (Result<(), String>)
         /// Retrieve all groups for a campaign
         struct Groups {

@@ -8,6 +8,7 @@ GVAR(objects_pfh) = [FUNC(objects_tick)] call CBA_fnc_addPerFrameHandler;
 GVAR(groups_pfh) = [FUNC(groups_tick)] call CBA_fnc_addPerFrameHandler;
 GVAR(units_pfh) = [FUNC(units_tick)] call CBA_fnc_addPerFrameHandler;
 GVAR(markers_pfh) = [FUNC(markers_tick), 2] call CBA_fnc_addPerFrameHandler;
+GVAR(ae3_items_pfh) = [FUNC(ae3_items_tick), 2] call CBA_fnc_addPerFrameHandler;
 
 {
     _x setVariable [QGVAR(ignore), true];
@@ -24,3 +25,4 @@ GVAR(markers_pfh) = [FUNC(markers_tick), 2] call CBA_fnc_addPerFrameHandler;
 }] call CBA_fnc_addEventHandler;
 
 EXTCALL("campaigns:objects:load",[GVAR(key)]);
+EXTCALL("campaigns:ae3:itemsLoad",[]);

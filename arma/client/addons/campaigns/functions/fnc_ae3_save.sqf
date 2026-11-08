@@ -34,11 +34,19 @@ if (getText (configOf _object >> "ae3_item") != "") then {
 };
 if (_kind == "") exitWith {};
 
+// A device/flashdrive object is checked once per life for state carried over from a previous one,
+// e.g. redeployed from inventory or recreated after a restart, before any new state is captured
+if !(_object getVariable [QGVAR(ae3_initChecked), false]) then {
+    _object setVariable [QGVAR(ae3_initChecked), true];
+    [_id, _object, true] call FUNC(ae3_restore);
+    if (_object getVariable [QGVAR(ae3_pending), false]) exitWith {};
+};
+
 private _values = if (_kind == "device") then {
     [_object] call AE3_armaos_fnc_laptop_captureState
 } else {
     // Crate's own variables are skipped so they can't overwrite the ID of the restored object
-    private _ignored = [QGVAR(id), QGVAR(last), QGVAR(nextUpdate), QGVAR(cargo), QGVAR(ae3_last), QGVAR(ae3_nextUpdate), QGVAR(ae3_pending)];
+    private _ignored = [QGVAR(id), QGVAR(last), QGVAR(nextUpdate), QGVAR(cargo), QGVAR(ae3_last), QGVAR(ae3_nextUpdate), QGVAR(ae3_pending), QGVAR(ae3_initChecked)];
     private _vars = createHashMap;
     {
         if !(_x in _ignored) then {
@@ -47,6 +55,12 @@ private _values = if (_kind == "device") then {
     } forEach allVariables _object;
     _vars set ["AE3_OBJECT_TYPE", typeOf _object];
     _vars
+};
+
+// AE3's own captureState never includes power state (it always leaves the target's power alone),
+// so it is captured separately here and reapplied explicitly in ae3_applyWait
+if (_kind == "device") then {
+    _values set ["AE3_power_powerState", _object getVariable ["AE3_power_powerState", 0]];
 };
 
 private _state = [_kind, [_values] call FUNC(ae3_encode)];
@@ -64,4 +78,4 @@ while {_chunk != ""} do {
     _offset = _offset + _size;
     _chunk = _text select [_offset, _size];
 };
-EXTCALL("campaigns:ae3:save",[ARR_3(GVAR(key),_id,typeOf _object)]);
+EXTCALL("campaigns:ae3:save",[ARR_2(_id,typeOf _object)]);

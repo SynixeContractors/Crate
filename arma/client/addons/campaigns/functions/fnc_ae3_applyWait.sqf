@@ -32,3 +32,10 @@ if (!_ready) exitWith {
 };
 
 [_object, _values] call AE3_armaos_fnc_laptop_applyState;
+
+// applyState leaves the target's own power state alone, so it's restored explicitly here using the
+// real power functions (rather than a raw setVariable) so animations, sounds and textures stay in sync
+switch (_values getOrDefault ["AE3_power_powerState", 0]) do {
+    case 1: { [_object] call AE3_power_fnc_turnOnDevice; };
+    case 2: { [_object] call AE3_power_fnc_standbyDevice; };
+};

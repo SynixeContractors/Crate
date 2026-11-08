@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                        SELECT\n                            p.item_class,\n                            p.device_id,\n                            d.class\n                        FROM\n                            campaigns_ae3_packed_items p\n                        INNER JOIN\n                            campaigns_ae3_devices d ON d.id = p.device_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "item_class",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "campaigns_ae3_packed_items",
+            "name": "item_class"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "device_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "campaigns_ae3_packed_items",
+            "name": "device_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "class",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "campaigns_ae3_devices",
+            "name": "class"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "82038b0a8d12cad7a241135114c157e5884fd03bf788755de8ceeffbfbfbb42d"
+}

@@ -13,6 +13,10 @@ _object enableSimulationGlobal false;
 _object setVariable [QGVAR(id), _id, true];
 GVAR(objects_ids) pushBackUnique _id;
 
+// This object is already going through the normal persisted load path, so ae3_save's own
+// redeploy/restart recovery check (see fnc_ae3_save) doesn't need to run for it
+_object setVariable [QGVAR(ae3_initChecked), true];
+
 _object setPosASL (_data getOrDefault ["pos", [0,0,0]]);
 _object setVectorDirAndUp (_data getOrDefault ["rot", [[0,0,0],[0,0,0]]]);
 

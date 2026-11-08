@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO\n                        campaigns_ae3_packed_items (item_class, device_id)\n                    VALUES\n                        ($1, $2)\n                    ON CONFLICT (item_class) DO UPDATE SET\n                        device_id = $2,\n                        updated_at = NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ceb0a6dd2cfe8afe34033c5a2f53e6886b2274498c3f5d754810ab0ed20a4f2f"
+}

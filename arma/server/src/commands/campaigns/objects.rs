@@ -58,10 +58,12 @@ fn load(campaign: Uuid) {
             error!("failed to load objects");
             return;
         };
-        let Ok(Ok((Response::Ae3Devices(Ok(devices)), _))) = events_request_5!(
+        let Ok(Ok((Response::Ae3DevicesByIds(Ok(devices)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::campaigns::db,
-            Ae3Devices { campaign }
+            Ae3DevicesByIds {
+                ids: objects.iter().map(|object| object.id).collect()
+            }
         )
         .await
         else {

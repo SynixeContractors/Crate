@@ -10,6 +10,7 @@ GVAR(ae3_pending) = [];
 GVAR(ae3_restores) = createHashMap;
 GVAR(ae3_parts) = createHashMap;
 GVAR(ae3_states) = createHashMap;
+GVAR(ae3_packed_known) = createHashMap;
 
 GVAR(groups_ready) = false;
 GVAR(groups_stack) = [];

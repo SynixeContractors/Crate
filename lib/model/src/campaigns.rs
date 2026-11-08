@@ -19,16 +19,31 @@ pub struct Object {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
-/// Advanced Equipment state for a device object
+/// Advanced Equipment state for a device object. Not scoped to a campaign, since a device such as
+/// a laptop can be carried between missions.
 pub struct Ae3Device {
-    /// Campaign id
-    pub campaign: Uuid,
     /// Object id the device was saved under
     pub id: Uuid,
     /// Object class
     pub class: String,
     /// Encoded device state
     pub state: serde_json::Value,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
+/// A packed (inventory item) Advanced Equipment device.
+///
+/// AE3 keeps its own item <-> state mapping in server memory only, so this tracks which item
+/// class a device is currently packed as, to allow it to be rebuilt at mission start and still
+/// redeployed after a restart.
+pub struct Ae3PackedItem {
+    /// The inventory item class the device is currently packed as
+    pub item_class: String,
+    /// Device id
+    pub device_id: Uuid,
+    /// The device's saved object class, needed to recreate it
+    pub class: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
