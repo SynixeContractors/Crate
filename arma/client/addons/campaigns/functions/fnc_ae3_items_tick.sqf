@@ -1,10 +1,11 @@
 #include "..\script_component.hpp"
 
-// Polls AE3's in-memory packed-item buffers (laptops and flash drives) for items that were just
-// packed or redeployed. The item's state is saved as the device's state at the moment it is packed,
-// since AE3 snapshots the device's variables then and the device object is gone. AE3 keeps these
-// buffers server-local and in-memory only, so without this a packed item is lost on a restart,
-// leaving it undeployable ("Laptop data not found").
+// Polls AE3's in-memory packed-item buffers (laptops and flash drives) for packed items. Each time an
+// item is packed, AE3 writes a new snapshot of the device's variables to its buffer entry, so a
+// snapshot that differs from the last one sent is saved as the device's state. AE3 keeps these
+// buffers server-local and in-memory only, and never removes a flash drive's entry on redeploy, so the
+// key alone can't say whether a pack happened. The packed device <-> item mapping is kept in the
+// database too, so a packed item survives a restart ("Laptop data not found" otherwise).
 
 if (isNil "AE3_armaos_fnc_laptop_captureState") exitWith {};
 
@@ -25,8 +26,10 @@ if (isNil "AE3_armaos_fnc_laptop_captureState") exitWith {};
             _buffer set [_x, _y];
             missionNamespace setVariable [_bufferVar, _buffer, false];
         };
-        _next set [_x, _id];
-        if !(_x in _known) then {
+        // _known values are [device id, snapshot last sent]
+        _next set [_x, [_id, _y]];
+        private _last = _known getOrDefault [_x, []];
+        if (_last isEqualTo [] || {!(_y isEqualTo (_last select 1))}) then {
             private _class = _y getOrDefault ["AE3_OBJECT_TYPE", ""];
             if (_class != "") then {
                 private _kind = if (getText (configFile >> "CfgVehicles" >> _class >> "ae3_item") != "") then { "flashdrive" } else { "device" };
@@ -36,7 +39,7 @@ if (isNil "AE3_armaos_fnc_laptop_captureState") exitWith {};
     } forEach _buffer;
 
     {
-        // _x: item class name that was packed last check, _y: its device id
+        // _x: item class name that was packed last check, _y: [device id, snapshot]
         if !(_x in _next) then {
             EXTCALL("campaigns:ae3:itemDeployed",[ARR_1(_x)]);
         };
