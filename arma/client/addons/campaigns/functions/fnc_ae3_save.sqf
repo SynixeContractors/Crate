@@ -1,7 +1,7 @@
 #include "..\script_component.hpp"
 
 /*
- * Author: Crate
+ * Author: SynixeContractors
  * Saves the AE3 state of a device or flash drive to the dedicated AE3 table. Runs from the object tick.
  * Devices use AE3's captureState. Flash drives save the AE3 variables stored on the object.
  *

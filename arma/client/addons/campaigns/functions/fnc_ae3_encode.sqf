@@ -1,7 +1,7 @@
 #include "..\script_component.hpp"
 
 /*
- * Author: Crate
+ * Author: SynixeContractors
  * Converts an AE3 state value into a plain array structure that survives the trip to the database and back.
  * Tagged arrays are used for container types: ["A", array], ["H", [[key, value]...]], ["O", crateId], ["C", code], ["N"].
  *

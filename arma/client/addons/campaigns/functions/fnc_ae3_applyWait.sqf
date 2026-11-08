@@ -1,7 +1,7 @@
 #include "..\script_component.hpp"
 
 /*
- * Author: Crate
+ * Author: SynixeContractors
  * Per-frame handler that waits for AE3 to finish initializing a device, then applies its saved state.
  *
  * Arguments:

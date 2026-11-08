@@ -1,7 +1,7 @@
 #include "..\script_component.hpp"
 
 /*
- * Author: Crate
+ * Author: SynixeContractors
  * Applies a saved AE3 state to a live object. Devices are applied once AE3 has finished initializing them.
  *
  * Arguments:

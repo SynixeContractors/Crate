@@ -25,14 +25,14 @@ if (isNil "AE3_armaos_fnc_laptop_captureState") exitWith {};
             missionNamespace setVariable [_bufferVar, _buffer, false];
         };
         _next set [_x, _id];
-        if !(_known hasKey _x) then {
+        if !(_x in _known) then {
             EXTCALL("campaigns:ae3:itemPacked",[ARR_2(_x,_id)]);
         };
     } forEach _buffer;
 
     {
         // _x: item class name that was packed last check, _y: its device id
-        if !(_next hasKey _x) then {
+        if !(_x in _next) then {
             EXTCALL("campaigns:ae3:itemDeployed",[ARR_1(_x)]);
         };
     } forEach _known;

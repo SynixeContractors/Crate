@@ -1,7 +1,7 @@
 #include "..\script_component.hpp"
 
 /*
- * Author: Crate
+ * Author: SynixeContractors
  * Handles callbacks from the AE3 extension commands.
  *
  * Arguments:
@@ -57,11 +57,7 @@ switch (_func) do {
     case "itemLoad": {
         (parseSimpleArray _data) params ["_item", "_id", "_class"];
         // AE3 stores laptops and flash drives in separate buffers, told apart the same way ae3_save does
-        private _bufferVar = if (getText (configFile >> "CfgVehicles" >> _class >> "ae3_item") != "") then {
-            "AE3_ITEM"
-        } else {
-            "AE3_LAPTOP_ITEM"
-        };
+        private _bufferVar = ["AE3_LAPTOP_ITEM", "AE3_ITEM"] select (getText (((configFile >> "CfgVehicles") >> _class) >> "ae3_item") != "");
         private _buffer = missionNamespace getVariable [_bufferVar, createHashMap];
         // A minimal namespace is enough to get past AE3's deploy checks; the Crate ID carried on it
         // lets ae3_save's own redeploy check pull down the real saved state once the object exists

@@ -1,7 +1,7 @@
 #include "..\script_component.hpp"
 
 /*
- * Author: Crate
+ * Author: SynixeContractors
  * Server side of the Zeus restore. Points the saved device ID at the target object and asks the database for the saved state.
  * The state is applied when the callback arrives in ae3_ext.
  *
@@ -19,7 +19,7 @@
 params ["_id", "_target", ["_silent", false]];
 
 if (_id == "" || {isNull _target}) exitWith {};
-if (GVAR(ae3_restores) hasKey _id) exitWith {
+if (_id in GVAR(ae3_restores)) exitWith {
     WARNING_1("A restore for AE3 device %1 is already in progress",_id);
 };
 if ((allMissionObjects "All") findIf { _x != _target && {(_x getVariable [QGVAR(id), ""]) == _id} } != -1) exitWith {

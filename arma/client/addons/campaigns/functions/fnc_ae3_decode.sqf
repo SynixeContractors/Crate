@@ -1,7 +1,7 @@
 #include "..\script_component.hpp"
 
 /*
- * Author: Crate
+ * Author: SynixeContractors
  * Reverses ae3_encode. Object references are resolved to live objects by their Crate ID, objNull when not found.
  *
  * Arguments:

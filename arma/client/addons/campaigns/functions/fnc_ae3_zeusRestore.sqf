@@ -1,7 +1,7 @@
 #include "..\script_component.hpp"
 
 /*
- * Author: Crate
+ * Author: SynixeContractors
  * Zeus (ZEN custom module) entry point. Attach the module to a device and enter the saved device ID to restore it.
  * Runs on the machine where the module is placed and forwards the request to the server.
  *
