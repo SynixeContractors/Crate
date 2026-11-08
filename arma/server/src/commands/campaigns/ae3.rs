@@ -80,29 +80,35 @@ fn save(id: Uuid, class: String, item_class: String) {
     });
 }
 
-/// Sends a stored state to Arma in chunks, followed by an `end` callback with the object class
-pub fn send_state(context: &Context, id: Uuid, class: &str, state: &serde_json::Value) {
+/// Sends a stored state to Arma in chunks, followed by an `end` callback with the object class.
+/// Packed item states use their own callbacks so loading objects can't consume them.
+pub fn send_state(context: &Context, id: Uuid, class: &str, state: &serde_json::Value, item: bool) {
     let Some(text) = state.as_str() else {
         return;
+    };
+    let (part, end) = if item {
+        ("itemPart", "itemEnd")
+    } else {
+        ("part", "end")
     };
     let chars: Vec<char> = text.chars().collect();
     for chunk in chars.chunks(CHUNK_SIZE) {
         let chunk: String = chunk.iter().collect();
         if let Err(e) = context.callback_data(
             "crate:campaigns:ae3",
-            "part",
+            part,
             vec![id.to_arma(), chunk.to_arma()],
         ) {
-            error!("error sending ae3:part: {e:?}");
+            error!("error sending ae3:{part}: {e:?}");
             return;
         }
     }
     if let Err(e) = context.callback_data(
         "crate:campaigns:ae3",
-        "end",
+        end,
         vec![id.to_arma(), class.to_string().to_arma()],
     ) {
-        error!("error sending ae3:end: {e:?}");
+        error!("error sending ae3:{end}: {e:?}");
     }
 }
 
@@ -124,7 +130,7 @@ fn restore(id: Uuid) {
             return;
         };
         match devices.into_iter().next() {
-            Some(device) => send_state(context, id, &device.class, &device.state),
+            Some(device) => send_state(context, id, &device.class, &device.state, false),
             None => warn!("no ae3 device saved with id {id}"),
         }
         if let Err(e) = context.callback_data("crate:campaigns:ae3", "restore", vec![id.to_arma()])
@@ -180,7 +186,7 @@ fn items_load() {
             {
                 Ok(Ok((Response::Ae3DeviceById(Ok(devices)), _))) => {
                     if let Some(device) = devices.into_iter().next() {
-                        send_state(context, item.device_id, &device.class, &device.state);
+                        send_state(context, item.device_id, &device.class, &device.state, true);
                     }
                 }
                 _ => error!("failed to load ae3 device {}", item.device_id),

@@ -77,7 +77,7 @@ fn load(campaign: Uuid) {
         debug!("loading {} objects", objects.len());
         for object in objects {
             if let Some(device) = ae3_devices.remove(&object.id) {
-                send_state(context, object.id, &device.class, &device.state);
+                send_state(context, object.id, &device.class, &device.state, false);
             }
             if let Err(e) = context.callback_data(
                 "crate:campaigns:objects",

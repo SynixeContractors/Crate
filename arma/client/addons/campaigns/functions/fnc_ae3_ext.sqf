@@ -54,6 +54,16 @@ switch (_func) do {
 
         [_target, _state] call FUNC(ae3_apply);
     };
+    case "itemPart": {
+        (parseSimpleArray _data) params ["_id", "_chunk"];
+        GVAR(ae3_item_parts) set [_id, (GVAR(ae3_item_parts) getOrDefault [_id, []]) + [_chunk]];
+    };
+    case "itemEnd": {
+        (parseSimpleArray _data) params ["_id", "_class"];
+        private _text = (GVAR(ae3_item_parts) getOrDefault [_id, []]) joinString "";
+        GVAR(ae3_item_parts) deleteAt _id;
+        GVAR(ae3_item_states) set [_id, [_class, _text]];
+    };
     case "itemLoad": {
         (parseSimpleArray _data) params ["_item", "_id", "_class"];
         // AE3 stores laptops and flash drives in separate buffers, told apart the same way ae3_save does
@@ -69,8 +79,11 @@ switch (_func) do {
         // A flash drive's saved state goes into its item now. AE3 mounts a drive's filesystem as soon as
         // it's connected, so restoring after that would leave the computer with an empty copy. The state
         // is marked as initialized so the object isn't restored again over the mount.
-        (GVAR(ae3_states) getOrDefault [_id, []]) params [["_savedClass", ""], ["_savedState", ""]];
-        GVAR(ae3_states) deleteAt _id;
+        (GVAR(ae3_item_states) getOrDefault [_id, []]) params [["_savedClass", ""], ["_savedState", ""]];
+        GVAR(ae3_item_states) deleteAt _id;
+        if (_savedState == "") then {
+            WARNING_1("No saved AE3 state for packed item %1",_id);
+        };
         if (_isFlashdrive && {_savedState != ""}) then {
             private _encoded = (parseSimpleArray _savedState) select 1;
             private _values = [_encoded] call FUNC(ae3_decode);
