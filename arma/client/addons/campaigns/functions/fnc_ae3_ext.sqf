@@ -60,11 +60,15 @@ switch (_func) do {
         private _bufferVar = ["AE3_LAPTOP_ITEM", "AE3_ITEM"] select (getText (((configFile >> "CfgVehicles") >> _class) >> "ae3_item") != "");
         private _buffer = missionNamespace getVariable [_bufferVar, createHashMap];
         // A minimal namespace is enough to get past AE3's deploy checks; the Crate ID carried on it
-        // lets ae3_save's own redeploy check pull down the real saved state once the object exists
+        // lets ae3_save's own redeploy check pull down the real saved state once the object exists.
+        // It's registered as already sent so the packed-item tick doesn't save it over that state
         private _itemNamespace = createHashMap;
         _itemNamespace set ["AE3_OBJECT_TYPE", _class];
         _itemNamespace set [toLower QGVAR(id), _id];
         _buffer set [_item, _itemNamespace];
         missionNamespace setVariable [_bufferVar, _buffer, false];
+        private _known = GVAR(ae3_packed_known) getOrDefault [_bufferVar, createHashMap];
+        _known set [_item, [_id, _itemNamespace]];
+        GVAR(ae3_packed_known) set [_bufferVar, _known];
     };
 };
