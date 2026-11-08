@@ -76,15 +76,16 @@ switch (_func) do {
         _itemNamespace set ["AE3_OBJECT_TYPE", _class];
         _itemNamespace set [toLower QGVAR(id), _id];
 
-        // A flash drive's saved state goes into its item now. AE3 mounts a drive's filesystem as soon as
-        // it's connected, so restoring after that would leave the computer with an empty copy. The state
-        // is marked as initialized so the object isn't restored again over the mount.
+        // A packed item's saved state goes into it now, so it's ready exactly as AE3 expects when deployed. A flash
+        // drive is marked as initialized, as AE3 mounts its filesystem as soon as it's connected and restoring after
+        // that would leave the computer with an empty copy. A laptop isn't marked, so ae3_save still restores it
+        // once deployed to reapply its power state, which AE3 doesn't carry across deploys.
         (GVAR(ae3_item_states) getOrDefault [_id, []]) params [["_savedClass", ""], ["_savedState", ""]];
         GVAR(ae3_item_states) deleteAt _id;
         if (_savedState == "") then {
             WARNING_1("No saved AE3 state for packed item %1",_id);
         };
-        if (_isFlashdrive && {_savedState != ""}) then {
+        if (_savedState != "") then {
             private _encoded = (parseSimpleArray _savedState) select 1;
             private _values = [_encoded] call FUNC(ae3_decode);
             {
@@ -92,7 +93,12 @@ switch (_func) do {
                     _itemNamespace set [_x, _values get _x];
                 };
             } forEach keys _values;
-            _itemNamespace set [toLower QGVAR(ae3_initChecked), true];
+            if (_isFlashdrive) then {
+                _itemNamespace set [toLower QGVAR(ae3_initChecked), true];
+            } else {
+                // The packed item carries no power state, so the saved one is kept for items_tick to store alongside it
+                GVAR(ae3_power) set [_id, _values getOrDefault ["AE3_power_powerState", 0]];
+            };
         };
 
         _buffer set [_item, _itemNamespace];

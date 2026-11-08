@@ -60,6 +60,7 @@ private _values = if (_kind == "device") then {
 // so it is captured separately here and reapplied explicitly in ae3_applyWait
 if (_kind == "device") then {
     _values set ["AE3_power_powerState", _object getVariable ["AE3_power_powerState", 0]];
+    GVAR(ae3_power) set [_id, _values get "AE3_power_powerState"];
 };
 
 private _state = [_kind, _values] call FUNC(ae3_state);

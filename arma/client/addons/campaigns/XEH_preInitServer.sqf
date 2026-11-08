@@ -13,6 +13,7 @@ GVAR(ae3_states) = createHashMap;
 GVAR(ae3_item_parts) = createHashMap;
 GVAR(ae3_item_states) = createHashMap;
 GVAR(ae3_packed_known) = createHashMap;
+GVAR(ae3_power) = createHashMap;
 
 GVAR(groups_ready) = false;
 GVAR(groups_stack) = [];

@@ -36,6 +36,12 @@ if (!_ready) exitWith {
 // applyState leaves the target's own power state alone, so it's restored explicitly here using the
 // real power functions (rather than a raw setVariable) so animations, sounds and textures stay in sync
 switch (_values getOrDefault ["AE3_power_powerState", 0]) do {
+    case 0: {
+        // A deployed laptop has no power state until AE3's server-only deploy path sets one, so an Off save leaves it nil
+        if (isNil {_object getVariable "AE3_power_powerState"}) then {
+            _object setVariable ["AE3_power_powerState", 0, true];
+        };
+    };
     case 1: { [_object] call AE3_power_fnc_turnOnDevice; };
     case 2: { [_object] call AE3_power_fnc_standbyDevice; };
 };
