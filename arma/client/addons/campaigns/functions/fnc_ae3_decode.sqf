@@ -26,7 +26,7 @@ switch (_value select 0) do {
         createHashMapFromArray _pairs
     };
     case "C": {
-        compile (_value select 1)
+        compile preprocessFileLineNumbers (_value select 1)
     };
     case "O": {
         private _id = _value select 1;
