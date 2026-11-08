@@ -21,7 +21,6 @@ pub fn group() -> Group {
         .command("part", part)
         .command("save", save)
         .command("restore", restore)
-        .command("itemPacked", item_packed)
         .command("itemDeployed", item_deployed)
         .command("itemsLoad", items_load)
 }
@@ -35,7 +34,8 @@ fn part(id: Uuid, chunk: String) {
         .push_str(&chunk);
 }
 
-fn save(id: Uuid, class: String) {
+/// Stores the state sent by `part`, and records the inventory item the device is packed as, if any
+fn save(id: Uuid, class: String, item_class: String) {
     let state = PARTS
         .lock()
         .unwrap_or_else(PoisonError::into_inner)
@@ -57,6 +57,24 @@ fn save(id: Uuid, class: String) {
         .await
         else {
             error!("failed to save ae3 device");
+            return;
+        };
+
+        // The packed item references its device row, so it is only recorded after the device is stored
+        if item_class.is_empty() {
+            return;
+        }
+        let Ok(Ok((Response::StoreAe3PackedItem(Ok(())), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::campaigns::db,
+            StoreAe3PackedItem {
+                item_class,
+                device_id: id,
+            }
+        )
+        .await
+        else {
+            error!("failed to save ae3 packed item");
             return;
         };
     });
@@ -113,25 +131,6 @@ fn restore(id: Uuid) {
         {
             error!("error sending ae3:restore: {e:?}");
         }
-    });
-}
-
-/// Records that a device was packed into an inventory item, so the mapping survives a restart
-fn item_packed(item_class: String, device_id: Uuid) {
-    RUNTIME.spawn(async move {
-        let Ok(Ok((Response::StoreAe3PackedItem(Ok(())), _))) = events_request_5!(
-            bootstrap::NC::get().await,
-            synixe_events::campaigns::db,
-            StoreAe3PackedItem {
-                item_class,
-                device_id,
-            }
-        )
-        .await
-        else {
-            error!("failed to save ae3 packed item");
-            return;
-        };
     });
 }
 

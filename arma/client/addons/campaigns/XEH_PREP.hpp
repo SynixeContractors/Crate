@@ -6,6 +6,8 @@ PREP(ae3_ext);
 PREP(ae3_items_tick);
 PREP(ae3_restore);
 PREP(ae3_save);
+PREP(ae3_send);
+PREP(ae3_state);
 PREP(ae3_zeusRestore);
 
 PREP(groups_ext);

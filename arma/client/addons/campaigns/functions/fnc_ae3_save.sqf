@@ -62,32 +62,9 @@ if (_kind == "device") then {
     _values set ["AE3_power_powerState", _object getVariable ["AE3_power_powerState", 0]];
 };
 
-// Only AE3's own variables are genuinely part of a device/flash drive's state. Everything else
-// captureState and allVariables also pick up - ACE's cargo/dragging vars, its own interaction menu
-// action tree, CBA's per-object XEH dispatch tables, Crate's own bookkeeping - carries compiled CODE
-// that each mod rebuilds locally on its own; forcing a stale, round-tripped copy back onto a
-// recreated object corrupts it instead ("Script {...} not found")
-private _ae3Values = createHashMap;
-{
-    if ((toLower _x) find "ae3_" == 0) then {
-        _ae3Values set [_x, _y];
-    };
-} forEach _values;
-_values = _ae3Values;
-
-private _state = [_kind, [_values] call FUNC(ae3_encode)];
+private _state = [_kind, _values] call FUNC(ae3_state);
 if (_state isEqualTo (_object getVariable [QGVAR(ae3_last), []])) exitWith {};
 
 _object setVariable [QGVAR(ae3_last), _state];
 
-// Sent in chunks so a large filesystem stays under the callExtension size limit
-private _text = str _state;
-private _size = 4000;
-private _offset = 0;
-private _chunk = _text select [0, _size];
-while {_chunk != ""} do {
-    EXTCALL("campaigns:ae3:part",[ARR_2(_id,_chunk)]);
-    _offset = _offset + _size;
-    _chunk = _text select [_offset, _size];
-};
-EXTCALL("campaigns:ae3:save",[ARR_2(_id,typeOf _object)]);
+[_id, typeOf _object, _state] call FUNC(ae3_send);

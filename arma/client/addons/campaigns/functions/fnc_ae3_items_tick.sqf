@@ -1,9 +1,10 @@
 #include "..\script_component.hpp"
 
 // Polls AE3's in-memory packed-item buffers (laptops and flash drives) for items that were just
-// packed or redeployed, keeping the packed device <-> item mapping in the database. AE3 keeps
-// these buffers server-local and in-memory only, so without this a packed item is lost on a
-// restart, leaving it undeployable ("Laptop data not found").
+// packed or redeployed. The item's state is saved as the device's state at the moment it is packed,
+// since AE3 snapshots the device's variables then and the device object is gone. AE3 keeps these
+// buffers server-local and in-memory only, so without this a packed item is lost on a restart,
+// leaving it undeployable ("Laptop data not found").
 
 if (isNil "AE3_armaos_fnc_laptop_captureState") exitWith {};
 
@@ -26,7 +27,11 @@ if (isNil "AE3_armaos_fnc_laptop_captureState") exitWith {};
         };
         _next set [_x, _id];
         if !(_x in _known) then {
-            EXTCALL("campaigns:ae3:itemPacked",[ARR_2(_x,_id)]);
+            private _class = _y getOrDefault ["AE3_OBJECT_TYPE", ""];
+            if (_class != "") then {
+                private _kind = if (getText (configFile >> "CfgVehicles" >> _class >> "ae3_item") != "") then { "flashdrive" } else { "device" };
+                [_id, _class, [_kind, _y] call FUNC(ae3_state), _x] call FUNC(ae3_send);
+            };
         };
     } forEach _buffer;
 
