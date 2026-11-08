@@ -45,12 +45,11 @@ if !(_object getVariable [QGVAR(ae3_initChecked), false]) then {
 private _values = if (_kind == "device") then {
     [_object] call AE3_armaos_fnc_laptop_captureState
 } else {
-    // Crate's own variables are skipped so they can't overwrite the ID of the restored object
-    private _ignored = [QGVAR(id), QGVAR(last), QGVAR(nextUpdate), QGVAR(cargo), QGVAR(ae3_last), QGVAR(ae3_nextUpdate), QGVAR(ae3_pending), QGVAR(ae3_initChecked)];
     private _vars = createHashMap;
     {
-        if !(_x in _ignored) then {
-            _vars set [_x, _object getVariable _x];
+        private _value = _object getVariable _x;
+        if (!isNil "_value") then {
+            _vars set [_x, _value];
         };
     } forEach allVariables _object;
     _vars set ["AE3_OBJECT_TYPE", typeOf _object];
@@ -62,6 +61,19 @@ private _values = if (_kind == "device") then {
 if (_kind == "device") then {
     _values set ["AE3_power_powerState", _object getVariable ["AE3_power_powerState", 0]];
 };
+
+// Only AE3's own variables are genuinely part of a device/flash drive's state. Everything else
+// captureState and allVariables also pick up - ACE's cargo/dragging vars, its own interaction menu
+// action tree, CBA's per-object XEH dispatch tables, Crate's own bookkeeping - carries compiled CODE
+// that each mod rebuilds locally on its own; forcing a stale, round-tripped copy back onto a
+// recreated object corrupts it instead ("Script {...} not found")
+private _ae3Values = createHashMap;
+{
+    if ((toLower _x) find "ae3_" == 0) then {
+        _ae3Values set [_x, _y];
+    };
+} forEach _values;
+_values = _ae3Values;
 
 private _state = [_kind, [_values] call FUNC(ae3_encode)];
 if (_state isEqualTo (_object getVariable [QGVAR(ae3_last), []])) exitWith {};
