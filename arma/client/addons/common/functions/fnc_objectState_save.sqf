@@ -56,11 +56,6 @@ if (missionNamespace getVariable ["ace_cargo", false]) then {
     };
 };
 
-// ACE Captives
-if (_object getVariable ["ace_captives_isHandcuffed", false]) then {
-    _state set ["handcuffed", true];
-};
-
 // Textures
 private _tex = getObjectTextures _object;
 if (_tex isNotEqualTo []) then {

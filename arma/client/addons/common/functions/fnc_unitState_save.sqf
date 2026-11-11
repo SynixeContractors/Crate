@@ -76,13 +76,11 @@ if (_skills isNotEqualTo []) then {
     _state set ["skills", _skills];
 };
 
-if (missionNamespace getVariable ["ace_main", false]) then {
-    if (_unit getVariable ["ace_captives_isSurrendering", false]) then {
-        _state set ["ace_surrender", true];
-    };
-    if (_unit getVariable ["ace_captives_isHandcuffed", false]) then {
-        _state set ["ace_handcuffed", true];
-    };
+if (_unit getVariable ["ace_captives_isSurrendering", false]) then {
+    _state set ["ace_surrender", true];
+};
+if (_unit getVariable ["ace_captives_isHandcuffed", false]) then {
+    _state set ["ace_handcuffed", true];
 };
 
 _state

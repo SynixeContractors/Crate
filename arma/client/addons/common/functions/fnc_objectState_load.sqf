@@ -87,9 +87,6 @@ if !(_object isKindOf "GroundWeaponHolder") then {
                 }
             } forEach _y;
         };
-        case "handcuffed": {
-            [_object, _y] call ace_captives_fnc_setHandcuffed;
-        };
         case "phases": {
             {
                 _object animate [_x#0, _x#1, true];
