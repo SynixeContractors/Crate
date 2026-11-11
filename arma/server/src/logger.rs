@@ -7,7 +7,9 @@ struct ArmaLogger {
 
 impl log::Log for ArmaLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        metadata.level() <= Level::Debug
+        // Debug output from dependencies (e.g. async_nats) floods the RPT and each line is a callback into Arma
+        metadata.level() <= Level::Info
+            || (metadata.level() <= Level::Debug && metadata.target().starts_with("crate_server"))
     }
 
     fn log(&self, record: &Record) {
