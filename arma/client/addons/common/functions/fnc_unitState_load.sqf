@@ -5,12 +5,7 @@ params ["_unit", "_state"];
 {
     switch (_x) do {
         case "name": {
-            private _nameArray = _y splitString " ";
-            if (count _nameArray == 2) then {
-                [_unit, _y, _nameArray select 0, _nameArray select 1] remoteExec ["setName", 0, _unit];
-            } else {
-                [_unit, _y] remoteExec ["setName", 0, _unit];
-            };
+            [_unit, _y] remoteExec ["setName", 0, _unit];
             [_unit] call ace_common_fnc_setName;
         };
         case "loadout": {
@@ -82,10 +77,10 @@ params ["_unit", "_state"];
             } forEach _y;
         };
         case "ace_surrender": {
-            [_unit, true] call ACE_captives_fnc_setSurrendered;
+            [_unit, true] call ace_captives_fnc_setSurrendered;
         };
         case "ace_handcuffed": {
-            [_unit, true] call ACE_captives_fnc_setHandcuffed;
+            [_unit, true] call ace_captives_fnc_setHandcuffed;
         };
     };
 } forEach _state;
