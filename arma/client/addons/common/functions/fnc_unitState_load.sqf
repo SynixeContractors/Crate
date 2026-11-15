@@ -5,8 +5,12 @@ params ["_unit", "_state"];
 {
     switch (_x) do {
         case "name": {
-            [_unit, _y] remoteExec ["setName", 0, _unit];
-            [_unit] call ace_common_fnc_setName;
+            if (local _unit) then {
+                _unit setName _y;
+                [_unit] call ace_common_fnc_setName;
+            } else {
+                [_unit, _y] remoteExec ["setName", 0, _unit];
+            };
         };
         case "loadout": {
             [_unit, _y] call CBA_fnc_setLoadout;
