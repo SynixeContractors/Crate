@@ -9,7 +9,11 @@ private _floats = [];
     if (_x isEqualType []) then {
         _floats pushBack (_x call EFUNC(common,strToFloats));
     } else {
-        _floats pushBack parseNumber _x;
+        if (_x isEqualType "") then {
+            _floats pushBack parseNumber _x;
+        } else {
+            _floats pushBack _x;
+        };
     };
 } forEach _strs;
 
