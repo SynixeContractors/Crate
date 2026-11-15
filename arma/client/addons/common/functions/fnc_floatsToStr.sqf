@@ -1,3 +1,5 @@
+#include "..\script_component.hpp"
+
 private _floats = _this;
 
 if (_floats isEqualType 1.0) exitWith {

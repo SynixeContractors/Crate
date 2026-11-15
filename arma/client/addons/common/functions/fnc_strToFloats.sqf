@@ -1,3 +1,5 @@
+#include "..\script_component.hpp"
+
 private _strs = _this;
 
 if (_strs isEqualType "") exitWith {
