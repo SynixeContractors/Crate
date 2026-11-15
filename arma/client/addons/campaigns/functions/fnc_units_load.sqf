@@ -14,9 +14,9 @@ _unit enableSimulationGlobal false;
 _unit setVariable [QGVAR(id), _id, true];
 GVAR(units_ids) pushBackUnique _id;
 
-_unit setPosASL (_data getOrDefault ["pos", [0,0,0]]);
-_unit setVectorDirAndUp (_data getOrDefault ["rot", [[0,0,0],[0,0,0]]]);
-_unit setDir (_data getOrDefault ["dir", 0]);
+_unit setPosASL ((_data getOrDefault ["pos", [0,0,0]]) call EFUNC(common,strToFloats));
+_unit setVectorDirAndUp ((_data getOrDefault ["rot", [[0,0,0],[0,0,0]]]) call EFUNC(common,strToFloats));
+_unit setDir ((_data getOrDefault ["dir", 0]) call EFUNC(common,strToFloats));
 [{
     _this call EFUNC(common,unitState_load);
 }, [_unit, _data, false]] call CBA_fnc_execNextFrame;

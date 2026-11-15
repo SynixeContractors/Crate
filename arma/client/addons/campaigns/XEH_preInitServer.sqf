@@ -61,11 +61,11 @@ addMissionEventHandler ["BuildingChanged", {
     EXTFUNC("uuid");
     private _id = _ext_res select 0;
     private _state = createHashMap;
-    _state set ["pos", getPosASL _tag];
+    _state set ["pos", (getPosASL _tag) call EFUNC(common,floatsToStr)];
     _state set ["rot", [
         vectorDir _tag,
         vectorUp _tag
-    ]];
+    ] call EFUNC(common,floatsToStr)];
     _state set ["tex", [_texture]];
     EXTCALL("campaigns:objects:save",[ARR_4(GVAR(key),_id,typeOf _tag,_state)]);
 }] call CBA_fnc_addEventHandler;

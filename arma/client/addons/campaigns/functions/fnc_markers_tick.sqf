@@ -22,6 +22,6 @@ GVAR(markers_notSeen) = GVAR(markers_notSeen) - [_marker];
 
 private _state = [_marker] call EFUNC(common,markerState_save);
 
-_state set ["pos", getMarkerPos _marker];
+_state set ["pos", (getMarkerPos _marker) call EFUNC(common,floatsToStr)];
 
 EXTCALL("campaigns:markers:save",[ARR_3(GVAR(key),_marker,_state)]);

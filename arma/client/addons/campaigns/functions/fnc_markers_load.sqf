@@ -4,7 +4,7 @@ params ["_name", "_data"];
 
 private _data = createHashMapFromArray _data;
 
-private _marker = createMarkerLocal [_name, _data getOrDefault ["pos", [0,0,0]]];
+private _marker = createMarkerLocal [_name, (_data getOrDefault ["pos", [0,0,0]]) call EFUNC(common,strToFloats)];
 _marker setMarkerTypeLocal "hd_dot";
 _marker setMarkerColorLocal "ColorBlack";
 _marker setMarkerShadowLocal true;

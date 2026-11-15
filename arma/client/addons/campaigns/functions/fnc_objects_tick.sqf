@@ -42,8 +42,8 @@ if (time < (_object getVariable [QGVAR(nextUpdate), -1])) exitWith {};
 
 private _state = [_object] call EFUNC(common,objectState_save);
 
-_state set ["pos", getPosASL _object];
-_state set ["rot", [vectorDir _object, vectorUp _object]];
+_state set ["pos", (getPosASL _object) call EFUNC(common,floatsToStr)];
+_state set ["rot", [vectorDir _object, vectorUp _object] call EFUNC(common,floatsToStr)];
 
 if (_state isEqualTo (_object getVariable [QGVAR(last), createHashMap])) exitWith {};
 

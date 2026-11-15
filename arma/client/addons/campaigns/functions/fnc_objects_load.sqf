@@ -17,8 +17,8 @@ GVAR(objects_ids) pushBackUnique _id;
 // redeploy/restart recovery check (see fnc_ae3_save) doesn't need to run for it
 _object setVariable [QGVAR(ae3_initChecked), true];
 
-_object setPosASL (_data getOrDefault ["pos", [0,0,0]]);
-_object setVectorDirAndUp (_data getOrDefault ["rot", [[0,0,0],[0,0,0]]]);
+_object setPosASL ((_data getOrDefault ["pos", [0,0,0]]) call EFUNC(common,strToFloats));
+_object setVectorDirAndUp ((_data getOrDefault ["rot", [[0,0,0],[0,0,0]]]) call EFUNC(common,strToFloats));
 
 // AE3 state is applied once every object exists, see objects_ext "done"
 if (_ae3 isNotEqualTo "") then {

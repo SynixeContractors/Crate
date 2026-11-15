@@ -13,3 +13,5 @@ PREP(getInventory);
 PREP(playerFromSteam);
 
 PREP(isDLCOwned);
+PREP(floatsToStr);
+PREP(strToFloats);

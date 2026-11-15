@@ -33,9 +33,9 @@ if (_groupId == "") exitWith {};
 
 private _state = [_unit] call EFUNC(common,unitState_save);
 
-_state set ["pos", getPosASL _unit];
-_state set ["rot", [vectorDir _unit, vectorUp _unit]];
-_state set ["dir", direction _unit];
+_state set ["pos", (getPosASL _unit) call EFUNC(common,floatsToStr)];
+_state set ["rot", [vectorDir _unit, vectorUp _unit] call EFUNC(common,floatsToStr)];
+_state set ["dir", (direction _unit) call EFUNC(common,floatsToStr)];
 
 if (_state isEqualTo (_unit getVariable [QGVAR(last), createHashMap])) exitWith {};
 
