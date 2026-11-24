@@ -40,7 +40,6 @@ async fn info(http: ArcCacheAndHttp) {
 }
 
 async fn executions(http: ArcCacheAndHttp) {
-    executions::postweeklytips::execute(http.clone()).await;
     let mut sub = bootstrap::NC::get()
         .await
         .queue_subscribe(
