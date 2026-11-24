@@ -3,7 +3,7 @@ use synixe_events::{discord::executions, respond};
 
 use crate::ArcCacheAndHttp;
 
-mod postweeklytips;
+pub mod postweeklytips;
 mod updateactivityroles;
 
 #[allow(clippy::too_many_lines)]

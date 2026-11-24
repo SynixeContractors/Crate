@@ -18,17 +18,20 @@ use crate::ArcCacheAndHttp;
 #[allow(clippy::cognitive_complexity)]
 #[allow(clippy::too_many_lines)]
 pub async fn execute(client: ArcCacheAndHttp) {
-    let Ok(files) = pull() else {
-        if let Err(e) = LOG
-            .say(
-                client.as_ref(),
-                "Failed to pull the tips repo for weekly tips",
-            )
-            .await
-        {
-            error!("Failed to send message to log: {}", e);
+    let files = match pull() {
+        Ok(files) => files,
+        Err(e) => {
+            if let Err(log_e) = LOG
+                .say(
+                    client.as_ref(),
+                    &format!("Failed to pull the tips repo for weekly tips\n> {e}"),
+                )
+                .await
+            {
+                error!("Failed to send message to log: {}", log_e);
+            }
+            return;
         }
-        return;
     };
 
     'message: for (channel, name) in [(ONTOPIC, "on_topic"), (LEADERSHIP, "leadership")] {
