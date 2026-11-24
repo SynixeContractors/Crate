@@ -187,7 +187,8 @@ impl<'a> Interaction<'a> {
     pub async fn confirm(&mut self, prompt: &str) -> serenity::Result<Confirmation> {
         self.initial().await?;
         debug!("prompting for confirmation: {}", prompt);
-        self.internal_followup(Self::_confirm(prompt)).await?;
+        self.internal_followup(Self::internal_confirm(prompt))
+            .await?;
         let Some(interaction) = self
             .message
             .as_ref()
@@ -236,7 +237,7 @@ impl Interaction<'_> {
             ))])
     }
 
-    fn _confirm(prompt: &str) -> CreateInteractionResponseFollowup {
+    fn internal_confirm(prompt: &str) -> CreateInteractionResponseFollowup {
         CreateInteractionResponseFollowup::default()
             .content(prompt)
             .components(vec![CreateActionRow::Buttons(vec![

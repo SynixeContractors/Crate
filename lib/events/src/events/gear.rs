@@ -27,6 +27,44 @@ pub mod db {
         pub quantity: i32,
     }
 
+    /// A transfer of money between two members
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    pub struct Transfer {
+        pub source: UserId,
+        pub target: UserId,
+        pub amount: i32,
+        pub reason: String,
+        pub created: time::OffsetDateTime,
+    }
+
+    /// How the company has been doing, for Brodsky's mood
+    #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+    pub struct CompanyActivity {
+        /// The company account's balance
+        pub balance: i64,
+        /// Money into the company account in the period
+        pub income: i64,
+        /// Money out of the company account in the period, as a positive amount
+        pub spending: i64,
+        /// Reputation gained in the period, negative if it was lost
+        pub reputation: i64,
+        /// Missions in the period that succeeded, partly succeeded and failed
+        pub successes: i64,
+        pub partials: i64,
+        pub failures: i64,
+    }
+
+    /// An item in a member's locker
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    pub struct LockerItem {
+        pub class: String,
+        /// The item's pretty name, if it has one
+        pub pretty: Option<String>,
+        pub quantity: i32,
+        /// The base price of one, as the locker's value is counted. `None` if the item has no price.
+        pub value: Option<i32>,
+    }
+
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
     #[serde(rename_all = "snake_case")]
     pub enum TransactionKind {
@@ -145,6 +183,24 @@ pub mod db {
             /// The member's ID
             member: UserId,
         } => (Result<Vec<Transaction>, String>)
+        /// What the company has been up to over the last `days`
+        struct CompanyActivity {
+            days: i32,
+        } => (Result<CompanyActivity, String>)
+        /// The average price members paid for an item each week over the last year, oldest first
+        struct ShopPriceHistory {
+            item: String,
+        } => (Result<Vec<(time::OffsetDateTime, i32)>, String>)
+        /// Get the items in a member's locker, ordered by name
+        struct LockerContents {
+            /// The member's ID
+            member: UserId,
+        } => (Result<Vec<LockerItem>, String>)
+        /// Get a member's most recent transfers, sent and received, newest first
+        struct BankTransfers {
+            /// The member's ID
+            member: UserId,
+        } => (Result<Vec<Transfer>, String>)
 
         /// Get all items in the shop
         #[allow(clippy::type_complexity)]

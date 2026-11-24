@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT member FROM members_notifications WHERE member = ANY($1) AND payday",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "member",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "members_notifications",
+            "name": "member"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "61fc6b72c84ef8edca2db96e9a127e31c3a78aec3dacd77538fcb83e81cb4abd"
+}

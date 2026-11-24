@@ -1,7 +1,9 @@
+use std::fmt::Write;
+
 use serenity::{
     all::{
         CommandData, CommandDataOption, CommandDataOptionValue, CommandInteraction,
-        CommandOptionType, RoleId,
+        CommandOptionType, CreateAttachment, RoleId,
     },
     builder::{
         CreateAutocompleteResponse, CreateCommand, CreateCommandOption, CreateInteractionResponse,
@@ -14,8 +16,10 @@ use synixe_proc::events_request_5;
 
 use crate::{
     discord::interaction::{Confirmation, Interaction},
-    get_option,
+    get_option, get_option_user,
 };
+
+use super::AllowPublic;
 
 /// Configuration for a gear modification command
 struct GearCommandConfig {
@@ -106,7 +110,19 @@ pub fn register() -> CreateCommand {
         cmd = cmd.add_option(sub);
     }
 
-    cmd
+    cmd.add_option(
+        CreateCommandOption::new(
+            CommandOptionType::SubCommand,
+            "locker",
+            "View the items in a member's locker",
+        )
+        .add_sub_option(CreateCommandOption::new(
+            CommandOptionType::User,
+            "member",
+            "The member to view the locker of, yourself if not given",
+        ))
+        .allow_public(),
+    )
 }
 
 pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Result<()> {
@@ -115,9 +131,13 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
         return Ok(());
     };
 
-    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value
-        && let Some(config) = GEAR_COMMANDS.iter().find(|c| c.relation == subcommand.name)
-    {
+    let CommandDataOptionValue::SubCommand(options) = &subcommand.value else {
+        return Ok(());
+    };
+    if subcommand.name == "locker" {
+        return locker(ctx, command, options).await;
+    }
+    if let Some(config) = GEAR_COMMANDS.iter().find(|c| c.relation == subcommand.name) {
         run_gear_command(ctx, command, options, config).await?;
     }
     Ok(())
@@ -205,23 +225,21 @@ async fn run_gear_command(
         }
     }
 
-    if new_name.is_none() || original_name.is_none() {
+    let (Some(original_name), Some(new_name)) = (original_name, new_name) else {
         return interaction
             .reply("Invalid selections, not a valid variant")
             .await;
-    }
+    };
 
     if interaction
         .confirm(&format!(
-            "Are you sure you want to change {} to {} for ${}?",
-            original_name.expect("name exists, checked for invalid selection"),
-            new_name.expect("name exists, checked for invalid selection"),
+            "Are you sure you want to change {original_name} to {new_name} for ${}?",
             config.cost
         ))
         .await?
         == Confirmation::Yes
     {
-        let Ok(Ok((Response::FamilyReplace(Ok(())), _))) = events_request_5!(
+        match events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             FamilyReplace {
@@ -233,10 +251,19 @@ async fn run_gear_command(
             }
         )
         .await
-        else {
-            error!("failed to modify gear");
-            return Ok(());
-        };
+        {
+            Ok(Ok((Response::FamilyReplace(Ok(())), _))) => {}
+            // The database's reason is written to be shown, e.g. insufficient funds
+            Ok(Ok((Response::FamilyReplace(Err(reason)), _))) => {
+                return interaction.reply(reason).await;
+            }
+            _ => {
+                error!("failed to modify gear");
+                return interaction
+                    .reply("Failed to modify gear, please try again later")
+                    .await;
+            }
+        }
 
         interaction.reply("Modification complete!").await?;
     } else {
@@ -337,4 +364,74 @@ async fn gear_autocomplete(
     }
 
     Ok(())
+}
+
+/// A locker longer than this is sent as a file, keeping the message under Discord's 2000 characters
+const LOCKER_MESSAGE_LENGTH: usize = 1800;
+/// The most characters of an item's name shown
+const LOCKER_NAME_LENGTH: usize = 40;
+
+async fn locker(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    interaction.reply("Fetching locker...").await?;
+    let user = get_option_user!(options, "member")
+        .copied()
+        .unwrap_or(command.user.id);
+
+    let Ok(Ok((Response::LockerContents(Ok(items)), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        LockerContents { member: user }
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fetch the locker").await;
+    };
+    if items.is_empty() {
+        return interaction
+            .reply(format!("<@{user}>'s locker is empty"))
+            .await;
+    }
+
+    let mut total = 0;
+    let mut list = String::new();
+    for item in &items {
+        let name: String = item
+            .pretty
+            .as_deref()
+            .unwrap_or(&item.class)
+            .chars()
+            .take(LOCKER_NAME_LENGTH)
+            .collect();
+        let value = item.value.map(|each| each * item.quantity);
+        total += value.unwrap_or(0);
+        let _ = writeln!(
+            list,
+            "{:>4}x  {name:<LOCKER_NAME_LENGTH$}  {:>10}",
+            item.quantity,
+            value.map_or_else(
+                || String::from("-"),
+                |value| bootstrap::format::money(value, false)
+            ),
+        );
+    }
+    let summary = format!(
+        "<@{user}>'s locker: {} items worth {}",
+        items.iter().map(|item| item.quantity).sum::<i32>(),
+        bootstrap::format::money(total, false)
+    );
+    if list.len() > LOCKER_MESSAGE_LENGTH {
+        interaction
+            .reply_with_attachment(
+                summary,
+                CreateAttachment::bytes(list.into_bytes(), "locker.txt"),
+            )
+            .await
+    } else {
+        interaction.reply(format!("{summary}\n```{list}```")).await
+    }
 }

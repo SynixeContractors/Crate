@@ -130,39 +130,39 @@ macro_rules! match_with_return {
     }};
 }
 
-macro_rules! transaction {
-    ($db:expr, $msg:expr, $cx:expr) => {{
-        match $db.begin().await {
-            Ok(tx) => tx,
-            Err(e) => {
-                if let Err(e) = respond!($msg, Response::LockerStore(Err(e.to_string()))).await {
-                    error!("Failed to respond to LockerStore: {}", e);
-                    return Err(e.into());
-                }
-                return Err(e.into());
-            }
-        }
-    }};
-}
-
+/// Runs `$func` in a transaction and responds with its result once the transaction is committed,
+/// so a failed commit is reported as a failure rather than after success was already sent
 macro_rules! quick_transaction {
     ($typ:ident, $db:expr, $msg:expr, $cx:expr, $func:expr, $($args:expr,)*) => {{
-        let mut tx = transaction!($db, $msg, $cx);
-        let res = match_no_return!($func($($args,)* &mut tx), $typ, $msg, $cx);
-        if res.is_ok() {
-            tx.commit().await?;
-        }
-        res
+        let db = &$db;
+        match_no_return!(
+            async move {
+                let mut tx = db.begin().await?;
+                $func($($args,)* &mut tx).await?;
+                tx.commit().await?;
+                Result::<(), anyhow::Error>::Ok(())
+            },
+            $typ,
+            $msg,
+            $cx
+        )
     }}
 }
 
+/// As `quick_transaction`, responding with the value `$func` returns
 macro_rules! quick_transaction_return {
     ($typ:ident, $db:expr, $msg:expr, $cx:expr, $func:expr, $($args:expr,)*) => {{
-        let mut tx = transaction!($db, $msg, $cx);
-        let res = match_with_return!($func($($args,)* &mut tx), $typ, $msg, $cx);
-        if res.is_ok() {
-            tx.commit().await?;
-        }
-        res
+        let db = &$db;
+        match_with_return!(
+            async move {
+                let mut tx = db.begin().await?;
+                let data = $func($($args,)* &mut tx).await?;
+                tx.commit().await?;
+                Result::<_, anyhow::Error>::Ok(data)
+            },
+            $typ,
+            $msg,
+            $cx
+        )
     }}
 }

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
 use synixe_events::{
-    gear::db::{PurchasedItem, Transaction, TransactionKind},
+    gear::db::{CompanyActivity, PurchasedItem, Transaction, TransactionKind, Transfer},
     publish,
 };
 use synixe_meta::discord::BRODSKY;
@@ -132,6 +132,9 @@ pub async fn shop_purchase_ammo_refill(
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<(), anyhow::Error> {
     for (class, (bullets_needed, bullets_per_magazine)) in magazines {
+        if *bullets_needed <= 0 || *bullets_per_magazine <= 0 {
+            continue;
+        }
         let full_mags = bullets_needed / bullets_per_magazine;
         let remainder_bullets = bullets_needed % bullets_per_magazine;
 
@@ -150,7 +153,8 @@ pub async fn shop_purchase_ammo_refill(
         }
 
         if remainder_bullets > 0 {
-            let partial_cost_factor = remainder_bullets as f32 / *bullets_per_magazine as f32;
+            let partial_cost_factor =
+                f64::from(remainder_bullets) / f64::from(*bullets_per_magazine);
             sqlx::query!(
                 "INSERT INTO gear_bank_purchases (member, class, quantity, reason, personal, company, created, add_item)
                  SELECT $1, $2, $3, $4, CEIL(cost.personal_current * $5), CEIL(cost.company_current * $5), NOW() + INTERVAL '2 millisecond', false
@@ -159,6 +163,7 @@ pub async fn shop_purchase_ammo_refill(
                 class,
                 1,
                 format!("shop refill {remainder_bullets} bullets for {class}"),
+                // Overrides the type sqlx infers for $5 from the integer cost it multiplies
                 partial_cost_factor as f64,
             )
             .execute(&mut **executor)
@@ -197,7 +202,6 @@ pub async fn spent(
         .collect())
 }
 
-#[derive(sqlx::FromRow)]
 struct LedgerRow {
     amount: i32,
     created: time::OffsetDateTime,
@@ -212,8 +216,10 @@ pub async fn history(
     member: &UserId,
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<Vec<Transaction>, anyhow::Error> {
-    let rows = sqlx::query_as::<_, LedgerRow>(
-        "SELECT amount, created, kind, reason, class, pretty, quantity
+    // Every column a UNION branch reads is NOT NULL, except the item columns only purchases have
+    let rows = sqlx::query_as!(
+        LedgerRow,
+        r#"SELECT amount AS "amount!", created AS "created!", kind AS "kind!", reason AS "reason!", class AS "class?", pretty AS "pretty?", quantity AS "quantity?"
 FROM (
     SELECT
         member,
@@ -267,9 +273,9 @@ FROM (
     LEFT JOIN gear_items gi ON gi.class = gbp.class
 ) ledger
 WHERE member = $1
-ORDER BY created DESC;",
+ORDER BY created DESC;"#,
+        member.to_string(),
     )
-    .bind(member.to_string())
     .fetch_all(&mut **executor)
     .await?;
 
@@ -311,6 +317,45 @@ ORDER BY created DESC;",
     Ok(ledger)
 }
 
+/// The most transfers `transfers` returns, enough to fit in one Discord message
+const TRANSFERS_LIMIT: i64 = 15;
+
+pub async fn transfers(
+    member: &UserId,
+    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<Vec<Transfer>, anyhow::Error> {
+    let rows = sqlx::query!(
+        "SELECT source, target, amount, reason, created
+        FROM gear_bank_transfers
+        WHERE source = $1 OR target = $1
+        ORDER BY created DESC
+        LIMIT $2",
+        member.to_string(),
+        TRANSFERS_LIMIT,
+    )
+    .fetch_all(&mut **executor)
+    .await?;
+    rows.into_iter()
+        .map(|row| {
+            Ok(Transfer {
+                source: stored_member(&row.source)?,
+                target: stored_member(&row.target)?,
+                amount: row.amount,
+                reason: row.reason,
+                created: row.created,
+            })
+        })
+        .collect()
+}
+
+/// Parses a member ID as stored in the bank tables, where Brodsky (the company account) is "0"
+fn stored_member(id: &str) -> Result<UserId, anyhow::Error> {
+    match id.parse::<u64>()? {
+        0 => Ok(BRODSKY),
+        id => Ok(UserId::new(id)),
+    }
+}
+
 pub async fn publish_balance(nats: async_nats::Client, member: UserId, reason: String) {
     let db = bootstrap::DB::get().await;
     let mut tx = db
@@ -342,4 +387,71 @@ pub async fn publish_balance(nats: async_nats::Client, member: UserId, reason: S
             e
         );
     }
+}
+
+/// How the company has been doing over the last `days`. Spending is counted the way the company balance is
+/// (see `gear_bank_balance_cache`): its own withdrawals, everything paid to members, garage purchases and the
+/// company's share of gear purchases. Missions are counted by when they were played.
+pub async fn company_activity<'a, E>(days: i32, executor: E) -> Result<CompanyActivity, anyhow::Error>
+where
+    E: Executor<'a, Database = Postgres>,
+{
+    let row = sqlx::query!(
+        r#"SELECT
+            (SELECT balance FROM gear_bank_balance_cache WHERE member = '0') AS balance,
+            (SELECT COALESCE(SUM(amount), 0) FROM gear_bank_deposits
+                WHERE member = '0' AND amount > 0 AND created > NOW() - make_interval(days => $1)) AS "income!",
+            (SELECT COALESCE(-SUM(amount) FILTER (WHERE member = '0' AND amount < 0), 0)
+                + COALESCE(SUM(amount) FILTER (WHERE member <> '0'), 0)
+                FROM gear_bank_deposits WHERE created > NOW() - make_interval(days => $1))
+            + (SELECT COALESCE(SUM(cost), 0) FROM garage_purchases WHERE created > NOW() - make_interval(days => $1))
+            + (SELECT COALESCE(SUM(company * quantity), 0) FROM gear_bank_purchases
+                WHERE created > NOW() - make_interval(days => $1)) AS "spending!",
+            (SELECT COALESCE(SUM(reputation), 0) FROM reputation_events
+                WHERE created > NOW() - make_interval(days => $1)) AS "reputation!",
+            (SELECT COUNT(*) FILTER (WHERE outcome = 'success') FROM missions_schedule
+                WHERE start > NOW() - make_interval(days => $1)) AS "successes!",
+            (SELECT COUNT(*) FILTER (WHERE outcome = 'partial') FROM missions_schedule
+                WHERE start > NOW() - make_interval(days => $1)) AS "partials!",
+            (SELECT COUNT(*) FILTER (WHERE outcome = 'failure') FROM missions_schedule
+                WHERE start > NOW() - make_interval(days => $1)) AS "failures!""#,
+        days,
+    )
+    .fetch_one(executor)
+    .await?;
+    Ok(CompanyActivity {
+        balance: row.balance.map_or(0, i64::from),
+        income: row.income,
+        spending: row.spending,
+        reputation: row.reputation,
+        successes: row.successes,
+        partials: row.partials,
+        failures: row.failures,
+    })
+}
+
+/// The average price members paid for an item each week over the last year, oldest first. Partial
+/// magazine refills are left out, as they're charged for only the bullets topped up.
+pub async fn price_history<'a, E>(
+    item: &str,
+    executor: E,
+) -> Result<Vec<(time::OffsetDateTime, i32)>, anyhow::Error>
+where
+    E: Executor<'a, Database = Postgres>,
+{
+    let rows = sqlx::query!(
+        r#"SELECT date_trunc('week', created) AS "week!", ROUND(AVG(personal))::INT AS "price!"
+        FROM gear_bank_purchases
+        WHERE class = $1
+            AND quantity > 0
+            AND personal > 0
+            AND reason NOT LIKE 'shop refill % bullets for %'
+            AND created > NOW() - INTERVAL '1 year'
+        GROUP BY 1
+        ORDER BY 1"#,
+        item,
+    )
+    .fetch_all(executor)
+    .await?;
+    Ok(rows.into_iter().map(|row| (row.week, row.price)).collect())
 }

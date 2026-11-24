@@ -58,3 +58,19 @@ pub async fn find_members(
     }
     Ok((ids, unknown))
 }
+
+/// Sends a direct message, returning whether it was delivered
+pub async fn dm(ctx: &Context, user: UserId, content: String) -> bool {
+    let channel = match user.create_dm_channel(ctx).await {
+        Ok(channel) => channel,
+        Err(e) => {
+            error!("unable to create dm channel for {user}: {e}");
+            return false;
+        }
+    };
+    if let Err(e) = channel.say(&ctx.http, content).await {
+        error!("failed to send dm to {user}: {e}");
+        return false;
+    }
+    true
+}

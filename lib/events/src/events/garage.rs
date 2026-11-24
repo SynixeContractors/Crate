@@ -91,7 +91,49 @@ pub mod db {
         }
     }
 
+    /// A vehicle in the garage, with its saved state
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    pub struct VehicleDetails {
+        pub plate: String,
+        pub name: String,
+        pub class: String,
+        pub stored: bool,
+        /// The attached addon's name, if any
+        pub addon: Option<String>,
+        /// Fuel capacity in litres
+        pub fuel_capacity: i32,
+        /// The vehicle's state as saved by `objectState_save`
+        pub state: Option<serde_json::Value>,
+        pub updated: time::OffsetDateTime,
+        /// Estimated cost to fully repair it with every repair group
+        pub repair_cost: i32,
+    }
+
+    /// What repairing one group of a vehicle's parts would cost
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    pub struct RepairGroupCost {
+        pub id: Uuid,
+        pub name: String,
+        /// Damaged hitpoints in the group, with their damage from 0 to 1
+        pub hitpoints: Vec<(String, f64)>,
+        pub cost: i32,
+    }
+
     events_requests!(db.garage {
+        /// Get vehicles with their saved state, all of them or the one with this exact plate
+        struct FetchVehicleDetails {
+            plate: Option<String>,
+        } => (Result<Vec<VehicleDetails>, String>)
+        /// What repairing each repair group of a vehicle would cost
+        struct RepairEstimate {
+            plate: String,
+        } => (Result<Vec<RepairGroupCost>, String>)
+        /// Repair one group of a stored vehicle's parts, paid for by the company. Responds with the cost.
+        struct Repair {
+            member: UserId,
+            plate: String,
+            group: Uuid,
+        } => (Result<i32, String>)
         /// Get all plates
         struct FetchPlates {
             /// Filter the plates with a wildcard

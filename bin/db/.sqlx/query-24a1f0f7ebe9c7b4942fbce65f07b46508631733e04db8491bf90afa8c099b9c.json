@@ -1,0 +1,65 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT amount AS \"amount!\", created AS \"created!\", kind AS \"kind!\", reason AS \"reason!\", class AS \"class?\", pretty AS \"pretty?\", quantity AS \"quantity?\"\nFROM (\n    SELECT\n        member,\n        amount,\n        created,\n        'deposit' AS kind,\n        reason,\n        NULL::VARCHAR AS class,\n        NULL::VARCHAR AS pretty,\n        NULL::INTEGER AS quantity\n    FROM gear_bank_deposits\n\n    UNION ALL\n\n    SELECT\n        target AS member,\n        amount,\n        created,\n        'transfer_in' AS kind,\n        reason,\n        NULL::VARCHAR AS class,\n        NULL::VARCHAR AS pretty,\n        NULL::INTEGER AS quantity\n    FROM gear_bank_transfers\n\n    UNION ALL\n\n    SELECT\n        source AS member,\n        -amount AS amount,\n        created,\n        'transfer_out' AS kind,\n        reason,\n        NULL::VARCHAR AS class,\n        NULL::VARCHAR AS pretty,\n        NULL::INTEGER AS quantity\n    FROM gear_bank_transfers\n\n    UNION ALL\n\n    SELECT\n        gbp.member,\n        (-gbp.personal * gbp.quantity) AS amount,\n        gbp.created,\n        'purchase' AS kind,\n        gbp.reason,\n        gbp.class,\n        gi.pretty,\n        gbp.quantity\n    FROM gear_bank_purchases gbp\n    LEFT JOIN gear_items gi ON gi.class = gbp.class\n) ledger\nWHERE member = $1\nORDER BY created DESC;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "amount!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "created!",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "kind!",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "reason!",
+        "type_info": "Varchar",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "class?",
+        "type_info": "Varchar",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 5,
+        "name": "pretty?",
+        "type_info": "Varchar",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 6,
+        "name": "quantity?",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "24a1f0f7ebe9c7b4942fbce65f07b46508631733e04db8491bf90afa8c099b9c"
+}

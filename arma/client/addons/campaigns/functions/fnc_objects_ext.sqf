@@ -8,46 +8,8 @@ switch (_func) do {
         [_id, _class, _data] call FUNC(objects_load);
     };
     case "done": {
-        // Handle delayed ACE cargo
-        {
-            if ((_x getVariable [QGVAR(id), ""]) == "") then { continue };
-            _x enableSimulationGlobal true;
-            private _cargo = _x getVariable [QGVAR(cargo), []];
-            if (_cargo isEqualTo []) then { continue };
-            private _object = _x;
-            private _loaded = _object getVariable ["ace_cargo_loaded", []];
-            if (_loaded isNotEqualTo []) then {
-                {
-                    if (_x isEqualType objNull) then {
-                        detach _x;
-                        deleteVehicle _x;
-                    };
-                } forEach _loaded;
-            };
-            _object setVariable ["ace_cargo_loaded", [], true];
-            private _toLoad = _object getVariable [QGVAR(cargo), []];
-            if (_toLoad isNotEqualTo []) then {
-                {
-                    _x params ["_type", "_id"];
-                    if (_type == 0) then {
-                        [_id, _object] call ace_cargo_fnc_addCargoItem;
-                    } else {
-                        private _allObjects = allMissionObjects "All";
-                        private _object = _allObjects select (_allObjects findIf { _x getVariable [QGVAR(id), ""] isEqualTo _id });
-                        [_object, _object, true] call ace_cargo_fnc_loadItem;
-                    };
-                } forEach _toLoad;
-            };
-            [_object] call ace_cargo_fnc_validateCargoSpace;
-        } forEach (allMissionObjects "All" - allUnits);
-        {
-            _x params ["_object", "_state"];
-            if (!isNull _object) then {
-                [_object, _state] call FUNC(ae3_apply);
-            };
-        } forEach GVAR(ae3_pending);
-        GVAR(ae3_pending) = [];
-        GVAR(objects_ready) = true;
-        EXTCALL("campaigns:groups:load",[GVAR(key)]);
+        // objects_load applies each object's state a frame after creating it, and applying state clears
+        // ACE cargo, so the cargo is loaded a frame later still, once every object's state is in place
+        [FUNC(objects_loaded)] call CBA_fnc_execNextFrame;
     };
 };

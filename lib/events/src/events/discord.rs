@@ -181,10 +181,70 @@ pub mod info {
 
 /// Read from the database
 pub mod db {
+    use serde::{Deserialize, Serialize};
     use serenity::model::prelude::UserId;
     use synixe_proc::events_requests;
 
+    /// A direct message a member can opt in to
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(rename_all = "snake_case")]
+    pub enum Notification {
+        /// Mission payouts
+        Payday,
+        /// 15 minutes before a mission they RSVP'd to, if they aren't on the server
+        MissionReminder,
+    }
+
+    /// When a member was last around, for activity reports
+    #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
+    pub struct MemberActivity {
+        /// Missions they've been paid for
+        pub missions: i64,
+        pub last_mission: Option<time::OffsetDateTime>,
+        /// Their last connection to a server
+        pub last_connected: Option<time::OffsetDateTime>,
+        /// The last reachout staff sent them
+        pub last_reachout: Option<time::OffsetDateTime>,
+    }
+
+    /// The direct messages a member has opted in to, all off by default
+    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct Notifications {
+        pub payday: bool,
+        pub mission_reminder: bool,
+    }
+
     events_requests!(db.discord {
+        /// When a member was last around
+        struct MemberActivity {
+            member: UserId,
+        } => (Result<MemberActivity, String>)
+        /// Record that staff sent a member a reachout
+        struct RecordReachout {
+            member: UserId,
+            sent_by: UserId,
+        } => (Result<(), String>)
+        /// Get the notifications a member has opted in to
+        struct GetNotifications {
+            /// The member
+            member: UserId,
+        } => (Result<Notifications, String>)
+        /// Opt a member in or out of notifications, leaving any not given as they are
+        struct SetNotifications {
+            /// The member
+            member: UserId,
+            /// Mission payouts
+            payday: Option<bool>,
+            /// Mission reminders
+            mission_reminder: Option<bool>,
+        } => (Result<Notifications, String>)
+        /// Of the given members, those opted in to a notification
+        struct NotificationSubscribers {
+            /// The members to check
+            members: Vec<UserId>,
+            /// The notification
+            notification: Notification,
+        } => (Result<Vec<UserId>, String>)
         /// Get a discord user's ID from their steam id
         struct FromSteam {
             /// The steam ID to get the discord ID for
@@ -230,5 +290,10 @@ pub mod executions {
         struct UpdateActivityRoles {} => (Result<(), String>)
         /// Post weekly tips
         struct PostWeeklyTips {} => (Result<(), String>)
+        /// Brodsky's in-character reaction to a situation, a single short line
+        struct BrodskyReact {
+            /// What happened, in plain words
+            situation: String,
+        } => (Result<String, String>)
     });
 }

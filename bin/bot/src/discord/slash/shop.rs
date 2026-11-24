@@ -143,10 +143,9 @@ async fn price(
     };
 
     let name = pretty.as_deref().unwrap_or(class);
-    let sale = price
-        .until()
-        .map(|until| format!("\nSale ends: {}", until.date()))
-        .unwrap_or_default();
+    let sale = price.until().map_or_else(String::new, |until| {
+        format!("\nSale ends: {}", until.date())
+    });
     interaction
         .reply(format!(
             "**{name}**\nPersonal: {}\nCompany: {}{sale}",

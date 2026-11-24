@@ -6,7 +6,7 @@ use synixe_proc::events_request_5;
 
 use crate::discord::utils::find_members;
 
-use super::BrainFunction;
+use super::{BrainFunction, Caller};
 
 pub struct GetBalance {}
 
@@ -17,7 +17,7 @@ impl BrainFunction for GetBalance {
     }
 
     fn desc(&self) -> &'static str {
-        "Get's the balance of a member or the company. use 'Ctirad Brodsky' for company balance"
+        "Get the bank, locker and loadout balance of the person asking, or the company's balance with 'Ctirad Brodsky'. Staff can ask about anyone."
     }
 
     fn args(&self) -> serde_json::Value {
@@ -26,7 +26,7 @@ impl BrainFunction for GetBalance {
             "properties": {
                 "names": {
                     "type": "array",
-                    "description": "names to get the balance of, 'Ctirad Brodsky' returns the company's balance",
+                    "description": "names to get the balance of, the person asking if empty. 'Ctirad Brodsky' returns the company's balance",
                     "items": {
                         "type": "string",
                         "description": "discord id or name of the member to get the balance of"
@@ -36,32 +36,46 @@ impl BrainFunction for GetBalance {
         })
     }
 
-    async fn run(&self, ctx: &Context, args: serde_json::Value) -> Option<serde_json::Value> {
+    async fn run(
+        &self,
+        ctx: &Context,
+        caller: &Caller,
+        args: serde_json::Value,
+    ) -> Option<serde_json::Value> {
         let names = args["names"]
-            .as_array()?
-            .iter()
-            .map(|v| {
+            .as_array()
+            .into_iter()
+            .flatten()
+            // The model can send anything, so names that aren't a string or ID are skipped
+            .filter_map(|v| {
                 v.as_str()
                     .map(std::string::ToString::to_string)
                     .or_else(|| v.as_u64().map(|v| v.to_string()))
-                    .expect("name is string or u64")
             })
             .collect::<Vec<_>>();
-        let (found, _) = match find_members(ctx, &names).await {
-            Ok(members) => members,
-            Err(e) => {
-                error!("failed to find members: {}", e);
-                return Some(json!({
-                    "error": e,
-                }));
+        let found = if names.is_empty() {
+            vec![(String::new(), caller.id)]
+        } else {
+            match find_members(ctx, &names).await {
+                Ok((found, _)) => found,
+                Err(e) => {
+                    error!("failed to find members: {}", e);
+                    return Some(json!({
+                        "error": e,
+                    }));
+                }
             }
         };
-
-        info!("found members: {:?}", found);
 
         let mut responses = Vec::new();
 
         for (_, member) in found {
+            if member != BRODSKY && !caller.may_see(member) {
+                responses.push(json!({
+                    member.to_string(): { "error": PRIVATE },
+                }));
+                continue;
+            }
             let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_5!(
                 bootstrap::NC::get().await,
                 synixe_events::gear::db,
@@ -76,6 +90,7 @@ impl BrainFunction for GetBalance {
                 responses.push(json!({
                     "company": bootstrap::format::money(balance, false),
                 }));
+                continue;
             }
 
             let Ok(Ok((Response::LockerBalance(Ok(locker_balance)), _))) = events_request_5!(
@@ -108,18 +123,34 @@ impl BrainFunction for GetBalance {
     }
 }
 
-async fn resolve_member(ctx: &Context, args: &serde_json::Value) -> Result<UserId, String> {
-    let name = args["name"]
+/// What the model is told when it asks about someone else's money for someone who isn't staff
+const PRIVATE: &str = "that is another member's private business, only staff can see it";
+
+/// The member a tool is asked about: the one named, or the person asking. Only staff can ask about others.
+async fn resolve_member(
+    ctx: &Context,
+    caller: &Caller,
+    args: &serde_json::Value,
+) -> Result<UserId, String> {
+    let Some(name) = args["name"]
         .as_str()
         .map(std::string::ToString::to_string)
         .or_else(|| args["name"].as_u64().map(|v| v.to_string()))
-        .ok_or_else(|| "missing name".to_string())?;
+        .filter(|name| !name.is_empty())
+    else {
+        return Ok(caller.id);
+    };
     let (found, _) = find_members(ctx, std::slice::from_ref(&name)).await?;
-    found
+    let member = found
         .into_iter()
         .next()
         .map(|(_, member)| member)
-        .ok_or_else(|| format!("no member found matching {name}"))
+        .ok_or_else(|| format!("no member found matching {name}"))?;
+    if caller.may_see(member) {
+        Ok(member)
+    } else {
+        Err(PRIVATE.to_string())
+    }
 }
 
 pub struct Spending {}
@@ -143,12 +174,16 @@ impl BrainFunction for Spending {
                     "description": "discord id or name of the member",
                 },
             },
-            "required": ["name"],
         })
     }
 
-    async fn run(&self, ctx: &Context, args: serde_json::Value) -> Option<serde_json::Value> {
-        let member = match resolve_member(ctx, &args).await {
+    async fn run(
+        &self,
+        ctx: &Context,
+        caller: &Caller,
+        args: serde_json::Value,
+    ) -> Option<serde_json::Value> {
+        let member = match resolve_member(ctx, caller, &args).await {
             Ok(member) => member,
             Err(error) => return Some(json!({ "error": error })),
         };
@@ -191,12 +226,16 @@ impl BrainFunction for History {
                     "description": "discord id or name of the member",
                 },
             },
-            "required": ["name"],
         })
     }
 
-    async fn run(&self, ctx: &Context, args: serde_json::Value) -> Option<serde_json::Value> {
-        let member = match resolve_member(ctx, &args).await {
+    async fn run(
+        &self,
+        ctx: &Context,
+        caller: &Caller,
+        args: serde_json::Value,
+    ) -> Option<serde_json::Value> {
+        let member = match resolve_member(ctx, caller, &args).await {
             Ok(member) => member,
             Err(error) => return Some(json!({ "error": error })),
         };
@@ -261,7 +300,12 @@ impl BrainFunction for ShopPrice {
         })
     }
 
-    async fn run(&self, _ctx: &Context, args: serde_json::Value) -> Option<serde_json::Value> {
+    async fn run(
+        &self,
+        _ctx: &Context,
+        _caller: &Caller,
+        args: serde_json::Value,
+    ) -> Option<serde_json::Value> {
         let item = args["item"].as_str()?.to_string();
         let Ok(Ok((Response::ShopGetPrice(Ok(price)), _))) = events_request_5!(
             bootstrap::NC::get().await,

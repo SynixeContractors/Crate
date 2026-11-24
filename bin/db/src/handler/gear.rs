@@ -198,6 +198,34 @@ impl Handler for Request {
                     member,
                 )
             }
+            Self::CompanyActivity { days } => match_with_return!(
+                actor::gear::bank::company_activity(*days, &*db),
+                CompanyActivity,
+                msg,
+                cx
+            ),
+            Self::ShopPriceHistory { item } => match_with_return!(
+                actor::gear::bank::price_history(item, &*db),
+                ShopPriceHistory,
+                msg,
+                cx
+            ),
+            Self::LockerContents { member } => match_with_return!(
+                actor::gear::locker::contents(member, &*db),
+                LockerContents,
+                msg,
+                cx
+            ),
+            Self::BankTransfers { member } => {
+                quick_transaction_return!(
+                    BankTransfers,
+                    db,
+                    msg,
+                    cx,
+                    actor::gear::bank::transfers,
+                    member,
+                )
+            }
             Self::ShopGetAll { page } => {
                 quick_transaction_return!(
                     ShopGetAll,
@@ -226,28 +254,30 @@ impl Handler for Request {
                 items,
                 magazines,
             } => {
-                let mut tx = transaction!(db, msg, cx);
-                // Purchase ammo refill
-                actor::gear::bank::shop_purchase_ammo_refill(member, magazines, &mut tx).await?;
-                // Store a blank loadout
-                actor::gear::loadout::store(
-                    member,
-                    &None,
-                    r#"[[],[],[],[],[],[],"","",[],["","","","","",""]]"#,
-                    &mut tx,
-                )
-                .await?;
-                // Store the items
-                actor::gear::locker::store(member, items, "shop enter", &mut tx).await?;
-                // Fetch the player's balance
-                let Some(balance) = actor::gear::bank::balance(member, &mut *tx).await? else {
-                    respond!(msg, Response::ShopEnter(Err("No balance found".into()))).await?;
-                    return Err(anyhow::anyhow!("No balance found"));
-                };
-                // Fetch the player's locker
-                let locker = actor::gear::locker::get(member, &mut *tx).await?;
-                tx.commit().await?;
-                respond!(msg, Response::ShopEnter(Ok((locker, balance)))).await?;
+                let result = async {
+                    let mut tx = db.begin().await?;
+                    // Only the refill is a purchase, so it's the only step that can be short on funds
+                    actor::gear::bank::shop_purchase_ammo_refill(member, magazines, &mut tx)
+                        .await?;
+                    // Store a blank loadout
+                    actor::gear::loadout::store(
+                        member,
+                        &None,
+                        r#"[[],[],[],[],[],[],"","",[],["","","","","",""]]"#,
+                        &mut tx,
+                    )
+                    .await?;
+                    actor::gear::locker::store(member, items, "shop enter", &mut tx).await?;
+                    let balance = actor::gear::bank::balance(member, &mut *tx)
+                        .await?
+                        .ok_or_else(|| anyhow::anyhow!("no balance found for {member}"))?;
+                    let locker = actor::gear::locker::get(member, &mut *tx).await?;
+                    tx.commit().await?;
+                    Ok::<_, anyhow::Error>((locker, balance))
+                }
+                .await
+                .map_err(|e| shop_error(&e, "You can't afford to refill your magazines"));
+                respond!(msg, Response::ShopEnter(result)).await?;
                 Ok(())
             }
             Self::ShopLeave {
@@ -255,30 +285,42 @@ impl Handler for Request {
                 items,
                 loadout,
             } => {
-                let mut tx = transaction!(db, msg, cx);
-                // Take the items from the locker
-                actor::gear::locker::take(member, items, "shop leave", &mut tx).await?;
-                // Store the loadout
-                actor::gear::loadout::store(member, &None, loadout, &mut tx).await?;
-                tx.commit().await?;
-                respond!(msg, Response::ShopLeave(Ok(()))).await?;
+                let result = async {
+                    let mut tx = db.begin().await?;
+                    actor::gear::locker::take(member, items, "shop leave", &mut tx).await?;
+                    actor::gear::loadout::store(member, &None, loadout, &mut tx).await?;
+                    tx.commit().await?;
+                    Ok::<_, anyhow::Error>(())
+                }
+                .await
+                .map_err(|e| shop_error(&e, "Insufficient funds"));
+                respond!(msg, Response::ShopLeave(result)).await?;
                 Ok(())
             }
             Self::ShopPurchase { member, items } => {
-                let mut tx = transaction!(db, msg, cx);
-                // Take the items from the locker
-                actor::gear::bank::shop_purchase(member, items, "shop purchase", &mut tx).await?;
-                // Fetch the player's balance
-                let Some(balance) = actor::gear::bank::balance(member, &mut *tx).await? else {
-                    respond!(msg, Response::ShopPurchase(Err("No balance found".into()))).await?;
-                    return Err(anyhow::anyhow!("No balance found"));
-                };
-                // Fetch the player's locker
-                let locker = actor::gear::locker::get(member, &mut *tx).await?;
-                tx.commit().await?;
-                respond!(msg, Response::ShopPurchase(Ok((locker, balance)))).await?;
-                actor::gear::bank::publish_balance(nats, *member, String::from("shop purchase"))
+                let result = async {
+                    let mut tx = db.begin().await?;
+                    actor::gear::bank::shop_purchase(member, items, "shop purchase", &mut tx)
+                        .await?;
+                    let balance = actor::gear::bank::balance(member, &mut *tx)
+                        .await?
+                        .ok_or_else(|| anyhow::anyhow!("no balance found for {member}"))?;
+                    let locker = actor::gear::locker::get(member, &mut *tx).await?;
+                    tx.commit().await?;
+                    Ok::<_, anyhow::Error>((locker, balance))
+                }
+                .await
+                .map_err(|e| shop_error(&e, "You can't afford this purchase"));
+                let purchased = result.is_ok();
+                respond!(msg, Response::ShopPurchase(result)).await?;
+                if purchased {
+                    actor::gear::bank::publish_balance(
+                        nats,
+                        *member,
+                        String::from("shop purchase"),
+                    )
                     .await;
+                }
                 Ok(())
             }
             Self::SetPrettyName { item, pretty } => {
@@ -363,41 +405,55 @@ impl Handler for Request {
                 reason,
                 cost,
             } => {
-                let mut tx = transaction!(db, msg, cx);
-                // Take the original item
-                actor::gear::locker::take(
-                    member,
-                    &{
-                        let mut map = HashMap::new();
-                        map.insert(original.clone(), 1);
-                        map
-                    },
-                    reason,
-                    &mut tx,
-                )
-                .await?;
-                // Purchase the new item
-                actor::gear::bank::shop_purchase_personal_cost(
-                    member,
-                    &{
-                        let mut map = HashMap::new();
-                        map.insert(new.clone(), (1, *cost));
-                        map
-                    },
-                    reason,
-                    &mut tx,
-                )
-                .await?;
-                tx.commit().await?;
-                respond!(msg, Response::FamilyReplace(Ok(()))).await?;
-                actor::gear::bank::publish_balance(
-                    nats,
-                    *member,
-                    format!("family replace: {reason}"),
-                )
-                .await;
+                let result = async {
+                    let mut tx = db.begin().await?;
+                    actor::gear::locker::take(
+                        member,
+                        &HashMap::from([(original.clone(), 1)]),
+                        reason,
+                        &mut tx,
+                    )
+                    .await?;
+                    actor::gear::bank::shop_purchase_personal_cost(
+                        member,
+                        &HashMap::from([(new.clone(), (1, *cost))]),
+                        reason,
+                        &mut tx,
+                    )
+                    .await?;
+                    tx.commit().await?;
+                    Ok::<_, anyhow::Error>(())
+                }
+                .await
+                .map_err(|e| shop_error(&e, "You can't afford this modification"));
+                let replaced = result.is_ok();
+                respond!(msg, Response::FamilyReplace(result)).await?;
+                if replaced {
+                    actor::gear::bank::publish_balance(
+                        nats,
+                        *member,
+                        format!("family replace: {reason}"),
+                    )
+                    .await;
+                }
                 Ok(())
             }
         }
+    }
+}
+
+/// The message for a failed shop action, safe to show the player. The database's own funds check
+/// (see the `gear_bank_purchases` insert trigger) gets `insufficient`; anything else is logged and
+/// reported generically.
+fn shop_error(e: &anyhow::Error, insufficient: &str) -> String {
+    let short_on_funds = e
+        .downcast_ref::<sqlx::Error>()
+        .and_then(sqlx::Error::as_database_error)
+        .is_some_and(|db| db.message() == "Insufficient funds");
+    if short_on_funds {
+        insufficient.to_string()
+    } else {
+        error!("shop action failed: {e:?}");
+        String::from("An unexpected error occurred, please try again later")
     }
 }

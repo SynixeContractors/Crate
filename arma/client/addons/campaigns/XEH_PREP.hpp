@@ -21,6 +21,7 @@ PREP(markers_tick);
 
 PREP(objects_ext);
 PREP(objects_load);
+PREP(objects_loaded);
 PREP(objects_tick);
 
 PREP(units_ext);

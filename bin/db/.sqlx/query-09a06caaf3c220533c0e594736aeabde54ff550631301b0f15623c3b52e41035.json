@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT class, pretty FROM gear_items WHERE enabled = TRUE AND (class ILIKE $1 OR pretty ILIKE $1) ORDER BY COALESCE(lower(class) = lower($2) OR lower(pretty) = lower($2), FALSE) DESC, COALESCE(pretty, class) LIMIT 25",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "class",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "gear_items",
+            "name": "class"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "pretty",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "gear_items",
+            "name": "pretty"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "09a06caaf3c220533c0e594736aeabde54ff550631301b0f15623c3b52e41035"
+}

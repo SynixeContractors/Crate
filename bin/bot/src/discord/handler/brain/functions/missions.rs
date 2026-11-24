@@ -5,7 +5,8 @@ use synixe_proc::events_request_5;
 use time::format_description::well_known::Rfc3339;
 use time_tz::{OffsetDateTimeExt, timezones::db::america::NEW_YORK};
 
-use super::BrainFunction;
+use super::{BrainFunction, Caller};
+use crate::discord::slash::me::MissionStats;
 
 const LIMIT: usize = 5;
 
@@ -28,7 +29,12 @@ impl BrainFunction for Upcoming {
         })
     }
 
-    async fn run(&self, _ctx: &Context, _args: serde_json::Value) -> Option<serde_json::Value> {
+    async fn run(
+        &self,
+        _ctx: &Context,
+        _caller: &Caller,
+        _args: serde_json::Value,
+    ) -> Option<serde_json::Value> {
         let Ok(Ok((Response::UpcomingSchedule(Ok(mut upcoming)), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
@@ -60,6 +66,56 @@ impl BrainFunction for Upcoming {
 
         Some(json!({
             "upcoming_missions": missions,
+        }))
+    }
+}
+
+pub struct MyMissions {}
+
+#[async_trait::async_trait]
+impl BrainFunction for MyMissions {
+    fn name(&self) -> &'static str {
+        "my_missions"
+    }
+
+    fn desc(&self) -> &'static str {
+        "Get the mission record of the person asking: how many missions they've played, by type, what they've earned, their weekly attendance streak, and their most recent missions. Use it to rib them about their attendance."
+    }
+
+    fn args(&self) -> serde_json::Value {
+        json!({
+            "type": "object",
+            "properties": {}
+        })
+    }
+
+    async fn run(
+        &self,
+        _ctx: &Context,
+        caller: &Caller,
+        _args: serde_json::Value,
+    ) -> Option<serde_json::Value> {
+        let Ok(Ok((Response::MemberMissions(Ok(missions)), _))) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::missions::db,
+            MemberMissions { member: caller.id }
+        )
+        .await
+        else {
+            return Some(json!({ "error": "failed to fetch their missions" }));
+        };
+        let stats = MissionStats::from(&missions);
+        Some(json!({
+            "missions": missions.len(),
+            "by_type": stats.by_type,
+            "earned": stats.earned,
+            "current_weekly_streak": stats.current_streak,
+            "best_weekly_streak": stats.best_streak,
+            "recent": missions.iter().take(5).map(|m| json!({
+                "name": m.name,
+                "date": m.start.date().to_string(),
+                "payout": m.payout,
+            })).collect::<Vec<_>>(),
         }))
     }
 }

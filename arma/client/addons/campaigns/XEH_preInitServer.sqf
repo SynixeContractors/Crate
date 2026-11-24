@@ -29,6 +29,7 @@ GVAR(markers_ready) = false;
 GVAR(markers_stack) = [];
 GVAR(markers_ids) = [];
 GVAR(markers_notSeen) = [];
+GVAR(markers_last) = createHashMap;
 
 addMissionEventHandler ["ExtensionCallback", {
     params ["_name", "_func", "_data"];
@@ -58,8 +59,12 @@ addMissionEventHandler ["BuildingChanged", {
 
 ["ace_tagCreated", {
     params ["_tag", "_texture", "_object", "_unit"];
+    if !(GVAR(enabled)) exitWith {};
     EXTFUNC("uuid");
     private _id = _ext_res select 0;
+    // The tag is also a mission object, so the object tick must find it under this ID rather than save a copy
+    _tag setVariable [QGVAR(id), _id];
+    GVAR(objects_ids) pushBackUnique _id;
     private _state = createHashMap;
     _state set ["pos", (getPosASL _tag) call EFUNC(common,floatsToStr)];
     _state set ["rot", [

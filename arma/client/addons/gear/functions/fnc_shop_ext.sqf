@@ -47,9 +47,10 @@ switch (_func) do {
         [QGVAR(shop_enter_ok), [_locker, _balance], [_player]] call CBA_fnc_targetEvent;
     };
     case "enter:err": {
-        (parseSimpleArray _data) params ["_steam"];
+        // _reason is a message for the player, empty when there is no specific one
+        (parseSimpleArray _data) params ["_steam", ["_reason", ""]];
         private _player = [_steam] call EFUNC(common,playerFromSteam);
-        [QGVAR(shop_enter_err), [], [_player]] call CBA_fnc_targetEvent;
+        [QGVAR(shop_enter_err), [_reason], [_player]] call CBA_fnc_targetEvent;
     };
     case "leave:ok": {
         (parseSimpleArray _data) params ["_steam"];
@@ -57,9 +58,10 @@ switch (_func) do {
         [QGVAR(shop_leave_ok), [], [_player]] call CBA_fnc_targetEvent;
     };
     case "leave:err": {
-        (parseSimpleArray _data) params ["_steam"];
+        // _reason is a message for the player, empty when there is no specific one
+        (parseSimpleArray _data) params ["_steam", ["_reason", ""]];
         private _player = [_steam] call EFUNC(common,playerFromSteam);
-        [QGVAR(shop_leave_err), [], [_player]] call CBA_fnc_targetEvent;
+        [QGVAR(shop_leave_err), [_reason], [_player]] call CBA_fnc_targetEvent;
     };
 
     case "purchase:ok": {
@@ -68,8 +70,9 @@ switch (_func) do {
         [QGVAR(shop_purchase_ok), [_locker, _balance], [_player]] call CBA_fnc_targetEvent;
     };
     case "purchase:err": {
-        (parseSimpleArray _data) params ["_steam"];
+        // _reason is a message for the player, empty when there is no specific one
+        (parseSimpleArray _data) params ["_steam", ["_reason", ""]];
         private _player = [_steam] call EFUNC(common,playerFromSteam);
-        [QGVAR(shop_purchase_err), [], [_player]] call CBA_fnc_targetEvent;
+        [QGVAR(shop_purchase_err), [_reason], [_player]] call CBA_fnc_targetEvent;
     };
 };

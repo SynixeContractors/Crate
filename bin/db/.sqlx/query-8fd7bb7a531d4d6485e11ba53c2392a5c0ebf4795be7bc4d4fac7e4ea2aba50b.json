@@ -1,0 +1,119 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT v.plate, s.name, s.class, v.stored, a.name AS \"addon?\", s.fuel_capacity, v.state, v.updated,\n            COALESCE((\n                SELECT SUM(CEIL(g.cost * (h->>1)::FLOAT8))\n                FROM garage_repair_groups g\n                CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(v.state->'hits') = 'array' THEN v.state->'hits' ELSE '[]'::JSONB END) h\n                WHERE (h->>0) ILIKE ANY(g.hitpoints)\n            ), 0)::INT AS \"repair_cost!\"\n        FROM garage_vehicles v\n        INNER JOIN garage_shop s ON s.id = v.id\n        LEFT JOIN garage_shop a ON a.id = v.addon\n        WHERE ($1::VARCHAR IS NULL OR v.plate = $1)\n        ORDER BY s.name, v.plate",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "plate",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "garage_vehicles",
+            "name": "plate"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "class",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "class"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "stored",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "garage_vehicles",
+            "name": "stored"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "addon?",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "fuel_capacity",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "garage_shop",
+            "name": "fuel_capacity"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "state",
+        "type_info": "Jsonb",
+        "origin": {
+          "Table": {
+            "table": "garage_vehicles",
+            "name": "state"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "updated",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "garage_vehicles",
+            "name": "updated"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "repair_cost!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      null
+    ]
+  },
+  "hash": "8fd7bb7a531d4d6485e11ba53c2392a5c0ebf4795be7bc4d4fac7e4ea2aba50b"
+}

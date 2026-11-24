@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT stored, state FROM garage_vehicles WHERE plate = $1 FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stored",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "garage_vehicles",
+            "name": "stored"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "state",
+        "type_info": "Jsonb",
+        "origin": {
+          "Table": {
+            "table": "garage_vehicles",
+            "name": "state"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "ba1a4ce64db020707cbeba6cddc48d41e24699323a2e44b8c2f2a3adfde0e1e4"
+}

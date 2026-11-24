@@ -2,7 +2,7 @@ use std::sync::atomic::AtomicU32;
 
 use serenity::prelude::*;
 
-mod handler;
+pub mod handler;
 pub mod interaction;
 mod menu;
 mod slash;

@@ -198,7 +198,7 @@ async fn autocomplete_color(
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
             for color in colors {
-                f = f.add_string_choice(color.name.clone(), color.name.clone());
+                f = f.add_string_choice(color.name.clone(), color.name);
             }
             CreateInteractionResponse::Autocomplete(f)
         })

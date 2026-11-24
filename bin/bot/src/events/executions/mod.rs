@@ -18,6 +18,14 @@ pub async fn handle(msg: Message, client: ArcCacheAndHttp) {
             }
             updateactivityroles::execute(client).await;
         }
+        executions::Request::BrodskyReact { situation } => {
+            let line = crate::discord::handler::brain::voice::react(&situation)
+                .await
+                .ok_or_else(|| String::from("Brodsky is unavailable"));
+            if let Err(e) = respond!(msg, executions::Response::BrodskyReact(line)).await {
+                error!("Failed to respond to BrodskyReact: {}", e);
+            }
+        }
         executions::Request::PostWeeklyTips {} => {
             if let Err(e) = respond!(msg, executions::Response::PostWeeklyTips(Ok(()))).await {
                 error!("Failed to respond to PostWeeklyTips: {}", e);

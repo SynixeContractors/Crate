@@ -1,10 +1,19 @@
 use charts_rs::{CandlestickChart, PieChart, THEME_GRAFANA, svg_to_png};
+use std::{
+    collections::HashSet,
+    sync::{LazyLock, Mutex, PoisonError},
+};
+
 use serenity::{
     all::{
-        CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType,
-        CreateAttachment,
+        ButtonStyle, CommandDataOption, CommandDataOptionValue, CommandInteraction,
+        CommandOptionType, ComponentInteraction, CreateAttachment, MessageId, UserId,
     },
-    builder::{CreateCommand, CreateCommandOption},
+    builder::{
+        CreateActionRow, CreateButton, CreateCommand, CreateCommandOption,
+        CreateInteractionResponse, CreateInteractionResponseMessage, CreateMessage,
+        EditInteractionResponse,
+    },
     client::Context,
 };
 use synixe_events::gear::db::{Response, Transaction};
@@ -16,17 +25,22 @@ use synixe_meta::discord::{
 use synixe_proc::events_request_5;
 use time::format_description;
 
-use crate::{discord::interaction::Interaction, get_option, get_option_user};
+use crate::{
+    discord::{handler::brain::voice, interaction::Interaction, utils::dm},
+    get_option, get_option_user,
+};
 
 use super::{AllowPublic, ShouldAsk};
+
+/// The most that can be transferred, or requested, at once
+const MAX_TRANSFER: i32 = 10_000;
 
 pub fn register() -> CreateCommand {
     CreateCommand::new("bank")
         .description("Interact with the bank")
         .add_option(
             CreateCommandOption::new(CommandOptionType::SubCommand, "balance", "View a member's balance")
-                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view the balance of (select Brodsky to view the company account)")
-                .required(true)
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view the balance of, yourself if not given (select Brodsky for the company account)")
             )
             .allow_public()
         )
@@ -37,10 +51,24 @@ pub fn register() -> CreateCommand {
                 )
                 .add_sub_option(CreateCommandOption::new(CommandOptionType::Integer, "amount", "The amount of money to transfer")
                     .min_int_value(1)
-                    .max_int_value(10_000)
+                    .max_int_value(u64::from(MAX_TRANSFER.unsigned_abs()))
                     .required(true)
                 )
                 .add_sub_option(CreateCommandOption::new(CommandOptionType::String, "reason", "The reason for the transfer")
+                    .required(true)
+                )
+        )
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::SubCommand, "request", "Ask another member to send you money, e.g. to be paid back")
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to request money from")
+                    .required(true)
+                )
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::Integer, "amount", "The amount of money to request")
+                    .min_int_value(1)
+                    .max_int_value(u64::from(MAX_TRANSFER.unsigned_abs()))
+                    .required(true)
+                )
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::String, "reason", "What the money is for")
                     .required(true)
                 )
         )
@@ -60,22 +88,24 @@ pub fn register() -> CreateCommand {
         )
         .add_option(
             CreateCommandOption::new(CommandOptionType::SubCommand, "spent", "View money spent per category for a member")
-                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view spending for")
-                    .required(true)
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view spending for, yourself if not given")
                 )
                 .allow_public()
         )
         .add_option(
             CreateCommandOption::new(CommandOptionType::SubCommand, "history", "View a member's most recent bank transactions")
-                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view transactions for")
-                    .required(true)
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view transactions for, yourself if not given")
                 )
                 .allow_public()
         )
         .add_option(
+            CreateCommandOption::new(CommandOptionType::SubCommand, "transfers", "View a member's most recent transfers, sent and received")
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view transfers for, yourself if not given"))
+                .allow_public()
+        )
+        .add_option(
             CreateCommandOption::new(CommandOptionType::SubCommand, "candlestick", "View a candlestick chart of a member's balance over time")
-                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view the chart for")
-                    .required(true)
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view the chart for, yourself if not given")
                 )
                 .allow_public()
         )
@@ -90,10 +120,12 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
         match subcommand.name.as_str() {
             "balance" => balance(ctx, command, options).await?,
             "transfer" => transfer(ctx, command, options).await?,
+            "request" => request(ctx, command, options).await?,
             "fine" => fine(ctx, command, options).await?,
             "spent" => spent(ctx, command, options).await?,
             "candlestick" => candlestick(ctx, command, options).await?,
             "history" => history(ctx, command, options).await?,
+            "transfers" => transfers(ctx, command, options).await?,
             _ => unreachable!(),
         }
     }
@@ -107,9 +139,9 @@ async fn balance(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Fetching balance...").await?;
-    let Some(user) = get_option_user!(options, "member") else {
-        return interaction.reply("Invalid member").await;
-    };
+    let user = &get_option_user!(options, "member")
+        .copied()
+        .unwrap_or(command.user.id);
 
     let Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) = events_request_5!(
         bootstrap::NC::get().await,
@@ -200,85 +232,89 @@ async fn transfer(
     let Some(reason) = get_option!(options, "reason", String) else {
         return interaction.reply("Invalid reason").await;
     };
+    #[allow(clippy::cast_possible_truncation)]
+    let amount = *amount as i32;
+    let Some(notified) = send_money(ctx, command.user.id, *user, amount, reason).await else {
+        return interaction.reply("Failed to transfer money").await;
+    };
+    let reply = format!(
+        "Transferred {} to <@{user}>",
+        bootstrap::format::money(amount, false)
+    );
+    if notified {
+        interaction.reply(reply).await
+    } else {
+        interaction
+            .reply(format!("{reply}, but I wasn't able to notify them"))
+            .await
+    }
+}
+
+/// Moves money from `source` to `target`, logs it, sends `source` a receipt and tells `target`, e.g. for
+/// `/bank transfer` or a paid `/bank request`. `None` if the transfer failed, otherwise whether `target`
+/// was told.
+pub async fn send_money(
+    ctx: &Context,
+    source: UserId,
+    target: UserId,
+    amount: i32,
+    reason: &str,
+) -> Option<bool> {
     let Ok(Ok((Response::BankTransferNew(Ok(())), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         BankTransferNew {
-            source: command
-                .member
-                .as_ref()
-                .expect("member should always exist on guild commands")
-                .user
-                .id,
-            target: *user,
-            #[allow(clippy::cast_possible_truncation)]
-            amount: *amount as i32,
-            reason: reason.clone(),
+            source,
+            target,
+            amount,
+            reason: reason.to_string(),
         }
     )
     .await
     else {
-        return interaction.reply("Failed to transfer money").await;
+        return None;
     };
-    let reply = format!(
-        "Transferred {} to <@{}>",
-        bootstrap::format::money(*amount as i32, false),
-        user
-    );
-    interaction.reply(&reply).await?;
+    let money = bootstrap::format::money(amount, false);
 
     if let Err(e) = LOG
         .say(
             &ctx.http,
-            format!(
-                "<@{}> transferred <@{}> {}\n> {}",
-                command
-                    .member
-                    .as_ref()
-                    .expect("member should always exist on guild commands")
-                    .user
-                    .id,
-                user,
-                bootstrap::format::money(*amount as i32, false),
-                reason.clone(),
-            ),
+            format!("<@{source}> transferred <@{target}> {money}\n> {reason}"),
         )
         .await
     {
         error!("failed to send log: {}", e);
     }
 
-    let Ok(private_channel) = user.create_dm_channel(&ctx).await else {
-        error!("Unable to create DM channel for transfer notification");
-        return interaction
-            .reply(&format!("{reply}, but I wasn't able to notify them"))
-            .await;
-    };
-
-    if let Err(e) = private_channel
-        .say(
-            &ctx.http,
-            format!(
-                "<@{}> transferred you {}\n> {}",
-                command
-                    .member
-                    .as_ref()
-                    .expect("member should always exist on guild commands")
-                    .user
-                    .id,
-                bootstrap::format::money(*amount as i32, false),
-                reason.clone(),
-            ),
-        )
-        .await
+    // A receipt for the sender, so there's a record of what they sent, e.g. when paying someone back
+    let balance = match events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        BankBalance { member: source }
+    )
+    .await
     {
-        error!("failed to send dm: {}", e);
-        interaction
-            .reply(&format!("{reply}, but I wasn't able to notify them"))
-            .await?;
-    }
+        Ok(Ok((Response::BankBalance(Ok(Some(balance))), _))) => format!(
+            "\nYour balance is now {}",
+            bootstrap::format::money(balance, false)
+        ),
+        _ => String::new(),
+    };
+    dm(
+        ctx,
+        source,
+        format!("You transferred {money} to <@{target}>\n> {reason}{balance}"),
+    )
+    .await;
 
-    Ok(())
+    Some(
+        dm(
+            ctx,
+            target,
+            format!("<@{source}> transferred you {money}\n> {reason}"),
+        )
+        .await,
+    )
 }
 
 #[allow(clippy::cognitive_complexity)]
@@ -335,7 +371,13 @@ async fn fine(
         bootstrap::format::money(*amount as i32, false),
         user,
     );
-    interaction.reply(&reply).await?;
+    let remark = voice::react(&format!(
+        "A contractor was just fined {} by staff, for: {reason}",
+        bootstrap::format::money(*amount as i32, false),
+    ))
+    .await
+    .map_or_else(String::new, |line| format!("\n> {line}"));
+    interaction.reply(format!("{reply}{remark}")).await?;
 
     if let Err(e) = LOG
         .say(
@@ -387,9 +429,9 @@ async fn spent(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Fetching spending data...").await?;
-    let Some(user) = get_option_user!(options, "member") else {
-        return interaction.reply("Invalid member").await;
-    };
+    let user = &get_option_user!(options, "member")
+        .copied()
+        .unwrap_or(command.user.id);
 
     let Ok(Ok((Response::BankSpent(Ok(spending)), _))) = events_request_5!(
         bootstrap::NC::get().await,
@@ -414,6 +456,8 @@ async fn spent(
         .filter(|(_, cost)| *cost != 0)
         .collect::<Vec<_>>();
     spending.sort_by_key(|b| std::cmp::Reverse(b.1));
+    // Chart values only, so the precision lost past 2^24 doesn't matter
+    #[allow(clippy::cast_precision_loss)]
     let mut chart = PieChart::new_with_theme(
         spending
             .iter()
@@ -438,9 +482,9 @@ async fn candlestick(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Fetching balance history...").await?;
-    let Some(user) = get_option_user!(options, "member") else {
-        return interaction.reply("Invalid member").await;
-    };
+    let user = &get_option_user!(options, "member")
+        .copied()
+        .unwrap_or(command.user.id);
 
     let Ok(Ok((Response::BankHistory(Ok(history)), _))) = events_request_5!(
         bootstrap::NC::get().await,
@@ -474,10 +518,7 @@ async fn candlestick(
         amount, created, ..
     } in history
     {
-        let day = created
-            .format(&format)
-            .expect("Failed to format date")
-            .clone();
+        let day = created.format(&format).expect("Failed to format date");
         if day != current_day {
             if !current_day.is_empty() {
                 daily_balances.push((current_day.clone(), open, high, low, current_balance));
@@ -544,9 +585,9 @@ async fn history(
 ) -> serenity::Result<()> {
     let mut interaction = Interaction::new(ctx, command.clone(), options);
     interaction.reply("Fetching transactions...").await?;
-    let Some(user) = get_option_user!(options, "member") else {
-        return interaction.reply("Invalid member").await;
-    };
+    let user = &get_option_user!(options, "member")
+        .copied()
+        .unwrap_or(command.user.id);
 
     let Ok(Ok((Response::BankHistory(Ok(mut history)), _))) = events_request_5!(
         bootstrap::NC::get().await,
@@ -593,4 +634,267 @@ async fn history(
     interaction
         .reply(format!("Latest transactions for <@{user}>:\n```{lines}```"))
         .await
+}
+
+/// The most characters of a transfer's reason shown, so the list fits in one message
+const TRANSFER_REASON_LENGTH: usize = 60;
+
+async fn transfers(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    interaction.reply("Fetching transfers...").await?;
+    let user = get_option_user!(options, "member")
+        .copied()
+        .unwrap_or(command.user.id);
+
+    let Ok(Ok((Response::BankTransfers(Ok(transfers)), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        BankTransfers { member: user }
+    )
+    .await
+    else {
+        return interaction.reply("Failed to fetch transfers").await;
+    };
+
+    if transfers.is_empty() {
+        return interaction
+            .reply(format!("No transfers found for <@{user}>"))
+            .await;
+    }
+
+    let lines = transfers
+        .iter()
+        .map(|t| {
+            let (sign, direction, other) = if t.source == user {
+                ("-", "to", t.target)
+            } else {
+                ("+", "from", t.source)
+            };
+            let reason: String = t.reason.chars().take(TRANSFER_REASON_LENGTH).collect();
+            format!(
+                "`{}` **{sign}{}** {direction} <@{other}> - {reason}",
+                t.created.date(),
+                bootstrap::format::money(t.amount, false),
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    interaction
+        .reply(format!("Latest transfers for <@{user}>:\n{lines}"))
+        .await
+}
+
+/// Prefixes of the buttons on a `/bank request`, followed by `{requester}:{amount}`. Handled by
+/// `request_button` so they keep working after a restart.
+pub const REQUEST_PAY: &str = "bank_request_pay:";
+pub const REQUEST_DECLINE: &str = "bank_request_decline:";
+
+#[allow(clippy::cast_possible_truncation)]
+async fn request(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    interaction.reply("Sending request...").await?;
+    let Some(user) = get_option_user!(options, "member") else {
+        return interaction.reply("Invalid member").await;
+    };
+    if user == &BRODSKY {
+        return interaction.reply("I don't give out loans").await;
+    }
+    if user == &command.user.id {
+        return interaction
+            .reply("You can't request money from yourself")
+            .await;
+    }
+    if GUILD.member(&ctx, user).await?.user.bot {
+        return interaction
+            .reply("You can't request money from a bot")
+            .await;
+    }
+    let Some(amount) = get_option!(options, "amount", Integer) else {
+        return interaction.reply("Invalid amount").await;
+    };
+    // Bounded to 1..=MAX_TRANSFER by the command definition
+    let amount = *amount as i32;
+    let Some(reason) = get_option!(options, "reason", String) else {
+        return interaction.reply("Invalid reason").await;
+    };
+    let money = bootstrap::format::money(amount, false);
+    let requester = command.user.id;
+
+    let sent = match user.create_dm_channel(ctx).await {
+        Ok(channel) => channel
+            .send_message(
+                &ctx.http,
+                CreateMessage::new()
+                    .content(format!(
+                        "<@{requester}> is requesting {money} from you\n> {reason}"
+                    ))
+                    .components(vec![CreateActionRow::Buttons(vec![
+                        CreateButton::new(format!("{REQUEST_PAY}{requester}:{amount}"))
+                            .style(ButtonStyle::Success)
+                            .label(format!("Pay {money}")),
+                        CreateButton::new(format!("{REQUEST_DECLINE}{requester}:{amount}"))
+                            .style(ButtonStyle::Secondary)
+                            .label("Decline"),
+                    ])]),
+            )
+            .await
+            .map_err(|e| error!("failed to send bank request to {user}: {e}"))
+            .is_ok(),
+        Err(e) => {
+            error!("unable to create dm channel for {user}: {e}");
+            false
+        }
+    };
+    if sent {
+        interaction
+            .reply(format!(
+                "Requested {money} from <@{user}>. They've been sent a message to pay or decline."
+            ))
+            .await
+    } else {
+        interaction
+            .reply(format!(
+                "I wasn't able to message <@{user}>, they may have direct messages turned off"
+            ))
+            .await
+    }
+}
+
+/// Requests already being answered, so a double click can't pay one twice
+static ANSWERED_REQUESTS: LazyLock<Mutex<HashSet<MessageId>>> =
+    LazyLock::new(|| Mutex::new(HashSet::new()));
+
+/// Handles the Pay and Decline buttons of a `/bank request`, pressed by the member asked to pay
+pub async fn request_button(
+    ctx: &Context,
+    component: &ComponentInteraction,
+) -> serenity::Result<()> {
+    let id = component.data.custom_id.as_str();
+    let (paying, rest) = if let Some(rest) = id.strip_prefix(REQUEST_PAY) {
+        (true, rest)
+    } else if let Some(rest) = id.strip_prefix(REQUEST_DECLINE) {
+        (false, rest)
+    } else {
+        return Ok(());
+    };
+    let Some((requester, amount)) = rest.split_once(':').and_then(|(requester, amount)| {
+        let requester = requester.parse::<u64>().ok().filter(|id| *id != 0)?;
+        let amount = amount
+            .parse::<i32>()
+            .ok()
+            .filter(|amount| (1..=MAX_TRANSFER).contains(amount))?;
+        Some((UserId::new(requester), amount))
+    }) else {
+        error!("invalid bank request button: {id}");
+        return Ok(());
+    };
+    let payer = component.user.id;
+    let original = component.message.content.clone();
+    // Written by `request` as its only quoted line
+    let reason = original
+        .lines()
+        .find_map(|line| line.strip_prefix("> "))
+        .unwrap_or("Requested")
+        .to_string();
+    let money = bootstrap::format::money(amount, false);
+
+    if !ANSWERED_REQUESTS
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .insert(component.message.id)
+    {
+        return component
+            .create_response(&ctx.http, CreateInteractionResponse::Acknowledge)
+            .await;
+    }
+
+    if !paying {
+        return decline_request(ctx, component, requester, &money, &reason).await;
+    }
+
+    // The same rule as /bank transfer, which can also ask staff for permission
+    let active = GUILD
+        .member(&ctx, payer)
+        .await
+        .is_ok_and(|member| member.roles.contains(&ACTIVE));
+    if !active {
+        ANSWERED_REQUESTS
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .remove(&component.message.id);
+        return component
+            .create_response(
+                &ctx.http,
+                CreateInteractionResponse::Message(
+                    CreateInteractionResponseMessage::new()
+                        .content("You need to be an active member to send money. Use `/bank transfer` to ask staff for permission.")
+                        .ephemeral(true),
+                ),
+            )
+            .await;
+    }
+
+    // The buttons are removed before any money moves, so the request can't be paid twice
+    component
+        .create_response(
+            &ctx.http,
+            CreateInteractionResponse::UpdateMessage(
+                CreateInteractionResponseMessage::new()
+                    .content(format!("{original}\n\n:hourglass: Paying..."))
+                    .components(vec![]),
+            ),
+        )
+        .await?;
+    let outcome = if send_money(ctx, payer, requester, amount, &reason)
+        .await
+        .is_some()
+    {
+        ":white_check_mark: Paid"
+    } else {
+        ":warning: The payment failed, nothing was sent. Ask them to send a new request."
+    };
+    component
+        .edit_response(
+            &ctx.http,
+            EditInteractionResponse::new().content(format!("{original}\n\n{outcome}")),
+        )
+        .await?;
+    Ok(())
+}
+
+async fn decline_request(
+    ctx: &Context,
+    component: &ComponentInteraction,
+    requester: UserId,
+    money: &str,
+    reason: &str,
+) -> serenity::Result<()> {
+    component
+        .create_response(
+            &ctx.http,
+            CreateInteractionResponse::UpdateMessage(
+                CreateInteractionResponseMessage::new()
+                    .content(format!("{}\n\n:x: Declined", component.message.content))
+                    .components(vec![]),
+            ),
+        )
+        .await?;
+    dm(
+        ctx,
+        requester,
+        format!(
+            "<@{}> declined your request for {money}\n> {reason}",
+            component.user.id
+        ),
+    )
+    .await;
+    Ok(())
 }

@@ -435,7 +435,8 @@ impl Aar {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
 /// The outcome of a mission.
 pub enum Outcome {
     /// The mission was a success.
@@ -447,6 +448,16 @@ pub enum Outcome {
 }
 
 impl Outcome {
+    #[must_use]
+    /// The outcome as stored in `missions_schedule.outcome`
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            Self::Success => "success",
+            Self::Partial => "partial",
+            Self::Failure => "failure",
+        }
+    }
+
     #[must_use]
     /// Returns the contractor multiplier for the outcome.
     pub const fn contractor_multiplier(&self) -> f32 {

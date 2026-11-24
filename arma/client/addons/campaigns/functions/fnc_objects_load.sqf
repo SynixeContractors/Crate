@@ -26,10 +26,10 @@ if (_ae3 isNotEqualTo "") then {
     GVAR(ae3_pending) pushBack [_object, _ae3];
 };
 
-// Load ACE cargo after all objects are created
+// ACE cargo is loaded once every object exists, see objects_ext "done", so objectState_load skips it
+_object setVariable [QGVAR(cargo), _data getOrDefault ["cargo", []]];
 [{
     _this call EFUNC(common,objectState_load);
-    _this#0 setVariable [QGVAR(cargo), _this#1 getOrDefault ["cargo", []]];
-}, [_object, _data]] call CBA_fnc_execNextFrame;
+}, [_object, _data, false]] call CBA_fnc_execNextFrame;
 
 _object setVariable [QGVAR(nextUpdate), time + 4];

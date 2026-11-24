@@ -42,6 +42,25 @@ if (time < (_object getVariable [QGVAR(nextUpdate), -1])) exitWith {};
 
 private _state = [_object] call EFUNC(common,objectState_save);
 
+// A loaded ACE cargo object is a campaign object of its own, saved by this tick like any other, so it's
+// referenced by its ID instead of a second copy being saved inside its vehicle. See objects_ext "done".
+if ("cargo" in _state) then {
+    _state set ["cargo", (_object getVariable ["ace_cargo_loaded", []]) apply {
+        if (_x isEqualType "") then {
+            [0, _x]
+        } else {
+            private _cargoId = _x getVariable [QGVAR(id), ""];
+            if (_cargoId == "") then {
+                EXTFUNC("uuid");
+                _cargoId = _ext_res select 0;
+                _x setVariable [QGVAR(id), _cargoId];
+                GVAR(objects_ids) pushBackUnique _cargoId;
+            };
+            [1, _cargoId]
+        }
+    }];
+};
+
 _state set ["pos", (getPosASL _object) call EFUNC(common,floatsToStr)];
 _state set ["rot", [vectorDir _object, vectorUp _object] call EFUNC(common,floatsToStr)];
 

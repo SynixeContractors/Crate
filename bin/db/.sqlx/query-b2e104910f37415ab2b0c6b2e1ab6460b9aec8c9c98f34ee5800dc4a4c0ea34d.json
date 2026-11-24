@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT operation_lead FROM missions_schedule WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "operation_lead",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "missions_schedule",
+            "name": "operation_lead"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "b2e104910f37415ab2b0c6b2e1ab6460b9aec8c9c98f34ee5800dc4a4c0ea34d"
+}
