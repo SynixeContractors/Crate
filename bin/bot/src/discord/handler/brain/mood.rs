@@ -16,9 +16,9 @@ const REFRESH: Duration = Duration::from_mins(15);
 
 // What counts as a notable week. Tune these to how the company usually does.
 /// Net income in a week that's a big win, or as a loss a big loss
-const BIG_WEEK: i64 = 20_000;
+const BIG_WEEK: i64 = 200_000;
 /// Reputation gained in a week that's a big gain, or as a loss a big loss. A mission is worth -200 to 150.
-const BIG_REPUTATION: i64 = 150;
+const BIG_REPUTATION: i64 = 7;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mood {
