@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE missions_schedule\n                        SET operation_lead = COALESCE(operation_lead, $2)\n                        WHERE id = $1\n                        RETURNING operation_lead",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "operation_lead",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "missions_schedule",
+            "name": "operation_lead"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "86030d6fbd6402d67a0c769fcef10c9c009f824d79efbea5ad50f2a2a8c25667"
+}

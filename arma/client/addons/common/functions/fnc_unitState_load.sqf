@@ -51,7 +51,11 @@ params ["_unit", "_state"];
         case "vehicle": {
             _y params ["_vid", "_seat"];
             private _objects = allMissionObjects "All";
-            private _vehicle = _objects select (_objects findIf { (_x getVariable [QEGVAR(campaigns,id), "-"]) isEqualTo _vid });
+            private _index = _objects findIf { (_x getVariable [QEGVAR(campaigns,id), "-"]) isEqualTo _vid };
+            if (_index == -1) exitWith {
+                WARNING_2("Vehicle %1 of unit %2 was not found",_vid,_unit);
+            };
+            private _vehicle = _objects select _index;
             switch (_seat) do {
                 case "driver": {
                     _unit moveInDriver _vehicle;

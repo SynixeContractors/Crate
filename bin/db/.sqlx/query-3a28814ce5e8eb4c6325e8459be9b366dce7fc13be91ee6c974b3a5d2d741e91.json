@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO members_notifications (member, payday, mission_reminder)\n        VALUES ($1, COALESCE($2, FALSE), COALESCE($3, FALSE))\n        ON CONFLICT (member) DO UPDATE SET\n            payday = COALESCE($2, members_notifications.payday),\n            mission_reminder = COALESCE($3, members_notifications.mission_reminder)\n        RETURNING payday, mission_reminder",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "payday",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "members_notifications",
+            "name": "payday"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "mission_reminder",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "members_notifications",
+            "name": "mission_reminder"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Bool",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "3a28814ce5e8eb4c6325e8459be9b366dce7fc13be91ee6c974b3a5d2d741e91"
+}

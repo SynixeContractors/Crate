@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT gl.class, gi.pretty AS \"pretty?\", gl.quantity, gc.personal AS \"value?\"\n        FROM gear_locker gl\n        LEFT JOIN gear_items gi ON gi.class = gl.class\n        LEFT JOIN gear_cost gc ON gc.class = gl.class AND gc.priority = 0\n        WHERE gl.member = $1 AND gl.quantity > 0\n        ORDER BY COALESCE(gi.pretty, gl.class)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "class",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "gear_locker",
+            "name": "class"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "pretty?",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "gear_items",
+            "name": "pretty"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "quantity",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "gear_locker",
+            "name": "quantity"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "value?",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "gear_cost",
+            "name": "personal"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "5952db0db894b2205fb0433ca8837a787638043e9eb38174d2a793631b1cb9df"
+}

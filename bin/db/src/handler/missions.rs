@@ -1,8 +1,12 @@
 use std::collections::HashMap;
 
 use async_trait::async_trait;
+use serenity::model::prelude::UserId;
 use sqlx::types::time::Time;
-use synixe_events::missions::db::{Request, Response};
+use synixe_events::{
+    missions::db::{Request, Response},
+    respond,
+};
 use synixe_meta::missions::MISSION_LIST;
 use synixe_model::missions::{Listing, MissionType, Rsvp, ScheduledMission};
 
@@ -216,11 +220,86 @@ impl Handler for Request {
                 )?;
                 Ok(())
             }
+            Self::MemberMissions { member } => {
+                match_with_return!(member_missions(member, &db), MemberMissions, msg, cx)
+            }
+            Self::FetchOperationLead { scheduled } => match_with_return!(
+                async {
+                    let lead = sqlx::query_scalar!(
+                        "SELECT operation_lead FROM missions_schedule WHERE id = $1",
+                        scheduled,
+                    )
+                    .fetch_optional(&*db)
+                    .await?
+                    .flatten();
+                    lead.as_deref().map(parse_member).transpose()
+                },
+                FetchOperationLead,
+                msg,
+                cx
+            ),
+            Self::ClaimOperationLead { scheduled, member } => match_with_return!(
+                async {
+                    // Only claimed if no one has, so two people clicking at once can't both get it
+                    let lead = sqlx::query_scalar!(
+                        "UPDATE missions_schedule
+                        SET operation_lead = COALESCE(operation_lead, $2)
+                        WHERE id = $1
+                        RETURNING operation_lead",
+                        scheduled,
+                        member.to_string(),
+                    )
+                    .fetch_optional(&*db)
+                    .await?
+                    .flatten();
+                    lead.as_deref().map(parse_member).transpose()
+                },
+                ClaimOperationLead,
+                msg,
+                cx
+            ),
+            Self::SetOperationLead { scheduled, member } => match_no_return!(
+                async {
+                    sqlx::query!(
+                        "UPDATE missions_schedule SET operation_lead = $2 WHERE id = $1",
+                        scheduled,
+                        member.map(|member| member.to_string()),
+                    )
+                    .execute(&*db)
+                    .await?;
+                    Result::<(), anyhow::Error>::Ok(())
+                },
+                SetOperationLead,
+                msg,
+                cx
+            ),
+            Self::ReleaseOperationLead { scheduled, member } => match_no_return!(
+                async {
+                    sqlx::query!(
+                        "UPDATE missions_schedule SET operation_lead = NULL WHERE id = $1 AND operation_lead = $2",
+                        scheduled,
+                        member.to_string(),
+                    )
+                    .execute(&*db)
+                    .await?;
+                    Result::<(), anyhow::Error>::Ok(())
+                },
+                ReleaseOperationLead,
+                msg,
+                cx
+            ),
+            Self::MissionReminderRecipients { scheduled, server } => match_with_return!(
+                mission_reminder_recipients(*scheduled, server.as_deref(), &db),
+                MissionReminderRecipients,
+                msg,
+                cx
+            ),
             Self::PayMission {
                 scheduled,
                 contractors,
                 contractor_amount,
                 group_amount,
+                outcome,
             } => {
                 let mut tx = db.begin().await?;
                 let scheduled: ScheduledMission = sqlx::query_as!(
@@ -263,6 +342,13 @@ impl Handler for Request {
                     format!("{}: {}", scheduled.typ.to_string(), scheduled.name),
                     scheduled.id,
                     end,
+                )
+                .execute(&mut *tx)
+                .await?;
+                sqlx::query!(
+                    "UPDATE missions_schedule SET outcome = $2 WHERE id = $1",
+                    scheduled.id,
+                    outcome.as_str(),
                 )
                 .execute(&mut *tx)
                 .await?;
@@ -511,4 +597,80 @@ impl Handler for Request {
             }
         }
     }
+}
+
+/// How far back a connection still counts. A server that crashes logs no disconnects, so without this a
+/// player would stay "connected" there for good.
+const CONNECTION_WINDOW_HOURS: i32 = 12;
+
+async fn mission_reminder_recipients(
+    scheduled: uuid::Uuid,
+    server: Option<&str>,
+    db: &sqlx::PgPool,
+) -> Result<Vec<UserId>, anyhow::Error> {
+    // A member is connected if their latest connect or disconnect, on the server or any if none is given,
+    // is a connect within the window
+    let members = sqlx::query_scalar!(
+        "SELECT r.member
+        FROM missions_schedule_rsvp r
+        INNER JOIN members_notifications n ON n.member = r.member AND n.mission_reminder
+        WHERE r.scheduled = $1
+            AND r.state = 'yes'
+            AND NOT EXISTS (
+                SELECT 1
+                FROM members_steam s
+                CROSS JOIN LATERAL (
+                    SELECT l.action
+                    FROM servers_log l
+                    WHERE l.steam = s.steam
+                        AND l.action IN ('connected', 'disconnected')
+                        AND ($2::VARCHAR IS NULL OR l.server = $2)
+                        AND l.created > NOW() - make_interval(hours => $3)
+                    ORDER BY l.created DESC
+                    LIMIT 1
+                ) latest
+                WHERE s.member = r.member AND latest.action = 'connected'
+            )",
+        scheduled,
+        server,
+        CONNECTION_WINDOW_HOURS,
+    )
+    .fetch_all(db)
+    .await?;
+    members
+        .iter()
+        .map(|member| Ok(UserId::new(member.parse()?)))
+        .collect()
+}
+
+fn parse_member(id: &str) -> Result<UserId, anyhow::Error> {
+    Ok(UserId::new(id.parse()?))
+}
+
+async fn member_missions(
+    member: &UserId,
+    db: &sqlx::PgPool,
+) -> Result<Vec<synixe_events::missions::db::MemberMission>, anyhow::Error> {
+    // A mission's payout deposits share the scheduled mission's ID, see PayMission
+    let rows = sqlx::query!(
+        r#"SELECT s.id, m.name, m.type AS "typ: MissionType", s.start, d.amount
+        FROM gear_bank_deposits d
+        INNER JOIN missions_schedule s ON s.id = d.id
+        INNER JOIN missions m ON m.id = s.mission
+        WHERE d.member = $1
+        ORDER BY s.start DESC"#,
+        member.to_string(),
+    )
+    .fetch_all(db)
+    .await?;
+    Ok(rows
+        .into_iter()
+        .map(|row| synixe_events::missions::db::MemberMission {
+            scheduled: row.id,
+            name: row.name,
+            typ: row.typ,
+            start: row.start,
+            payout: row.amount,
+        })
+        .collect())
 }

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT payday, mission_reminder FROM members_notifications WHERE member = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "payday",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "members_notifications",
+            "name": "payday"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "mission_reminder",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "members_notifications",
+            "name": "mission_reminder"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "aa4de42816c2d8d081a141c2a6761091c7f0e452c102bb83b61a9d113ab88d84"
+}

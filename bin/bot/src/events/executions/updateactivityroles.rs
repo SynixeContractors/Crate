@@ -41,12 +41,8 @@ pub async fn execute(client: ArcCacheAndHttp) {
             if let Err(e) = member.remove_role(client.as_ref(), ACTIVE).await {
                 error!("Failed to remove role from {}: {}", member.user.id, e);
             } else {
-                let _ = LOG
-                    .say(
-                        client.as_ref(),
-                        format!("<@{}> is no longer active", member.user.id),
-                    )
-                    .await;
+                // With when they were last around, and a button for staff to reach out
+                crate::discord::activity::report_inactive(client.as_ref(), member.user.id).await;
             }
         }
     }

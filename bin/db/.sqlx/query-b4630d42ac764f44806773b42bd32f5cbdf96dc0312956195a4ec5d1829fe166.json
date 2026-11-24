@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            (SELECT COUNT(*) FROM gear_bank_deposits d INNER JOIN missions_schedule s ON s.id = d.id\n                WHERE d.member = $1) AS \"missions!\",\n            (SELECT MAX(s.start) FROM gear_bank_deposits d INNER JOIN missions_schedule s ON s.id = d.id\n                WHERE d.member = $1) AS last_mission,\n            (SELECT MAX(l.created) FROM servers_log l INNER JOIN members_steam m ON m.steam = l.steam\n                WHERE m.member = $1 AND l.action = 'connected') AS last_connected,\n            (SELECT MAX(created) FROM members_reachouts WHERE member = $1) AS last_reachout",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "missions!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "last_mission",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "last_connected",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "last_reachout",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "b4630d42ac764f44806773b42bd32f5cbdf96dc0312956195a4ec5d1829fe166"
+}

@@ -2,12 +2,15 @@ use std::fmt::Write;
 
 use async_trait::async_trait;
 use serenity::{
-    builder::{EditMessage, EditThread},
+    builder::{CreateMessage, EditMessage, EditThread},
     gateway::ActivityData,
     model::id::UserId,
 };
 use synixe_events::missions::{db::Response, publish::Publish};
-use synixe_meta::discord::channel::LOG;
+use synixe_meta::discord::{
+    GUILD,
+    channel::{LEADERSHIP, LOG},
+};
 use synixe_model::missions::Rsvp;
 use synixe_proc::events_request_5;
 
@@ -25,6 +28,10 @@ impl Listener for Publish {
     ) -> Result<(), bootstrap::anyhow::Error> {
         match &self {
             Self::StartingSoon { scheduled, minutes } => {
+                if (1438..=1442).contains(minutes) {
+                    post_lead_reminder(scheduled).await;
+                    return Ok(());
+                }
                 let Some((channel, message)) = scheduled.message() else {
                     return Ok(());
                 };
@@ -163,4 +170,40 @@ async fn attending(member: UserId, count: &str) {
         "<@{member}> will be attending their {count} mission"
     ))
     .await;
+}
+
+/// Reminds leadership a day ahead to pick an operation lead, with buttons to claim it
+async fn post_lead_reminder(scheduled: &synixe_model::missions::ScheduledMission) {
+    let lead = match events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        FetchOperationLead {
+            scheduled: scheduled.id
+        }
+    )
+    .await
+    {
+        Ok(Ok((Response::FetchOperationLead(Ok(lead)), _))) => lead,
+        _ => None,
+    };
+    let link = scheduled
+        .message()
+        .map_or_else(String::new, |(channel, message)| {
+            format!("\n\nhttps://discord.com/channels/{GUILD}/{channel}/{message}")
+        });
+    if let Err(e) = LEADERSHIP
+        .send_message(
+            CacheAndHttp::get().as_ref(),
+            CreateMessage::default()
+                .content(format!(
+                    "**{}** starts in 24 hours. Remember to pick an Operation Lead if one has not been decided already{link}{}",
+                    scheduled.name,
+                    crate::discord::slash::schedule::lead_line(lead),
+                ))
+                .components(vec![crate::discord::slash::schedule::lead_buttons(scheduled.id)]),
+        )
+        .await
+    {
+        error!("Failed to post the operation lead reminder: {}", e);
+    }
 }

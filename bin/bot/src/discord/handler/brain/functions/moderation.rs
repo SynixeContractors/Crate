@@ -1,11 +1,16 @@
 use serde_json::json;
 use serenity::{model::Timestamp, prelude::Context};
-use synixe_meta::discord::{GUILD, channel::LOG};
+use synixe_meta::discord::{GUILD, channel::LOG, role::STAFF};
 use time::{Duration, OffsetDateTime};
 
 use crate::discord::utils::find_members;
 
-use super::BrainFunction;
+use super::{BrainFunction, Caller};
+
+/// The longest timeout Discord allows, in minutes
+const MAX_MINUTES: f64 = 28.0 * 24.0 * 60.0;
+/// The longest timeout Brodsky gives on his own, when someone who isn't staff is abusing him
+const SELF_DEFENCE_MINUTES: f64 = 10.0;
 
 pub struct Timeout {}
 
@@ -16,7 +21,7 @@ impl BrainFunction for Timeout {
     }
 
     fn desc(&self) -> &'static str {
-        "Timeout a user for being innapropriate or breaking the rules"
+        "Timeout a user for being genuinely abusive or breaking the rules. Anyone abusing you can be timed out, for at most 10 minutes. Only staff can ask you to time out someone else."
     }
 
     fn args(&self) -> serde_json::Value {
@@ -42,18 +47,31 @@ impl BrainFunction for Timeout {
         })
     }
 
-    async fn run(&self, ctx: &Context, args: serde_json::Value) -> Option<serde_json::Value> {
-        info!("running moderation function: {:?}", args);
+    async fn run(
+        &self,
+        ctx: &Context,
+        caller: &Caller,
+        args: serde_json::Value,
+    ) -> Option<serde_json::Value> {
+        info!("running moderation function for {}: {:?}", caller.id, args);
         let names = args["names"]
             .as_array()?
             .iter()
-            .map(|v| {
+            // The model can send anything, so names that aren't a string or ID are skipped
+            .filter_map(|v| {
                 v.as_str()
                     .map(std::string::ToString::to_string)
                     .or_else(|| v.as_u64().map(|v| v.to_string()))
-                    .expect("name is string or u64")
             })
             .collect::<Vec<_>>();
+        // Declared as a number, so it may arrive as a float
+        let limit = if caller.staff {
+            MAX_MINUTES
+        } else {
+            SELF_DEFENCE_MINUTES
+        };
+        #[allow(clippy::cast_possible_truncation)]
+        let minutes = args["duration"].as_f64()?.round().clamp(1.0, limit) as i64;
         let (found, _) = match find_members(ctx, &names).await {
             Ok(members) => members,
             Err(e) => {
@@ -63,11 +81,23 @@ impl BrainFunction for Timeout {
                 }));
             }
         };
+        // Without staff asking, Brodsky can only time out the person talking to him, so he can't be
+        // talked into timing out someone else
+        if !caller.staff && found.iter().any(|(_, id)| *id != caller.id) {
+            return Some(json!({
+                "error": "only staff can ask you to time out someone else",
+            }));
+        }
         for (_, id) in found {
             let Ok(mut member) = GUILD.member(&ctx, id).await else {
                 error!("failed to get member: {}", id);
                 continue;
             };
+            if !caller.staff && member.roles.contains(&STAFF) {
+                return Some(json!({
+                    "error": "you can't time out staff",
+                }));
+            }
             if let Some(until) = member.communication_disabled_until
                 && until > Timestamp::now()
             {
@@ -78,8 +108,7 @@ impl BrainFunction for Timeout {
             if let Err(e) = member
                 .disable_communication_until_datetime(
                     ctx,
-                    (OffsetDateTime::now_utc() + Duration::minutes(args["duration"].as_i64()?))
-                        .into(),
+                    (OffsetDateTime::now_utc() + Duration::minutes(minutes)).into(),
                 )
                 .await
             {
@@ -92,9 +121,8 @@ impl BrainFunction for Timeout {
                 .say(
                     ctx,
                     format!(
-                        "Timed out user <@{}> for {} minutes\nReason: {}",
+                        "Timed out user <@{}> for {minutes} minutes\nReason: {}",
                         member.user.id,
-                        args["duration"],
                         args["reason"].as_str().unwrap_or("No reason provided")
                     ),
                 )
@@ -113,8 +141,8 @@ impl BrainFunction for Timeout {
                 .say(
                     &ctx,
                     format!(
-                        "You have been timed out for {} minutes\nReason: {}",
-                        args["duration"], args["reason"]
+                        "You have been timed out for {minutes} minutes\nReason: {}",
+                        args["reason"].as_str().unwrap_or("No reason provided")
                     ),
                 )
                 .await

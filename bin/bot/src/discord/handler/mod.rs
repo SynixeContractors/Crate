@@ -25,7 +25,7 @@ use super::{
     slash::{self, schedule::post_mission},
 };
 
-mod brain;
+pub mod brain;
 mod missions;
 // pub mod recruiting;
 
@@ -57,6 +57,8 @@ impl EventHandler for Handler {
                     slash::garage::register(),
                     slash::gear::register(),
                     slash::missions::register(),
+                    slash::me::register(),
+                    slash::notifications::register(),
                     slash::reputation::register(),
                     // slash::reset::register(),
                     slash::schedule::register(),
@@ -83,6 +85,8 @@ impl EventHandler for Handler {
                     "garage" => slash::garage::run(&ctx, &command).await,
                     "gear" => slash::gear::run(&ctx, &command).await,
                     "missions" => slash::missions::run(&ctx, &command).await,
+                    "me" => slash::me::run(&ctx, &command).await,
+                    "notifications" => slash::notifications::run(&ctx, &command).await,
                     "reputation" => slash::reputation::run(&ctx, &command).await,
                     // "reset" => slash::reset::run(&ctx, &command).await,
                     "schedule" => slash::schedule::run(&ctx, &command).await,
@@ -121,6 +125,44 @@ impl EventHandler for Handler {
                     "matching component: {:?}",
                     component.data.custom_id.as_str()
                 );
+                if (component
+                    .data
+                    .custom_id
+                    .starts_with(slash::bank::REQUEST_PAY)
+                    || component
+                        .data
+                        .custom_id
+                        .starts_with(slash::bank::REQUEST_DECLINE))
+                    && let Err(e) = slash::bank::request_button(&ctx, &component).await
+                {
+                    error!("Cannot handle bank request: {}", e);
+                }
+                if (component
+                    .data
+                    .custom_id
+                    .starts_with(slash::schedule::LEAD_CLAIM)
+                    || component
+                        .data
+                        .custom_id
+                        .starts_with(slash::schedule::LEAD_RELEASE))
+                    && let Err(e) = slash::schedule::lead_button(&ctx, &component).await
+                {
+                    error!("Cannot handle operation lead button: {}", e);
+                }
+                if component
+                    .data
+                    .custom_id
+                    .starts_with(crate::discord::activity::REACHOUT_SEND)
+                    && let Err(e) =
+                        crate::discord::activity::reachout_button(&ctx, &component).await
+                {
+                    error!("Cannot handle reachout: {}", e);
+                }
+                if component.data.custom_id.starts_with("bank_page:")
+                    && let Err(e) = slash::bank_pages::page_button(&ctx, &component).await
+                {
+                    error!("Cannot handle bank page: {}", e);
+                }
                 if component.data.custom_id.starts_with("survey_submit:")
                     && let Err(e) = slash::surveys::submit_button(&ctx, &component).await
                 {

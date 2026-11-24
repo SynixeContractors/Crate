@@ -3,15 +3,19 @@ use serenity::{
     builder::{CreateAutocompleteResponse, CreateInteractionResponse},
     client::Context,
 };
-use synixe_events::garage::db::Response;
+use synixe_events::garage::db::{Response, VehicleDetails};
 use synixe_proc::events_request_5;
 use uuid::Uuid;
 
 use crate::{
-    discord::slash::garage::enums::{AssetFilter, Command},
+    discord::slash::garage::{
+        enums::{AssetFilter, Command},
+        info::Condition,
+    },
     get_option,
 };
 
+#[allow(clippy::too_many_lines)]
 pub async fn autocomplete(
     ctx: &Context,
     autocomplete: &CommandInteraction,
@@ -98,13 +102,101 @@ pub async fn autocomplete(
             }
             _ => Ok(()),
         },
-        Command::View => Ok(()),
+        Command::View | Command::Repair => match focus.name {
+            "vehicle" => {
+                autocomplete_vehicle(
+                    ctx,
+                    autocomplete,
+                    command,
+                    focus.value.to_string(),
+                    VehicleValueType::Plate,
+                )
+                .await
+            }
+            "part" => {
+                let Some(vehicle) = get_option!(&options, "vehicle", String) else {
+                    return Ok(());
+                };
+                autocomplete_part(
+                    ctx,
+                    autocomplete,
+                    vehicle.clone(),
+                    focus.value.to_lowercase(),
+                )
+                .await
+            }
+            _ => Ok(()),
+        },
+        Command::List => Ok(()),
     }
+}
+
+/// The parts of a vehicle that need repairing, with what each costs
+async fn autocomplete_part(
+    ctx: &Context,
+    autocomplete: &CommandInteraction,
+    plate: String,
+    filter: String,
+) -> serenity::Result<()> {
+    let Ok(Ok((Response::RepairEstimate(Ok(groups)), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::garage::db,
+        RepairEstimate { plate }
+    )
+    .await
+    else {
+        error!("Failed to fetch repair estimate");
+        return Ok(());
+    };
+    let mut f = CreateAutocompleteResponse::default();
+    for group in groups
+        .into_iter()
+        .filter(|group| !group.hitpoints.is_empty())
+        .filter(|group| group.name.to_lowercase().contains(&filter))
+        .take(25)
+    {
+        f = f.add_string_choice(
+            format!(
+                "{} - {}",
+                group.name,
+                bootstrap::format::money(group.cost, false)
+            ),
+            group.id.to_string(),
+        );
+    }
+    if let Err(e) = autocomplete
+        .create_response(&ctx.http, CreateInteractionResponse::Autocomplete(f))
+        .await
+    {
+        error!("failed to create autocomplete response: {}", e);
+    }
+    Ok(())
 }
 
 pub enum VehicleValueType {
     Plate,
     Id,
+}
+
+/// The saved details of the listed vehicles, by plate. Empty if they can't be fetched, which just leaves the
+/// labels without fuel and damage.
+async fn vehicle_details(
+    vehicles: &[synixe_model::garage::VehicleAsset],
+) -> std::collections::HashMap<String, VehicleDetails> {
+    let Ok(Ok((Response::FetchVehicleDetails(Ok(all)), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::garage::db,
+        FetchVehicleDetails { plate: None }
+    )
+    .await
+    else {
+        error!("Failed to fetch vehicle details for autocomplete");
+        return std::collections::HashMap::new();
+    };
+    all.into_iter()
+        .filter(|detail| vehicles.iter().any(|vehicle| vehicle.plate == detail.plate))
+        .map(|detail| (detail.plate.clone(), detail))
+        .collect()
 }
 
 async fn autocomplete_vehicle(
@@ -118,7 +210,12 @@ async fn autocomplete_vehicle(
         bootstrap::NC::get().await,
         synixe_events::garage::db,
         FetchStoredVehicles {
-            stored: Some(true),
+            // Viewing works on any vehicle, everything else needs it in the garage
+            stored: if matches!(command, Command::View) {
+                None
+            } else {
+                Some(true)
+            },
             plate: Some(filter)
         }
     )
@@ -138,13 +235,30 @@ async fn autocomplete_vehicle(
     }
     vehicles.sort_by(|a, b| a.name.cmp(&b.name));
     vehicles.truncate(25);
+    let details = vehicle_details(&vehicles).await;
     if let Err(e) = autocomplete
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
             for vehicle in vehicles {
+                // Fuel and worst damage from the saved state, so a vehicle can be picked without looking it up
+                let condition = details
+                    .get(&vehicle.plate)
+                    .map(|detail| (detail.fuel_capacity, Condition::of(detail.state.as_ref())));
+                let label = condition.map_or_else(
+                    || format!("{} - {}", vehicle.name, vehicle.plate),
+                    |(capacity, condition)| {
+                        format!(
+                            "{} - {} · ⛽ {} · {}",
+                            vehicle.name,
+                            vehicle.plate,
+                            condition.fuel_summary(capacity),
+                            condition.damage_summary(),
+                        )
+                    },
+                );
                 f = f.add_string_choice(
-                    format!("{} - {}", vehicle.name, vehicle.plate),
-                    // vehicle.plate,
+                    // Discord labels are capped at 100 characters
+                    label.chars().take(100).collect::<String>(),
                     match value_type {
                         VehicleValueType::Plate => vehicle.plate,
                         VehicleValueType::Id => vehicle.id.to_string(),
@@ -198,7 +312,7 @@ async fn autocomplete_color(
         .create_response(&ctx.http, {
             let mut f = CreateAutocompleteResponse::default();
             for color in colors {
-                f = f.add_string_choice(color.name.clone(), color.name.clone());
+                f = f.add_string_choice(color.name.clone(), color.name);
             }
             CreateInteractionResponse::Autocomplete(f)
         })

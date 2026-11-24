@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE missions_schedule SET operation_lead = $2 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e9dcda2494b02f8623fcb3c7c3c1a23f65f242242e7f128bf9c0d3c01c78b258"
+}

@@ -1,3 +1,6 @@
+// serenity::Error, which every command returns, is larger than clippy's limit and isn't ours to shrink
+#![allow(clippy::result_large_err)]
+
 use std::sync::Arc;
 
 #[macro_use]

@@ -12,7 +12,40 @@ pub mod db {
     use time::{Date, OffsetDateTime};
     use uuid::Uuid;
 
+    /// A mission a member was paid for
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    pub struct MemberMission {
+        pub scheduled: Uuid,
+        pub name: String,
+        pub typ: synixe_model::missions::MissionType,
+        pub start: OffsetDateTime,
+        pub payout: i32,
+    }
+
     events_requests!(db.missions {
+        /// The missions a member has been paid for, newest first
+        struct MemberMissions {
+            member: UserId,
+        } => (Result<Vec<MemberMission>, String>)
+        /// The member leading a scheduled mission, if one has claimed it
+        struct FetchOperationLead {
+            scheduled: Uuid,
+        } => (Result<Option<UserId>, String>)
+        /// Claim a scheduled mission's lead if no one has. Responds with whoever leads it afterwards.
+        struct ClaimOperationLead {
+            scheduled: Uuid,
+            member: UserId,
+        } => (Result<Option<UserId>, String>)
+        /// Set or clear a scheduled mission's lead whoever holds it, for staff
+        struct SetOperationLead {
+            scheduled: Uuid,
+            member: Option<UserId>,
+        } => (Result<(), String>)
+        /// Give up a scheduled mission's lead, if `member` holds it
+        struct ReleaseOperationLead {
+            scheduled: Uuid,
+            member: UserId,
+        } => (Result<(), String>)
         /// Schedule a mission
         struct Schedule {
             /// The mission to schedule.
@@ -69,6 +102,14 @@ pub mod db {
             /// Was a subcon
             subcon: bool,
         } => (Result<Option<ScheduledMission>, String>)
+        /// Members to remind that a mission is starting: those who RSVP'd yes and opted in to mission
+        /// reminders, who aren't connected to the mission's server
+        struct MissionReminderRecipients {
+            /// The scheduled mission
+            scheduled: Uuid,
+            /// The server the mission runs on, or `None` to count a connection to any server
+            server: Option<String>,
+        } => (Result<Vec<UserId>, String>)
         /// Pays the group and contractors for a mission.
         struct PayMission {
             /// The mission to pay.
@@ -79,6 +120,8 @@ pub mod db {
             contractor_amount: i32,
             /// The amount to pay the group
             group_amount: i32,
+            /// How the mission went, from its AAR
+            outcome: synixe_model::missions::aar::Outcome,
         } => (Result<(), String>)
 
         /// Update missions from the GitHub list

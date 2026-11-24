@@ -60,6 +60,7 @@ GVAR(shop_processing) = false;
 
 [QGVAR(shop_enter_ok), FUNC(shop_enter)] call CBA_fnc_addEventHandler;
 [QGVAR(shop_enter_err), {
+    params [["_reason", ""]];
     GVAR(shop_blurHandle) ppEffectAdjust [0];
     GVAR(shop_blurHandle) ppEffectCommit 0.25;
     [{
@@ -69,7 +70,7 @@ GVAR(shop_processing) = false;
     player setVariable [QGVAR(shop_open), false, true];
     player enableSimulation true;
     [player, GVAR(shop_preLoadout), false] call CBA_fnc_setLoadout;
-    systemChat "An error occurred while trying to enter the shop, please try again later.";
+    systemChat (["An error occurred while trying to enter the shop, please try again later.", _reason] select (_reason != ""));
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_leave_ok), {
@@ -77,6 +78,8 @@ GVAR(shop_processing) = false;
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_leave_err), {
+    params [["_reason", ""]];
+    if (_reason != "") then { systemChat _reason; };
     systemChat "An error occurred while trying to leave the shop, removing items.";
     [player, [[],[],[],[],[],[],"","",[],["","","","","",""]], false] call CBA_fnc_setLoadout;
     player setVariable [QGVAR(shop_open), false, true];
@@ -91,6 +94,7 @@ GVAR(shop_processing) = false;
 }] call CBA_fnc_addEventHandler;
 
 [QGVAR(shop_purchase_err), {
-    systemChat "An error occurred while trying to purchase";
+    params [["_reason", ""]];
+    systemChat (["An error occurred while trying to purchase", _reason] select (_reason != ""));
     GVAR(shop_processing) = false;
 }] call CBA_fnc_addEventHandler;

@@ -87,7 +87,7 @@ if (_tree isNotEqualTo [[[[],[]],[],[[],[]]],[]]) then {
 
 // ACE Rearm
 if (_object getVariable ["ace_rearm_magazineClass", ""] isNotEqualTo "") then {
-    _state set ["ace_mag", _object getVariable ["ace_rearm_magazineClass", ""]];
+    _state set ["ace_magazine", _object getVariable ["ace_rearm_magazineClass", ""]];
 };
 
 // Cargo Inventory
@@ -97,15 +97,11 @@ if (_ammoCargo isNotEqualTo -1) then {
 };
 private _repairCargo = getRepairCargo _object;
 if (_repairCargo isNotEqualTo -1) then {
-    _state set ["repairCargo", _ammoCargo];
+    _state set ["repairCargo", _repairCargo];
 };
 private _fuelCargo = getFuelCargo _object;
 if (_fuelCargo != -1) then {
     _state set ["fuelCargo", _fuelCargo];
-};
-private _ammo = magazinesAmmo _object;
-if (_ammo isNotEqualTo []) then {
-    _state set ["ammo", _ammo];
 };
 
 // Turret Ammo

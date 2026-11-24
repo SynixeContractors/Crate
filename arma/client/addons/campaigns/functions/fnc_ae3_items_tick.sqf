@@ -40,7 +40,7 @@ private _live = createHashMap;
         if !(_live getOrDefault [_id, false]) then {
             // _known values are [device id, encoded state last sent]
             private _class = _y getOrDefault ["AE3_OBJECT_TYPE", ""];
-            private _kind = if ([_class] call FUNC(ae3_isFlashdrive)) then { "flashdrive" } else { "device" };
+            private _kind = ["device", "flashdrive"] select ([_class] call FUNC(ae3_isFlashdrive));
             // AE3 drops the power state when a device is packed, so the last known power is carried over
             // rather than overwriting the saved device with a state that has none
             private _values = +_y;
@@ -51,7 +51,7 @@ private _live = createHashMap;
             _next set [_x, [_id, _state]];
 
             private _last = _known getOrDefault [_x, []];
-            if (_class != "" && {_last isEqualTo [] || {!(_state isEqualTo (_last select 1))}}) then {
+            if (_class != "" && {_last isEqualTo [] || {_state isNotEqualTo (_last select 1)}}) then {
                 [_id, _class, _state, _x] call FUNC(ae3_send);
             };
         };

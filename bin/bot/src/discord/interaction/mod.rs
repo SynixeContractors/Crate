@@ -132,6 +132,21 @@ impl<'a> Interaction<'a> {
         Ok(())
     }
 
+    /// Replies with buttons under the message, e.g. paging through a list
+    pub async fn reply_with_components(
+        &mut self,
+        content: impl Display + Send,
+        components: Vec<CreateActionRow>,
+    ) -> serenity::Result<()> {
+        self.initial().await?;
+        self.internal_followup(
+            CreateInteractionResponseFollowup::default()
+                .content(content.to_string())
+                .components(components),
+        )
+        .await
+    }
+
     pub async fn reply_with_attachment(
         &mut self,
         content: impl Display + Send,
@@ -187,7 +202,8 @@ impl<'a> Interaction<'a> {
     pub async fn confirm(&mut self, prompt: &str) -> serenity::Result<Confirmation> {
         self.initial().await?;
         debug!("prompting for confirmation: {}", prompt);
-        self.internal_followup(Self::_confirm(prompt)).await?;
+        self.internal_followup(Self::internal_confirm(prompt))
+            .await?;
         let Some(interaction) = self
             .message
             .as_ref()
@@ -236,7 +252,7 @@ impl Interaction<'_> {
             ))])
     }
 
-    fn _confirm(prompt: &str) -> CreateInteractionResponseFollowup {
+    fn internal_confirm(prompt: &str) -> CreateInteractionResponseFollowup {
         CreateInteractionResponseFollowup::default()
             .content(prompt)
             .components(vec![CreateActionRow::Buttons(vec![

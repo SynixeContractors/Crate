@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT member FROM members_notifications WHERE member = ANY($1) AND mission_reminder",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "member",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "members_notifications",
+            "name": "member"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b225769c99a42392c048b25c93709e00b08535de622bf48e0baa494bb51187da"
+}

@@ -1,0 +1,115 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE bank_requests\n        SET status = $4,\n            resolved = CASE WHEN $4::VARCHAR IN ('paid', 'declined') THEN NOW() ELSE NULL END\n        WHERE id = $1 AND payer = $2 AND status = $3\n        RETURNING id, requester, payer, amount, reason, status, created, resolved",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "bank_requests",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "requester",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "bank_requests",
+            "name": "requester"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "payer",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "bank_requests",
+            "name": "payer"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "amount",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "bank_requests",
+            "name": "amount"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "reason",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "bank_requests",
+            "name": "reason"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "status",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "bank_requests",
+            "name": "status"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "created",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "bank_requests",
+            "name": "created"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "resolved",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "bank_requests",
+            "name": "resolved"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "dcfbe3da288b5ee8669b82e03b14c2e1caf2dbe7a132850965b6db88e2fe27e2"
+}

@@ -18,6 +18,7 @@ use crate::{bot::Bot, cache_http::CacheAndHttp};
 use super::interaction::{Confirmation, Interaction};
 
 pub mod bank;
+pub mod bank_pages;
 pub mod certifications;
 pub mod docker;
 pub mod garage;
@@ -26,6 +27,8 @@ pub mod missions;
 pub mod reputation;
 // pub mod reset;
 pub mod casino;
+pub mod me;
+pub mod notifications;
 pub mod schedule;
 pub mod shop;
 pub mod surveys;
@@ -76,11 +79,20 @@ pub async fn requires_roles(
                     .collect::<Vec<_>>()
                     .join(" ")
             );
-            if interaction.confirm(
-                "You do not have permission to use this command. Would you like to request permission?"
-            ).await? == Confirmation::Yes {
+            let roles = needle
+                .iter()
+                .map(|role| format!("<@&{role}>"))
+                .collect::<Vec<_>>()
+                .join(" or ");
+            if interaction
+                .confirm(&format!(
+                    "You need the {roles} role to use `/{name}`. Ask staff to approve this one time? They have 10 minutes to respond."
+                ))
+                .await?
+                == Confirmation::Yes
+            {
                 let Ok(mut message) = LOG.send_message(CacheAndHttp::get().as_ref(), {
-                    CreateMessage::default().content(format!("<@{user}> is requesting permission to use {command}"))
+                    CreateMessage::default().content(format!("<@{user}> is requesting permission to use {command}Needs one of: {roles}"))
                     .components(vec![
                         CreateActionRow::Buttons(vec![
                             CreateButton::new("approve")
@@ -116,14 +128,22 @@ pub async fn requires_roles(
                 }
                 message.reply(CacheAndHttp::get().as_ref(), format!("Denied by <@{}>", confirm_interaction.user.id)).await?;
                 interaction.reply("Denied").await?;
-                return Err(serenity::Error::Other("Denied"));
             }
+            // Otherwise they declined to ask, or didn't answer
         } else {
             interaction
-                .reply("You do not have permission to use this command.")
+                .reply(format!(
+                    "You need one of these roles to use this command: {}",
+                    needle
+                        .iter()
+                        .map(|role| format!("<@&{role}>"))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ))
                 .await?;
-            return Err(serenity::Error::Other("Denied"));
         }
+        // Only an approved request returns early with Ok, anything else is still not permitted
+        return Err(serenity::Error::Other("Denied"));
     }
     Ok(())
 }

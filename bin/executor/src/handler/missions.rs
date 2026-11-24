@@ -7,11 +7,8 @@ use synixe_events::{
     },
     publish, respond,
 };
-use synixe_meta::discord::{
-    GUILD,
-    channel::{LEADERSHIP, ONTOPIC},
-};
-use synixe_model::missions::Rsvp;
+use synixe_meta::discord::{GUILD, channel::ONTOPIC};
+use synixe_model::missions::{MissionType, Rsvp, ScheduledMission};
 use synixe_proc::events_request_5;
 
 use super::Handler;
@@ -40,34 +37,8 @@ impl Handler for Request {
                         for mission in missions {
                             let num_minutes = (mission.start - now).whole_minutes() + 1;
                             match num_minutes {
-                                1438..=1442 => {
-                                    if let Err(e) = events_request_5!(
-                                        bootstrap::NC::get().await,
-                                        synixe_events::discord::write,
-                                        ChannelMessage {
-                                            channel: LEADERSHIP,
-                                            message: DiscordMessage {
-                                                content: DiscordContent::Text(format!(
-                                                    "**{}** starts in 24 hours. Remember to pick an Operation Lead if one has not been decided already{}",
-                                                    mission.name,
-                                                    {
-                                                        if let Some((channel, message)) = mission.message() {
-                                                            format!("\n\nhttps://discord.com/channels/{GUILD}/{channel}/{message}")
-                                                        } else {
-                                                            String::new()
-                                                        }
-                                                    },
-                                                )),
-                                                reactions: Vec::new(),
-                                            },
-                                            thread: None,
-                                        }
-                                    )
-                                    .await
-                                    {
-                                        error!("error posting to reddit: {:?}", e);
-                                    }
-                                }
+                                // The bot posts the operation lead reminder, with buttons to claim it
+                                1438..=1442 => posts.push((None, mission, num_minutes)),
 
                                 178..=182 => {
                                     posts.push((Some("3 hours!"), mission, num_minutes));
@@ -81,6 +52,7 @@ impl Handler for Request {
                                 28..=32 => {
                                     posts.push((Some("30 minutes!"), mission, num_minutes));
                                 }
+                                13..=17 => send_reminders(&mission).await,
                                 8..=12 => {
                                     posts.push((Some("10 minutes!"), mission, num_minutes));
                                 }
@@ -222,6 +194,65 @@ impl Handler for Request {
                     }
                 }
             }
+        }
+    }
+}
+
+/// The server contracts are loaded on, see the `ChangeMission` listener in `arma/server`
+const CONTRACTS_SERVER: &str = "primary-main";
+
+/// Reminds members who RSVP'd yes and opted in that the mission starts in 15 minutes, unless they're
+/// already on its server
+async fn send_reminders(mission: &ScheduledMission) {
+    // Only these types are loaded on a known server, a connection to any server counts for the rest
+    let server = match mission.typ {
+        MissionType::Contract | MissionType::SubContract | MissionType::Special => {
+            Some(CONTRACTS_SERVER.to_string())
+        }
+        MissionType::Training | MissionType::Other => None,
+    };
+    let recipients = match events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::missions::db,
+        MissionReminderRecipients {
+            scheduled: mission.id,
+            server,
+        }
+    )
+    .await
+    {
+        Ok(Ok((db::Response::MissionReminderRecipients(Ok(recipients)), _))) => recipients,
+        other => {
+            error!(
+                "failed to get reminder recipients for {}: {other:?}",
+                mission.id
+            );
+            return;
+        }
+    };
+    let link = mission
+        .message()
+        .map_or_else(String::new, |(channel, message)| {
+            format!("\nhttps://discord.com/channels/{GUILD}/{channel}/{message}")
+        });
+    for user in recipients {
+        if let Err(e) = events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::discord::write,
+            UserMessage {
+                user,
+                message: DiscordMessage {
+                    content: DiscordContent::Text(format!(
+                        "**{}** starts in 15 minutes, and you're not on the server yet!{link}\n-# Turn these reminders off with `/notifications`",
+                        mission.name,
+                    )),
+                    reactions: Vec::new(),
+                },
+            }
+        )
+        .await
+        {
+            error!("failed to send mission reminder to {user}: {e}");
         }
     }
 }

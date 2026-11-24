@@ -1,4 +1,6 @@
 mod functions;
+pub mod mood;
+pub mod voice;
 
 use std::{collections::HashMap, sync::atomic::AtomicBool};
 
@@ -20,7 +22,10 @@ use serenity::{
 use synixe_meta::discord::GUILD;
 use tokio::sync::RwLock;
 
-use self::functions::BrainFunction;
+use self::functions::{BrainFunction, Caller};
+
+/// The model Brodsky thinks with
+pub const MODEL: &str = "gpt-6-luna";
 
 pub struct Brain {
     awake: AtomicBool,
@@ -40,7 +45,9 @@ impl Brain {
                 Box::new(functions::bank::Spending {}),
                 Box::new(functions::bank::History {}),
                 Box::new(functions::bank::ShopPrice {}),
+                Box::new(functions::company::Finances {}),
                 Box::new(functions::missions::Upcoming {}),
+                Box::new(functions::missions::MyMissions {}),
                 Box::new(functions::moderation::Timeout {}),
             ],
         }
@@ -54,6 +61,21 @@ impl Brain {
     #[allow(clippy::significant_drop_tightening)] // false positive on conversations
     pub async fn ask(&self, ctx: &Context, message: &Message) -> Option<String> {
         self.observe(ctx, message).await;
+        // Rebuilt on every ask, so his mood and the missions he knows about stay current
+        let prompt = Self::prompt(message.channel_id).await;
+        if let Some(system) = self
+            .conversations
+            .write()
+            .await
+            .get_mut(&message.channel_id)
+            .and_then(|conversation| conversation.first_mut())
+            && let Ok(fresh) = ChatCompletionRequestSystemMessageArgs::default()
+                .content(prompt)
+                .build()
+        {
+            *system = fresh.into();
+        }
+        let caller = Caller::of(ctx, message.author.id).await;
         let mut max_iter = 10;
         loop {
             max_iter -= 1;
@@ -71,7 +93,7 @@ impl Brain {
                 .unwrap_or_default();
             let mut args = CreateChatCompletionRequestArgs::default();
             args.max_completion_tokens(512u32)
-                .model("gpt-6-luna")
+                .model(MODEL)
                 .reasoning_effort(ReasoningEffort::None)
                 .messages(messages);
             if max_iter != 1 {
@@ -97,6 +119,7 @@ impl Brain {
                                     call.id.clone(),
                                     self.run_function(
                                         ctx,
+                                        &caller,
                                         &call.function.name,
                                         &call.function.arguments,
                                     )
@@ -145,13 +168,19 @@ impl Brain {
         }
     }
 
-    async fn run_function(&self, ctx: &Context, name: &str, arguments: &str) -> String {
+    async fn run_function(
+        &self,
+        ctx: &Context,
+        caller: &Caller,
+        name: &str,
+        arguments: &str,
+    ) -> String {
         println!("ask function_call: {name} {arguments}");
         let Some(function) = self.functions.iter().find(|f| f.name() == name) else {
             return json!({"error": "function not found"}).to_string();
         };
         let arguments = serde_json::from_str(arguments).unwrap_or(serde_json::Value::Null);
-        function.run(ctx, arguments).await.map_or_else(
+        function.run(ctx, caller, arguments).await.map_or_else(
             || json!({"error": "function failed as called"}).to_string(),
             |response| {
                 println!("ask response: {response}");
@@ -181,9 +210,10 @@ impl Brain {
         let mut conversations = self.conversations.write().await;
         let conversation = conversations.entry(message.channel_id).or_default();
         if conversation.is_empty() {
+            // A placeholder, replaced with the full prompt each time he's asked something
             conversation.push(
                 ChatCompletionRequestSystemMessageArgs::default()
-                    .content(Self::prompt(message.channel_id))
+                    .content(voice::PERSONA)
                     .build()
                     .expect("prompt is valid")
                     .into(),
@@ -222,9 +252,14 @@ impl Brain {
         }
     }
 
-    fn prompt(channel: ChannelId) -> String {
-        let mut prompt = include_str!("prompt.txt").to_string();
-        prompt = prompt.replace("%channel%", &format!("<#{channel}>"));
-        prompt
+    async fn prompt(channel: ChannelId) -> String {
+        format!(
+            "{}\n{}",
+            voice::PERSONA,
+            include_str!("prompt.txt")
+                .replace("%channel%", &format!("<#{channel}>"))
+                .replace("%updates%", include_str!("updates.txt").trim())
+                .replace("%now%", voice::right_now().await.trim())
+        )
     }
 }

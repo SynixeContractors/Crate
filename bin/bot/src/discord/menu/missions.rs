@@ -1,13 +1,13 @@
 use serenity::{
-    all::{CommandInteraction, CommandType, MessageId, ReactionType},
+    all::{CommandInteraction, CommandType, MessageId, ReactionType, UserId},
     builder::{CreateCommand, CreateMessage, EditThread},
     prelude::Context,
 };
-use synixe_events::{missions::db::Response, reputation};
+use synixe_events::{discord::db::Notification, missions::db::Response, reputation};
 use synixe_meta::discord::{channel::AARS, role::STAFF};
 use synixe_model::missions::{
     MissionType,
-    aar::{Aar, PaymentType},
+    aar::{Aar, Outcome, PaymentType},
 };
 use synixe_proc::events_request_5;
 use time::macros::offset;
@@ -17,9 +17,54 @@ pub const MENU_AAR_IDS: &str = "AAR - Get IDs";
 pub const MENU_ARMA_DISCORD: &str = "Mission - Arma Discord";
 
 use crate::discord::{
+    handler::brain::voice,
     interaction::{Confirmation, Interaction},
-    utils::find_members,
+    utils::{dm, find_members},
 };
+
+/// Tells the contractors who opted in to payday notifications what they were paid
+async fn send_payday(ctx: Context, contractors: Vec<UserId>, amount: i32, mission: String) {
+    let Ok(Ok((synixe_events::discord::db::Response::NotificationSubscribers(Ok(subscribers)), _))) =
+        events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::discord::db,
+            NotificationSubscribers {
+                members: contractors,
+                notification: Notification::Payday,
+            }
+        )
+        .await
+    else {
+        error!("failed to get payday subscribers for {mission}");
+        return;
+    };
+    for member in subscribers {
+        let balance = match events_request_5!(
+            bootstrap::NC::get().await,
+            synixe_events::gear::db,
+            BankBalance { member }
+        )
+        .await
+        {
+            Ok(Ok((synixe_events::gear::db::Response::BankBalance(Ok(Some(balance))), _))) => {
+                format!(
+                    "\nYour balance is now {}",
+                    bootstrap::format::money(balance, false)
+                )
+            }
+            _ => String::new(),
+        };
+        dm(
+            &ctx,
+            member,
+            format!(
+                "You were paid {} for **{mission}**{balance}\n-# Turn these messages off with `/notifications`",
+                bootstrap::format::money(amount, false),
+            ),
+        )
+        .await;
+    }
+}
 
 pub fn aar_ids() -> CreateCommand {
     CreateCommand::new(MENU_AAR_IDS).kind(CommandType::Message)
@@ -199,18 +244,30 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
         .await?
         == Confirmation::Yes
     {
+        let contractors = ids.iter().map(|m| m.1).collect::<Vec<_>>();
+        let contractors_paid = contractors.len();
+        let contractor_amount = aar.contractor_payment(payment, current_rep);
+        let group_amount = aar.employer_payment(payment, current_rep);
         if let Ok(Ok((Response::PayMission(Ok(())), _))) = events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::missions::db,
             PayMission {
                 scheduled: scheduled.id,
-                contractors: ids.iter().map(|m| m.1).collect::<Vec<_>>(),
-                contractor_amount: aar.contractor_payment(payment, current_rep),
-                group_amount: aar.employer_payment(payment, current_rep),
+                contractors: contractors.clone(),
+                contractor_amount,
+                group_amount,
+                outcome: *aar.outcome(),
             }
         )
         .await
         {
+            // Sent in the background, as there can be many and the AAR replies shouldn't wait on them
+            tokio::spawn(send_payday(
+                ctx.clone(),
+                contractors,
+                contractor_amount,
+                scheduled.name.clone(),
+            ));
             if let Err(e) = message
                 .reply(
                     &ctx.http,
@@ -243,6 +300,24 @@ pub async fn run_aar_pay(ctx: &Context, command: &CommandInteraction) -> serenit
                         ))
                     })
                     .await?;
+                // Before the thread is locked
+                if let Some(line) = voice::react(&format!(
+                    "The mission \"{}\" was just paid out. It was {}. {} contractors were paid {} each, and the company was paid {}.",
+                    scheduled.name,
+                    match aar.outcome() {
+                        Outcome::Success => "a success",
+                        Outcome::Partial => "a partial success",
+                        Outcome::Failure => "a failure",
+                    },
+                    contractors_paid,
+                    bootstrap::format::money(contractor_amount, false),
+                    bootstrap::format::money(group_amount, false),
+                ))
+                .await
+                    && let Err(e) = thread.say(&ctx.http, line).await
+                {
+                    error!("Error posting brodsky's payout reaction: {}", e);
+                }
                 thread
                     .edit_thread(&ctx.http, EditThread::default().locked(true).archived(true))
                     .await?;

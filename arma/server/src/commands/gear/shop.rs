@@ -92,7 +92,7 @@ fn command_enter(
             return;
         };
         debug!("entering shop for {} with {:?} items", discord, items.len());
-        let Ok(Ok((db::Response::ShopEnter(Ok((locker, balance))), _))) = events_request_5!(
+        let (locker, balance) = match events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopEnter {
@@ -102,12 +102,18 @@ fn command_enter(
             }
         )
         .await
-        else {
-            error!("failed to enter shop over nats");
-            if let Err(e) = context.callback_data("crate:gear:shop", "enter:err", vec![steam]) {
-                error!("error sending shop:enter:err: {e:?}");
+        {
+            Ok(Ok((db::Response::ShopEnter(Ok(entered)), _))) => entered,
+            Ok(Ok((db::Response::ShopEnter(Err(reason)), _))) => {
+                warn!("could not enter shop for {discord}: {reason}");
+                send_error(context, "enter:err", steam, reason);
+                return;
             }
-            return;
+            _ => {
+                error!("failed to enter shop over nats");
+                send_error(context, "enter:err", steam, String::new());
+                return;
+            }
         };
         if let Err(e) = context.callback_data(
             "crate:gear:shop",
@@ -133,23 +139,29 @@ fn command_leave(discord: String, steam: String, loadout: String, mut items: Has
             return;
         };
         debug!("leaving shop for {} with {:?} items", discord, items.len());
-        let Ok(Ok((db::Response::ShopLeave(Ok(())), _))) = events_request_5!(
+        match events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopLeave {
                 member: UserId::new(discord),
-                loadout, // .replace("\"\"", "\""),
+                loadout,
                 items,
             }
         )
         .await
-        else {
-            error!("failed to leave shop over nats");
-            if let Err(e) = context.callback_data("crate:gear:shop", "leave:err", vec![steam]) {
-                error!("error sending shop:leave:err: {e:?}");
+        {
+            Ok(Ok((db::Response::ShopLeave(Ok(())), _))) => {}
+            Ok(Ok((db::Response::ShopLeave(Err(reason)), _))) => {
+                warn!("could not leave shop for {discord}: {reason}");
+                send_error(context, "leave:err", steam, reason);
+                return;
             }
-            return;
-        };
+            _ => {
+                error!("failed to leave shop over nats");
+                send_error(context, "leave:err", steam, String::new());
+                return;
+            }
+        }
         if let Err(e) = context.callback_data("crate:gear:shop", "leave:ok", vec![steam.to_arma()])
         {
             error!("error sending shop:leave:ok: {e:?}");
@@ -171,7 +183,7 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
             return;
         };
         debug!("purchasing for {discord}: {items:?}");
-        let Ok(Ok((db::Response::ShopPurchase(Ok((locker, balance))), _))) = events_request_5!(
+        let (locker, balance) = match events_request_5!(
             bootstrap::NC::get().await,
             synixe_events::gear::db,
             ShopPurchase {
@@ -180,12 +192,18 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
             }
         )
         .await
-        else {
-            error!("failed to purchase items over nats");
-            if let Err(e) = context.callback_data("crate:gear:shop", "purchase:err", vec![steam]) {
-                error!("error sending shop:purchase:err: {e:?}");
+        {
+            Ok(Ok((db::Response::ShopPurchase(Ok(purchased)), _))) => purchased,
+            Ok(Ok((db::Response::ShopPurchase(Err(reason)), _))) => {
+                warn!("could not purchase for {discord}: {reason}");
+                send_error(context, "purchase:err", steam, reason);
+                return;
             }
-            return;
+            _ => {
+                error!("failed to purchase items over nats");
+                send_error(context, "purchase:err", steam, String::new());
+                return;
+            }
         };
         if let Err(e) = context.callback_data(
             "crate:gear:shop",
@@ -196,6 +214,17 @@ fn command_purchase(discord: String, steam: String, mut items: HashMap<String, i
         }
         debug!("shop purchase for {discord}");
     });
+}
+
+/// Tells Arma a shop action failed. `reason` is shown to the player, empty for a generic message.
+fn send_error(context: &arma_rs::Context, callback: &str, steam: String, reason: String) {
+    if let Err(e) = context.callback_data(
+        "crate:gear:shop",
+        callback,
+        vec![steam.to_arma(), reason.to_arma()],
+    ) {
+        error!("error sending shop:{callback}: {e:?}");
+    }
 }
 
 fn command_pretty(item: String, pretty: String) {

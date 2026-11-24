@@ -5,7 +5,7 @@ use synixe_events::{
 };
 use synixe_proc::events_request_5;
 
-use crate::{actor::fuel::prices_for_map, game_audit};
+use crate::{actor, actor::fuel::prices_for_map, game_audit};
 
 use super::Handler;
 
@@ -19,6 +19,46 @@ impl Handler for Request {
     ) -> Result<(), anyhow::Error> {
         let db = bootstrap::DB::get().await;
         match &self {
+            Self::FetchVehicleDetails { plate } => match_with_return!(
+                actor::garage::vehicle_details(plate.as_deref(), &db),
+                FetchVehicleDetails,
+                msg,
+                cx
+            ),
+            Self::RepairEstimate { plate } => match_with_return!(
+                actor::garage::repair_estimate(plate, &db),
+                RepairEstimate,
+                msg,
+                cx
+            ),
+            Self::Repair {
+                member,
+                plate,
+                group,
+            } => {
+                let result = actor::garage::repair(member, plate, *group, &db).await;
+                if let Err(actor::garage::RepairError::Database(e)) = &result {
+                    error!("failed to repair {plate}: {e:?}");
+                }
+                respond!(
+                    msg,
+                    Response::Repair(
+                        result
+                            .as_ref()
+                            .map(|(_, cost)| *cost)
+                            .map_err(ToString::to_string)
+                    )
+                )
+                .await?;
+                if let Ok((name, cost)) = result {
+                    let _ = game_audit(format!(
+                        "**Vehicle Repaired**\n<@{member}> repaired {name} on `{plate}` for {}",
+                        bootstrap::format::money(cost, false)
+                    ))
+                    .await;
+                }
+                Ok(())
+            }
             Self::FetchPlates { search } => {
                 let search = search.clone().unwrap_or_default();
                 fetch_as_and_respond!(

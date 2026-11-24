@@ -45,6 +45,8 @@ pub const INACTIVE: RoleId = RoleId::new(700_938_613_092_909_128);
 pub const MISSION_MAKER: RoleId = RoleId::new(973_300_919_015_997_491);
 /// Member is a mission reviewer
 pub const MISSION_REVIEWER: RoleId = RoleId::new(1_020_252_253_287_886_858);
+/// Fire Team Leader, who can claim a mission's Operation Lead
+pub const FTL: RoleId = RoleId::new(1_182_873_521_509_126_185);
 
 // Certifications - Acknowledge
 // Acknowledge - SMG

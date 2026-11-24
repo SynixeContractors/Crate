@@ -39,8 +39,10 @@ if (_kind == "") exitWith {};
 if !(_object getVariable [QGVAR(ae3_initChecked), false]) then {
     _object setVariable [QGVAR(ae3_initChecked), true];
     [_id, _object, true] call FUNC(ae3_restore);
-    if (_object getVariable [QGVAR(ae3_pending), false]) exitWith {};
 };
+// Checked outside the block above, as an exitWith in there would only leave the block. A restore in flight
+// must not be overwritten by the fresh object's empty state before its saved one comes back.
+if (_object getVariable [QGVAR(ae3_pending), false]) exitWith {};
 
 private _values = if (_kind == "device") then {
     [_object] call AE3_armaos_fnc_laptop_captureState

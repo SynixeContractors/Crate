@@ -50,6 +50,9 @@ if !(_object isKindOf "GroundWeaponHolder") then {
         case "fuel": {
             _object setFuel _y;
         };
+        case "ace_fuel": {
+            _object setVariable ["ace_fuel_fuel", _y, true];
+        };
         case "fuelCargo": {
             _object setFuelCargo _y;
         };
@@ -99,6 +102,8 @@ if !(_object isKindOf "GroundWeaponHolder") then {
         case "locked": {
             _object lock _y;
         };
+        // "ace_mag" is the key state was saved under before it matched this one
+        case "ace_mag";
         case "ace_magazine": {
             _object setVariable ["ace_rearm_magazineClass", _y];
         };

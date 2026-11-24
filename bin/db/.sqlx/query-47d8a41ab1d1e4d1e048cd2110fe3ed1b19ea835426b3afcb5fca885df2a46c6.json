@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE garage_vehicles v\n        SET state = jsonb_set(v.state, '{hits}', COALESCE((\n            SELECT jsonb_agg(h)\n            FROM jsonb_array_elements(v.state->'hits') h\n            WHERE NOT ((h->>0) ILIKE ANY(g.hitpoints))\n        ), '[]'::JSONB)),\n        updated = NOW()\n        FROM garage_repair_groups g\n        WHERE v.plate = $1 AND g.id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "47d8a41ab1d1e4d1e048cd2110fe3ed1b19ea835426b3afcb5fca885df2a46c6"
+}

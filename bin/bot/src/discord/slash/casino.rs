@@ -1,15 +1,17 @@
 use std::fmt::Write;
 
 use serenity::all::{
-    CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType, Context,
-    CreateCommand, CreateCommandOption,
+    CommandDataOptionValue, CommandInteraction, CommandOptionType, Context, CreateCommand,
+    CreateCommandOption, UserId,
 };
 use synixe_events::casino::db::Response;
 use synixe_meta::discord::role::{JUNIOR, MEMBER};
 use synixe_proc::events_request_5;
 
+use rand::Rng;
+
 use crate::{
-    discord::{interaction::Interaction, slash::ShouldAsk},
+    discord::{handler::brain::voice, interaction::Interaction, slash::ShouldAsk},
     get_option,
 };
 
@@ -159,17 +161,77 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
         return Ok(());
     }
 
-    if let CommandDataOptionValue::SubCommand(options) = &subcommand.value {
-        match subcommand.name.as_str() {
-            "coinflip" => coinflip(ctx, &mut interaction, command, options).await?,
-            "diceroll" => diceroll(ctx, &mut interaction, command, options).await?,
-            "carddraw" => carddraw(ctx, &mut interaction, command, options).await?,
-            "numberguess" => numberguess(ctx, &mut interaction, command, options).await?,
-            "lucky3" => lucky3(ctx, &mut interaction, command, options).await?,
-            _ => unreachable!(),
+    let CommandDataOptionValue::SubCommand(options) = &subcommand.value else {
+        return Ok(());
+    };
+    let game = subcommand.name.as_str();
+    // The command definition bounds the bid to 1..=MAX_BID
+    let Some(bid) = get_option!(options, "bid", Integer).and_then(|bid| i32::try_from(*bid).ok())
+    else {
+        return interaction.reply("Invalid bid").await;
+    };
+    let outcome = match game {
+        "coinflip" => Some(coinflip(bid)),
+        "diceroll" => get_option!(options, "number", Integer).map(|guess| diceroll(bid, *guess)),
+        "carddraw" => get_option!(options, "color", String).map(|guess| carddraw(bid, guess)),
+        "numberguess" => {
+            get_option!(options, "number", Integer).map(|guess| numberguess(bid, *guess))
         }
+        "lucky3" => Some(lucky3(bid)),
+        _ => unreachable!("validated against GAMES above"),
+    };
+    let Some(outcome) = outcome else {
+        return interaction.reply("Invalid options").await;
+    };
+
+    if !transact(command.user.id, -bid, game).await {
+        return interaction
+            .reply("Failed to place your bet, please try again later")
+            .await;
     }
-    Ok(())
+    if outcome.winnings > 0 && !transact(command.user.id, outcome.winnings, game).await {
+        error!(
+            "failed to pay out {} to {} for {game}",
+            outcome.winnings, command.user.id
+        );
+        return interaction
+            .reply("You won, but your winnings couldn't be paid out. Please contact staff.")
+            .await;
+    }
+    let mut message = outcome.message;
+    if let Some(situation) = reaction_situation(game, bid, outcome.winnings)
+        && let Some(line) = voice::react(&situation).await
+    {
+        message = format!("{message}\n\n> {line}\n> -# Ctirad Brodsky, casino owner");
+    }
+    interaction.reply(message).await
+}
+
+/// Payouts at least this many times the bet get a reaction from Brodsky
+const BIG_WIN_MULTIPLIER: i32 = 6;
+/// The chance Brodsky gloats when someone loses a maximum bet
+const MAX_LOSS_REACTION_PERCENT: u32 = 25;
+
+/// What Brodsky reacts to after a game, if it's worth a reaction
+fn reaction_situation(game: &str, bid: i32, winnings: i32) -> Option<String> {
+    if winnings >= bid * BIG_WIN_MULTIPLIER {
+        return Some(format!(
+            "A contractor just won {} at your casino's {game} game, betting {}. You own the casino and have to pay it out.",
+            bootstrap::format::money(winnings, false),
+            bootstrap::format::money(bid, false),
+        ));
+    }
+    let max_bid = i32::try_from(MAX_BID).unwrap_or(i32::MAX);
+    if winnings == 0
+        && bid == max_bid
+        && rand::rng().random_range(0..100) < MAX_LOSS_REACTION_PERCENT
+    {
+        return Some(format!(
+            "A contractor just lost the maximum bet of {} at your casino's {game} game. You own the casino.",
+            bootstrap::format::money(bid, false),
+        ));
+    }
+    None
 }
 
 pub async fn can_play(command: &CommandInteraction, interaction: &mut Interaction<'_>) -> bool {
@@ -215,272 +277,114 @@ fn number_to_emoji(number: u32) -> &'static str {
     }
 }
 
-async fn coinflip(
-    _ctx: &Context,
-    interaction: &mut Interaction<'_>,
-    command: &CommandInteraction,
-    options: &[CommandDataOption],
-) -> serenity::Result<()> {
-    let Some(amount) = get_option!(options, "bid", Integer) else {
-        return interaction.reply("Invalid bid").await;
-    };
-    // Do the buy in
-    let Ok(Ok((Response::BuyIn(Ok(())), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::casino::db,
-        BuyIn {
-            member: command.user.id,
-            #[allow(clippy::cast_possible_truncation)]
-            amount: *amount as i32,
-            game: "coinflip".to_string(),
-        }
-    )
-    .await
-    else {
-        return interaction.reply("Failed to fine").await;
-    };
-    // Flip the coin
-    let win = rand::random();
-    #[allow(clippy::cast_possible_truncation)]
-    if win {
-        let amount = (*amount * 2) as i32;
-        // Cash out the winnings
-        let Ok(Ok((Response::CashOut(Ok(())), _))) = events_request_5!(
-            bootstrap::NC::get().await,
-            synixe_events::casino::db,
-            CashOut {
-                member: command.user.id,
-                #[allow(clippy::cast_possible_truncation)]
-                amount,
-                game: "coinflip".to_string(),
-            }
+/// Moves money for a game: a negative amount buys in, a positive one cashes out
+async fn transact(member: UserId, amount: i32, game: &str) -> bool {
+    let game = game.to_string();
+    if amount < 0 {
+        matches!(
+            events_request_5!(
+                bootstrap::NC::get().await,
+                synixe_events::casino::db,
+                BuyIn {
+                    member,
+                    amount: -amount,
+                    game,
+                }
+            )
+            .await,
+            Ok(Ok((Response::BuyIn(Ok(())), _)))
         )
-        .await
-        else {
-            return interaction.reply("Failed to cash out winnings").await;
-        };
-        interaction.reply(format!("You won ${amount}!")).await?;
     } else {
-        interaction.reply(format!("You lost ${amount}!")).await?;
+        matches!(
+            events_request_5!(
+                bootstrap::NC::get().await,
+                synixe_events::casino::db,
+                CashOut {
+                    member,
+                    amount,
+                    game,
+                }
+            )
+            .await,
+            Ok(Ok((Response::CashOut(Ok(())), _)))
+        )
     }
-
-    Ok(())
 }
 
-async fn diceroll(
-    _ctx: &Context,
-    interaction: &mut Interaction<'_>,
-    command: &CommandInteraction,
-    options: &[CommandDataOption],
-) -> serenity::Result<()> {
-    let Some(amount) = get_option!(options, "bid", Integer) else {
-        return interaction.reply("Invalid bid").await;
-    };
-    let Some(guess) = get_option!(options, "number", Integer) else {
-        return interaction.reply("Invalid number").await;
-    };
-    // Do the buy in
-    let Ok(Ok((Response::BuyIn(Ok(())), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::casino::db,
-        BuyIn {
-            member: command.user.id,
-            #[allow(clippy::cast_possible_truncation)]
-            amount: *amount as i32,
-            game: "diceroll".to_string(),
-        }
-    )
-    .await
-    else {
-        return interaction.reply("Failed to fine").await;
-    };
-    // Roll the die (1-6)
-    let roll = rand::random::<u32>() % 6 + 1;
-    if roll == u32::try_from(*guess).unwrap_or(0) {
-        #[allow(clippy::cast_possible_truncation)]
-        let amount = (*amount * 6) as i32;
-        // Cash out the winnings
-        let Ok(Ok((Response::CashOut(Ok(())), _))) = events_request_5!(
-            bootstrap::NC::get().await,
-            synixe_events::casino::db,
-            CashOut {
-                member: command.user.id,
-                #[allow(clippy::cast_possible_truncation)]
-                amount,
-                game: "diceroll".to_string(),
-            }
-        )
-        .await
-        else {
-            return interaction.reply("Failed to cash out winnings").await;
-        };
-        interaction
-            .reply(format!(
-                "You rolled a {roll}! You guessed correctly! You won ${amount}!"
-            ))
-            .await?;
-    } else {
-        interaction
-            .reply(format!(
-                "You rolled a {roll}! You guessed {guess}. You lost ${amount}!"
-            ))
-            .await?;
-    }
-
-    Ok(())
+/// The result of a game: the total paid out (0 for a loss) and the message to show
+struct Outcome {
+    winnings: i32,
+    message: String,
 }
 
-async fn carddraw(
-    _ctx: &Context,
-    interaction: &mut Interaction<'_>,
-    command: &CommandInteraction,
-    options: &[CommandDataOption],
-) -> serenity::Result<()> {
-    let Some(amount) = get_option!(options, "bid", Integer) else {
-        return interaction.reply("Invalid bid").await;
-    };
-    let Some(guess) = get_option!(options, "color", String) else {
-        return interaction.reply("Invalid color").await;
-    };
-    // Do the buy in
-    let Ok(Ok((Response::BuyIn(Ok(())), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::casino::db,
-        BuyIn {
-            member: command.user.id,
-            #[allow(clippy::cast_possible_truncation)]
-            amount: *amount as i32,
-            game: "carddraw".to_string(),
+fn coinflip(bid: i32) -> Outcome {
+    if rand::random() {
+        let winnings = bid * 2;
+        Outcome {
+            winnings,
+            message: format!("You won ${winnings}!"),
         }
-    )
-    .await
-    else {
-        return interaction.reply("Failed to fine").await;
-    };
-    // Draw the card
-    let card_is_red = rand::random();
-    let actual_color = if card_is_red { "red" } else { "black" };
-    if actual_color == guess.as_str() {
-        #[allow(clippy::cast_possible_truncation)]
-        let amount = (*amount * 2) as i32;
-        // Cash out the winnings
-        let Ok(Ok((Response::CashOut(Ok(())), _))) = events_request_5!(
-            bootstrap::NC::get().await,
-            synixe_events::casino::db,
-            CashOut {
-                member: command.user.id,
-                #[allow(clippy::cast_possible_truncation)]
-                amount,
-                game: "carddraw".to_string(),
-            }
-        )
-        .await
-        else {
-            return interaction.reply("Failed to cash out winnings").await;
-        };
-        interaction
-            .reply(format!("The card is {actual_color}! You won ${amount}!"))
-            .await?;
     } else {
-        interaction
-            .reply(format!("The card is {actual_color}! You lost ${amount}!"))
-            .await?;
+        Outcome {
+            winnings: 0,
+            message: format!("You lost ${bid}!"),
+        }
     }
-
-    Ok(())
 }
 
-async fn numberguess(
-    _ctx: &Context,
-    interaction: &mut Interaction<'_>,
-    command: &CommandInteraction,
-    options: &[CommandDataOption],
-) -> serenity::Result<()> {
-    let Some(amount) = get_option!(options, "bid", Integer) else {
-        return interaction.reply("Invalid bid").await;
-    };
-    let Some(guess) = get_option!(options, "number", Integer) else {
-        return interaction.reply("Invalid number").await;
-    };
-    // Do the buy in
-    let Ok(Ok((Response::BuyIn(Ok(())), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::casino::db,
-        BuyIn {
-            member: command.user.id,
-            #[allow(clippy::cast_possible_truncation)]
-            amount: *amount as i32,
-            game: "numberguess".to_string(),
+fn diceroll(bid: i32, guess: i64) -> Outcome {
+    let roll = rand::random_range(1..=6);
+    if roll == guess {
+        let winnings = bid * 6;
+        Outcome {
+            winnings,
+            message: format!("You rolled a {roll}! You guessed correctly! You won ${winnings}!"),
         }
-    )
-    .await
-    else {
-        return interaction.reply("Failed to fine").await;
-    };
-    // Pick a random number 1-10
-    let number = (rand::random::<u32>() % 10) + 1;
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    if number == *guess as u32 {
-        #[allow(clippy::cast_possible_truncation)]
-        let amount = (*amount * 10) as i32;
-        // Cash out the winnings
-        let Ok(Ok((Response::CashOut(Ok(())), _))) = events_request_5!(
-            bootstrap::NC::get().await,
-            synixe_events::casino::db,
-            CashOut {
-                member: command.user.id,
-                #[allow(clippy::cast_possible_truncation)]
-                amount,
-                game: "numberguess".to_string(),
-            }
-        )
-        .await
-        else {
-            return interaction.reply("Failed to cash out winnings").await;
-        };
-        interaction
-            .reply(format!(
-                "The number was {number}! You guessed correctly! You won ${amount}!"
-            ))
-            .await?;
     } else {
-        interaction
-            .reply(format!(
-                "The number was {number}! You guessed {guess}. You lost ${amount}!"
-            ))
-            .await?;
+        Outcome {
+            winnings: 0,
+            message: format!("You rolled a {roll}! You guessed {guess}. You lost ${bid}!"),
+        }
     }
-
-    Ok(())
 }
 
-async fn lucky3(
-    _ctx: &Context,
-    interaction: &mut Interaction<'_>,
-    command: &CommandInteraction,
-    options: &[CommandDataOption],
-) -> serenity::Result<()> {
-    let Some(amount) = get_option!(options, "bid", Integer) else {
-        return interaction.reply("Invalid bid").await;
-    };
-    // Do the buy in
-    let Ok(Ok((Response::BuyIn(Ok(())), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::casino::db,
-        BuyIn {
-            member: command.user.id,
-            #[allow(clippy::cast_possible_truncation)]
-            amount: *amount as i32,
-            game: "lucky3".to_string(),
+fn carddraw(bid: i32, guess: &str) -> Outcome {
+    let color = if rand::random() { "red" } else { "black" };
+    if color == guess {
+        let winnings = bid * 2;
+        Outcome {
+            winnings,
+            message: format!("The card is {color}! You won ${winnings}!"),
         }
-    )
-    .await
-    else {
-        return interaction.reply("Failed to fine").await;
-    };
-    // Roll 3 dice
-    let rolls: Vec<u32> = (0..3).map(|_| (rand::random::<u32>() % 6) + 1).collect();
-    let mut reply = format!(
+    } else {
+        Outcome {
+            winnings: 0,
+            message: format!("The card is {color}! You lost ${bid}!"),
+        }
+    }
+}
+
+fn numberguess(bid: i32, guess: i64) -> Outcome {
+    let number = rand::random_range(1..=10);
+    if number == guess {
+        let winnings = bid * 10;
+        Outcome {
+            winnings,
+            message: format!(
+                "The number was {number}! You guessed correctly! You won ${winnings}!"
+            ),
+        }
+    } else {
+        Outcome {
+            winnings: 0,
+            message: format!("The number was {number}! You guessed {guess}. You lost ${bid}!"),
+        }
+    }
+}
+
+fn lucky3(bid: i32) -> Outcome {
+    let rolls: [u32; 3] = std::array::from_fn(|_| rand::random_range(1..=6));
+    let mut message = format!(
         "You rolled: {} {} {}\n",
         number_to_emoji(rolls[0]),
         number_to_emoji(rolls[1]),
@@ -489,34 +393,14 @@ async fn lucky3(
     let threes = rolls.iter().filter(|&&r| r == 3).count();
     let winnings = match threes {
         0 => 0,
-        1 => (*amount as f64 * 1.5) as i32,
-        2 => (*amount as f64 * 4.0) as i32,
-        3 => (*amount as f64 * 30.0) as i32,
-        _ => unreachable!(),
+        1 => bid * 3 / 2,
+        2 => bid * 4,
+        _ => bid * 30,
     };
-    if winnings > 0 {
-        // Cash out the winnings
-        let Ok(Ok((Response::CashOut(Ok(())), _))) = events_request_5!(
-            bootstrap::NC::get().await,
-            synixe_events::casino::db,
-            CashOut {
-                member: command.user.id,
-                #[allow(clippy::cast_possible_truncation)]
-                amount: winnings,
-                game: "lucky3".to_string(),
-            }
-        )
-        .await
-        else {
-            return interaction.reply("Failed to cash out winnings").await;
-        };
-        if threes == 1 {
-            let _ = write!(reply, "You got 1 three! You won ${winnings}!");
-        } else {
-            let _ = write!(reply, "You got {threes} threes! You won ${winnings}!");
-        }
-    } else {
-        let _ = write!(reply, "You got no threes! You lost ${amount}!");
-    }
-    interaction.reply(reply).await
+    let _ = match threes {
+        0 => write!(message, "You got no threes! You lost ${bid}!"),
+        1 => write!(message, "You got 1 three! You won ${winnings}!"),
+        _ => write!(message, "You got {threes} threes! You won ${winnings}!"),
+    };
+    Outcome { winnings, message }
 }

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
+use synixe_events::gear::db::LockerItem;
 
 pub async fn get<'a, E>(member: &UserId, executor: E) -> Result<HashMap<String, i32>, anyhow::Error>
 where
@@ -75,4 +76,31 @@ where
     let res = query.fetch_one(executor).await?;
     #[allow(clippy::cast_possible_truncation)]
     Ok(res.sum.unwrap_or(0) as i32)
+}
+
+pub async fn contents<'a, E>(member: &UserId, executor: E) -> Result<Vec<LockerItem>, anyhow::Error>
+where
+    E: Executor<'a, Database = Postgres>,
+{
+    // Priced the same way as `balance`, at the base price
+    let rows = sqlx::query!(
+        r#"SELECT gl.class, gi.pretty AS "pretty?", gl.quantity, gc.personal AS "value?"
+        FROM gear_locker gl
+        LEFT JOIN gear_items gi ON gi.class = gl.class
+        LEFT JOIN gear_cost gc ON gc.class = gl.class AND gc.priority = 0
+        WHERE gl.member = $1 AND gl.quantity > 0
+        ORDER BY COALESCE(gi.pretty, gl.class)"#,
+        member.to_string(),
+    )
+    .fetch_all(executor)
+    .await?;
+    Ok(rows
+        .into_iter()
+        .map(|row| LockerItem {
+            class: row.class,
+            pretty: row.pretty,
+            quantity: row.quantity,
+            value: row.value,
+        })
+        .collect())
 }

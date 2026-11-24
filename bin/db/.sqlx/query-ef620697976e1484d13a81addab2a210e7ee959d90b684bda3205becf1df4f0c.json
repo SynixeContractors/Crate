@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT r.member\n        FROM missions_schedule_rsvp r\n        INNER JOIN members_notifications n ON n.member = r.member AND n.mission_reminder\n        WHERE r.scheduled = $1\n            AND r.state = 'yes'\n            AND NOT EXISTS (\n                SELECT 1\n                FROM members_steam s\n                CROSS JOIN LATERAL (\n                    SELECT l.action\n                    FROM servers_log l\n                    WHERE l.steam = s.steam\n                        AND l.action IN ('connected', 'disconnected')\n                        AND ($2::VARCHAR IS NULL OR l.server = $2)\n                        AND l.created > NOW() - make_interval(hours => $3)\n                    ORDER BY l.created DESC\n                    LIMIT 1\n                ) latest\n                WHERE s.member = r.member AND latest.action = 'connected'\n            )",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "member",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "missions_schedule_rsvp",
+            "name": "member"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "ef620697976e1484d13a81addab2a210e7ee959d90b684bda3205becf1df4f0c"
+}

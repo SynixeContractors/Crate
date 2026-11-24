@@ -1,23 +1,17 @@
-use std::fmt::Write;
-
 use serenity::{
-    all::{CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType},
+    all::{CommandDataOptionValue, CommandInteraction, CommandOptionType},
     builder::{CreateCommand, CreateCommandOption},
     client::Context,
 };
-use synixe_events::garage::db::Response;
-use synixe_proc::events_request_5;
-
-use crate::discord::interaction::Interaction;
 
 use self::enums::Command;
 
 mod attachment;
 pub mod auto_complete;
 mod enums;
+pub mod info;
 mod purchase;
 mod spawn;
-mod transport;
 
 #[allow(clippy::too_many_lines)]
 pub fn register() -> CreateCommand {
@@ -25,9 +19,42 @@ pub fn register() -> CreateCommand {
         .description("Interact with the garage")
         .add_option(CreateCommandOption::new(
             CommandOptionType::SubCommand,
-            "view",
-            "View the garage inventory",
+            "list",
+            "List every vehicle with its fuel and damage",
         ))
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "view",
+                "View a vehicle's fuel, damage and repair costs",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(CommandOptionType::String, "vehicle", "The vehicle")
+                    .set_autocomplete(true)
+                    .required(true),
+            ),
+        )
+        .add_option(
+            CreateCommandOption::new(
+                CommandOptionType::SubCommand,
+                "repair",
+                "Repair part of a stored vehicle, paid for by the company",
+            )
+            .add_sub_option(
+                CreateCommandOption::new(
+                    CommandOptionType::String,
+                    "vehicle",
+                    "The vehicle, which has to be in the garage",
+                )
+                .set_autocomplete(true)
+                .required(true),
+            )
+            .add_sub_option(
+                CreateCommandOption::new(CommandOptionType::String, "part", "The part to repair")
+                    .set_autocomplete(true)
+                    .required(true),
+            ),
+        )
         .add_option(
             CreateCommandOption::new(
                 CommandOptionType::SubCommand,
@@ -138,7 +165,9 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
             return Ok(());
         };
         return match name {
-            Command::View => view(ctx, command, options).await,
+            Command::List => info::list(ctx, command, options).await,
+            Command::View => info::view(ctx, command, options).await,
+            Command::Repair => info::repair(ctx, command, options).await,
             Command::PurchaseVehicle | Command::PurchaseAddon => {
                 purchase::purchase(ctx, command, options).await
             }
@@ -148,45 +177,4 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
         };
     }
     Ok(())
-}
-
-async fn view(
-    ctx: &Context,
-    command: &CommandInteraction,
-    options: &[CommandDataOption],
-) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, command.clone(), options);
-
-    let Ok(Ok((Response::FetchStoredVehicles(Ok(vehicles)), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::garage::db,
-        FetchStoredVehicles {
-            stored: None,
-            plate: None
-        }
-    )
-    .await
-    else {
-        return interaction.reply("Error fetching vehicle assests").await;
-    };
-
-    if vehicles.is_empty() {
-        return interaction.reply("No vehicle assests found").await;
-    }
-
-    let mut content = "**Vehicle Assests**\n\n".to_string();
-    for vehicle in vehicles {
-        let stored = if vehicle.stored {
-            "In garage"
-        } else {
-            "Out in the field"
-        };
-        #[allow(clippy::uninlined_format_args)]
-        write!(
-            content,
-            "**{}**\nPlate: {}\n{}\n\n",
-            vehicle.name, vehicle.plate, stored
-        )?;
-    }
-    interaction.reply(content).await
 }

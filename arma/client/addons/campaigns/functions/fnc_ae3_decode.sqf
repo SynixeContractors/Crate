@@ -26,7 +26,8 @@ switch (_value select 0) do {
         createHashMapFromArray _pairs
     };
     case "C": {
-        compile preprocessFileLineNumbers (_value select 1)
+        // Stored as `str _code`, the source wrapped in braces, so compiling it yields the code itself
+        call compile (_value select 1)
     };
     case "O": {
         private _id = _value select 1;
