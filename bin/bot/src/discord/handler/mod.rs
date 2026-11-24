@@ -137,6 +137,32 @@ impl EventHandler for Handler {
                 {
                     error!("Cannot handle bank request: {}", e);
                 }
+                if (component
+                    .data
+                    .custom_id
+                    .starts_with(slash::schedule::LEAD_CLAIM)
+                    || component
+                        .data
+                        .custom_id
+                        .starts_with(slash::schedule::LEAD_RELEASE))
+                    && let Err(e) = slash::schedule::lead_button(&ctx, &component).await
+                {
+                    error!("Cannot handle operation lead button: {}", e);
+                }
+                if component
+                    .data
+                    .custom_id
+                    .starts_with(crate::discord::activity::REACHOUT_SEND)
+                    && let Err(e) =
+                        crate::discord::activity::reachout_button(&ctx, &component).await
+                {
+                    error!("Cannot handle reachout: {}", e);
+                }
+                if component.data.custom_id.starts_with("bank_page:")
+                    && let Err(e) = slash::bank_pages::page_button(&ctx, &component).await
+                {
+                    error!("Cannot handle bank page: {}", e);
+                }
                 if component.data.custom_id.starts_with("survey_submit:")
                     && let Err(e) = slash::surveys::submit_button(&ctx, &component).await
                 {

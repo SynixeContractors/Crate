@@ -27,6 +27,57 @@ pub mod db {
         pub quantity: i32,
     }
 
+    /// Where a bank request is in its life
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(rename_all = "snake_case")]
+    pub enum BankRequestStatus {
+        /// Waiting for the payer to pay or decline
+        Open,
+        /// Being paid right now, so it can't be answered twice
+        Paying,
+        /// Paid, the money has moved
+        Paid,
+        /// Declined by the payer
+        Declined,
+    }
+
+    impl BankRequestStatus {
+        #[must_use]
+        pub const fn as_str(self) -> &'static str {
+            match self {
+                Self::Open => "open",
+                Self::Paying => "paying",
+                Self::Paid => "paid",
+                Self::Declined => "declined",
+            }
+        }
+
+        /// Parses a status as stored in the database
+        #[must_use]
+        pub fn parse(status: &str) -> Option<Self> {
+            match status {
+                "open" => Some(Self::Open),
+                "paying" => Some(Self::Paying),
+                "paid" => Some(Self::Paid),
+                "declined" => Some(Self::Declined),
+                _ => None,
+            }
+        }
+    }
+
+    /// A member asking another to pay them
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    pub struct BankRequest {
+        pub id: Uuid,
+        pub requester: UserId,
+        pub payer: UserId,
+        pub amount: i32,
+        pub reason: String,
+        pub status: BankRequestStatus,
+        pub created: time::OffsetDateTime,
+        pub resolved: Option<time::OffsetDateTime>,
+    }
+
     /// A transfer of money between two members
     #[derive(Clone, Debug, Serialize, Deserialize)]
     pub struct Transfer {
@@ -196,11 +247,36 @@ pub mod db {
             /// The member's ID
             member: UserId,
         } => (Result<Vec<LockerItem>, String>)
-        /// Get a member's most recent transfers, sent and received, newest first
+        /// Get a member's transfers, sent and received, newest first, a page at a time
         struct BankTransfers {
             /// The member's ID
             member: UserId,
+            /// How many to return
+            limit: i64,
+            /// How many newer transfers to skip
+            offset: i64,
         } => (Result<Vec<Transfer>, String>)
+        /// Record a request for `payer` to pay `requester`. Responds with the request's ID.
+        struct CreateBankRequest {
+            requester: UserId,
+            payer: UserId,
+            amount: i32,
+            reason: String,
+        } => (Result<Uuid, String>)
+        /// Move a request from one status to another, only if it's in `from` and `payer` is the one asked.
+        /// Responds with the request if it moved, `None` if it wasn't in that status.
+        struct TransitionBankRequest {
+            id: Uuid,
+            payer: UserId,
+            from: BankRequestStatus,
+            to: BankRequestStatus,
+        } => (Result<Option<BankRequest>, String>)
+        /// A member's requests, as requester or payer, newest first, a page at a time
+        struct BankRequests {
+            member: UserId,
+            limit: i64,
+            offset: i64,
+        } => (Result<Vec<BankRequest>, String>)
 
         /// Get all items in the shop
         #[allow(clippy::type_complexity)]

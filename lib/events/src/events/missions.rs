@@ -36,6 +36,11 @@ pub mod db {
             scheduled: Uuid,
             member: UserId,
         } => (Result<Option<UserId>, String>)
+        /// Set or clear a scheduled mission's lead whoever holds it, for staff
+        struct SetOperationLead {
+            scheduled: Uuid,
+            member: Option<UserId>,
+        } => (Result<(), String>)
         /// Give up a scheduled mission's lead, if `member` holds it
         struct ReleaseOperationLead {
             scheduled: Uuid,

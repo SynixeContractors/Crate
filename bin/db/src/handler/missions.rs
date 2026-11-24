@@ -258,6 +258,21 @@ impl Handler for Request {
                 msg,
                 cx
             ),
+            Self::SetOperationLead { scheduled, member } => match_no_return!(
+                async {
+                    sqlx::query!(
+                        "UPDATE missions_schedule SET operation_lead = $2 WHERE id = $1",
+                        scheduled,
+                        member.map(|member| member.to_string()),
+                    )
+                    .execute(&*db)
+                    .await?;
+                    Result::<(), anyhow::Error>::Ok(())
+                },
+                SetOperationLead,
+                msg,
+                cx
+            ),
             Self::ReleaseOperationLead { scheduled, member } => match_no_return!(
                 async {
                     sqlx::query!(

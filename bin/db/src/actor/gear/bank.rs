@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use serenity::model::prelude::UserId;
 use sqlx::{Executor, Postgres};
 use synixe_events::{
-    gear::db::{CompanyActivity, PurchasedItem, Transaction, TransactionKind, Transfer},
+    gear::db::{
+        BankRequest, BankRequestStatus, CompanyActivity, PurchasedItem, Transaction,
+        TransactionKind, Transfer,
+    },
     publish,
 };
 use synixe_meta::discord::BRODSKY;
@@ -317,11 +320,10 @@ ORDER BY created DESC;"#,
     Ok(ledger)
 }
 
-/// The most transfers `transfers` returns, enough to fit in one Discord message
-const TRANSFERS_LIMIT: i64 = 15;
-
 pub async fn transfers(
     member: &UserId,
+    limit: i64,
+    offset: i64,
     executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
 ) -> Result<Vec<Transfer>, anyhow::Error> {
     let rows = sqlx::query!(
@@ -329,9 +331,10 @@ pub async fn transfers(
         FROM gear_bank_transfers
         WHERE source = $1 OR target = $1
         ORDER BY created DESC
-        LIMIT $2",
+        LIMIT $2 OFFSET $3",
         member.to_string(),
-        TRANSFERS_LIMIT,
+        limit,
+        offset,
     )
     .fetch_all(&mut **executor)
     .await?;
@@ -392,7 +395,10 @@ pub async fn publish_balance(nats: async_nats::Client, member: UserId, reason: S
 /// How the company has been doing over the last `days`. Spending is counted the way the company balance is
 /// (see `gear_bank_balance_cache`): its own withdrawals, everything paid to members, garage purchases and the
 /// company's share of gear purchases. Missions are counted by when they were played.
-pub async fn company_activity<'a, E>(days: i32, executor: E) -> Result<CompanyActivity, anyhow::Error>
+pub async fn company_activity<'a, E>(
+    days: i32,
+    executor: E,
+) -> Result<CompanyActivity, anyhow::Error>
 where
     E: Executor<'a, Database = Postgres>,
 {
@@ -454,4 +460,102 @@ where
     .fetch_all(executor)
     .await?;
     Ok(rows.into_iter().map(|row| (row.week, row.price)).collect())
+}
+
+#[derive(sqlx::FromRow)]
+struct RequestRow {
+    id: uuid::Uuid,
+    requester: String,
+    payer: String,
+    amount: i32,
+    reason: String,
+    status: String,
+    created: time::OffsetDateTime,
+    resolved: Option<time::OffsetDateTime>,
+}
+
+impl TryFrom<RequestRow> for BankRequest {
+    type Error = anyhow::Error;
+
+    fn try_from(row: RequestRow) -> Result<Self, Self::Error> {
+        Ok(Self {
+            id: row.id,
+            requester: stored_member(&row.requester)?,
+            payer: stored_member(&row.payer)?,
+            amount: row.amount,
+            reason: row.reason,
+            status: BankRequestStatus::parse(&row.status)
+                .ok_or_else(|| anyhow::anyhow!("unknown bank request status: {}", row.status))?,
+            created: row.created,
+            resolved: row.resolved,
+        })
+    }
+}
+
+pub async fn create_request(
+    requester: &UserId,
+    payer: &UserId,
+    amount: i32,
+    reason: &str,
+    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<uuid::Uuid, anyhow::Error> {
+    let row = sqlx::query!(
+        "INSERT INTO bank_requests (requester, payer, amount, reason) VALUES ($1, $2, $3, $4) RETURNING id",
+        requester.to_string(),
+        payer.to_string(),
+        amount,
+        reason,
+    )
+    .fetch_one(&mut **executor)
+    .await?;
+    Ok(row.id)
+}
+
+/// Moves a request from `from` to `to`, if it's in `from` and `payer` is the one asked. `None` when it isn't.
+pub async fn transition_request(
+    id: uuid::Uuid,
+    payer: &UserId,
+    from: BankRequestStatus,
+    to: BankRequestStatus,
+    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<Option<BankRequest>, anyhow::Error> {
+    // Only a request leaving "paying" or "open" is timestamped, so `resolved` is when it was finished
+    let row = sqlx::query_as!(
+        RequestRow,
+        r#"UPDATE bank_requests
+        SET status = $4,
+            resolved = CASE WHEN $4::VARCHAR IN ('paid', 'declined') THEN NOW() ELSE NULL END
+        WHERE id = $1 AND payer = $2 AND status = $3
+        RETURNING id, requester, payer, amount, reason, status, created, resolved"#,
+        id,
+        payer.to_string(),
+        from.as_str(),
+        to.as_str(),
+    )
+    .fetch_optional(&mut **executor)
+    .await?;
+    row.map(BankRequest::try_from).transpose()
+}
+
+/// A member's requests, as requester or payer, newest first
+pub async fn requests(
+    member: &UserId,
+    limit: i64,
+    offset: i64,
+    executor: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+) -> Result<Vec<BankRequest>, anyhow::Error> {
+    let rows = sqlx::query_as!(
+        RequestRow,
+        r#"SELECT id, requester, payer, amount, reason, status, created, resolved
+        FROM bank_requests
+        WHERE requester = $1 OR payer = $1
+        ORDER BY created DESC
+        LIMIT $2 OFFSET $3"#,
+        member.to_string(),
+        limit,
+        offset,
+    )
+    .fetch_all(&mut **executor)
+    .await?;
+    rows.into_iter().map(BankRequest::try_from).collect()
 }

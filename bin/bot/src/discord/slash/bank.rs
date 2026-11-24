@@ -1,13 +1,8 @@
 use charts_rs::{CandlestickChart, PieChart, THEME_GRAFANA, svg_to_png};
-use std::{
-    collections::HashSet,
-    sync::{LazyLock, Mutex, PoisonError},
-};
-
 use serenity::{
     all::{
         ButtonStyle, CommandDataOption, CommandDataOptionValue, CommandInteraction,
-        CommandOptionType, ComponentInteraction, CreateAttachment, MessageId, UserId,
+        CommandOptionType, ComponentInteraction, CreateAttachment, UserId,
     },
     builder::{
         CreateActionRow, CreateButton, CreateCommand, CreateCommandOption,
@@ -16,7 +11,7 @@ use serenity::{
     },
     client::Context,
 };
-use synixe_events::gear::db::{Response, Transaction};
+use synixe_events::gear::db::{BankRequest, BankRequestStatus, Response, Transaction};
 use synixe_meta::discord::{
     BRODSKY, GUILD,
     channel::LOG,
@@ -30,7 +25,10 @@ use crate::{
     get_option, get_option_user,
 };
 
-use super::{AllowPublic, ShouldAsk};
+use super::{
+    AllowPublic, ShouldAsk,
+    bank_pages::{self, Kind},
+};
 
 /// The most that can be transferred, or requested, at once
 const MAX_TRANSFER: i32 = 10_000;
@@ -104,6 +102,11 @@ pub fn register() -> CreateCommand {
                 .allow_public()
         )
         .add_option(
+            CreateCommandOption::new(CommandOptionType::SubCommand, "requests", "View bank requests you've sent or been asked to pay")
+                .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view requests for, yourself if not given"))
+                .allow_public()
+        )
+        .add_option(
             CreateCommandOption::new(CommandOptionType::SubCommand, "candlestick", "View a candlestick chart of a member's balance over time")
                 .add_sub_option(CreateCommandOption::new(CommandOptionType::User, "member", "The member to view the chart for, yourself if not given")
                 )
@@ -126,6 +129,7 @@ pub async fn run(ctx: &Context, command: &CommandInteraction) -> serenity::Resul
             "candlestick" => candlestick(ctx, command, options).await?,
             "history" => history(ctx, command, options).await?,
             "transfers" => transfers(ctx, command, options).await?,
+            "requests" => requests(ctx, command, options).await?,
             _ => unreachable!(),
         }
     }
@@ -583,113 +587,73 @@ async fn history(
     command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, command.clone(), options);
-    interaction.reply("Fetching transactions...").await?;
-    let user = &get_option_user!(options, "member")
-        .copied()
-        .unwrap_or(command.user.id);
-
-    let Ok(Ok((Response::BankHistory(Ok(mut history)), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::gear::db,
-        BankHistory { member: *user }
-    )
-    .await
-    else {
-        return interaction.reply("Failed to fetch transactions").await;
-    };
-
-    if history.is_empty() {
-        return interaction
-            .reply("No transactions found for this member")
-            .await;
-    }
-
-    history.sort_by_key(|a| std::cmp::Reverse(a.created));
-    let lines = history
-        .iter()
-        .take(10)
-        .map(|t| {
-            let items = t
-                .items
-                .iter()
-                .map(|i| format!("{} x{}", i.name, i.quantity))
-                .collect::<Vec<_>>()
-                .join(", ");
-            let detail = match (items.is_empty(), t.reason.as_str()) {
-                (true, _) => t.reason.clone(),
-                (false, "shop purchase") => items,
-                (false, reason) => format!("{items} ({reason})"),
-            };
-            let detail: String = detail.chars().take(120).collect();
-            format!(
-                "{}  {:>10}  {:<12}  {detail}",
-                t.created.date(),
-                bootstrap::format::money(t.amount, false),
-                t.kind.label(),
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
-    interaction
-        .reply(format!("Latest transactions for <@{user}>:\n```{lines}```"))
-        .await
+    list(ctx, command, options, Kind::History).await
 }
-
-/// The most characters of a transfer's reason shown, so the list fits in one message
-const TRANSFER_REASON_LENGTH: usize = 60;
 
 async fn transfers(
     ctx: &Context,
     command: &CommandInteraction,
     options: &[CommandDataOption],
 ) -> serenity::Result<()> {
-    let mut interaction = Interaction::new(ctx, command.clone(), options);
-    interaction.reply("Fetching transfers...").await?;
-    let user = get_option_user!(options, "member")
-        .copied()
-        .unwrap_or(command.user.id);
-
-    let Ok(Ok((Response::BankTransfers(Ok(transfers)), _))) = events_request_5!(
-        bootstrap::NC::get().await,
-        synixe_events::gear::db,
-        BankTransfers { member: user }
-    )
-    .await
-    else {
-        return interaction.reply("Failed to fetch transfers").await;
-    };
-
-    if transfers.is_empty() {
-        return interaction
-            .reply(format!("No transfers found for <@{user}>"))
-            .await;
-    }
-
-    let lines = transfers
-        .iter()
-        .map(|t| {
-            let (sign, direction, other) = if t.source == user {
-                ("-", "to", t.target)
-            } else {
-                ("+", "from", t.source)
-            };
-            let reason: String = t.reason.chars().take(TRANSFER_REASON_LENGTH).collect();
-            format!(
-                "`{}` **{sign}{}** {direction} <@{other}> - {reason}",
-                t.created.date(),
-                bootstrap::format::money(t.amount, false),
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
-    interaction
-        .reply(format!("Latest transfers for <@{user}>:\n{lines}"))
-        .await
+    list(ctx, command, options, Kind::Transfers).await
 }
 
-/// Prefixes of the buttons on a `/bank request`, followed by `{requester}:{amount}`. Handled by
-/// `request_button` so they keep working after a restart.
+async fn requests(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    let member = get_option_user!(options, "member")
+        .copied()
+        .unwrap_or(command.user.id);
+    // Someone else's requests are only for staff
+    if member != command.user.id {
+        let is_staff = command
+            .member
+            .as_ref()
+            .is_some_and(|m| m.roles.contains(&STAFF));
+        if !is_staff {
+            return interaction
+                .reply("Only staff can see other members' requests")
+                .await;
+        }
+    }
+    interaction.reply("Fetching requests...").await?;
+    send_first_page(&mut interaction, Kind::Requests, member).await
+}
+
+/// Shows the first page of a list, with its paging buttons
+async fn list(
+    ctx: &Context,
+    command: &CommandInteraction,
+    options: &[CommandDataOption],
+    kind: Kind,
+) -> serenity::Result<()> {
+    let mut interaction = Interaction::new(ctx, command.clone(), options);
+    interaction.reply("Fetching...").await?;
+    let member = get_option_user!(options, "member")
+        .copied()
+        .unwrap_or(command.user.id);
+    send_first_page(&mut interaction, kind, member).await
+}
+
+async fn send_first_page(
+    interaction: &mut Interaction<'_>,
+    kind: Kind,
+    member: UserId,
+) -> serenity::Result<()> {
+    match bank_pages::first_page(kind, member).await {
+        Some((content, components)) => interaction.reply_with_components(content, components).await,
+        None => {
+            interaction
+                .reply(format!("Failed to fetch the {}", kind.title()))
+                .await
+        }
+    }
+}
+
+/// Prefixes of the Pay and Decline buttons on a `/bank request`, followed by the request's ID
 pub const REQUEST_PAY: &str = "bank_request_pay:";
 pub const REQUEST_DECLINE: &str = "bank_request_decline:";
 
@@ -728,6 +692,23 @@ async fn request(
     let money = bootstrap::format::money(amount, false);
     let requester = command.user.id;
 
+    let Ok(Ok((Response::CreateBankRequest(Ok(id)), _))) = events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        CreateBankRequest {
+            requester,
+            payer: *user,
+            amount,
+            reason: reason.clone(),
+        }
+    )
+    .await
+    else {
+        return interaction
+            .reply("Failed to save your request, try again")
+            .await;
+    };
+
     let sent = match user.create_dm_channel(ctx).await {
         Ok(channel) => channel
             .send_message(
@@ -736,14 +717,7 @@ async fn request(
                     .content(format!(
                         "<@{requester}> is requesting {money} from you\n> {reason}"
                     ))
-                    .components(vec![CreateActionRow::Buttons(vec![
-                        CreateButton::new(format!("{REQUEST_PAY}{requester}:{amount}"))
-                            .style(ButtonStyle::Success)
-                            .label(format!("Pay {money}")),
-                        CreateButton::new(format!("{REQUEST_DECLINE}{requester}:{amount}"))
-                            .style(ButtonStyle::Secondary)
-                            .label("Decline"),
-                    ])]),
+                    .components(vec![request_buttons(id, &money)]),
             )
             .await
             .map_err(|e| error!("failed to send bank request to {user}: {e}"))
@@ -756,23 +730,59 @@ async fn request(
     if sent {
         interaction
             .reply(format!(
-                "Requested {money} from <@{user}>. They've been sent a message to pay or decline."
+                "Requested {money} from <@{user}>. They've been sent a message to pay or decline. Track it with `/bank requests`."
             ))
             .await
     } else {
         interaction
             .reply(format!(
-                "I wasn't able to message <@{user}>, they may have direct messages turned off"
+                "I wasn't able to message <@{user}>, they may have direct messages turned off. The request is saved, so it'll show in `/bank requests`."
             ))
             .await
     }
 }
 
-/// Requests already being answered, so a double click can't pay one twice
-static ANSWERED_REQUESTS: LazyLock<Mutex<HashSet<MessageId>>> =
-    LazyLock::new(|| Mutex::new(HashSet::new()));
+fn request_buttons(id: uuid::Uuid, money: &str) -> CreateActionRow {
+    CreateActionRow::Buttons(vec![
+        CreateButton::new(format!("{REQUEST_PAY}{id}"))
+            .style(ButtonStyle::Success)
+            .label(format!("Pay {money}")),
+        CreateButton::new(format!("{REQUEST_DECLINE}{id}"))
+            .style(ButtonStyle::Secondary)
+            .label("Decline"),
+    ])
+}
+
+/// Moves a request between statuses, `None` if it wasn't in `from` (already answered) or the lookup failed.
+/// Only the payer it was made to can move it.
+async fn transition(
+    id: uuid::Uuid,
+    payer: UserId,
+    from: BankRequestStatus,
+    to: BankRequestStatus,
+) -> Option<BankRequest> {
+    match events_request_5!(
+        bootstrap::NC::get().await,
+        synixe_events::gear::db,
+        TransitionBankRequest {
+            id,
+            payer,
+            from,
+            to,
+        }
+    )
+    .await
+    {
+        Ok(Ok((Response::TransitionBankRequest(Ok(request)), _))) => request,
+        other => {
+            error!("failed to move bank request {id} from {from:?} to {to:?}: {other:?}");
+            None
+        }
+    }
+}
 
 /// Handles the Pay and Decline buttons of a `/bank request`, pressed by the member asked to pay
+#[allow(clippy::too_many_lines)]
 pub async fn request_button(
     ctx: &Context,
     component: &ComponentInteraction,
@@ -785,39 +795,49 @@ pub async fn request_button(
     } else {
         return Ok(());
     };
-    let Some((requester, amount)) = rest.split_once(':').and_then(|(requester, amount)| {
-        let requester = requester.parse::<u64>().ok().filter(|id| *id != 0)?;
-        let amount = amount
-            .parse::<i32>()
-            .ok()
-            .filter(|amount| (1..=MAX_TRANSFER).contains(amount))?;
-        Some((UserId::new(requester), amount))
-    }) else {
-        error!("invalid bank request button: {id}");
-        return Ok(());
+    let Ok(request_id) = uuid::Uuid::parse_str(rest) else {
+        // Buttons from before requests were saved, which can't be looked up
+        return ephemeral(
+            ctx,
+            component,
+            "This request is from before an update. Ask them to send a new one.",
+        )
+        .await;
     };
     let payer = component.user.id;
-    let original = component.message.content.clone();
-    // Written by `request` as its only quoted line
-    let reason = original
-        .lines()
-        .find_map(|line| line.strip_prefix("> "))
-        .unwrap_or("Requested")
-        .to_string();
-    let money = bootstrap::format::money(amount, false);
-
-    if !ANSWERED_REQUESTS
-        .lock()
-        .unwrap_or_else(PoisonError::into_inner)
-        .insert(component.message.id)
-    {
-        return component
-            .create_response(&ctx.http, CreateInteractionResponse::Acknowledge)
-            .await;
-    }
 
     if !paying {
-        return decline_request(ctx, component, requester, &money, &reason).await;
+        let Some(request) = transition(
+            request_id,
+            payer,
+            BankRequestStatus::Open,
+            BankRequestStatus::Declined,
+        )
+        .await
+        else {
+            return ephemeral(ctx, component, "This request has already been answered.").await;
+        };
+        component
+            .create_response(
+                &ctx.http,
+                CreateInteractionResponse::UpdateMessage(
+                    CreateInteractionResponseMessage::new()
+                        .content(format!("{}\n\n:x: Declined", component.message.content))
+                        .components(vec![]),
+                ),
+            )
+            .await?;
+        dm(
+            ctx,
+            request.requester,
+            format!(
+                "<@{payer}> declined your request for {}\n> {}",
+                bootstrap::format::money(request.amount, false),
+                request.reason
+            ),
+        )
+        .await;
+        return Ok(());
     }
 
     // The same rule as /bank transfer, which can also ask staff for permission
@@ -826,75 +846,96 @@ pub async fn request_button(
         .await
         .is_ok_and(|member| member.roles.contains(&ACTIVE));
     if !active {
-        ANSWERED_REQUESTS
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .remove(&component.message.id);
-        return component
-            .create_response(
-                &ctx.http,
-                CreateInteractionResponse::Message(
-                    CreateInteractionResponseMessage::new()
-                        .content("You need to be an active member to send money. Use `/bank transfer` to ask staff for permission.")
-                        .ephemeral(true),
-                ),
-            )
-            .await;
+        return ephemeral(
+            ctx,
+            component,
+            "You need to be an active member to send money. Use `/bank transfer` to ask staff for permission.",
+        )
+        .await;
     }
 
-    // The buttons are removed before any money moves, so the request can't be paid twice
+    // Claimed before any money moves, so the request can't be paid twice
+    let Some(request) = transition(
+        request_id,
+        payer,
+        BankRequestStatus::Open,
+        BankRequestStatus::Paying,
+    )
+    .await
+    else {
+        return ephemeral(ctx, component, "This request has already been answered.").await;
+    };
+    let money = bootstrap::format::money(request.amount, false);
     component
         .create_response(
             &ctx.http,
             CreateInteractionResponse::UpdateMessage(
                 CreateInteractionResponseMessage::new()
-                    .content(format!("{original}\n\n:hourglass: Paying..."))
+                    .content(format!(
+                        "{}\n\n:hourglass: Paying {money}...",
+                        component.message.content
+                    ))
                     .components(vec![]),
             ),
         )
         .await?;
-    let outcome = if send_money(ctx, payer, requester, amount, &reason)
-        .await
-        .is_some()
+
+    let outcome = if send_money(
+        ctx,
+        payer,
+        request.requester,
+        request.amount,
+        &request.reason,
+    )
+    .await
+    .is_some()
     {
-        ":white_check_mark: Paid"
+        transition(
+            request_id,
+            payer,
+            BankRequestStatus::Paying,
+            BankRequestStatus::Paid,
+        )
+        .await;
+        (":white_check_mark: Paid", vec![])
     } else {
-        ":warning: The payment failed, nothing was sent. Ask them to send a new request."
+        // Back to open, with the buttons, so it can be tried again
+        transition(
+            request_id,
+            payer,
+            BankRequestStatus::Paying,
+            BankRequestStatus::Open,
+        )
+        .await;
+        (
+            ":warning: The payment failed, nothing was sent. You can try again.",
+            vec![request_buttons(request_id, &money)],
+        )
     };
     component
         .edit_response(
             &ctx.http,
-            EditInteractionResponse::new().content(format!("{original}\n\n{outcome}")),
+            EditInteractionResponse::new()
+                .content(format!("{}\n\n{}", component.message.content, outcome.0))
+                .components(outcome.1),
         )
         .await?;
     Ok(())
 }
 
-async fn decline_request(
+async fn ephemeral(
     ctx: &Context,
     component: &ComponentInteraction,
-    requester: UserId,
-    money: &str,
-    reason: &str,
+    content: &str,
 ) -> serenity::Result<()> {
     component
         .create_response(
             &ctx.http,
-            CreateInteractionResponse::UpdateMessage(
+            CreateInteractionResponse::Message(
                 CreateInteractionResponseMessage::new()
-                    .content(format!("{}\n\n:x: Declined", component.message.content))
-                    .components(vec![]),
+                    .content(content)
+                    .ephemeral(true),
             ),
         )
-        .await?;
-    dm(
-        ctx,
-        requester,
-        format!(
-            "<@{}> declined your request for {money}\n> {reason}",
-            component.user.id
-        ),
-    )
-    .await;
-    Ok(())
+        .await
 }

@@ -1,7 +1,9 @@
 use std::{collections::HashMap, fmt::Write};
 
 use serenity::{
-    all::{CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType, UserId},
+    all::{
+        CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType, UserId,
+    },
     builder::{CreateCommand, CreateCommandOption},
     client::Context,
 };
@@ -221,7 +223,10 @@ async fn overview(
             )
             .await
             {
-                Ok(Ok((synixe_events::missions::db::Response::FetchMissionRsvps(Ok(rsvps)), _))) => {
+                Ok(Ok((
+                    synixe_events::missions::db::Response::FetchMissionRsvps(Ok(rsvps)),
+                    _,
+                ))) => {
                     match rsvps
                         .iter()
                         .find(|rsvp| rsvp.member == member.to_string())
@@ -398,7 +403,9 @@ async fn casino(
     )
     .await
     else {
-        return interaction.reply("Failed to fetch your casino history").await;
+        return interaction
+            .reply("Failed to fetch your casino history")
+            .await;
     };
     if games.is_empty() {
         return interaction
@@ -492,7 +499,10 @@ mod tests {
         assert_eq!(stats.current_streak, 3);
         assert_eq!(stats.best_streak, 3);
         assert_eq!(stats.earned, 450);
-        assert_eq!(stats.by_type.first(), Some(&(MissionType::Contract.to_string(), 4)));
+        assert_eq!(
+            stats.by_type.first(),
+            Some(&(MissionType::Contract.to_string(), 4))
+        );
     }
 
     #[test]

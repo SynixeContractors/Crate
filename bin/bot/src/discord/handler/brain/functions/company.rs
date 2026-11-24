@@ -13,7 +13,7 @@ impl BrainFunction for Finances {
     }
 
     fn desc(&self) -> &'static str {
-        "Get how the company did over the last week: its balance, income, spending, missions, turnout and the casino's take, and the mood it puts you in. Use it when asked how you are, how the company is doing, or why you're in the mood you're in."
+        "Get how the company did over the last week: its balance, income and spending, reputation change, and how missions went, and the mood it puts you in. Use it when asked how you are, how the company is doing, or why you're in the mood you're in."
     }
 
     fn args(&self) -> serde_json::Value {
@@ -39,9 +39,10 @@ impl BrainFunction for Finances {
             "balance": a.balance,
             "income_this_week": a.income,
             "spending_this_week": a.spending,
-            "missions_this_week": a.missions,
-            "contractors_paid_this_week": a.contractors_paid,
-            "casino_take_this_week": a.casino_take,
+            "reputation_change_this_week": a.reputation,
+            "missions_succeeded_this_week": a.successes,
+            "missions_partly_succeeded_this_week": a.partials,
+            "missions_failed_this_week": a.failures,
         }))
     }
 }

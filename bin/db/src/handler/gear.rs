@@ -216,7 +216,11 @@ impl Handler for Request {
                 msg,
                 cx
             ),
-            Self::BankTransfers { member } => {
+            Self::BankTransfers {
+                member,
+                limit,
+                offset,
+            } => {
                 quick_transaction_return!(
                     BankTransfers,
                     db,
@@ -224,6 +228,60 @@ impl Handler for Request {
                     cx,
                     actor::gear::bank::transfers,
                     member,
+                    *limit,
+                    *offset,
+                )
+            }
+            Self::CreateBankRequest {
+                requester,
+                payer,
+                amount,
+                reason,
+            } => {
+                quick_transaction_return!(
+                    CreateBankRequest,
+                    db,
+                    msg,
+                    cx,
+                    actor::gear::bank::create_request,
+                    requester,
+                    payer,
+                    *amount,
+                    reason,
+                )
+            }
+            Self::TransitionBankRequest {
+                id,
+                payer,
+                from,
+                to,
+            } => {
+                quick_transaction_return!(
+                    TransitionBankRequest,
+                    db,
+                    msg,
+                    cx,
+                    actor::gear::bank::transition_request,
+                    *id,
+                    payer,
+                    *from,
+                    *to,
+                )
+            }
+            Self::BankRequests {
+                member,
+                limit,
+                offset,
+            } => {
+                quick_transaction_return!(
+                    BankRequests,
+                    db,
+                    msg,
+                    cx,
+                    actor::gear::bank::requests,
+                    member,
+                    *limit,
+                    *offset,
                 )
             }
             Self::ShopGetAll { page } => {

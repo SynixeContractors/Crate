@@ -290,10 +290,5 @@ pub mod executions {
         struct UpdateActivityRoles {} => (Result<(), String>)
         /// Post weekly tips
         struct PostWeeklyTips {} => (Result<(), String>)
-        /// Brodsky's in-character reaction to a situation, a single short line
-        struct BrodskyReact {
-            /// What happened, in plain words
-            situation: String,
-        } => (Result<String, String>)
     });
 }

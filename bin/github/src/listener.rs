@@ -270,16 +270,20 @@ async fn handle_comment(data: &Value, action: &str) -> Result<(), bootstrap::any
         info!("No user found for comment on issue {}", number);
         return Ok(());
     }
-    let user = get_user_id(user).await.unwrap_or_else(|| {
-        error!("Failed to get user by github: {}", user);
-        UserId::new(0)
-    });
+    // Someone who hasn't linked their GitHub to Discord is named by their GitHub login instead
+    let author = get_user_id(user).await.map_or_else(
+        || {
+            error!("Failed to get user by github: {}", user);
+            format!("`{user}` on GitHub")
+        },
+        |id| format!("<@{id}>"),
+    );
 
     pr_message(
         number,
         title.to_string(),
         format!(
-            "Comment on pull request #{number} by <@{user}>: [Read comment](<{}>)",
+            "Comment on pull request #{number} by {author}: [Read comment](<{}>)",
             comment
                 .get("html_url")
                 .and_then(|v| v.as_str())

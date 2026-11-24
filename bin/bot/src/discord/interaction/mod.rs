@@ -132,6 +132,21 @@ impl<'a> Interaction<'a> {
         Ok(())
     }
 
+    /// Replies with buttons under the message, e.g. paging through a list
+    pub async fn reply_with_components(
+        &mut self,
+        content: impl Display + Send,
+        components: Vec<CreateActionRow>,
+    ) -> serenity::Result<()> {
+        self.initial().await?;
+        self.internal_followup(
+            CreateInteractionResponseFollowup::default()
+                .content(content.to_string())
+                .components(components),
+        )
+        .await
+    }
+
     pub async fn reply_with_attachment(
         &mut self,
         content: impl Display + Send,

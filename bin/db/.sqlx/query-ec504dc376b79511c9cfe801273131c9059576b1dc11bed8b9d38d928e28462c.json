@@ -1,0 +1,65 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            (SELECT balance FROM gear_bank_balance_cache WHERE member = '0') AS balance,\n            (SELECT COALESCE(SUM(amount), 0) FROM gear_bank_deposits\n                WHERE member = '0' AND amount > 0 AND created > NOW() - make_interval(days => $1)) AS \"income!\",\n            (SELECT COALESCE(-SUM(amount) FILTER (WHERE member = '0' AND amount < 0), 0)\n                + COALESCE(SUM(amount) FILTER (WHERE member <> '0'), 0)\n                FROM gear_bank_deposits WHERE created > NOW() - make_interval(days => $1))\n            + (SELECT COALESCE(SUM(cost), 0) FROM garage_purchases WHERE created > NOW() - make_interval(days => $1))\n            + (SELECT COALESCE(SUM(company * quantity), 0) FROM gear_bank_purchases\n                WHERE created > NOW() - make_interval(days => $1)) AS \"spending!\",\n            (SELECT COALESCE(SUM(reputation), 0) FROM reputation_events\n                WHERE created > NOW() - make_interval(days => $1)) AS \"reputation!\",\n            (SELECT COUNT(*) FILTER (WHERE outcome = 'success') FROM missions_schedule\n                WHERE start > NOW() - make_interval(days => $1)) AS \"successes!\",\n            (SELECT COUNT(*) FILTER (WHERE outcome = 'partial') FROM missions_schedule\n                WHERE start > NOW() - make_interval(days => $1)) AS \"partials!\",\n            (SELECT COUNT(*) FILTER (WHERE outcome = 'failure') FROM missions_schedule\n                WHERE start > NOW() - make_interval(days => $1)) AS \"failures!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "balance",
+        "type_info": "Int4",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "income!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "spending!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "reputation!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "successes!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 5,
+        "name": "partials!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 6,
+        "name": "failures!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "ec504dc376b79511c9cfe801273131c9059576b1dc11bed8b9d38d928e28462c"
+}

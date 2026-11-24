@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT source, target, amount, reason, created\n        FROM gear_bank_transfers\n        WHERE source = $1 OR target = $1\n        ORDER BY created DESC\n        LIMIT $2",
+  "query": "SELECT source, target, amount, reason, created\n        FROM gear_bank_transfers\n        WHERE source = $1 OR target = $1\n        ORDER BY created DESC\n        LIMIT $2 OFFSET $3",
   "describe": {
     "columns": [
       {
@@ -62,6 +62,7 @@
     "parameters": {
       "Left": [
         "Text",
+        "Int8",
         "Int8"
       ]
     },
@@ -73,5 +74,5 @@
       false
     ]
   },
-  "hash": "26feb32426d43ca80063376826061759f7f3f2fc1c58cf13bfaffd6c96f5deb8"
+  "hash": "19cd2dc56161a9c3ef76cf1bf01fa64fc0624fffb5279052171303fc2d026e96"
 }

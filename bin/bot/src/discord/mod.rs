@@ -2,10 +2,11 @@ use std::sync::atomic::AtomicU32;
 
 use serenity::prelude::*;
 
+pub mod activity;
 pub mod handler;
 pub mod interaction;
 mod menu;
-mod slash;
+pub mod slash;
 mod utils;
 
 pub async fn build() -> Client {

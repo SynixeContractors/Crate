@@ -1,4 +1,4 @@
-//! Brodsky's mood, worked out from what the company has been up to over the last week
+//! Brodsky's mood, worked out from how the company did over the last week: money, reputation and missions
 
 use std::{
     sync::LazyLock,
@@ -12,17 +12,13 @@ use tokio::sync::Mutex;
 /// The days of activity the mood is based on
 const DAYS: i32 = 7;
 /// How long a mood lasts before it's worked out again
-const REFRESH: Duration = Duration::from_secs(15 * 60);
+const REFRESH: Duration = Duration::from_mins(15);
 
 // What counts as a notable week. Tune these to how the company usually does.
 /// Net income in a week that's a big win, or as a loss a big loss
 const BIG_WEEK: i64 = 20_000;
-/// Average contractors per mission that's a great turnout
-const GOOD_TURNOUT: i64 = 12;
-/// Average contractors per mission that's a poor one
-const POOR_TURNOUT: i64 = 6;
-/// Casino take in a week, either way, worth noticing
-const CASINO_SWING: i64 = 2_000;
+/// Reputation gained in a week that's a big gain, or as a loss a big loss. A mission is worth -200 to 150.
+const BIG_REPUTATION: i64 = 150;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mood {
@@ -60,7 +56,9 @@ impl Mood {
             Self::Ecstatic => {
                 "He is in a fantastic mood: generous with praise, toasting the contractors, talking about buying something ridiculous for the company. Still a smart ass."
             }
-            Self::Cheerful => "He is in a good mood: warm, playful, quick with a compliment wrapped in a joke.",
+            Self::Cheerful => {
+                "He is in a good mood: warm, playful, quick with a compliment wrapped in a joke."
+            }
             Self::Content => "He is in his usual mood: dry, sarcastic, unbothered.",
             Self::Grumpy => {
                 "He is grumpy: short-tempered, complains about money and lazy contractors, but still helps."
@@ -68,17 +66,6 @@ impl Mood {
             Self::Furious => {
                 "He is furious: dramatic, threatening to sell the vehicles and go back to driving buses, blaming everyone. Still helps, grudgingly."
             }
-        }
-    }
-
-    /// Reactions he sometimes leaves on messages
-    pub const fn emoji(self) -> &'static [&'static str] {
-        match self {
-            Self::Ecstatic => &["🍻", "🎉", "💰", "🥳"],
-            Self::Cheerful => &["😄", "👍", "🍺", "😎"],
-            Self::Content => &["🤨", "👀", "🚌", "☕"],
-            Self::Grumpy => &["😒", "🙄", "💸", "😤"],
-            Self::Furious => &["😡", "🤬", "💀", "🔥"],
         }
     }
 }
@@ -92,10 +79,12 @@ pub struct MoodReport {
 }
 
 impl MoodReport {
+    /// Scores the week on the three things he cares about: money, reputation and how missions went
     pub fn assess(activity: CompanyActivity) -> Self {
         let mut score = 0;
         let mut reasons = Vec::new();
 
+        // Money
         if activity.balance < 0 {
             score -= 3;
             reasons.push(format!(
@@ -103,56 +92,60 @@ impl MoodReport {
                 money(activity.balance)
             ));
         }
-
         let net = activity.income - activity.spending;
-        match net {
-            n if n >= BIG_WEEK => {
-                score += 2;
-                reasons.push(format!("the company made {} this week", money(n)));
-            }
-            n if n > 0 => score += 1,
-            n if n <= -BIG_WEEK => {
-                score -= 2;
-                reasons.push(format!("the company lost {} this week", money(-n)));
-            }
-            n if n < 0 => score -= 1,
-            _ => {}
-        }
-
-        match activity.missions {
-            0 => {
-                score -= 1;
-                reasons.push(String::from("there were no missions this week and he is bored"));
-            }
-            1 => {}
-            missions => {
-                score += 1;
-                reasons.push(format!("it was a busy week with {missions} missions"));
-            }
-        }
-
-        if activity.missions > 0 {
-            let turnout = activity.contractors_paid / activity.missions;
-            if turnout >= GOOD_TURNOUT {
-                score += 1;
-                reasons.push(format!("missions had great turnouts, about {turnout} contractors each"));
-            } else if turnout < POOR_TURNOUT {
-                score -= 1;
-                reasons.push(format!("barely anyone showed up, about {turnout} contractors a mission"));
-            }
-        }
-
-        if activity.casino_take >= CASINO_SWING {
+        if net >= BIG_WEEK {
+            score += 2;
+            reasons.push(format!("the company made {} this week", money(net)));
+        } else if net > 0 {
             score += 1;
-            reasons.push(format!(
-                "the casino took {} from contractors this week",
-                money(activity.casino_take)
-            ));
-        } else if activity.casino_take <= -CASINO_SWING {
+        } else if net <= -BIG_WEEK {
+            score -= 2;
+            reasons.push(format!("the company lost {} this week", money(-net)));
+        } else if net < 0 {
             score -= 1;
+        }
+
+        // Reputation
+        let reputation = activity.reputation;
+        if reputation >= BIG_REPUTATION {
+            score += 2;
             reasons.push(format!(
-                "the casino paid out {} more than it took this week",
-                money(-activity.casino_take)
+                "the company's reputation rose by {reputation} this week"
+            ));
+        } else if reputation > 0 {
+            score += 1;
+        } else if reputation <= -BIG_REPUTATION {
+            score -= 2;
+            reasons.push(format!(
+                "the company's reputation fell by {} this week",
+                -reputation
+            ));
+        } else if reputation < 0 {
+            score -= 1;
+        }
+
+        // Missions: each success lifts him, each failure hits harder, partials don't move him
+        let missions = (activity.successes - activity.failures * 2).clamp(-3, 2);
+        score += i32::try_from(missions).unwrap_or(0);
+        if activity.successes > 0 {
+            reasons.push(format!(
+                "{} mission{} succeeded this week",
+                activity.successes,
+                if activity.successes == 1 { "" } else { "s" }
+            ));
+        }
+        if activity.partials > 0 {
+            reasons.push(format!(
+                "{} mission{} only partly succeeded this week",
+                activity.partials,
+                if activity.partials == 1 { "" } else { "s" }
+            ));
+        }
+        if activity.failures > 0 {
+            reasons.push(format!(
+                "{} mission{} failed this week",
+                activity.failures,
+                if activity.failures == 1 { "" } else { "s" }
             ));
         }
 
@@ -184,8 +177,7 @@ fn money(amount: i64) -> String {
     )
 }
 
-static CURRENT: LazyLock<Mutex<Option<(Instant, MoodReport)>>> =
-    LazyLock::new(|| Mutex::new(None));
+static CURRENT: LazyLock<Mutex<Option<(Instant, MoodReport)>>> = LazyLock::new(|| Mutex::new(None));
 
 /// His mood right now, worked out again every `REFRESH`. `None` if the company's activity can't be
 /// fetched and there's no earlier mood to fall back on.
@@ -196,22 +188,19 @@ pub async fn current() -> Option<MoodReport> {
     {
         return Some(report.clone());
     }
-    match events_request_5!(
+    if let Ok(Ok((Response::CompanyActivity(Ok(activity)), _))) = events_request_5!(
         bootstrap::NC::get().await,
         synixe_events::gear::db,
         CompanyActivity { days: DAYS }
     )
     .await
     {
-        Ok(Ok((Response::CompanyActivity(Ok(activity)), _))) => {
-            let report = MoodReport::assess(activity);
-            *current = Some((Instant::now(), report.clone()));
-            Some(report)
-        }
-        _ => {
-            error!("failed to fetch company activity for brodsky's mood");
-            current.as_ref().map(|(_, report)| report.clone())
-        }
+        let report = MoodReport::assess(activity);
+        *current = Some((Instant::now(), report.clone()));
+        Some(report)
+    } else {
+        error!("failed to fetch company activity for brodsky's mood");
+        current.as_ref().map(|(_, report)| report.clone())
     }
 }
 
@@ -219,54 +208,58 @@ pub async fn current() -> Option<MoodReport> {
 mod tests {
     use super::*;
 
-    fn week(income: i64, spending: i64, missions: i64, contractors_paid: i64) -> CompanyActivity {
+    fn week(net: i64, reputation: i64, successes: i64, failures: i64) -> CompanyActivity {
         CompanyActivity {
             balance: 100_000,
-            income,
-            spending,
-            missions,
-            contractors_paid,
-            casino_take: 0,
+            income: 10_000 + net,
+            spending: 10_000,
+            reputation,
+            successes,
+            partials: 0,
+            failures,
         }
     }
 
     #[test]
-    fn ordinary_week_is_content() {
-        // One mission, a decent turnout, broke even
-        let report = MoodReport::assess(week(10_000, 10_000, 1, 8));
+    fn quiet_week_is_content() {
+        let report = MoodReport::assess(week(0, 0, 0, 0));
         assert_eq!(report.mood, Mood::Content);
-        assert!(report.reasons.is_empty());
+        assert_eq!(report.reasons, Vec::<String>::new());
     }
 
     #[test]
     fn great_week_is_ecstatic() {
-        let report = MoodReport::assess(week(60_000, 20_000, 2, 30));
+        let report = MoodReport::assess(week(40_000, 200, 2, 0));
         assert_eq!(report.mood, Mood::Ecstatic);
         assert_eq!(report.reasons.len(), 3);
     }
 
     #[test]
+    fn failed_mission_is_grumpy() {
+        let report = MoodReport::assess(week(0, 0, 0, 1));
+        assert_eq!(report.mood, Mood::Grumpy);
+        assert!(report.summary().contains("1 mission failed"));
+    }
+
+    #[test]
+    fn failure_outweighs_success() {
+        // A success and a failure in the same week still leaves him down
+        let report = MoodReport::assess(week(0, 0, 1, 1));
+        assert_eq!(report.mood, Mood::Grumpy);
+    }
+
+    #[test]
+    fn reputation_counts() {
+        assert_eq!(MoodReport::assess(week(0, 50, 0, 0)).mood, Mood::Cheerful);
+        assert_eq!(MoodReport::assess(week(0, -300, 0, 0)).mood, Mood::Grumpy);
+    }
+
+    #[test]
     fn debt_is_furious() {
-        let mut activity = week(0, 30_000, 0, 0);
+        let mut activity = week(-30_000, -200, 0, 1);
         activity.balance = -5_000;
         let report = MoodReport::assess(activity);
         assert_eq!(report.mood, Mood::Furious);
         assert!(report.summary().contains("in debt"));
-    }
-
-    #[test]
-    fn quiet_week_is_grumpy() {
-        let report = MoodReport::assess(week(0, 5_000, 0, 0));
-        assert_eq!(report.mood, Mood::Grumpy);
-        assert!(report.summary().contains("bored"));
-    }
-
-    #[test]
-    fn casino_counts() {
-        let mut activity = week(10_000, 10_000, 1, 8);
-        activity.casino_take = 5_000;
-        assert_eq!(MoodReport::assess(activity).mood, Mood::Cheerful);
-        activity.casino_take = -5_000;
-        assert_eq!(MoodReport::assess(activity).mood, Mood::Grumpy);
     }
 }
